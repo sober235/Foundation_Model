@@ -1,7 +1,7 @@
 # AnatoBind:解剖–异常绑定的医学视觉表征学习
 
-**研究方案 v1.0**(2026-08-25)
-基于 2026-08-09 初始提案,经四轮评审修正(方法正确性审查 → venue 判定 → 数据盘点)后成稿。
+**研究方案 v1.1**(2026-08-31)
+基于 2026-08-09 初始提案,经四轮评审修正(方法正确性审查 → venue 判定 → 数据盘点)成稿 v1.0(2026-08-25);v1.1 = 第二次数据盘点(膝 raw 与 SKM-TEA raw track 到位)+ 第二轮 novelty 核查后的修订,变更清单见文末版本记录。
 
 ---
 
@@ -21,21 +21,23 @@
 
 ## 2. 背景与研究空白
 
-已有工作覆盖四条线,均不解决 binding 问题:
+已有工作覆盖六条线,均不解决 binding 问题(第 5、6 条为 2026-08-31 第二轮核查补充):
 
 1. **解剖感知编码器**:Anatomy-VLM(WACV'26)做 ROI 定位 + 多尺度视觉语言建模;MRI-CORE 在 11 万+ MRI volumes 上预训练,已能识别 body location 与 sequence type。"知道是哪个器官"已不构成贡献。
 2. **医学视觉 grounding**:MIMO(CVPR'25)等解决 text finding ↔ 病灶区域对应。
 3. **通用 object–attribute binding**:NeurIPS'25 已明确指出 CLIP 类模型会把属性绑到错误对象上。
-4. **医学解剖–病理解耦**(初始提案遗漏、评审补上的一条线,MedIA 审稿人主场):SDNet/Chartsias(MedIA 2019)、pseudo-healthy synthesis(MedIA 2020)、结构化变分先验的脑病理–解剖解耦(arXiv 2211.07820)、PathoSyn 等。**anatomy–pathology 解耦本身不新。**
+4. **医学解耦表征**(MedIA 审稿人主场):SDNet/Chartsias(MedIA 2019)、pseudo-healthy synthesis(MedIA 2020)、结构化变分先验的脑病理–解剖解耦(arXiv 2211.07820)、PathoSyn 等。**anatomy–pathology 解耦本身不新。** 2025–26 邻近新作(均已核查,无碰撞):bio-vs-technical 因子事后线性旋转解耦(arXiv 2509.11436,域/扫描仪级风格因子,非实体级、无物理干预);MoViD(arXiv 2606.04414,"motion"为生理性心动定位信号而非伪影,view-vs-disease 对比解耦);SSRL-MAR(arXiv 2608.10170,图像域伪影自监督,目标是去伪影而非表征分解)。
+5. **CXR 解剖–发现绑定监督**:Chest ImaGenome(2021,242k CXR 解剖–发现场景图数据集)及其上的 anatomical grounding 预训练、AnatomiX(arXiv 2601.03191)、RadGenome-Anatomy(arXiv 2605.17368)。**"把发现绑到解剖"作为监督信号在 2D CXR 已存在**——但全部是文本–区域对齐/VLM grounding 路线:无伪影因子、无采集物理、无表征级因子分解、无组合泛化评估。
+6. **医学组合泛化评估**:CrossMed(arXiv 2511.11034)以 Modality–Anatomy–Task 三元组考医学 MLLM 的组合泛化(VQA 任务级),报告 held-out 组合下 83%→49% 的崩塌;另有 arXiv 2412.20070。**"医学影像组合泛化 benchmark"的名头已被占**,但其组合单元是"任务",不是"解剖×异常×伪影"的实体绑定;其崩塌数据反而是本方案动机的现成证据。
 
-**本工作的新颖性收窄为如下组合**(检索未见直接前作):
+**本工作的新颖性收窄为如下组合**(两轮检索未见直接前作):
 
 > 伪影作为第一类因子(三分解 A/P/Q,而非 A/P 二分解)
 > + k-space 物理干预作为训练与验证信号
-> + 实体级显式 binding 矩阵(而非图像级解耦)
-> + 组合泛化基准
+> + 实体级显式 binding 矩阵(而非图像级解耦、亦非文本–区域对齐)
+> + 实体级组合泛化基准(解剖×异常×伪影,区别于 CrossMed 的任务级)
 
-与第 4 条线的差异化必须在 intro 与 related work 里一句话立住:**他们做图像级解耦,我们做实体级绑定,且伪影因子有采集物理的干预 ground truth。**
+三处差异化必须在 intro 与 related work 里各一句话立住:对线 4——**他们做图像级解耦,我们做实体级绑定,且伪影因子有采集物理的干预 ground truth**;对线 5——**他们在 2D CXR 上做文本对齐式 grounding,我们在 3D MRI 上做表征因子分解,且唯有 MRI 有 raw k-space 可施加真干预**;对线 6——**他们考 MLLM 的任务组合,我们考编码器的实体绑定组合**。
 
 ---
 
@@ -177,34 +179,38 @@ L_equiv = || E(T_{i→j}(X)) − T_{i→j}(E(X)) ||
 
 ---
 
-## 6. 数据方案(实际库存版,2026-08-25 盘点)
+## 6. 数据方案(实际库存版,2026-08-31 第二次盘点)
 
 ### 6.1 在库资产 → 角色映射
 
-库存位置:`/data0/congcong/data/FM_Data`(~480G)+ 共享盘 `/data0/Dataset/fastMRI`。
+库存位置:`/data0/congcong/data/FM_Data` + 共享盘 `/data0/Dataset/fastMRI`。
 
 | 资产 | 内容 | 方案角色 |
 |---|---|---|
-| fastMRI raw(共享盘) | **脑 multicoil 全量**(train 1.8T + val 514G + test/challenge,.h5 已验证) | do(Q) 物理干预引擎(脑)——完备 |
+| fastMRI raw 脑(共享盘+本地) | **multicoil 全量**(train 1.8T + val 514G + test/challenge,.h5 已验证;本地另有 train 副本 4468/4469) | do(Q) 物理干预引擎(脑)——完备 |
+| fastMRI raw 膝(本地,**08-28 新到位**) | `kspace/knee/` multicoil **train 973 + val 199 全量**(931G+192G) | do(Q) 物理干预引擎(膝)——缺口①已关闭 |
+| **SKM-TEA raw track(08-28 新到位)** | `files_recon_calib-24.tar.gz` **763 GiB**,已下载完成+md5 校验,待解压;每 scan 一个 `MTR_xxx.h5`(qDESS 3D 多线圈 k-space + ESPIRiT maps calib-24 + target) | **全库唯一"解剖分割+病理 bbox+raw k-space 同批扫描三齐"的数据集 → 赌注实验主战场(§7.1)** |
+| SKM-TEA 标注侧 | 155 例(官方 split 86/33/36),4 类组织分割(髌/股/胫软骨+半月板)+ **476 个病理实例/4 族 15 细类**(软骨病变×4 级、半月板撕裂×7 型、韧带撕裂×3 级、积液);软骨病变与半月板撕裂落在分割类**之内**(直接绑定真值),韧带撕裂/积液在分割类**之外**(天然的"绑定到未分割解剖"难度分层) | 膝解剖 + 膝病理 + 绑定真值 |
 | fastMRI DICOM + fastMRI+ | 脑 4469 + 膝 1172 卷幅值图;标注 CSV 脑 8.2k / 膝 16.2k 框 | 快速原型 + 病理弱标注 |
 | UCSF-PDGM v5 | 501 例胶质瘤,9 序列 + 肿瘤 3D mask + 脑实质分割 | 病理绑定主力(多序列证据链) |
-| UCSF-BMSR v1.3 | 脑转移瘤多发小病灶 + mask | **binding 天然考场**(一脑多灶考多实体绑定) |
-| ISLES-2022 | 250 卒中,DWI/ADC/FLAIR + mask | 病理绑定(卒中) |
-| SKM-TEA | 155 例膝 qDESS + 组织分割 + 病理 bbox | 膝解剖 + 膝病理 |
-| KMAR-50K | 配对 Artifact↔GroundTruth 膝运动 | **真实伪影 OOD 测试格** |
+| UCSF-BMSR v1.3 | 脑转移瘤多发小病灶 + mask(zip 待解压) | **多实体绑定考场**(一脑多灶),赌注实验第二战场 |
+| ISLES-2022 | 250 卒中,DWI/ADC/FLAIR + mask(zip 待解压) | 病理绑定(卒中) |
+| KMAR-50K | 配对 Artifact↔GroundTruth 膝运动 | **sim-to-real 真实伪影测试端(§7.3 主通道)** |
 | HCP(1113+ 人) | T1w/T2w 结构像(brain-extracted) | healthy-only 人群 → P_θ 训练集(§4.3 修法落地) |
-| OASIS-1/2 | 横断 + 纵向老化/痴呆脑 | 正常谱系扩展 |
-| AMOS22 / TotalSeg-MRI v2 | 腹部多器官 / 全身解剖 | 解剖轴 |
+| OASIS-1/2 | 12 disc tar + 2 part tar(未解压;freesurfer 目录空) | 正常谱系扩展(次优先) |
+| AMOS22 / TotalSeg-MRI v2 | 腹部多器官 / 全身解剖(zip 待解压) | 解剖轴 |
 | SPIDER | 腰椎 MRI + mask + 退变分级 | 新解剖格(脊柱),held-out 候选 |
 | CMRxRecon | 占位待下载 | 心脏 raw k-space(可选第四器官) |
+| K2S(UCSF,可选未下) | 300 例膝 raw k-space + 骨/软骨分割(MICCAI 2022 挑战赛) | 可选扩充:第二个"raw+分割同批"来源 |
 
-### 6.2 三个缺口与责任动作
+### 6.2 缺口状态(08-31 更新)与责任动作
 
-1. **膝 raw k-space 不在本机**(FM_Data 内膝 DICOM 由 hongli 在另一台机器从 HDF5 转出;共享盘 knee/ 目录是无关数据)。动作:向 hongli 索取源文件搬运,或从 NYU 重下(~1.1TB)。**这是唯一影响论文骨架的缺口**——没有它,do(Q) 只剩脑一个器官,干预轴二(§5.3)断裂。
-2. **MR-ART 未下载**(脑真实配对运动,OpenNeuro,几十 GB)。没有它,脑侧只有仿真伪影。便宜且高价值,立即补。
-3. **脑细分结构标签缺失**(HCP 本地无 aseg,OASIS freesurfer 目录为空)。动作:自建 SynthSeg/FastSurfer 伪标签管线。纯工程。
+1. ~~膝 raw k-space 不在本机~~ **已关闭**(08-28,train 973 + val 199 全量到位)。
+2. **SKM-TEA raw 待解压**——当前 M1 的第一阻塞项。约束:`/data0` 已用 94%、余 2.6T,解压需 ~800G;本地脑 raw train 副本与共享盘重复 1.8T。**存储腾挪由用户处理中**;解压后建议删 tar(md5 已验、可重下)。
+3. **MR-ART 未下载**(脑真实配对运动,OpenNeuro,几十 GB)。**由"阻塞缺口"降级为可选增强**:sim-to-real 主通道已换为膝侧(SKM-TEA→KMAR,两端在库,§7.3);补上 MR-ART 可加脑侧第二通道。
+4. **脑细分结构标签缺失**(HCP 本地无 aseg,OASIS freesurfer 空)。动作:自建 SynthSeg/FastSurfer 伪标签管线。纯工程。
 
-另:五个 zip 未解压、格式不统一(DICOM/nii/h5/tar)——data-engine 阶段任务;PI-CAI 前列腺不下(第一篇裁剪)。
+另:多个 zip/tar 未解压、格式不统一(DICOM/nii/h5/tar)——data-engine 阶段任务;PI-CAI 前列腺不下(第一篇裁剪)。
 
 ### 6.3 域差管理
 
@@ -219,8 +225,11 @@ PDGM/BMSR(剥颅+配准域)、HCP(研究级各向同性域)、fastMRI(临床 2D 
 **命题**:显式 binding 必须在(a)伪影污染下、(b)held-out 解剖×异常组合上,显著胜过 "分割解剖 + 分割/检测病灶 + 查表重叠"(seg-then-lookup,nnU-Net 管线实现)。
 
 - 干净数据上 seg-then-lookup 几乎必然不输——比较必须设在伪影污染与组合迁移条件下;
-- 主战场:UCSF-BMSR 多灶转移瘤(多实体绑定)+ fastMRI raw 仿真伪影梯度;
-- **判据:若显著优势不成立,方向重议,不进入 M2。**
+- **主战场(v1.1 换防):SKM-TEA**——真解剖分割 + 真病理 bbox + 真 raw k-space 同批扫描三齐,do(Q) 干预物理保真,绑定真值 = bbox×分割空间重叠,**彻底消除"解剖伪标签本身就是分割管线产物"这一 confound**(v1.0 方案里 fastMRI+SynthSeg 战场无法回避的审稿质疑)。两臂同监督:86 train / 36 test,476 病理实例,instance 级 paired bootstrap 出显著性;
+  - 绑定评估主口径用软骨病变+半月板撕裂(落在 4 类分割内,真值直接);韧带撕裂/积液(分割外)作"绑定到未分割解剖"的扩展分析,不进主判据;
+  - held-out 组合示例:训 {软骨病变×股骨软骨, 半月板撕裂×半月板} → 测 {软骨病变×髌骨软骨};
+- **第二战场:UCSF-BMSR 多灶转移瘤**(多实体绑定)+ fastMRI 脑 raw 仿真伪影梯度(规模验证,解剖标签用 SynthSeg 伪标签并如实披露);
+- **判据:若显著优势不成立,方向重议,不进入 M2。** 155 例样本量小是已知限制,故判据以 SKM-TEA(干净因果结论)+ 脑侧(规模佐证)合并解读。
 
 这是初始提案 13 项 baseline 里唯一漏掉、而审稿人必问的对照。
 
@@ -230,9 +239,11 @@ PDGM/BMSR(剥颅+配准域)、HCP(研究级各向同性域)、fastMRI(临床 2D 
 
 ```
 脑   × { 胶质瘤(PDGM), 转移瘤(BMSR), 卒中(ISLES), WM病灶(fastMRI+),
-         motion/spike/alias/noise(raw 物理仿真), 真实 motion(MR-ART,待补) }
-膝   × { SKM-TEA 病理+解剖, fastMRI+ 病灶框, 真实配对 motion(KMAR),
-         物理仿真(待膝 raw) }
+         motion/spike/alias/noise(fastMRI 脑 raw 物理仿真),
+         真实 motion(MR-ART,可选待补) }
+膝   × { SKM-TEA 病理×解剖(绑定真值), fastMRI+ 病灶框,
+         motion/spike/alias/noise(SKM-TEA qDESS raw + fastMRI 膝 raw 物理仿真),
+         真实配对 motion(KMAR) }
 脊柱 × { 退变分级(SPIDER) }          ← held-out 解剖格候选
 腹部 × { AMOS 解剖 }
 心脏 × { CMRxRecon raw }             ← 可选第四器官
@@ -242,7 +253,9 @@ Split 原则:hold out 的是**组合**而非样本(训 brain+motion、knee+alias
 
 ### 7.3 sim-to-real 伪影迁移(评审新增,证据力最强的一条)
 
-fastMRI raw 物理仿真伪影上训练 → KMAR(膝)/ MR-ART(脑)**真实**运动上测试。仿真训、真实测的迁移证据比"脑学膝测"更有说服力。
+**主通道(v1.1 换防):膝**——SKM-TEA raw 上 3D 物理仿真运动(qDESS 分段采集,kz 段间运动建模比 2D 更真实)训练 → KMAR-50K **真实**配对膝运动上测试。两端均已在库,即刻可闭环。脑通道(fastMRI raw 仿真训 → MR-ART 真实测)为可选第二通道,待 MR-ART 补下后加入。仿真训、真实测的迁移证据比"脑学膝测"更有说服力。
+
+**跨采集协议泛化(v1.1 新增证据格)**:同一 do(motion) 干预机制横跨三种采集物理——fastMRI 脑(临床 2D 多线圈多对比度)、fastMRI 膝(2D 15ch TSE)、SKM-TEA(3D qDESS 双回波)。干预等变性若在三种协议下同时成立,即证明学到的是干预机制而非单一协议的过拟合;这是 v1.0 没有的证据维度,成本仅为仿真管线的协议适配。
 
 ### 7.4 三个 killer experiments
 
@@ -285,7 +298,7 @@ fastMRI raw 物理仿真伪影上训练 → KMAR(膝)/ MR-ART(脑)**真实**运�
 
 | # | 风险 | 修法/对策 | 状态 |
 |---|---|---|---|
-| 1 | seg-then-lookup 平凡管线胜出 | 赌注实验前置(§7.1),不成立则重议 | 待验证 |
+| 1 | seg-then-lookup 平凡管线胜出 | 赌注实验前置(§7.1,主战场 SKM-TEA 真值),不成立则重议 | 待验证 |
 | 2 | location intervention 自指/塌缩 | 监督锚定槽身份固定置换 + 对侧同源替换(§5.4) | 已设计 |
 | 3 | Z_A 不变性在重度损坏下不成立 | 按损坏分级 + 有界距离项(§5.2) | 已设计 |
 | 4 | Z_Q 跨器官全表征不变过强 | 类型级投影头(§5.3) | 已设计 |
@@ -293,8 +306,11 @@ fastMRI raw 物理仿真伪影上训练 → KMAR(膝)/ MR-ART(脑)**真实**运�
 | 6 | anatomical residual 被归类为 UAD | entity 级残差定位 + P_θ healthy-only 训练(§4.3) | 已设计 |
 | 7 | 解剖槽偷学域身份 | 域来源 leakage probe 全程监控(§6.3) | 已设计 |
 | 8 | 伪影先验反例(susceptibility/Gibbs) | 显式限定伪影集合 + 软先验(§3.2) | 已定 |
-| 9 | 膝 raw 缺失断掉干预轴二 | 向 hongli 索取或重下(§6.2) | **待办** |
+| 9 | ~~膝 raw 缺失断掉干预轴二~~ | 膝 raw 全量到位(08-28) | **已关闭** |
 | 10 | unsupervised slot 在 3D 细病灶失效 | DETR 式监督查询为主方案(§4.4) | 已定 |
+| 11 | 磁盘余量红灯(/data0 94%,余 2.6T),SKM-TEA 解压被卡 | 删重复脑 raw 副本(省 1.8T)→ 解压 → 删 tar | **用户处理中** |
+| 12 | SKM-TEA 仅 155 例,赌注实验统计力有限 | instance 级 paired bootstrap + 脑侧第二战场规模佐证合并解读(§7.1);可选补 K2S 300 例 | 已设计 |
+| 13 | "组合泛化 benchmark"名头已被 CrossMed 占用 | 定位为实体级(解剖×异常×伪影)基准,引用其崩塌数据作动机(§2) | 已定 |
 
 ---
 
@@ -302,8 +318,8 @@ fastMRI raw 物理仿真伪影上训练 → KMAR(膝)/ MR-ART(脑)**真实**运�
 
 ### 里程碑
 
-- **M0(即刻)**:补数三动作——膝 raw 搬运/重下、MR-ART 下载、CMRxRecon 跟进;zip 解压 + 格式统一 + SynthSeg 伪标签管线(data-engine)。
-- **M1(≤2 个月)**:赌注实验(§7.1)。判据通过 → M2;不通过 → 方向重议。
+- **M0(进行中,08-31 更新)**:~~膝 raw~~ 已到位✓;**存储腾挪 + SKM-TEA 解压**(用户处理中,M1 第一阻塞项);SynthSeg 伪标签管线(脑侧,data-engine);zip 解压 + 格式统一;MR-ART 下载与 CMRxRecon 跟进降为可选。
+- **M1(≤2 个月)**:赌注实验(§7.1,主战场 SKM-TEA)。判据通过 → M2;不通过 → 方向重议。
 - **M2**:全管线分阶段训练(§5.1)+ 三轴干预;中期决策是否赶 MICCAI 2027(截稿约 2 月底)。
 - **M3**:组合基准 + killer experiments + 全部 baseline/消融 + 论文(MedIA)。
 
@@ -320,8 +336,19 @@ fastMRI raw 物理仿真伪影上训练 → KMAR(膝)/ MR-ART(脑)**真实**运�
 ## 附:关键参考
 
 - fastMRI / fastMRI+(raw k-space + 病理标注);MR-ART(配对真实运动,Sci Data 2022);paired knee motion(Sci Data 2025)
+- SKM-TEA(NeurIPS D&B 2021,raw track = qDESS k-space + maps + target;标注 v1.0.0 官方 split 86/33/36);K2S challenge(MICCAI 2022,300 膝 raw+分割)
 - TotalSegmentator-MRI(Radiology 2025);AMOS22;SPIDER
-- UCSF-PDGM v5;UCSF-BMSR v1.3;ISLES-2022;SKM-TEA;HCP;OASIS
+- UCSF-PDGM v5;UCSF-BMSR v1.3;ISLES-2022;HCP;OASIS
 - SDNet(MedIA 2019);pseudo-healthy synthesis(MedIA 2020);结构化变分先验病理–解剖解耦(arXiv 2211.07820)
+- 2025–26 邻近核查:bio-vs-technical 因子旋转(arXiv 2509.11436);MoViD(arXiv 2606.04414);SSRL-MAR(arXiv 2608.10170)
+- CXR 绑定监督线:Chest ImaGenome(arXiv 2108.00316);AnatomiX(arXiv 2601.03191);RadGenome-Anatomy(arXiv 2605.17368)
+- 组合泛化评估线:CrossMed(arXiv 2511.11034);medical MLLM compositional generalization(arXiv 2412.20070)
 - von Kügelgen et al., NeurIPS 2021(多视图 content/style 可识别性);ICLR 2024/2025 interventional CRL 与 compositional generalization 理论
 - Anatomy-VLM(WACV 2026);MRI-CORE;MIMO(CVPR 2025);NeurIPS 2025 object-centric binding
+
+---
+
+## 版本记录
+
+- **v1.1(2026-08-31)**:第二次数据盘点——膝 raw 全量(train 973/val 199)与 SKM-TEA raw track(763 GiB,md5 已验)到位,缺口①关闭;赌注实验主战场由 fastMRI+伪标签换为 SKM-TEA 真值三齐(§7.1);sim-to-real 主通道换膝(SKM-TEA→KMAR),MR-ART 降为可选(§7.3);新增跨采集协议泛化证据格(§7.3);第二轮 novelty 核查补两条前作线(CXR 绑定监督、CrossMed 组合评估)并锐化差异化表述(§2);风险表 +3 项(磁盘、样本量、benchmark 名头);SKM-TEA 标注实测数字入库(§6.1)。
+- **v1.0(2026-08-25)**:初版成稿(方法修正版 + 首轮数据盘点 + venue 判定)。
