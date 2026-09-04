@@ -1,6 +1,6 @@
 # AnatoBind-MRI(`AnatoBind-MRI_cui.md` 版)可行性评审
 
-评审日期:2026-09-04(同日二次复核修订,修订记录见 §8)
+评审日期:2026-09-04(同日二次复核修订、三次补充退化类型覆盖面,记录见 §8)
 评审依据:`AnatoBind-MRI_cui.md`(未提交)、已提交的 `RESEARCH_PLAN.md` v1.1、`/data0/congcong/data/FM_Data` 逐文件实测、本机算力实测。
 评审口径:方案里的每个组件与每个实验,能否在**盘上现有数据 + 本机算力**下按原文执行;不能则给出最小修改。
 
@@ -74,7 +74,7 @@ KMAR 的配对对齐在首版评审里被列为第 9 处,复核后撤回:抽查 
 | A 其他器官 | ✅ | TotalSeg-MRI 616 例、SPIDER 447、AMOS 60,均未解压 |
 | S token | 🔧 | fastMRI 脑 5 对比度 + 1.5T/3T 是 S 的主监督;SKM-TEA 单协议,S 在膝侧退化;R(U,A\|S) 的条件化只能在脑侧检验 |
 | U_B | ✅ | SKM 3D 框;fastMRI+ 2D 逐层框(关系按层用 IoA);PDGM/BMSR/ISLES 3D mask |
-| U_Q(motion/noise/aliasing) | ✅ | 仿真:fastMRI + SKM raw;真实:fastMRI+ 85 卷、KMAR |
+| U_Q(motion/noise/aliasing) | 🔧 | 仿真:fastMRI + SKM raw;真实:fastMRI+ 85 卷、KMAR。三类只是 Elster 退化分类表的一角,`_cui` 删掉了 v1.1 §3.2 的适用边界论证,须补回;覆盖面分析见 §3.8 |
 | R 真值 | 🔧 | 主真值改 tissue_id;主判据只用分割内 319 例;积液 117 例(无宿主)考弃权,韧带 39 例(ACL/PCL 未分割、亦无独立监督)作扩展分析 |
 | Relation token + 关系 Transformer | ✅ | K×M 对数:膝 6×20 级,脑 SynthSeg 粒度约 30×20,均轻量 |
 | Hard relational negatives | ✅ | 膝内外侧、脑左右半球都有标签支持 |
@@ -127,11 +127,13 @@ KMAR 的配对对齐在首版评审里被列为第 9 处,复核后撤回:抽查 
 - 数据完全就位:脑 motion/noise 出自 fastMRI 脑 raw,膝 noise 出自 fastMRI 膝 raw + SKM,held-out 膝 motion 用 SKM 仿真 + KMAR 真实。
 - KMAR 必须只做测试。
 - 病理 × 组织的组合(如 held-out 软骨病变 × 髌骨软骨)全库只有 56 例,统计力不足,只能做次级分析。
+- 退化类型可作第二种 held-out 维度:训练只见 motion/noise/aliasing,测试加 spike、zipper、Gibbs、部分傅里叶、bias field(§3.8 第二档),成本只是仿真代码。
 
 ### 3.5 Exp 5 Observability failure prediction
 
 - 仿真梯度 E^{q0} > E^{q1} > E^{q2} > E^{q3} 只能从 raw 生成(fastMRI、SKM);真实端 KMAR 单档、fastMRI+ 二值。
 - 真值与 baseline 见 §3.7;不补则贡献不独立。
+- E 对未见退化类型的泛化是现成的加分证据:E 只在三类干预上训练,在 §3.8 第二档五种上测 AURC/ECE 是否保持,证据力与 held-out Knee+Motion 同级。
 
 ### 3.6 统计功效(SKM-TEA 赌注实验)
 
@@ -166,6 +168,23 @@ X^q、X^0 为线圈合并后的幅值图;τ 按干净重复扫描的 NRMSE 分�
 
 训练 E 回归 E*,评估时以"冻结干净模型在 X^q 上关系是否仍正确"为失效事件,报 AURC/ECE/Brier。模型相对口径(冻结模型对错)作第二真值。baseline 必含 learned failure prediction(ConfidNet 类)、softmax、entropy、全局质量分。
 
+### 3.8 退化类型覆盖面(对照 Elster《Questions and Answers in MRI》的伪影分类)
+
+`_cui` 第十一节只写"artifact 第一篇只做 Motion + Noise + Aliasing",没给理由;v1.1 §3.2 的理由是 susceptibility、Gibbs、chemical shift、flow ghost 属于解剖锚定伪影,会破坏"伪影场状、与解剖无关"的先验。把 Elster 的分类按"本方法论能否处理"分三档:
+
+| 档 | 退化类型 | 能否从 raw k-space 做带真值的干预 | 盘上真实样本 |
+|---|---|---|---|
+| 已纳入 | 运动鬼影、噪声、欠采混叠/卷褶 | 能 | KMAR 运动配对;fastMRI+ 33 卷运动标记 |
+| 可廉价补入 | spike/herringbone、zipper 射频干扰、Gibbs 截断、部分傅里叶模糊、B1/bias field 不均匀 | 能,均为 k 空间或线圈合并层面的确定性操作 | 无 |
+| 解剖锚定,方法论不覆盖 | 磁敏感、化学位移、流动/搏动、层间串扰、介电效应、部分容积 | 不能,依赖物体的场图、脂水分布或血流 | 无;fastMRI+ 505 个 "Possible artifact" 框类型未标,可能混有 |
+
+后果与修法:
+- 论文会被拿分类表追问。补回 v1.1 §3.2 的适用边界论证;U_Q 改称"采集诱发、与解剖无关的退化",不用 artifact 全称。
+- 真实测试端会撞上分类外伪影。fastMRI+ 505 框须先人工标子类型,或给模型加"其他退化"类与弃权;否则 U_Q 的真实端结果解释不清。
+- E 的跨类型泛化是现成加分实验。E 只在三类干预上训练,把第二档五种作 held-out 退化类型测 E 与 R 的行为,成本只是仿真代码,证据力与 held-out Knee+Motion 同级。
+
+建议:核心 U_Q 守三类;第二档五种进 Exp 4/Exp 5 作 held-out 退化类型,不进主分类头;第三档写进 limitations,不声称覆盖。
+
 ---
 
 ## 4. 算力与存储预算(粗估)
@@ -189,10 +208,11 @@ X^q、X^0 为线圈合并后的幅值图;τ 按干净重复扫描的 NRMSE 分�
 6. BraTS 2021 → UCSF-PDGM v5(与 BraTS21 重叠 298 例,非子集;评估 PDGM 不用 BraTS 训练过的权重);MR-ART → 移出必需项;PI-CAI → 换 SPIDER 或砍。
 7. SKM-TEA 面内重采样 0.625 mm;fastMRI 脑标为 2.5D。
 8. 赌注实验用全 155 例 CV,门槛 10 个百分点;脑侧保留域来源泄漏探针。
+9. U_Q 覆盖面:补回 v1.1 §3.2 的适用边界论证,U_Q 改称"采集诱发、与解剖无关的退化";fastMRI+ 505 个 Possible artifact 框标子类型或加"其他退化"类;spike/zipper/Gibbs/部分傅里叶/bias field 作 held-out 退化类型(§3.8)。
 
 优先级 C(表述):
-9. "foundation model"措辞收窄为"结构化感知编码器";SSL 库规模如实写 ~9k 卷。
-10. 组合泛化基准定位为实体级(解剖 × 异常 × 伪影),引用 CrossMed 崩塌数据作动机(v1.1 §2)。
+10. "foundation model"措辞收窄为"结构化感知编码器";SSL 库规模如实写 ~9k 卷。
+11. 组合泛化基准定位为实体级(解剖 × 异常 × 伪影),引用 CrossMed 崩塌数据作动机(v1.1 §2)。
 
 ---
 
@@ -220,6 +240,7 @@ X^q、X^0 为线圈合并后的幅值图;τ 按干净重复扫描的 NRMSE 分�
 | Q7 | KMAR 角色 | 训练校准 / 只做测试 | 只做测试;多数配对可直接用,约 5% 须配准 |
 | Q8 | MICCAI 2027 | 赶 / 不赶 | 不以会议为纲;M1 按 §6 跑,10 月底看结果再定 |
 | Q9 | 清理授权 | 删 2.4G truncated 残留与 820G 原 tar;解压 KMAR part1、BMSR、ISLES、TotalSeg、SPIDER | 建议做;删除不可逆,须用户点头 |
+| Q10 | 退化类型覆盖面 | 只守三类 / 三类 + 五种 held-out / 全覆盖 | 三类为核心并补回适用边界论证;spike、zipper、Gibbs、部分傅里叶、bias field 五种作 held-out 退化类型进 Exp 4/5;解剖锚定类写进 limitations(§3.8) |
 
 ---
 
@@ -237,3 +258,5 @@ X^q、X^0 为线圈合并后的幅值图;τ 按干净重复扫描的 NRMSE 分�
 - 新增风险:剥颅域 vs 带颅骨域的数据集身份泄漏。
 - fastMRI 脑覆盖 80 mm 改为下限。
 - 首版复核过后仍成立的:token 数与存储估算、SKM-TEA 各层实例数、fastMRI+ 标注卷全部有 raw、多线圈运动仿真论证、GPU 与 BART/MONAI/nnunetv2 可用性。
+
+同日第三次补充(退化类型覆盖面):首版与复核版都沿用了"U_Q 只做三类"的限定而未审视其边界。新增 §3.8 对照 Elster 分类分三档;§2 的 U_Q 行改为 🔧;Exp 4/Exp 5 各加一条 held-out 退化类型;§5 加第 9 条;§7 加 Q10。
