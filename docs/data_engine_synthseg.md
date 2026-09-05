@@ -27,7 +27,7 @@ PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python scripts/run_sy
 - 输出:`/data2/congcong/data/FM_data/derived/synthseg/<dataset>/seg_native/<stem>_seg.nii.gz`(原生网格,int16),`chunks/NNNNN/seg_1mm/`(SynthSeg 1 mm 输出),`chunks/NNNNN/volumes.csv`,`manifest.csv`(每卷一行,status ok/missing/error)。断点续跑:已存在 seg_native 的卷自动跳过。
 - 速度:CPU 12 线程约 22–26 s/卷(文件夹模式,含分摊的模型加载);997 卷 4 worker 约 1.5–2 h;PDGM 501 + BMSR 461 + HCP 1113 用 2 worker 约 9 h。
 - 2026-09-05 23:20 启动:fastMRI 标注卷(日志 `derived/synthseg/fastmri_brain/run_annotated_*.log`)与 PDGM→BMSR→HCP 链(日志 `derived/synthseg/run_nii_chain_*.log`)。
-- 选用的输入:PDGM `*_T1.nii.gz`(各序列同空间,一套标签通用);BMSR `*_T1pre.nii.gz`(0.86×0.86×1.5 mm,seg 同网格);HCP `T1w_acpc_dc_restore_brain.nii`(0.7 mm,输出回采到 0.7 mm)。ISLES 未跑:FLAIR 与 DWI/ADC 不在同一空间,病灶 mask 在 DWI 空间,要先定在哪个空间做解剖。
+- 选用的输入:PDGM `*_T1.nii.gz`(各序列同空间,一套标签通用);BMSR `*_T1pre.nii.gz`(0.86×0.86×1.5 mm,seg 同网格);HCP `T1w_acpc_dc_restore_brain.nii`(0.7 mm,输出回采到 0.7 mm)。ISLES:FLAIR(0.71 mm,RAS)与 DWI/ADC + 病灶 mask(2 mm,LAS)不在同一网格;实测 SynthSeg-robust **直接在 2 mm DWI 上**出全 32 类且解剖合理(case 0001 抽检图 `~/figs/anatobind/synthseg_robust_isles0001_dwi.png`),故按 `*_dwi.nii.gz` 跑,标签直接落在 mask 网格上;已排在 PDGM→BMSR→HCP 链之后自动启动(日志 `derived/synthseg/run_isles_*.log`)。
 
 ## 标签本体(SynthSeg 2.0,33 类)
 
