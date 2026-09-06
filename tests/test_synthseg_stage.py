@@ -8,7 +8,7 @@ from tests.test_fastmri_nifti import HEADER_XML
 
 
 def _fake_h5(path, seed):
-    rss = np.random.RandomState(seed).rand(3, 8, 6).astype(np.float32)
+    rss = np.random.RandomState(seed).rand(12, 8, 6).astype(np.float32)
     with h5py.File(path, "w") as f:
         f.create_dataset("reconstruction_rss", data=rss)
         f.create_dataset("ismrmrd_header", data=np.bytes_(HEADER_XML.encode()))

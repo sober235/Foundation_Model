@@ -5,7 +5,7 @@ from pathlib import Path
 
 import nibabel as nib
 
-from anatobind.data_engine.fastmri import rss_h5_to_nifti
+from anatobind.data_engine.fastmri import MIN_SLICES, TooFewSlices, rss_h5_to_nifti
 from anatobind.data_engine.labels import resample_labels_to_reference
 
 SPLIT_DIRS = ("multicoil_train", "multicoil_val")
@@ -68,6 +68,7 @@ def stage_niftis(paths, stage_dir):
 
     fastMRI ``.h5`` files are converted to ``<stem>.nii.gz``; ``.nii``/``.nii.gz``
     files are symlinked with their own extension. Existing staged files are kept.
+    Stacks with too few slices yield ``None`` instead of a path.
     """
     stage_dir = Path(stage_dir)
     stage_dir.mkdir(parents=True, exist_ok=True)
@@ -77,7 +78,11 @@ def stage_niftis(paths, stage_dir):
         if p.name.endswith(".h5"):
             target = stage_dir / f"{stem_of(p)}.nii.gz"
             if not target.exists():
-                rss_h5_to_nifti(p, target)
+                try:
+                    rss_h5_to_nifti(p, target)
+                except TooFewSlices:
+                    out.append(None)
+                    continue
         else:
             target = stage_dir / p.name
             if not (target.exists() or target.is_symlink()):
@@ -133,11 +138,19 @@ def run_batch(paths, work_dir, synthseg_home, python, threads, runner, robust=Tr
     native_dir = Path(native_dir) if native_dir is not None else work_dir / "seg_native"
     staged = stage_niftis(paths, stage_dir)
     seg_dir.mkdir(parents=True, exist_ok=True)
-    runner(synthseg_command(in_dir=stage_dir, out_dir=seg_dir, resample_dir=None,
-                            vol_csv=work_dir / "volumes.csv", threads=threads,
-                            synthseg_home=synthseg_home, python=python, robust=robust, cpu=cpu))
+    if any(s is not None for s in staged):
+        try:
+            runner(synthseg_command(in_dir=stage_dir, out_dir=seg_dir, resample_dir=None,
+                                    vol_csv=work_dir / "volumes.csv", threads=threads,
+                                    synthseg_home=synthseg_home, python=python, robust=robust, cpu=cpu))
+        except Exception as exc:  # SynthSeg exits non-zero if one image fails; harvest the rest
+            (work_dir / "runner_error.txt").write_text(f"{type(exc).__name__}: {exc}\n")
     rows = []
     for src, nii in zip(paths, staged):
+        if nii is None:
+            rows.append({"stem": stem_of(src), "h5": str(src), "nii": "", "seg_1mm": "", "seg_native": "",
+                         "status": f"skipped: fewer than {MIN_SLICES} slices"})
+            continue
         stem = stem_of(nii)
         seg_1mm = seg_dir / f"{stem}_synthseg{_nii_ext(nii)}"
         row = {"stem": stem, "h5": str(src), "nii": str(nii), "seg_1mm": "", "seg_native": "", "status": "missing"}
