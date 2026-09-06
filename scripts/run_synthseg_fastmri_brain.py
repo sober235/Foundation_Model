@@ -47,6 +47,8 @@ def parse_args():
     p.add_argument("--synthseg-home", type=Path, default=Path.home() / "src/SynthSeg")
     p.add_argument("--python", type=Path, default=Path.home() / "anaconda3/envs/synthseg/bin/python")
     p.add_argument("--annotated-only", action="store_true", help="only stems present in the fastMRI+ csv")
+    p.add_argument("--stems-file", type=Path, default=None,
+                   help="fastMRI h5 mode: restrict to the stems listed in this file (one per line, a 'file' header is ignored)")
     p.add_argument("--glob", nargs="+", default=None, help="NIfTI inputs (glob patterns) instead of fastMRI h5")
     p.add_argument("--stem-prefix-parent", type=int, default=0,
                    help="prefix the stem with N parent folder names (e.g. HCP: 100206_T1w_acpc_dc_restore_brain)")
@@ -126,7 +128,10 @@ def main():
             todo = todo[: a.limit]
         inputs = [by_stem[s] for s in todo]
     else:
-        stems = annotated_files(a.annotations) if a.annotated_only else all_stems(a.kspace_root)
+        if a.stems_file:
+            stems = [s.strip() for s in a.stems_file.read_text().splitlines() if s.strip() and s.strip() != "file"]
+        else:
+            stems = annotated_files(a.annotations) if a.annotated_only else all_stems(a.kspace_root)
         todo = pending_stems(stems, native_dir)
         if a.limit:
             todo = todo[: a.limit]
