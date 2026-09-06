@@ -13,7 +13,10 @@ M0 阻塞项的落地记录,2026-09-05。全库脑侧细分解剖标签为零,�
 
 - `reconstruction_rss` 形状 (slice, row, col);行 = 读出轴(ISMRMRD reconSpace x),列 = 相位轴(y)。面内间距 = FOV/矩阵 = 220/320 = 0.6875 mm;层间距 = reconSpace fov_z = 5 mm。官方 fastMRI 脑 DICOM 证实 SpacingBetweenSlices = SliceThickness = 5,无层间隙(encodedSpace 的 z=7.5 是编码空间数值,不是层间距)。
 - 渲染核实:行向下 = 前→后;切片序号增大 = 下→上。**左右手性未知**,按放射学约定假设(图像左 = 患者右),NIfTI 轴码 (L, P, S)。这条假设影响 SynthSeg 左/右标签的命名,不影响绑定关系本身;PDGM/BMSR/HCP 有真实仿射,不受影响。待用官方 DICOM 与 h5 做一次内容匹配来定。
-- fastMRI 脑 16 层 × 5 mm ≈ 80 mm,实测两卷都是从侧脑室水平到颅顶:小脑、脑干、颞叶多数卷不在视野内,A 解码器的 no-object 是必需的。
+- fastMRI 脑 16 层 × 5 mm ≈ 80 mm,实测两卷都是从侧脑室水平到颅顶:小脑、脑干、颞叶多数卷不在视野内,A 解码器的 no-object 是必需的。层数分布(全部 5847 卷):16 层 5441、14 层 342、12 层 57、10 层 6、2 层 1。
+- **像素间距一律按 encodedSpace 的 FOV/矩阵算**(readout 过采样已同时含在两者里),不用 reconSpace。原因:低分辨率 FLAIR 系列(AXFLAIR_202/203/205/206,标注卷里 100 卷)h5 里的 RSS 是采集分辨率(如 276×276 @ 0.86 mm),而 reconSpace 是厂商 2 倍插值后的 512×512 @ 0.43 mm;按 reconSpace 算会把脑缩小一半。合法性检查改为"RSS 不得大于编码矩阵"。
+- **SynthSeg 把最后一维 ≤ 10 当成多通道 2D 图**(`utils.get_dims(max_channels=10)`),10 层的卷会崩;≤ 3 层它直接拒绝。转换器对 4–11 层的卷两端对称补零到 12 层(真实层的世界坐标不变,回采样时自动落回原网格),< 4 层的卷记为 skipped(全库只有 1 卷:AXT1_201_6002824)。
+- SynthSeg 文件夹模式下一卷失败就以非零码退出,但其余卷的分割已经落盘;runner 捕获这个失败并照常收割,只把缺的那卷记 missing,不再整块 25 卷连坐(09-05 夜里的第一轮就是这样丢了 200 卷,其中 192 卷是连坐)。
 
 ## 运行
 
