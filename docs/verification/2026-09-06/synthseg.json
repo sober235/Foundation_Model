@@ -1,0 +1,2608 @@
+{
+  "checked_at": "2026-09-06T22:36:02.902365+08:00",
+  "scope": "All manifests/output headers/native-reference grid consistency; deterministic full-payload samples. Not anatomical quality validation.",
+  "datasets": {
+    "fastmri_brain": {
+      "rows": 997,
+      "status_counts": {
+        "ok": 996,
+        "skipped: fewer than 4 slices": 1
+      },
+      "manifest_sha256": "b65ad37bd0251d6e7e8e11b24cba64ea0782eb4f3d4f97320b0cb5c5537eb8cd",
+      "files": 996,
+      "zero_byte": 0,
+      "missing_outputs": 0,
+      "unlisted_outputs": 0,
+      "duplicate_stems": [],
+      "non_ok": [
+        {
+          "stem": "file_brain_AXT1_201_6002824",
+          "status": "skipped: fewer than 4 slices"
+        }
+      ],
+      "header_checked": 996,
+      "header_failures": [
+        {
+          "stem": "file_brain_AXFLAIR_201_6002888",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002894",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002909",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002914",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002933",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002956",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            290,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002968",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002980",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6002995",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_201_6003003",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000423",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000421",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            290,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000418",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000422",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000424",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000427",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            208,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000436",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000428",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000420",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000440",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000447",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            224,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000431",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000450",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000456",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000460",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            224,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000455",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000468",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000464",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000480",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000472",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000469",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000481",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000474",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000476",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000483",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            208,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000498",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000489",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000499",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000477",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000502",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            224,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000486",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000493",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000510",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000492",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000496",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000508",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000522",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000517",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            224,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000511",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000521",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000520",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000526",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000507",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000531",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000528",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            208,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000524",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000536",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000529",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000533",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000530",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000542",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            208,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000539",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000553",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000554",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000556",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000548",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000543",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000558",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000555",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000563",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000557",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000551",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000562",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000559",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_202_6000561",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            260,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_206_6000262",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            224,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXFLAIR_206_6000260",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            224,
+            256,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_2020393",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            330,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000284",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000286",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000279",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000290",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000275",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000296",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000294",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000303",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000306",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000292",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000288",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000299",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000317",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000308",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000315",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000328",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000319",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000305",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000333",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000336",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000326",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000324",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000347",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000345",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            12
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000349",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000363",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000353",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000372",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000342",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000384",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000374",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000392",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000402",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000382",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000398",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000411",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000389",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            290,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000408",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000432",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000416",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000448",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000404",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000438",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000419",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000445",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000470",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000490",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000413",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000500",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            14
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000451",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000478",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000503",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000537",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000512",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000518",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000574",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000515",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000544",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000591",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000587",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000534",
+          "issues": [
+            "native_affine_mismatch"
+          ],
+          "shape": [
+            270,
+            320,
+            16
+          ],
+          "dtype": "int16",
+          "thin": false
+        }
+      ],
+      "thin_stems": [
+        "file_brain_AXT1_201_6002783",
+        "file_brain_AXT1_202_2020444",
+        "file_brain_AXT1_202_6000332"
+      ],
+      "full_payload_samples": [
+        {
+          "stem": "file_brain_AXFLAIR_200_6002425",
+          "shape": [
+            320,
+            320,
+            16
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            11,
+            24,
+            26,
+            41,
+            42,
+            43,
+            50,
+            51
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 309592,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "file_brain_AXT1POST_200_6002149",
+          "shape": [
+            320,
+            320,
+            14
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            11,
+            12,
+            16,
+            24,
+            41,
+            42,
+            43,
+            53,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 258544,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "file_brain_AXT1_206_6000228",
+          "shape": [
+            320,
+            320,
+            16
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            11,
+            12,
+            16,
+            24,
+            26,
+            41,
+            42,
+            43,
+            50
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 328865,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "file_brain_AXT1_201_6002783",
+          "shape": [
+            320,
+            320,
+            10
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            24,
+            41,
+            42,
+            51
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 195894,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "file_brain_AXT1_202_2020444",
+          "shape": [
+            320,
+            320,
+            10
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            24,
+            41,
+            42,
+            51
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 88946,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "file_brain_AXT1_202_6000332",
+          "shape": [
+            320,
+            320,
+            10
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            12,
+            16,
+            24,
+            26,
+            41,
+            42,
+            51
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 42315,
+          "gzip_crc": "pass"
+        }
+      ]
+    },
+    "pdgm": {
+      "rows": 501,
+      "status_counts": {
+        "ok": 501
+      },
+      "manifest_sha256": "23a55e8e9db07d12efcbf63793f18e64c07d292960797adcb609676a0cfb3110",
+      "files": 501,
+      "zero_byte": 0,
+      "missing_outputs": 0,
+      "unlisted_outputs": 0,
+      "duplicate_stems": [],
+      "non_ok": [],
+      "header_checked": 501,
+      "header_failures": [],
+      "thin_stems": [],
+      "full_payload_samples": [
+        {
+          "stem": "UCSF-PDGM-0004_T1",
+          "shape": [
+            240,
+            240,
+            155
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 1415247,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "UCSF-PDGM-0288_T1",
+          "shape": [
+            240,
+            240,
+            155
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 1848795,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "UCSF-PDGM-0541_T1",
+          "shape": [
+            240,
+            240,
+            155
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 1360458,
+          "gzip_crc": "pass"
+        }
+      ]
+    },
+    "bmsr": {
+      "rows": 461,
+      "status_counts": {
+        "ok": 461
+      },
+      "manifest_sha256": "84c05ce7b6617061a5b4a30f899a301059538e3326c1caad87bed198748b8adf",
+      "files": 461,
+      "zero_byte": 0,
+      "missing_outputs": 0,
+      "unlisted_outputs": 0,
+      "duplicate_stems": [],
+      "non_ok": [],
+      "header_checked": 461,
+      "header_failures": [],
+      "thin_stems": [],
+      "full_payload_samples": [
+        {
+          "stem": "100101A_T1pre",
+          "shape": [
+            256,
+            256,
+            112
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 1445601,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "100248C_T1pre",
+          "shape": [
+            320,
+            320,
+            104
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 1854696,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "100414B_T1pre",
+          "shape": [
+            512,
+            512,
+            50
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 1369123,
+          "gzip_crc": "pass"
+        }
+      ]
+    },
+    "hcp": {
+      "rows": 1113,
+      "status_counts": {
+        "ok": 1113
+      },
+      "manifest_sha256": "46bee778f1302562f2b4aaf5f9cefb941bf9f02a3d487bce8cc3b41cb6833127",
+      "files": 1113,
+      "zero_byte": 0,
+      "missing_outputs": 0,
+      "unlisted_outputs": 0,
+      "duplicate_stems": [],
+      "non_ok": [],
+      "header_checked": 1113,
+      "header_failures": [],
+      "thin_stems": [],
+      "full_payload_samples": [
+        {
+          "stem": "100206_T1w_T1w_acpc_dc_restore_brain",
+          "shape": [
+            260,
+            311,
+            260
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 5119955,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "211316_T1w_T1w_acpc_dc_restore_brain",
+          "shape": [
+            260,
+            311,
+            260
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 3525987,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "996782_T1w_T1w_acpc_dc_restore_brain",
+          "shape": [
+            260,
+            311,
+            260
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 4731678,
+          "gzip_crc": "pass"
+        }
+      ]
+    },
+    "isles": {
+      "rows": 250,
+      "status_counts": {
+        "ok": 250
+      },
+      "manifest_sha256": "0376058465970bee5c9591038c212e942ed62be1c193dbb0f1aab2d3d799f386",
+      "files": 250,
+      "zero_byte": 0,
+      "missing_outputs": 0,
+      "unlisted_outputs": 0,
+      "duplicate_stems": [],
+      "non_ok": [],
+      "header_checked": 250,
+      "header_failures": [],
+      "thin_stems": [],
+      "full_payload_samples": [
+        {
+          "stem": "sub-strokecase0001_ses-0001_dwi",
+          "shape": [
+            112,
+            112,
+            73
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 143819,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "sub-strokecase0126_ses-0001_dwi",
+          "shape": [
+            112,
+            112,
+            72
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 171295,
+          "gzip_crc": "pass"
+        },
+        {
+          "stem": "sub-strokecase0250_ses-0001_dwi",
+          "shape": [
+            128,
+            128,
+            25
+          ],
+          "labels": [
+            0,
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            24,
+            26,
+            28,
+            41,
+            42,
+            43,
+            44,
+            46,
+            47,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            58,
+            60
+          ],
+          "unexpected_labels": [],
+          "nonzero_voxels": 75318,
+          "gzip_crc": "pass"
+        }
+      ]
+    }
+  },
+  "completed_at": "2026-09-06T22:36:21.040442+08:00"
+}

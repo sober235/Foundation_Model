@@ -1,0 +1,2455 @@
+{
+  "checked_at": "2026-09-06T14:38:22.180656+00:00",
+  "method": "Read RSS shape and ismrmrd_header only; load NIfTI headers only; compute exact current and pre-534ff0a affine formulas; no full RSS/labels loaded, no data rewritten. Comparison rtol=0 atol=1e-4.",
+  "counts": {
+    "checked": 996,
+    "native_matches_current": 857,
+    "native_matches_old": 905,
+    "stage_matches_current": 857,
+    "stage_matches_old": 905,
+    "native_shape_matches_current": 996,
+    "stage_shape_matches_current": 996,
+    "native_matches_stored_stage_reference": 996
+  },
+  "mismatch_count": 139,
+  "mismatch_series": {
+    "AXFLAIR_201": 10,
+    "AXFLAIR_202": 65,
+    "AXFLAIR_206": 2,
+    "AXT1_202": 62
+  },
+  "mismatch_matches_old_count": 139,
+  "mismatch_stage_matches_old_count": 139,
+  "representatives": {
+    "AXFLAIR_201": {
+      "stem": "file_brain_AXFLAIR_201_6002888",
+      "paths": {
+        "stem": "file_brain_AXFLAIR_201_6002888",
+        "h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002888.h5",
+        "nii": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21635/stage/file_brain_AXFLAIR_201_6002888.nii.gz",
+        "seg_1mm": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21635/seg_1mm/file_brain_AXFLAIR_201_6002888_synthseg.nii.gz",
+        "seg_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002888_seg.nii.gz",
+        "status": "ok"
+      },
+      "raw_rss_shape_slice_row_col": [
+        16,
+        320,
+        260
+      ],
+      "metadata": {
+        "nx": 320,
+        "ny": 260,
+        "fov_x_mm": 220.0,
+        "fov_y_mm": 178.75,
+        "fov_z_mm": 5.0,
+        "enc_nx": 640,
+        "enc_ny": 262,
+        "enc_fov_x_mm": 440.0,
+        "enc_fov_y_mm": 180.7162,
+        "enc_fov_z_mm": 7.5
+      },
+      "current_row_col_slice_mm": [
+        0.6875,
+        0.6897564885496182,
+        5.0
+      ],
+      "old_row_col_slice_mm": [
+        0.6875,
+        0.6875,
+        5.0
+      ],
+      "current_native_shape_col_row_slice": [
+        260,
+        320,
+        16
+      ],
+      "stored_stage_shape": [
+        260,
+        320,
+        16
+      ],
+      "stored_native_shape": [
+        260,
+        320,
+        16
+      ],
+      "current_native_affine": [
+        [
+          -0.6897564885496182,
+          0.0,
+          0.0,
+          89.32346526717556
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_native_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "current_stage_affine": [
+        [
+          -0.6897564885496182,
+          0.0,
+          0.0,
+          89.32346526717556
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_stage_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_stage_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_native_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "file_mtime": {
+        "nii": "2026-09-05T15:20:37.926243+00:00",
+        "seg_native": "2026-09-05T15:34:00.932936+00:00",
+        "seg_1mm": "2026-09-05T15:25:48.492574+00:00"
+      },
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.292215267175564
+    },
+    "AXFLAIR_202": {
+      "stem": "file_brain_AXFLAIR_202_6000418",
+      "paths": {
+        "stem": "file_brain_AXFLAIR_202_6000418",
+        "h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000418.h5",
+        "nii": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000418.nii.gz",
+        "seg_1mm": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/seg_1mm/file_brain_AXFLAIR_202_6000418_synthseg.nii.gz",
+        "seg_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000418_seg.nii.gz",
+        "status": "ok"
+      },
+      "raw_rss_shape_slice_row_col": [
+        16,
+        320,
+        260
+      ],
+      "metadata": {
+        "nx": 320,
+        "ny": 260,
+        "fov_x_mm": 220.0,
+        "fov_y_mm": 178.75,
+        "fov_z_mm": 5.0,
+        "enc_nx": 640,
+        "enc_ny": 264,
+        "enc_fov_x_mm": 440.0,
+        "enc_fov_y_mm": 181.4312,
+        "enc_fov_z_mm": 7.5
+      },
+      "current_row_col_slice_mm": [
+        0.6875,
+        0.6872393939393939,
+        5.0
+      ],
+      "old_row_col_slice_mm": [
+        0.6875,
+        0.6875,
+        5.0
+      ],
+      "current_native_shape_col_row_slice": [
+        260,
+        320,
+        16
+      ],
+      "stored_stage_shape": [
+        260,
+        320,
+        16
+      ],
+      "stored_native_shape": [
+        260,
+        320,
+        16
+      ],
+      "current_native_affine": [
+        [
+          -0.6872393939393939,
+          0.0,
+          0.0,
+          88.99750151515151
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_native_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "current_stage_affine": [
+        [
+          -0.6872393939393939,
+          0.0,
+          0.0,
+          88.99750151515151
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_stage_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_stage_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_native_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          89.03125
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "file_mtime": {
+        "nii": "2026-09-05T15:36:10.527595+00:00",
+        "seg_native": "2026-09-05T15:50:44.648913+00:00",
+        "seg_1mm": "2026-09-05T15:38:49.690637+00:00"
+      },
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    "AXFLAIR_206": {
+      "stem": "file_brain_AXFLAIR_206_6000260",
+      "paths": {
+        "stem": "file_brain_AXFLAIR_206_6000260",
+        "h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_206_6000260.h5",
+        "nii": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21646/stage/file_brain_AXFLAIR_206_6000260.nii.gz",
+        "seg_1mm": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21646/seg_1mm/file_brain_AXFLAIR_206_6000260_synthseg.nii.gz",
+        "seg_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_206_6000260_seg.nii.gz",
+        "status": "ok"
+      },
+      "raw_rss_shape_slice_row_col": [
+        16,
+        256,
+        224
+      ],
+      "metadata": {
+        "nx": 256,
+        "ny": 224,
+        "fov_x_mm": 220.0,
+        "fov_y_mm": 192.5,
+        "fov_z_mm": 5.0,
+        "enc_nx": 512,
+        "enc_ny": 234,
+        "enc_fov_x_mm": 440.0,
+        "enc_fov_y_mm": 201.74,
+        "enc_fov_z_mm": 7.5
+      },
+      "current_row_col_slice_mm": [
+        0.859375,
+        0.8621367521367522,
+        5.0
+      ],
+      "old_row_col_slice_mm": [
+        0.859375,
+        0.859375,
+        5.0
+      ],
+      "current_native_shape_col_row_slice": [
+        224,
+        256,
+        16
+      ],
+      "stored_stage_shape": [
+        224,
+        256,
+        16
+      ],
+      "stored_native_shape": [
+        224,
+        256,
+        16
+      ],
+      "current_native_affine": [
+        [
+          -0.8621367521367522,
+          0.0,
+          0.0,
+          96.12824786324788
+        ],
+        [
+          0.0,
+          -0.859375,
+          0.0,
+          109.5703125
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_native_affine": [
+        [
+          -0.859375,
+          0.0,
+          0.0,
+          95.8203125
+        ],
+        [
+          0.0,
+          -0.859375,
+          0.0,
+          109.5703125
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "current_stage_affine": [
+        [
+          -0.8621367521367522,
+          0.0,
+          0.0,
+          96.12824786324788
+        ],
+        [
+          0.0,
+          -0.859375,
+          0.0,
+          109.5703125
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_stage_affine": [
+        [
+          -0.859375,
+          0.0,
+          0.0,
+          95.8203125
+        ],
+        [
+          0.0,
+          -0.859375,
+          0.0,
+          109.5703125
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_stage_affine": [
+        [
+          -0.859375,
+          0.0,
+          0.0,
+          95.8203125
+        ],
+        [
+          0.0,
+          -0.859375,
+          0.0,
+          109.5703125
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_native_affine": [
+        [
+          -0.859375,
+          0.0,
+          0.0,
+          95.8203125
+        ],
+        [
+          0.0,
+          -0.859375,
+          0.0,
+          109.5703125
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "file_mtime": {
+        "nii": "2026-09-05T15:50:53.182928+00:00",
+        "seg_native": "2026-09-05T16:05:57.661433+00:00",
+        "seg_1mm": "2026-09-05T15:51:48.818979+00:00"
+      },
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.3079353632478785
+    },
+    "AXT1_202": {
+      "stem": "file_brain_AXT1_202_2020393",
+      "paths": {
+        "stem": "file_brain_AXT1_202_2020393",
+        "h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_2020393.h5",
+        "nii": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21665/stage/file_brain_AXT1_202_2020393.nii.gz",
+        "seg_1mm": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21665/seg_1mm/file_brain_AXT1_202_2020393_synthseg.nii.gz",
+        "seg_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_2020393_seg.nii.gz",
+        "status": "ok"
+      },
+      "raw_rss_shape_slice_row_col": [
+        16,
+        320,
+        330
+      ],
+      "metadata": {
+        "nx": 320,
+        "ny": 330,
+        "fov_x_mm": 220.0,
+        "fov_y_mm": 226.875,
+        "fov_z_mm": 5.0,
+        "enc_nx": 640,
+        "enc_ny": 332,
+        "enc_fov_x_mm": 440.0,
+        "enc_fov_y_mm": 227.7825,
+        "enc_fov_z_mm": 7.5
+      },
+      "current_row_col_slice_mm": [
+        0.6875,
+        0.6860918674698795,
+        5.0
+      ],
+      "old_row_col_slice_mm": [
+        0.6875,
+        0.6875,
+        5.0
+      ],
+      "current_native_shape_col_row_slice": [
+        330,
+        320,
+        16
+      ],
+      "stored_stage_shape": [
+        330,
+        320,
+        16
+      ],
+      "stored_native_shape": [
+        330,
+        320,
+        16
+      ],
+      "current_native_affine": [
+        [
+          -0.6860918674698795,
+          0.0,
+          0.0,
+          112.86211219879517
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_native_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          113.09375
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "current_stage_affine": [
+        [
+          -0.6860918674698795,
+          0.0,
+          0.0,
+          112.86211219879517
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "old_stage_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          113.09375
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_stage_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          113.09375
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "stored_native_affine": [
+        [
+          -0.6875,
+          0.0,
+          0.0,
+          113.09375
+        ],
+        [
+          0.0,
+          -0.6875,
+          0.0,
+          109.65625
+        ],
+        [
+          0.0,
+          0.0,
+          5.0,
+          -37.5
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "file_mtime": {
+        "nii": "2026-09-05T17:05:47.507823+00:00",
+        "seg_native": "2026-09-06T04:43:02.985683+00:00",
+        "seg_1mm": "2026-09-05T17:10:23.616748+00:00"
+      },
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.23163780120482613
+    }
+  },
+  "mismatches": [
+    {
+      "stem": "file_brain_AXFLAIR_201_6002888",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.292215267175564
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002894",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.292215267175564
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002909",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.292215267175564
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002914",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.09750310218977631
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002933",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.292215267175564
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002956",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.2500140939597344
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002968",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.292215267175564
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002980",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.292215267175564
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002995",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.09750310218977631
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6003003",
+      "series": "AXFLAIR_201",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.0886177007299267
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000418",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000420",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000421",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.012736378205133292
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000422",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000423",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000424",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000427",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.24605432242989878
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000428",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000431",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000436",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000440",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000447",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.3219324252136744
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000450",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000455",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000456",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000460",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.3079353632478785
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000464",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000468",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000469",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000472",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000474",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000476",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000477",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000480",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000481",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000483",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.24605432242989878
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000486",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000489",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000492",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000493",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000496",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000498",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000499",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000502",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.3079353632478785
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000507",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000508",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000510",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000511",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000517",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.3079353632478785
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000520",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000521",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000522",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000524",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000526",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000528",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.24605432242989878
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000529",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000530",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000531",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000533",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000536",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000539",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000542",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.24605432242989878
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000543",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000548",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000551",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000553",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03526912878787414
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000554",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000555",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000556",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000557",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000558",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000559",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000561",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000562",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000563",
+      "series": "AXFLAIR_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.03374848484848769
+    },
+    {
+      "stem": "file_brain_AXFLAIR_206_6000260",
+      "series": "AXFLAIR_206",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.3079353632478785
+    },
+    {
+      "stem": "file_brain_AXFLAIR_206_6000262",
+      "series": "AXFLAIR_206",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.3079353632478785
+    },
+    {
+      "stem": "file_brain_AXT1_202_2020393",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.23163780120482613
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000275",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000279",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000284",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000286",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000288",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000290",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000292",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000294",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000296",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000299",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000303",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000305",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000306",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000308",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000315",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000317",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000319",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000324",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000326",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000328",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000333",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000336",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000342",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000345",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000347",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000349",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000353",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000363",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000372",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000374",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000382",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000384",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000389",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.18710770547944833
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000392",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000398",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.2410615808823593
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000402",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000404",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000408",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000411",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000413",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000416",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000419",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000432",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000438",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000445",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000448",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.2310190020393037
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000451",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000470",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000478",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000490",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000500",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000503",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000512",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000515",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000518",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000534",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000537",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000544",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000574",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000587",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000591",
+      "series": "AXT1_202",
+      "native_matches_current": false,
+      "native_matches_old": true,
+      "stage_matches_current": false,
+      "stage_matches_old": true,
+      "native_shape_matches_current": true,
+      "stage_shape_matches_current": true,
+      "max_absolute_affine_difference_mm": 0.22098547794116996
+    }
+  ],
+  "mismatch_magnitude": {
+    "max_abs_affine_entry_delta_range": [
+      0.012736378205133292,
+      0.3219324252136744
+    ],
+    "max_abs_pixel_spacing_delta_mm_range": [
+      8.814102564103088e-05,
+      0.002887286324786298
+    ],
+    "max_relative_pixel_spacing_delta_percent_range": [
+      0.012818869375721824,
+      0.32714277967331046
+    ],
+    "largest_affine_delta_stem": "file_brain_AXFLAIR_202_6000447"
+  }
+}
