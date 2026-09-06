@@ -3,9 +3,11 @@ import csv
 import os
 from pathlib import Path
 
+import h5py
 import nibabel as nib
+import numpy as np
 
-from anatobind.data_engine.fastmri import MIN_SLICES, TooFewSlices, rss_h5_to_nifti
+from anatobind.data_engine.fastmri import MIN_SLICES, TooFewSlices, rss_affine, rss_h5_to_nifti
 from anatobind.data_engine.labels import resample_labels_to_reference
 
 SPLIT_DIRS = ("multicoil_train", "multicoil_val")
@@ -101,6 +103,25 @@ def native_labels(seg_path, ref_path, out_path):
     return out_path
 
 
+def native_reference(src, staged_nii):
+    """Grid the native labels must live on.
+
+    Normally the staged NIfTI itself. For fastMRI stacks that were zero-padded
+    for SynthSeg, it is the original slice count with the same centred affine,
+    so the labels come back on the h5's own (slice, row, col) grid.
+    """
+    img = nib.load(str(staged_nii))
+    if not str(src).endswith(".h5"):
+        return img
+    with h5py.File(src, "r") as f:
+        n_orig = f["reconstruction_rss"].shape[0]
+    if n_orig == img.shape[2]:
+        return img
+    col_sp, row_sp, slice_sp = (float(z) for z in img.header.get_zooms()[:3])
+    shape = (img.shape[0], img.shape[1], n_orig)
+    return nib.Nifti1Image(np.zeros(shape, dtype=np.float32), rss_affine(row_sp, col_sp, slice_sp, shape=shape))
+
+
 def chunked(seq, n):
     """Split ``seq`` into consecutive lists of at most ``n`` items."""
     seq = list(seq)
@@ -155,7 +176,7 @@ def run_batch(paths, work_dir, synthseg_home, python, threads, runner, robust=Tr
         seg_1mm = seg_dir / f"{stem}_synthseg{_nii_ext(nii)}"
         row = {"stem": stem, "h5": str(src), "nii": str(nii), "seg_1mm": "", "seg_native": "", "status": "missing"}
         if seg_1mm.exists():
-            native = native_labels(seg_1mm, nii, native_dir / f"{stem}_seg.nii.gz")
+            native = native_labels(seg_1mm, native_reference(src, nii), native_dir / f"{stem}_seg.nii.gz")
             row.update(seg_1mm=str(seg_1mm), seg_native=str(native), status="ok")
         rows.append(row)
     write_manifest(rows, work_dir / "manifest.csv")

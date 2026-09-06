@@ -73,6 +73,23 @@ def test_run_batch_harvests_outputs_written_before_the_runner_failed(tmp_path):
     assert [r["status"] for r in rows] == ["ok", "missing"]
 
 
+def test_native_labels_of_padded_thin_stack_land_on_the_original_grid(tmp_path):
+    # A 10-slice stack is padded to 12 for SynthSeg, but the native labels must
+    # come back on the original 10-slice grid with the original world coordinates.
+    from anatobind.data_engine.fastmri import rss_affine
+
+    rss = np.random.RandomState(3).rand(10, 8, 6).astype(np.float32)
+    with h5py.File(tmp_path / "file_brain_thin10.h5", "w") as f:
+        f.create_dataset("reconstruction_rss", data=rss)
+        f.create_dataset("ismrmrd_header", data=np.bytes_(HEADER_XML.encode()))
+    rows = run_batch([tmp_path / "file_brain_thin10.h5"], tmp_path / "work", synthseg_home="/s", python="/p",
+                     threads=1, runner=_fake_synthseg_runner)
+    assert rows[0]["status"] == "ok"
+    seg = nib.load(rows[0]["seg_native"])
+    assert seg.shape == (6, 8, 10)
+    assert np.allclose(seg.affine, rss_affine(0.6875, 0.5, 5.0, shape=(6, 8, 10)))
+
+
 def test_run_batch_skips_stacks_with_too_few_slices(tmp_path):
     with h5py.File(tmp_path / "file_brain_thin.h5", "w") as f:
         f.create_dataset("reconstruction_rss", data=np.zeros((2, 8, 6), dtype=np.float32))
