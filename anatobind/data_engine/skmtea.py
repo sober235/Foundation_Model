@@ -64,3 +64,27 @@ def screen_split(json_path):
             "depth": int(im["matrix_shape"][2]),
         })
     return rows
+
+
+# --- segmentation frame and loaders -------------------------------------------------------------
+import h5py  # noqa: E402
+import nibabel as nib  # noqa: E402
+
+
+def seg_nifti_to_h5_frame(arr):
+    """The dicom-track NIfTI stores (y, x, z) relative to the h5 (x, y, z) grid."""
+    return np.transpose(arr, (1, 0, 2))
+
+
+def load_seg_h5_frame(nii_path):
+    return seg_nifti_to_h5_frame(np.asarray(nib.load(str(nii_path)).dataobj)).astype(np.uint8)
+
+
+def load_target_magnitude(h5_path, echo):
+    with h5py.File(h5_path, "r") as f:
+        return np.abs(f["target"][:, :, :, echo, 0]).astype(np.float32)
+
+
+def tissue_contrast(magnitude, seg_h5):
+    inside = seg_h5 > 0
+    return float(magnitude[inside].mean() / magnitude[~inside].mean())
