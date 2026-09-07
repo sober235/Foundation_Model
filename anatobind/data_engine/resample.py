@@ -14,11 +14,21 @@ def downsample2_inplane_image(vol):
 
 
 def downsample2_inplane_labels(lab):
+    """Block majority; an exact 2-2 tie against background goes to the label.
+
+    A 2x2 block split half-and-half has no unbiased answer: giving ties to background erodes
+    every mask by 6-12.7% on the real segmentations, giving them to the label dilates by
+    4-18.5%. Ties go to the label because that bias is the conservative one for M1 -- eroded
+    cartilage would shrink box-mask overlap and handicap the seg-then-lookup arm.
+    """
     lab = np.asarray(lab)
     b = _blocks(lab).transpose(0, 2, 4, 1, 3).reshape(lab.shape[0] // 2, lab.shape[1] // 2, lab.shape[2], 4)
     n_labels = int(lab.max()) + 1
     counts = np.stack([(b == l).sum(-1) for l in range(n_labels)], axis=-1)  # (X/2, Y/2, Z, L)
-    return np.argmax(counts, axis=-1).astype(np.uint8)  # argmax returns the smallest index on ties
+    if n_labels == 1:
+        return np.zeros(counts.shape[:3], dtype=np.uint8)
+    fg = counts[..., 1:]  # background is label 0, so a plain argmax would give it every 2-2 tie
+    return np.where(fg.max(-1) >= counts[..., 0], fg.argmax(-1) + 1, 0).astype(np.uint8)
 
 
 def scale_box_inplane(box, factor=0.5):

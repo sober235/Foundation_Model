@@ -28,9 +28,16 @@ def test_single_label_tissue_reports_single():
     assert r["label"] == 2 and r["side"] == "single"
 
 
-def test_no_tissue_voxels_near_box_is_none():
+def test_single_label_tissue_keeps_its_host_when_the_box_misses_the_mask():
+    """tissue_id is the primary host truth (5.1); overlap must not veto it."""
     r = host_seg_label(_seg(), (18, 18, 0, 22, 22, 2), tissue_id=4, pad=0)
-    assert r["label"] is None and r["side"] == "none" and r["n_voxels"] == 0
+    assert r["label"] == 2 and r["side"] == "single_no_overlap" and r["n_voxels"] == 0
+
+
+def test_two_label_tissue_with_no_overlap_is_unresolved_not_none():
+    """'none' is the effusion/ligament value; an in_seg row must stay distinguishable from those."""
+    r = host_seg_label(_seg(), (18, 18, 0, 22, 22, 2), tissue_id=1, pad=0)
+    assert r["label"] is None and r["side"] == "unresolved" and r["n_voxels"] == 0
 
 
 def test_effusion_and_ligament_have_no_host():

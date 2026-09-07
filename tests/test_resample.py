@@ -25,3 +25,10 @@ def test_label_downsample_takes_the_majority_with_ties_to_smallest():
 
 def test_scale_box_inplane_floors_mins_and_ceils_maxes():
     assert scale_box_inplane((330, 232, 54, 335, 251, 64)) == (165, 116, 54, 168, 126, 64)
+
+
+def test_label_downsample_gives_an_exact_background_tie_to_the_label():
+    """Background is label 0, so argmax silently eroded every mask by 6-13%."""
+    lab = np.zeros((2, 2, 1), dtype=np.uint8)
+    lab[0, 0, 0], lab[0, 1, 0] = 5, 5  # 5, 5, 0, 0 -> exact 2/2 tie against background
+    assert downsample2_inplane_labels(lab)[0, 0, 0] == 5

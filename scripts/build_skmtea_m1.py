@@ -21,7 +21,8 @@ from anatobind.data_engine.splits import five_fold_by_scan, stratum_of  # noqa: 
 FM = Path("/data2/congcong/data/FM_data")
 RAW, SEG, ANN = FM / "SKM-TEA/files_recon_calib-24", FM / "SKM-TEA_ltr/segmentation_masks/dicom-track", FM / "SKM-TEA_ltr/annotations/v1.0.0"
 CONDITIONS = {"noise": [0.25, 0.5, 1.0], "us": [4, 8, 16]}
-MANIFEST_FIELDS = ["scan_id", "out_dir", "n_boxes_kept", "n_ambiguous", "files", "status", "seconds"]
+MANIFEST_FIELDS = ["scan_id", "out_dir", "n_boxes_kept", "n_ambiguous", "n_no_overlap", "n_unresolved",
+                   "spacing", "nrmse", "files", "status", "seconds"]
 
 
 def parse_args():
