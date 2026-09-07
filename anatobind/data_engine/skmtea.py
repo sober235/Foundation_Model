@@ -128,3 +128,78 @@ def host_seg_label(seg_h5, box, tissue_id, pad=4, ambiguous=(0.4, 0.6)):
     if ratio <= ambiguous[0]:
         return {"label": lateral, "side": "lateral", "ratio": ratio, "n_voxels": n}
     return {"label": None, "side": "ambiguous", "ratio": ratio, "n_voxels": n}
+
+
+# --- per-scan export for M1 -----------------------------------------------------------------------
+import csv  # noqa: E402
+
+from anatobind.data_engine.resample import downsample2_inplane_image, downsample2_inplane_labels, scale_box_inplane  # noqa: E402
+from anatobind.data_engine.skmtea_recon import add_complex_noise, adjoint_sense, embed_poisson, noise_sigma, undersample  # noqa: E402
+
+SPACING_FULL = (0.3125, 0.3125, 0.8)
+BOX_FIELDS = ["ann_id", "split", "layer", "supercategory", "category_id", "tissue_id", "host_label", "host_side",
+              "host_ratio", "x0", "y0", "z0", "x1", "y1", "z1", "x0_full", "y0_full", "z0_full", "x1_full", "y1_full", "z1_full"]
+
+
+def _affine(spacing):
+    return np.diag([spacing[0], spacing[1], spacing[2], 1.0])
+
+
+def _save(vol, spacing, path):
+    img = nib.Nifti1Image(np.ascontiguousarray(vol), _affine(spacing))
+    img.header.set_xyzt_units("mm")
+    nib.save(img, str(path))
+
+
+def export_scan(h5_path, seg_nii_path, box_rows, out_dir, conditions, rng_seed, orientation=("SI", "AP", "LR")):
+    """Write the M1 files for one scan; returns the manifest row."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    spacing = (SPACING_FULL[0] * 2, SPACING_FULL[1] * 2, SPACING_FULL[2])
+    files = []
+    with h5py.File(h5_path, "r") as f:
+        for echo in (0, 1):
+            mag = np.abs(f["target"][:, :, :, echo, 0]).astype(np.float32)
+            p = out_dir / f"image_clean_e{echo + 1}.nii.gz"
+            _save(downsample2_inplane_image(mag), spacing, p)
+            files.append(p.name)
+        k = f["kspace"][:, :, :, 0, :]
+        maps = f["maps"][:, :, :, :, 0]
+        rng = np.random.default_rng(rng_seed)
+        for q, frac in enumerate(conditions["noise"], start=1):
+            rec = np.abs(adjoint_sense(add_complex_noise(k, noise_sigma(k, frac), rng), maps)).astype(np.float32)
+            p = out_dir / f"image_noise_q{q}_e1.nii.gz"
+            _save(downsample2_inplane_image(rec), spacing, p)
+            files.append(p.name)
+        for r in conditions["us"]:
+            mask = embed_poisson(f[f"masks/poisson_{r}.0x"][()], ky=k.shape[1], kz=k.shape[2])
+            rec = np.abs(adjoint_sense(undersample(k, mask), maps)).astype(np.float32)
+            p = out_dir / f"image_us{r}_e1.nii.gz"
+            _save(downsample2_inplane_image(rec), spacing, p)
+            files.append(p.name)
+    seg_h5 = load_seg_h5_frame(seg_nii_path, orientation)
+    _save(downsample2_inplane_labels(seg_h5), spacing, out_dir / "seg.nii.gz")
+    files.append("seg.nii.gz")
+    rows, n_amb = [], 0
+    for b in box_rows:
+        if not b["keep"]:
+            continue
+        full = (b["x0"], b["y0"], b["z0"], b["x1"], b["y1"], b["z1"])
+        host = host_seg_label(seg_h5, full, b["tissue_id"])
+        n_amb += host["side"] == "ambiguous"
+        half = scale_box_inplane(full)
+        rows.append({
+            "ann_id": b["ann_id"], "split": b["split"], "layer": b["layer"], "supercategory": b["supercategory"],
+            "category_id": b["category_id"], "tissue_id": b["tissue_id"],
+            "host_label": "" if host["label"] is None else host["label"], "host_side": host["side"],
+            "host_ratio": "" if host["ratio"] is None else f"{host['ratio']:.3f}",
+            "x0": half[0], "y0": half[1], "z0": half[2], "x1": half[3], "y1": half[4], "z1": half[5],
+            "x0_full": full[0], "y0_full": full[1], "z0_full": full[2], "x1_full": full[3], "y1_full": full[4], "z1_full": full[5],
+        })
+    with open(out_dir / "boxes.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=BOX_FIELDS)
+        w.writeheader()
+        w.writerows(rows)
+    files.append("boxes.csv")
+    return {"scan_id": Path(h5_path).name[:-3], "out_dir": str(out_dir), "n_boxes_kept": len(rows),
+            "n_ambiguous": n_amb, "files": files}
