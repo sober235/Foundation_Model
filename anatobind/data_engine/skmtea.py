@@ -88,3 +88,26 @@ def load_target_magnitude(h5_path, echo):
 def tissue_contrast(magnitude, seg_h5):
     inside = seg_h5 > 0
     return float(magnitude[inside].mean() / magnitude[~inside].mean())
+
+
+# --- host-side resolution -------------------------------------------------------------------------
+def host_seg_label(seg_h5, box, tissue_id, pad=4, ambiguous=(0.4, 0.6)):
+    """Which segmentation label hosts a lesion box (medial/lateral resolved by overlap)."""
+    labels = TISSUE_TO_SEG.get(tissue_id, ())
+    if not labels:
+        return {"label": None, "side": "none", "ratio": None, "n_voxels": 0}
+    x0, y0, z0, x1, y1, z1 = box
+    sub = seg_h5[max(x0 - pad, 0):x1 + pad, max(y0 - pad, 0):y1 + pad, max(z0 - pad, 0):z1 + pad]
+    counts = {l: int((sub == l).sum()) for l in labels}
+    n = sum(counts.values())
+    if n == 0:
+        return {"label": None, "side": "none", "ratio": None, "n_voxels": 0}
+    if len(labels) == 1:
+        return {"label": labels[0], "side": "single", "ratio": 1.0, "n_voxels": n}
+    medial, lateral = labels  # (5, 6) or (3, 4): medial label listed first
+    ratio = counts[medial] / n
+    if ratio >= ambiguous[1]:
+        return {"label": medial, "side": "medial", "ratio": ratio, "n_voxels": n}
+    if ratio <= ambiguous[0]:
+        return {"label": lateral, "side": "lateral", "ratio": ratio, "n_voxels": n}
+    return {"label": None, "side": "ambiguous", "ratio": ratio, "n_voxels": n}
