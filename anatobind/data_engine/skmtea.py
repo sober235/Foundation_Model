@@ -71,13 +71,30 @@ import h5py  # noqa: E402
 import nibabel as nib  # noqa: E402
 
 
-def seg_nifti_to_h5_frame(arr):
-    """The dicom-track NIfTI stores (y, x, z) relative to the h5 (x, y, z) grid."""
-    return np.transpose(arr, (1, 0, 2))
+def seg_nifti_to_h5_frame(arr, orientation=("SI", "AP", "LR")):
+    """The dicom-track NIfTI stores (y, x, z) relative to the h5 (x, y, z) grid.
+
+    Scans whose annotation metadata lists the third axis as "RL" (18 of 155) are
+    additionally mirrored along that axis; verified on all 18 (2026-09-07).
+    """
+    out = np.transpose(arr, (1, 0, 2))
+    if tuple(orientation)[2] == "RL":
+        out = np.flip(out, axis=2)
+    return out
 
 
-def load_seg_h5_frame(nii_path):
-    return seg_nifti_to_h5_frame(np.asarray(nib.load(str(nii_path)).dataobj)).astype(np.uint8)
+def load_seg_h5_frame(nii_path, orientation=("SI", "AP", "LR")):
+    return np.ascontiguousarray(seg_nifti_to_h5_frame(np.asarray(nib.load(str(nii_path)).dataobj), orientation)).astype(np.uint8)
+
+
+def load_orientations(annotation_dir):
+    """scan_id -> orientation tuple from the three split JSON files."""
+    out = {}
+    for split in ("train", "val", "test"):
+        doc = json.loads((Path(annotation_dir) / f"{split}.json").read_text())
+        for im in doc["images"]:
+            out[im["scan_id"]] = tuple(im["orientation"])
+    return out
 
 
 def load_target_magnitude(h5_path, echo):

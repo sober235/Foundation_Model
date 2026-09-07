@@ -33,3 +33,19 @@ def test_loaders_return_h5_frame_and_echo_magnitude(tmp_path):
     assert s.shape == (2, 3, 4) and s[1, 0, 2] == 5
     m = load_target_magnitude(tmp_path / "MTR_x.h5", echo=1)
     assert m.shape == (2, 3, 4) and m.dtype == np.float32 and m[1, 0, 2] == 5.0
+
+
+def test_rl_oriented_scans_are_also_flipped_along_the_last_axis():
+    a = np.arange(2 * 3 * 4).reshape(2, 3, 4)
+    lr = seg_nifti_to_h5_frame(a, orientation=("SI", "AP", "LR"))
+    rl = seg_nifti_to_h5_frame(a, orientation=("SI", "AP", "RL"))
+    assert np.array_equal(lr, np.transpose(a, (1, 0, 2)))
+    assert np.array_equal(rl, np.flip(np.transpose(a, (1, 0, 2)), axis=2))
+
+
+def test_load_seg_h5_frame_applies_the_orientation(tmp_path):
+    seg = np.zeros((3, 2, 4), dtype=np.uint8)
+    seg[0, 1, 0] = 5
+    nib.save(nib.Nifti1Image(seg, np.eye(4)), str(tmp_path / "MTR_y.nii.gz"))
+    s = load_seg_h5_frame(tmp_path / "MTR_y.nii.gz", orientation=("SI", "AP", "RL"))
+    assert s.shape == (2, 3, 4) and s[1, 0, 3] == 5
