@@ -413,18 +413,36 @@ is flat from step 50 onward.  As stated above this is not evidence — but the
 comparison run alongside it is worth recording, because it does not depend on
 our model at all:
 
-| binder on fold 0 validation | accuracy |
-|---|---|
-| argmax IoA against **ground-truth** masks (seg-then-lookup, no learning) | **0.804** |
-| the 300-step model | 0.652 |
-| majority class | 0.413 |
+| binder on fold 0 validation | accuracy | n |
+|---|---|---|
+| argmax IoA against **ground-truth** masks, inside the training crop | 0.804 | 46 |
+| the 300-step model, same crops | 0.652 | 46 |
+| majority class | 0.413 | 46 |
+| argmax IoA on the **uncropped** boxes, label level (incl. side) | 0.860 | 57 |
+| argmax IoA on the uncropped boxes, **tissue-family level** | **0.860** | 57 |
 
-So **0.804 is an oracle ceiling for the binding step of any seg-then-lookup
-arm** — arm A will use predicted masks and can only do worse.  Equivalently,
-measured directly over the fold-0 validation boxes, **8 of 57 instances (14%)
-have their annotated host different from the structure their box overlaps
-most**.  That 14–20% is the headroom the relation model has to convert, and
-§9.1's 10-point threshold sits inside it.
+So an oracle overlap binder is a ceiling for the binding step of any
+seg-then-lookup arm — arm A uses predicted masks and can only do worse.  Two
+things must be stated with the number, both settled on 2026-09-08 and written
+into RESEARCH_PLAN.md §13.4:
+
+1. **Which population.** 0.804 is measured inside the 64×128×128 training crop,
+   where boxes are clipped and the overlap changes; 0.860 is measured on the
+   whole annotated box.  The first is the difficulty the model actually faces,
+   the second is a property of the data.  Always say which.
+2. **Which level.** The label carries a tissue family from the annotator's
+   `tissue_id` *and*, for 46% of instances, a medial/lateral side that rule D5
+   resolves by mask overlap.  Asking an overlap binder to predict that side is
+   partly circular.  The measurement settles how much it matters: family-level
+   and label-level accuracy are **both 0.860**, i.e. whenever the binder gets
+   the family right the side follows for free.  All discriminative difficulty
+   sits at the family level, which is purely annotator-derived — so the M1
+   threshold is now defined there, with label-level and laterality reported
+   separately.
+
+Equivalently: **8 of 57 fold-0 instances (14%) have an annotated tissue family
+that is not the family their box overlaps most.**  That is the headroom the
+relation model has to convert, and §9.1's 10-point threshold sits inside it.
 
 Every one of the eight is an anatomically coherent adjacency confusion, not a
 data error: meniscal tears whose boxes overlap the tibial plateau or femoral
