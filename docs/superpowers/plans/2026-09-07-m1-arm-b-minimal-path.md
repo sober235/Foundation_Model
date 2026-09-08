@@ -473,12 +473,18 @@ extending past the segmented structure, a generously drawn box, or a genuine
 mis-annotation all remain possible.  Diagnostic figure:
 `~/figs/anatobind_m1_fold0/MTR_110_ann15_vs_ann16_diagnostic.png`.
 
-**Recommendation: keep it.**  Its host is 1.25 mm away while its box contains
-only femoral cartilage, so overlap says femoral cartilage and the radiologist
-says medial meniscus — precisely the instance the relation model has to get
-right.  Dropping the instances where overlap fails would quietly build a
-benchmark that favours the baseline.  One instance changes nothing
-statistically; the principle governs the other seven.
+**Decided 2026-09-08: keep it**, and with it the general rule — every instance
+whose annotated host differs from the structure its box overlaps most stays in,
+and gets its own stratum in the M1 analysis (RESEARCH_PLAN.md §13.5).  Its host
+is 1.25 mm away while its box contains only femoral cartilage, so overlap says
+femoral cartilage and the radiologist says medial meniscus, which is precisely
+the instance the relation model has to get right.  Dropping the instances where
+overlap fails would quietly build a benchmark that favours the baseline.  One
+instance changes nothing statistically; the principle governs the other seven.
+
+The cause of the displacement is still open — tear signal past the segmented
+boundary, a loosely drawn box, or a genuine mis-annotation — but it does not
+affect the decision either way.
 
 ### F5. Effusion and ligament boxes are currently trained as background
 
