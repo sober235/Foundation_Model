@@ -1,0 +1,22 @@
+# Adapted from figure-polish/assets/deepscientist-academic.mplstyle.
+# Hex colors omit '#' so Matplotlib does not treat them as comments.
+figure.facecolor: white
+axes.facecolor: white
+savefig.facecolor: white
+savefig.edgecolor: white
+axes.edgecolor: D8D1C7
+axes.labelcolor: 4B5563
+axes.linewidth: 0.8
+axes.grid: False
+axes.spines.top: False
+axes.spines.right: False
+font.size: 13
+font.family: sans-serif
+font.sans-serif: DejaVu Sans, Arial, Liberation Sans
+text.color: 283442
+mathtext.fontset: dejavusans
+legend.frameon: False
+lines.linewidth: 1.6
+pdf.fonttype: 42
+ps.fonttype: 42
+svg.fonttype: none
