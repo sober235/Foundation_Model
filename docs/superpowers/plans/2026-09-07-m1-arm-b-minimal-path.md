@@ -434,10 +434,33 @@ patellofemoral cartilage lesions where the two facing cartilages swap
 bet: at a joint, the structures a lesion touches are exactly the structures
 overlap cannot tell apart.
 
-**One case still needs a human call**: MTR_110 ann 15, a meniscal tear with
-*zero* overlap with its host in 3D, whose box sits in what looks like the
-intercondylar region.  Under-segmented meniscus, a generously drawn box, or a
-mis-annotation — a single slice cannot decide it.
+**One case still needs a human call: MTR_110 ann 15**, a meniscal tear with
+*zero* overlap with its host in 3D.  Measured rather than eyeballed (an earlier
+note in this file called it "intercondylar" from a single slice; that reading
+was wrong):
+
+- box `(152,109,89)-(160,137,104)`, 5.0 × 17.5 × 12.0 mm, containing only
+  femoral cartilage (305 voxels);
+- the nearest medial-meniscus voxel is **1.25 mm away** (2 voxels), and the box
+  lies entirely inside the medial meniscus's own bounding box;
+- Z is the medial/lateral axis here (medial meniscus z 82–113, lateral z 32–60),
+  and the box's z 89–104 agrees with its `side=medial`;
+- **`ann 16` in the same knee carries the same host 5 and sits squarely on the
+  meniscus** (772 voxels, gap 0.00 mm), so the segmentation is sound and ann 15
+  is the outlier, not the mask.
+
+So it is a near miss, not a gross error: the box is displaced by about its own
+height away from the segmented meniscus, toward the femoral side.  Tear signal
+extending past the segmented structure, a generously drawn box, or a genuine
+mis-annotation all remain possible.  Diagnostic figure:
+`~/figs/anatobind_m1_fold0/MTR_110_ann15_vs_ann16_diagnostic.png`.
+
+**Recommendation: keep it.**  Its host is 1.25 mm away while its box contains
+only femoral cartilage, so overlap says femoral cartilage and the radiologist
+says medial meniscus — precisely the instance the relation model has to get
+right.  Dropping the instances where overlap fails would quietly build a
+benchmark that favours the baseline.  One instance changes nothing
+statistically; the principle governs the other seven.
 
 ### F5. Effusion and ligament boxes are currently trained as background
 
