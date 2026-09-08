@@ -400,6 +400,53 @@ instances is not worth the risk; the recommendation is to keep D5 as it stands,
 report the abstention in the coverage numbers, and revisit only if the M1
 analysis shows the abstention actually moves the verdict.
 
+### F4. Fold-0 smoke run: gate passed, and one number worth keeping
+
+`runs/armb_fold0_first`, 300 steps, batch 2, patch 64×128×128, 682 s on one
+A800 shared with another user's job.  No non-finite value at any step, and all
+eight loss terms lower over steps 281–300 than over 1–20 (total 11.94 → 8.43;
+`host_ce` 0.96 → 0.61; `L1` 0.98 → 0.54).  **Gate passed: the plumbing agrees
+with itself.**
+
+The model's host accuracy is **0.652** over 46 scored validation instances and
+is flat from step 50 onward.  As stated above this is not evidence — but the
+comparison run alongside it is worth recording, because it does not depend on
+our model at all:
+
+| binder on fold 0 validation | accuracy |
+|---|---|
+| argmax IoA against **ground-truth** masks (seg-then-lookup, no learning) | **0.804** |
+| the 300-step model | 0.652 |
+| majority class | 0.413 |
+
+So **0.804 is an oracle ceiling for the binding step of any seg-then-lookup
+arm** — arm A will use predicted masks and can only do worse.  Equivalently,
+measured directly over the fold-0 validation boxes, **8 of 57 instances (14%)
+have their annotated host different from the structure their box overlaps
+most**.  That 14–20% is the headroom the relation model has to convert, and
+§9.1's 10-point threshold sits inside it.
+
+Every one of the eight is an anatomically coherent adjacency confusion, not a
+data error: meniscal tears whose boxes overlap the tibial plateau or femoral
+condyle cartilage they sit against (MTR_069, MTR_104, MTR_163, MTR_236), and
+patellofemoral cartilage lesions where the two facing cartilages swap
+(MTR_052 ann 82 and 83 are a mirrored pair).  This is the physical basis of the
+bet: at a joint, the structures a lesion touches are exactly the structures
+overlap cannot tell apart.
+
+**One case still needs a human call**: MTR_110 ann 15, a meniscal tear with
+*zero* overlap with its host in 3D, whose box sits in what looks like the
+intercondylar region.  Under-segmented meniscus, a generously drawn box, or a
+mis-annotation — a single slice cannot decide it.
+
+### F5. Effusion and ligament boxes are currently trained as background
+
+`read_in_seg_boxes` keeps only the `in_seg` layer, so the 116 effusion and 38
+ligament boxes are invisible to `U_B` — i.e. the detector is being taught that
+a visible effusion is nothing.  Harmless for a plumbing check, but a real
+modelling decision for the gate run: §9.1 treats effusion as the abstention
+analysis and ligament as the extension analysis, and neither is "background".
+
 ## Known risks carried into this plan
 
 1. **155 scans from scratch may simply not train arm B.** That is a real result, not a bug. Rescuing it with pretrained weights would destroy the bet experiment (A4).
