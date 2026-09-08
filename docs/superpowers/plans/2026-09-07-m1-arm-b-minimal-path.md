@@ -362,8 +362,11 @@ would have trained a fabricated binding onto meniscus-lateral.
 
 ### F2. The `single_no_overlap` instances are the sharpest cases in the M1 bet
 
-Measured over the six edge cases among the first ~122 exported in-segmentation
-boxes (≈5%, so ≈15 expected over all 311):
+Final counts over the completed export (155/155 scans, 311 in-segmentation
+instances, matching §9.1 exactly): `medial 76 · lateral 68 · single 160 ·
+single_no_overlap 5 · unresolved 2`.  So the edge cases are **7 of 311 (2.3%)**,
+not the ≈5% extrapolated from the first ~122 boxes.  The six visible while the
+export was still running:
 
 | scan · ann | tissue_id → host | labels inside the box | gap box→host |
 |---|---|---|---|
@@ -390,6 +393,12 @@ zero the engine gives up, but distance separates the two cleanly (3 vs 26, and
 instances.  This still takes the *tissue* from the annotator and only
 disambiguates the *side*, so it does not violate 5.1 — but it changes rule D5
 and therefore needs an explicit decision before the gate run.
+
+The completed export settles the size of the prize: **exactly 2 unresolved
+instances out of 311 (0.6%)**.  Changing a confirmed truth rule for two
+instances is not worth the risk; the recommendation is to keep D5 as it stands,
+report the abstention in the coverage numbers, and revisit only if the M1
+analysis shows the abstention actually moves the verdict.
 
 ## Known risks carried into this plan
 
