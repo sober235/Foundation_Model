@@ -1,0 +1,1234 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1728pt" height="1281.6pt" viewBox="0 0 1728 1281.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-09-06T16:19:55.092710</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 1281.6
+L 1728 1281.6
+L 1728 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 41.04 104.4
+L 1686.96 104.4
+Q 1702.8 104.4 1702.8 120.24
+L 1702.8 765.36
+Q 1702.8 781.2 1686.96 781.2
+L 41.04 781.2
+Q 25.2 781.2 25.2 765.36
+L 25.2 120.24
+Q 25.2 104.4 41.04 104.4
+z
+" clip-path="url(#p86787cb867)" style="fill: #ffffff; stroke: #e2e8f1; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 58.32 262.8
+L 190.08 262.8
+Q 201.6 262.8 201.6 274.32
+L 201.6 431.28
+Q 201.6 442.8 190.08 442.8
+L 58.32 442.8
+Q 46.8 442.8 46.8 431.28
+L 46.8 274.32
+Q 46.8 262.8 58.32 262.8
+z
+" clip-path="url(#p86787cb867)" style="fill: #f0f4fa; stroke: #d9e1ec; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 252.72 169.2
+L 492.48 169.2
+Q 504 169.2 504 180.72
+L 504 499.68
+Q 504 511.2 492.48 511.2
+L 252.72 511.2
+Q 241.2 511.2 241.2 499.68
+L 241.2 180.72
+Q 241.2 169.2 252.72 169.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #edf3fc; stroke: #a6bdda; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 273.6 248.4
+L 471.6 248.4
+Q 477.36 248.4 477.36 254.16
+L 477.36 277.92
+Q 477.36 283.68 471.6 283.68
+L 273.6 283.68
+Q 267.84 283.68 267.84 277.92
+L 267.84 254.16
+Q 267.84 248.4 273.6 248.4
+z
+" clip-path="url(#p86787cb867)" style="fill: #e2ecfa; stroke: #9cb6d8; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 273.6 298.8
+L 471.6 298.8
+Q 477.36 298.8 477.36 304.56
+L 477.36 328.32
+Q 477.36 334.08 471.6 334.08
+L 273.6 334.08
+Q 267.84 334.08 267.84 328.32
+L 267.84 304.56
+Q 267.84 298.8 273.6 298.8
+z
+" clip-path="url(#p86787cb867)" style="fill: #cfdff5; stroke: #9cb6d8; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 273.6 349.2
+L 471.6 349.2
+Q 477.36 349.2 477.36 354.96
+L 477.36 378.72
+Q 477.36 384.48 471.6 384.48
+L 273.6 384.48
+Q 267.84 384.48 267.84 378.72
+L 267.84 354.96
+Q 267.84 349.2 273.6 349.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #bbd1f0; stroke: #9cb6d8; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 273.6 399.6
+L 471.6 399.6
+Q 477.36 399.6 477.36 405.36
+L 477.36 429.12
+Q 477.36 434.88 471.6 434.88
+L 273.6 434.88
+Q 267.84 434.88 267.84 429.12
+L 267.84 405.36
+Q 267.84 399.6 273.6 399.6
+z
+" clip-path="url(#p86787cb867)" style="fill: #a8c3e8; stroke: #9cb6d8; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 583.92 156.96
+L 812.88 156.96
+Q 824.4 156.96 824.4 168.48
+L 824.4 278.64
+Q 824.4 290.16 812.88 290.16
+L 583.92 290.16
+Q 572.4 290.16 572.4 278.64
+L 572.4 168.48
+Q 572.4 156.96 583.92 156.96
+z
+" clip-path="url(#p86787cb867)" style="fill: #eaf7f3; stroke: #8abfb3; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 642.96 303.12
+L 768.24 303.12
+Q 774 303.12 774 308.88
+L 774 318.96
+Q 774 324.72 768.24 324.72
+L 642.96 324.72
+Q 637.2 324.72 637.2 318.96
+L 637.2 308.88
+Q 637.2 303.12 642.96 303.12
+z
+" clip-path="url(#p86787cb867)" style="fill: #f0f5fc; stroke: #c9d9ee; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 583.92 334.8
+L 812.88 334.8
+Q 824.4 334.8 824.4 346.32
+L 824.4 424.08
+Q 824.4 435.6 812.88 435.6
+L 583.92 435.6
+Q 572.4 435.6 572.4 424.08
+L 572.4 346.32
+Q 572.4 334.8 583.92 334.8
+z
+" clip-path="url(#p86787cb867)" style="fill: #edf4fd; stroke: #a0bcde; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 583.92 473.76
+L 812.88 473.76
+Q 824.4 473.76 824.4 485.28
+L 824.4 587.52
+Q 824.4 599.04 812.88 599.04
+L 583.92 599.04
+Q 572.4 599.04 572.4 587.52
+L 572.4 485.28
+Q 572.4 473.76 583.92 473.76
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff0ec; stroke: #ddb0a5; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 252.72 630.72
+L 744.48 630.72
+Q 756 630.72 756 642.24
+L 756 732.96
+Q 756 744.48 744.48 744.48
+L 252.72 744.48
+Q 241.2 744.48 241.2 732.96
+L 241.2 642.24
+Q 241.2 630.72 252.72 630.72
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff0ec; stroke: #ddb0a5; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 925.92 210.24
+L 1248.48 210.24
+Q 1260 210.24 1260 221.76
+L 1260 550.08
+Q 1260 561.6 1248.48 561.6
+L 925.92 561.6
+Q 914.4 561.6 914.4 550.08
+L 914.4 221.76
+Q 914.4 210.24 925.92 210.24
+z
+" clip-path="url(#p86787cb867)" style="fill: #f4effb; stroke: #b7a2d3; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 990.72 362.88
+L 1002.24 362.88
+Q 1005.12 362.88 1005.12 365.76
+L 1005.12 380.16
+Q 1005.12 383.04 1002.24 383.04
+L 990.72 383.04
+Q 987.84 383.04 987.84 380.16
+L 987.84 365.76
+Q 987.84 362.88 990.72 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 1015.2 362.88
+L 1026.72 362.88
+Q 1029.6 362.88 1029.6 365.76
+L 1029.6 380.16
+Q 1029.6 383.04 1026.72 383.04
+L 1015.2 383.04
+Q 1012.32 383.04 1012.32 380.16
+L 1012.32 365.76
+Q 1012.32 362.88 1015.2 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 1039.68 362.88
+L 1051.2 362.88
+Q 1054.08 362.88 1054.08 365.76
+L 1054.08 380.16
+Q 1054.08 383.04 1051.2 383.04
+L 1039.68 383.04
+Q 1036.8 383.04 1036.8 380.16
+L 1036.8 365.76
+Q 1036.8 362.88 1039.68 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 1064.16 362.88
+L 1075.68 362.88
+Q 1078.56 362.88 1078.56 365.76
+L 1078.56 380.16
+Q 1078.56 383.04 1075.68 383.04
+L 1064.16 383.04
+Q 1061.28 383.04 1061.28 380.16
+L 1061.28 365.76
+Q 1061.28 362.88 1064.16 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 1088.64 362.88
+L 1100.16 362.88
+Q 1103.04 362.88 1103.04 365.76
+L 1103.04 380.16
+Q 1103.04 383.04 1100.16 383.04
+L 1088.64 383.04
+Q 1085.76 383.04 1085.76 380.16
+L 1085.76 365.76
+Q 1085.76 362.88 1088.64 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 1113.12 362.88
+L 1124.64 362.88
+Q 1127.52 362.88 1127.52 365.76
+L 1127.52 380.16
+Q 1127.52 383.04 1124.64 383.04
+L 1113.12 383.04
+Q 1110.24 383.04 1110.24 380.16
+L 1110.24 365.76
+Q 1110.24 362.88 1113.12 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 1137.6 362.88
+L 1149.12 362.88
+Q 1152 362.88 1152 365.76
+L 1152 380.16
+Q 1152 383.04 1149.12 383.04
+L 1137.6 383.04
+Q 1134.72 383.04 1134.72 380.16
+L 1134.72 365.76
+Q 1134.72 362.88 1137.6 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_22">
+    <path d="M 1162.08 362.88
+L 1173.6 362.88
+Q 1176.48 362.88 1176.48 365.76
+L 1176.48 380.16
+Q 1176.48 383.04 1173.6 383.04
+L 1162.08 383.04
+Q 1159.2 383.04 1159.2 380.16
+L 1159.2 365.76
+Q 1159.2 362.88 1162.08 362.88
+z
+" clip-path="url(#p86787cb867)" style="fill: #baa3d8; stroke: #9e83c1; stroke-width: 0.6; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_23">
+    <path d="M 973.44 467.28
+L 1200.96 467.28
+Q 1208.16 467.28 1208.16 474.48
+L 1208.16 506.16
+Q 1208.16 513.36 1200.96 513.36
+L 973.44 513.36
+Q 966.24 513.36 966.24 506.16
+L 966.24 474.48
+Q 966.24 467.28 973.44 467.28
+z
+" clip-path="url(#p86787cb867)" style="fill: #e5d9f4; stroke: #ac8ecd; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_24">
+    <path d="M 1368.72 230.4
+L 1669.68 230.4
+Q 1681.2 230.4 1681.2 241.92
+L 1681.2 370.08
+Q 1681.2 381.6 1669.68 381.6
+L 1368.72 381.6
+Q 1357.2 381.6 1357.2 370.08
+L 1357.2 241.92
+Q 1357.2 230.4 1368.72 230.4
+z
+" clip-path="url(#p86787cb867)" style="fill: #f4effb; stroke: #b7a2d3; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_25">
+    <path d="M 1368.72 446.4
+L 1669.68 446.4
+Q 1681.2 446.4 1681.2 457.92
+L 1681.2 593.28
+Q 1681.2 604.8 1669.68 604.8
+L 1368.72 604.8
+Q 1357.2 604.8 1357.2 593.28
+L 1357.2 457.92
+Q 1357.2 446.4 1368.72 446.4
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff7e7; stroke: #d6b97b; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_26">
+    <path d="M 864 658.08
+L 1231.2 658.08
+Q 1238.4 658.08 1238.4 665.28
+L 1238.4 737.28
+Q 1238.4 744.48 1231.2 744.48
+L 864 744.48
+Q 856.8 744.48 856.8 737.28
+L 856.8 665.28
+Q 856.8 658.08 864 658.08
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff8ed; stroke: #dfc89e; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_27">
+    <path d="M 1285.2 658.08
+L 1494 658.08
+Q 1501.2 658.08 1501.2 665.28
+L 1501.2 737.28
+Q 1501.2 744.48 1494 744.48
+L 1285.2 744.48
+Q 1278 744.48 1278 737.28
+L 1278 665.28
+Q 1278 658.08 1285.2 658.08
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff8ed; stroke: #dfc89e; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_28">
+    <path d="M 41.04 799.2
+L 1686.96 799.2
+Q 1702.8 799.2 1702.8 815.04
+L 1702.8 1051.92
+Q 1702.8 1067.76 1686.96 1067.76
+L 41.04 1067.76
+Q 25.2 1067.76 25.2 1051.92
+L 25.2 815.04
+Q 25.2 799.2 41.04 799.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #ffffff; stroke: #e2e8f1; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_29">
+    <path d="M 58.32 853.2
+L 208.08 853.2
+Q 219.6 853.2 219.6 864.72
+L 219.6 933.12
+Q 219.6 944.64 208.08 944.64
+L 58.32 944.64
+Q 46.8 944.64 46.8 933.12
+L 46.8 864.72
+Q 46.8 853.2 58.32 853.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #f0f4fa; stroke: #d9e1ec; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_30">
+    <path d="M 263.52 853.2
+L 470.88 853.2
+Q 482.4 853.2 482.4 864.72
+L 482.4 933.12
+Q 482.4 944.64 470.88 944.64
+L 263.52 944.64
+Q 252 944.64 252 933.12
+L 252 864.72
+Q 252 853.2 263.52 853.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff0ec; stroke: #ddb0a5; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_31">
+    <path d="M 526.32 853.2
+L 815.04 853.2
+Q 826.56 853.2 826.56 864.72
+L 826.56 933.12
+Q 826.56 944.64 815.04 944.64
+L 526.32 944.64
+Q 514.8 944.64 514.8 933.12
+L 514.8 864.72
+Q 514.8 853.2 526.32 853.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #f0f4fa; stroke: #d9e1ec; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_32">
+    <path d="M 870.48 853.2
+L 1062.72 853.2
+Q 1074.24 853.2 1074.24 864.72
+L 1074.24 933.12
+Q 1074.24 944.64 1062.72 944.64
+L 870.48 944.64
+Q 858.96 944.64 858.96 933.12
+L 858.96 864.72
+Q 858.96 853.2 870.48 853.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #edf3fc; stroke: #a6bdda; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_33">
+    <path d="M 1120.32 853.2
+L 1669.68 853.2
+Q 1681.2 853.2 1681.2 864.72
+L 1681.2 962.64
+Q 1681.2 974.16 1669.68 974.16
+L 1120.32 974.16
+Q 1108.8 974.16 1108.8 962.64
+L 1108.8 864.72
+Q 1108.8 853.2 1120.32 853.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff8ed; stroke: #dfc89e; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_34">
+    <path d="M 54 974.16
+L 819.36 974.16
+Q 826.56 974.16 826.56 981.36
+L 826.56 1018.8
+Q 826.56 1026 819.36 1026
+L 54 1026
+Q 46.8 1026 46.8 1018.8
+L 46.8 981.36
+Q 46.8 974.16 54 974.16
+z
+" clip-path="url(#p86787cb867)" style="fill: #fff8ed; stroke: #dfc89e; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_35">
+    <path d="M 54 1110.96
+L 421.2 1110.96
+Q 428.4 1110.96 428.4 1118.16
+L 428.4 1142.64
+Q 428.4 1149.84 421.2 1149.84
+L 54 1149.84
+Q 46.8 1149.84 46.8 1142.64
+L 46.8 1118.16
+Q 46.8 1110.96 54 1110.96
+z
+" clip-path="url(#p86787cb867)" style="fill: #eaf0f8; stroke: #ced8e5; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_36">
+    <path d="M 471.6 1110.96
+L 838.8 1110.96
+Q 846 1110.96 846 1118.16
+L 846 1142.64
+Q 846 1149.84 838.8 1149.84
+L 471.6 1149.84
+Q 464.4 1149.84 464.4 1142.64
+L 464.4 1118.16
+Q 464.4 1110.96 471.6 1110.96
+z
+" clip-path="url(#p86787cb867)" style="fill: #eaf0f8; stroke: #ced8e5; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_37">
+    <path d="M 889.2 1110.96
+L 1256.4 1110.96
+Q 1263.6 1110.96 1263.6 1118.16
+L 1263.6 1142.64
+Q 1263.6 1149.84 1256.4 1149.84
+L 889.2 1149.84
+Q 882 1149.84 882 1142.64
+L 882 1118.16
+Q 882 1110.96 889.2 1110.96
+z
+" clip-path="url(#p86787cb867)" style="fill: #eaf0f8; stroke: #ced8e5; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_38">
+    <path d="M 1306.8 1110.96
+L 1674 1110.96
+Q 1681.2 1110.96 1681.2 1118.16
+L 1681.2 1142.64
+Q 1681.2 1149.84 1674 1149.84
+L 1306.8 1149.84
+Q 1299.6 1149.84 1299.6 1142.64
+L 1299.6 1118.16
+Q 1299.6 1110.96 1306.8 1110.96
+z
+" clip-path="url(#p86787cb867)" style="fill: #eaf0f8; stroke: #ced8e5; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_39">
+    <path d="M 201.6 352.8
+L 239.187539 352.8
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 233.587539 350
+L 239.187539 352.8
+L 233.587539 355.6
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_40">
+    <path d="M 372.24 283.68
+L 372.24 297.346556
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+    <path d="M 375.04 291.746556
+L 372.24 297.346556
+L 369.44 291.746556
+z
+" clip-path="url(#p86787cb867)" style="fill: #3578c4; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+   </g>
+   <g id="patch_41">
+    <path d="M 372.24 334.08
+L 372.24 347.746556
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+    <path d="M 375.04 342.146556
+L 372.24 347.746556
+L 369.44 342.146556
+z
+" clip-path="url(#p86787cb867)" style="fill: #3578c4; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+   </g>
+   <g id="patch_42">
+    <path d="M 372.24 384.48
+L 372.24 398.146556
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+    <path d="M 375.04 392.546556
+L 372.24 398.146556
+L 369.44 392.546556
+z
+" clip-path="url(#p86787cb867)" style="fill: #3578c4; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+   </g>
+   <g id="patch_43">
+    <path d="M 504 316.8
+L 536.4 316.8
+L 536.4 213.84
+L 570.387539 213.84
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #158879; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 564.787539 211.04
+L 570.387539 213.84
+L 564.787539 216.64
+z
+" clip-path="url(#p86787cb867)" style="fill: #158879; stroke: #158879; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_44">
+    <path d="M 477.36 416.88
+L 514.8 416.88
+L 514.8 385.2
+L 570.387539 385.2
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #3578c4; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 564.787539 382.4
+L 570.387539 385.2
+L 564.787539 388
+z
+" clip-path="url(#p86787cb867)" style="fill: #3578c4; stroke: #3578c4; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_45">
+    <path d="M 504 396
+L 529.2 396
+L 529.2 536.4
+L 570.387539 536.4
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #c96657; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 564.787539 533.6
+L 570.387539 536.4
+L 564.787539 539.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #c96657; stroke: #c96657; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_46">
+    <path d="M 705.6 324.72
+L 705.6 333.346556
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+    <path d="M 708.4 327.746556
+L 705.6 333.346556
+L 702.8 327.746556
+z
+" clip-path="url(#p86787cb867)" style="fill: #3578c4; stroke: #3578c4; stroke-width: 1.3; stroke-linecap: round"/>
+   </g>
+   <g id="patch_47">
+    <path d="M 267.84 416.88
+L 223.2 416.88
+L 223.2 683.28
+L 239.187539 683.28
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #c96657; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 233.587539 680.48
+L 239.187539 683.28
+L 233.587539 686.08
+z
+" clip-path="url(#p86787cb867)" style="fill: #c96657; stroke: #c96657; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_48">
+    <path d="M 824.4 213.84
+L 874.8 213.84
+L 874.8 325.44
+L 912.387539 325.44
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #158879; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 906.787539 322.64
+L 912.387539 325.44
+L 906.787539 328.24
+z
+" clip-path="url(#p86787cb867)" style="fill: #158879; stroke: #158879; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_49">
+    <path d="M 824.4 385.2
+L 912.387539 385.2
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #3578c4; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 906.787539 382.4
+L 912.387539 385.2
+L 906.787539 388
+z
+" clip-path="url(#p86787cb867)" style="fill: #3578c4; stroke: #3578c4; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_50">
+    <path d="M 824.4 518.4
+L 874.8 518.4
+L 874.8 434.16
+L 912.387539 434.16
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #c96657; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 906.787539 431.36
+L 912.387539 434.16
+L 906.787539 436.96
+z
+" clip-path="url(#p86787cb867)" style="fill: #c96657; stroke: #c96657; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_51">
+    <path d="M 1087.2 447.12
+L 1087.2 462.387539
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #7854ad; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1090 456.787539
+L 1087.2 462.387539
+L 1084.4 456.787539
+z
+" clip-path="url(#p86787cb867)" style="fill: #7854ad; stroke: #7854ad; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_52">
+    <path d="M 1179.36 540
+L 1308.96 540
+L 1308.96 303.84
+L 1355.187539 303.84
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #7854ad; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1349.587539 301.04
+L 1355.187539 303.84
+L 1349.587539 306.64
+z
+" clip-path="url(#p86787cb867)" style="fill: #7854ad; stroke: #7854ad; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_53">
+    <path d="M 1308.96 540
+L 1355.187539 540
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #7854ad; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1349.587539 537.2
+L 1355.187539 540
+L 1349.587539 542.8
+z
+" clip-path="url(#p86787cb867)" style="fill: #7854ad; stroke: #7854ad; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_54">
+    <path d="M 824.4 235.44
+L 846 235.44
+L 846 638.64
+L 986.4 638.64
+L 986.4 656.626556
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #158879; stroke-width: 1.3; stroke-linecap: round"/>
+    <path d="M 989.2 651.026556
+L 986.4 656.626556
+L 983.6 651.026556
+z
+" clip-path="url(#p86787cb867)" style="fill: #158879; stroke: #158879; stroke-width: 1.3; stroke-linecap: round"/>
+   </g>
+   <g id="patch_55">
+    <path d="M 824.4 551.52
+L 874.8 551.52
+L 874.8 619.2
+L 1159.2 619.2
+L 1159.2 656.626556
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #c96657; stroke-width: 1.3; stroke-linecap: round"/>
+    <path d="M 1162 651.026556
+L 1159.2 656.626556
+L 1156.4 651.026556
+z
+" clip-path="url(#p86787cb867)" style="fill: #c96657; stroke: #c96657; stroke-width: 1.3; stroke-linecap: round"/>
+   </g>
+   <g id="patch_56">
+    <path d="M 1238.4 698.4
+L 1275.987539 698.4
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1270.387539 695.6
+L 1275.987539 698.4
+L 1270.387539 701.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #b47b21; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_57">
+    <path d="M 477.36 316.08
+L 493.2 316.08
+L 493.2 609.84
+L 784.8 609.84
+L 784.8 760.32
+L 1389.6 760.32
+L 1389.6 746.492461
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1386.8 752.092461
+L 1389.6 746.492461
+L 1392.4 752.092461
+z
+" clip-path="url(#p86787cb867)" style="fill: #b47b21; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_58">
+    <path d="M 1501.2 698.4
+L 1598.4 698.4
+L 1598.4 606.812461
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1595.6 612.412461
+L 1598.4 606.812461
+L 1601.2 612.412461
+z
+" clip-path="url(#p86787cb867)" style="fill: #b47b21; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_59">
+    <path d="M 219.6 898.56
+L 249.987539 898.56
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 244.387539 895.76
+L 249.987539 898.56
+L 244.387539 901.36
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_60">
+    <path d="M 482.4 898.56
+L 512.787539 898.56
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 507.187539 895.76
+L 512.787539 898.56
+L 507.187539 901.36
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_61">
+    <path d="M 826.56 898.56
+L 856.947539 898.56
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 851.347539 895.76
+L 856.947539 898.56
+L 851.347539 901.36
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_62">
+    <path d="M 1074.24 898.56
+L 1106.787539 898.56
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1101.187539 895.76
+L 1106.787539 898.56
+L 1101.187539 901.36
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_63">
+    <path d="M 670.32 944.64
+L 670.32 972.147539
+" clip-path="url(#p86787cb867)" style="fill: none; stroke-dasharray: 9,7.2; stroke-dashoffset: 0; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 673.12 966.547539
+L 670.32 972.147539
+L 667.52 966.547539
+z
+" clip-path="url(#p86787cb867)" style="fill: #b47b21; stroke-dasharray: 9,7.2; stroke-dashoffset: 0; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_64">
+    <path d="M 826.56 1000.8
+L 1091.52 1000.8
+L 1091.52 961.2
+L 1106.787539 961.2
+" clip-path="url(#p86787cb867)" style="fill: none; stroke-dasharray: 9,7.2; stroke-dashoffset: 0; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1101.187539 958.4
+L 1106.787539 961.2
+L 1101.187539 964
+z
+" clip-path="url(#p86787cb867)" style="fill: #b47b21; stroke-dasharray: 9,7.2; stroke-dashoffset: 0; stroke: #b47b21; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_65">
+    <path d="M 428.4 1130.4
+L 460.947539 1130.4
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 455.347539 1127.6
+L 460.947539 1130.4
+L 455.347539 1133.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_66">
+    <path d="M 846 1130.4
+L 878.547539 1130.4
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 872.947539 1127.6
+L 878.547539 1130.4
+L 872.947539 1133.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_67">
+    <path d="M 1263.6 1130.4
+L 1296.147539 1130.4
+" clip-path="url(#p86787cb867)" style="fill: none; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+    <path d="M 1290.547539 1127.6
+L 1296.147539 1130.4
+L 1290.547539 1133.2
+z
+" clip-path="url(#p86787cb867)" style="fill: #8190a5; stroke: #8190a5; stroke-width: 1.8; stroke-linecap: round"/>
+   </g>
+   <g id="patch_68">
+    <path d="M 84.96 311.76
+L 143.28 311.76
+L 143.28 359.28
+L 84.96 359.28
+z
+" clip-path="url(#p86787cb867)" style="fill: #cdd5df; stroke: #ffffff; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_69">
+    <path d="M 91.44 307.44
+L 149.76 307.44
+L 149.76 354.96
+L 91.44 354.96
+z
+" clip-path="url(#p86787cb867)" style="fill: #a4b0c0; stroke: #ffffff; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_70">
+    <path d="M 97.92 303.12
+L 156.24 303.12
+L 156.24 350.64
+L 97.92 350.64
+z
+" clip-path="url(#p86787cb867)" style="fill: #71829a; stroke: #ffffff; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_71">
+    <path d="M 104.4 298.8
+L 162.72 298.8
+L 162.72 346.32
+L 104.4 346.32
+z
+" clip-path="url(#p86787cb867)" style="fill: #43556f; stroke: #ffffff; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 30px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="39.6" y="49.784531" transform="rotate(-0 39.6 49.784531)">AnatoBind-MRI</text>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 26px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="342" y="50.058594" transform="rotate(-0 342 50.058594)">整体模型架构</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #596b83" x="41.04" y="81.991094" transform="rotate(-0 41.04 81.991094)">plan-v2 分支 · 方案 v2.1｜已采纳接口修订；完整模型尚未实现或验证</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="46.8" y="133.835234" transform="rotate(-0 46.8 133.835234)">A  前向推理</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: end; fill: #596b83" x="1674" y="132.616484" transform="rotate(-0 1674 132.616484)">结构化输出：{A, S, U_B, U_Q, R_B, E}</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="123.84" y="291.22375" transform="rotate(-0 123.84 291.22375)">MRI 体数据 X</text>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="123.84" y="374.92125" transform="rotate(-0 123.84 374.92125)">D × H × W</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="123.84" y="403.00125" transform="rotate(-0 123.84 403.00125)">方向 / 强度归一</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="123.84" y="424.922656" transform="rotate(-0 123.84 424.922656)">Padding + M_valid</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 19px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #3578c4" x="372.24" y="199.938203" transform="rotate(-0 372.24 199.938203)">变尺寸 3D Swin</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="372.24" y="228.04125" transform="rotate(-0 372.24 228.04125)">Conv3D stem · (2, 4, 4)</text>
+   </g>
+   <g id="text_12">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="286.56" y="269.469297" transform="rotate(-0 286.56 269.469297)">F1   ·   64 channels</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="286.56" y="319.869297" transform="rotate(-0 286.56 319.869297)">F2   ·   128 channels</text>
+   </g>
+   <g id="text_14">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="286.56" y="370.269297" transform="rotate(-0 286.56 370.269297)">F3   ·   256 channels</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="286.56" y="420.669297" transform="rotate(-0 286.56 420.669297)">F4   ·   512 channels</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="372.24" y="474.28125" transform="rotate(-0 372.24 474.28125)">物理坐标 3D RoPE</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="372.24" y="496.60125" transform="rotate(-0 372.24 496.60125)">+ 局部归一坐标</text>
+   </g>
+   <g id="text_18">
+    <g id="patch_72">
+     <path d="M 522.09 205.125
+L 553.59 205.125
+L 553.59 190.875
+L 522.09 190.875
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #158879" x="537.84" y="200.834375" transform="rotate(-0 537.84 200.834375)">F2–F4</text>
+   </g>
+   <g id="text_19">
+    <g id="patch_73">
+     <path d="M 531.744844 379.365
+L 546.815156 379.365
+L 546.815156 365.115
+L 531.744844 365.115
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #3578c4" x="539.28" y="375.074375" transform="rotate(-0 539.28 375.074375)">F4</text>
+   </g>
+   <g id="text_20">
+    <g id="patch_74">
+     <path d="M 522.09 575.925
+L 553.59 575.925
+L 553.59 561.675
+L 522.09 561.675
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #c96657" x="537.84" y="571.634375" transform="rotate(-0 537.84 571.634375)">F1–F3</text>
+   </g>
+   <g id="text_21">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #158879" x="588.96" y="185.675234" transform="rotate(-0 588.96 185.675234)">A  解剖实体解码器</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 10.7px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="212.681516" transform="rotate(-0 588.96 212.681516)">跨器官固定 union ontology queries</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="239.045625" transform="rotate(-0 588.96 239.045625)">身份 / no-object · mask · A_i</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="266.770156" transform="rotate(-0 588.96 266.770156)">存在性门控 · 无 Hungarian</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #3578c4" x="705.6" y="316.754375" transform="rotate(-0 705.6 316.754375)">可选元数据</text>
+   </g>
+   <g id="text_26">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #3578c4" x="588.96" y="362.795234" transform="rotate(-0 588.96 362.795234)">S  采集条件 token</text>
+   </g>
+   <g id="text_27">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="390.616172" transform="rotate(-0 588.96 390.616172)">Masked pooling + 元数据条件</text>
+   </g>
+   <g id="text_28">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="419.277813" transform="rotate(-0 588.96 419.277813)">序列 · 场强 · 方向 · 脂肪抑制</text>
+   </g>
+   <g id="text_29">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #c96657" x="588.96" y="501.46375" transform="rotate(-0 588.96 501.46375)">U_B  生物异常解码器</text>
+   </g>
+   <g id="text_30">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="528.4875" transform="rotate(-0 588.96 528.4875)">DETR · 20 queries · Hungarian</text>
+   </g>
+   <g id="text_31">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="554.808828" transform="rotate(-0 588.96 554.808828)">类型 / no-object · 3D 框 · U_j^B</text>
+   </g>
+   <g id="text_32">
+    <text style="font-size: 10.5px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="588.96" y="583.296094" transform="rotate(-0 588.96 583.296094)">存在性门控后参与关系与主宿主选择</text>
+   </g>
+   <g id="text_33">
+    <g id="patch_75">
+     <path d="M 215.664844 593.925
+L 230.735156 593.925
+L 230.735156 579.675
+L 215.664844 579.675
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #c96657" x="223.2" y="589.634375" transform="rotate(-0 223.2 589.634375)">F4</text>
+   </g>
+   <g id="text_34">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #c96657" x="259.92" y="660.537734" transform="rotate(-0 259.92 660.537734)">U_Q  全局采集退化头 · 独立输出</text>
+   </g>
+   <g id="text_35">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="259.92" y="689.015625" transform="rotate(-0 259.92 689.015625)">Masked pooling → 多标签 presence / type + 每类 severity</text>
+   </g>
+   <g id="text_36">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="259.92" y="716.522656" transform="rotate(-0 259.92 716.522656)">motion / noise / aliasing；无 bbox / Hungarian / R_Q</text>
+   </g>
+   <g id="text_37">
+    <g id="patch_76">
+     <path d="M 865.589844 317.445
+L 884.010156 317.445
+L 884.010156 303.195
+L 865.589844 303.195
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #158879" x="874.8" y="313.154375" transform="rotate(-0 874.8 313.154375)">A_i</text>
+   </g>
+   <g id="text_38">
+    <g id="patch_77">
+     <path d="M 862.620313 378.645
+L 872.579688 378.645
+L 872.579688 364.395
+L 862.620313 364.395
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #3578c4" x="867.6" y="374.354375" transform="rotate(-0 867.6 374.354375)">S</text>
+   </g>
+   <g id="text_39">
+    <g id="patch_78">
+     <path d="M 858.964844 457.845
+L 890.635156 457.845
+L 890.635156 443.595
+L 858.964844 443.595
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #c96657" x="874.8" y="453.424688" transform="rotate(-0 874.8 453.424688)">U_j^B</text>
+   </g>
+   <g id="text_40">
+    <text style="font-weight: 700; font-size: 19px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #7854ad" x="1087.2" y="243.858203" transform="rotate(-0 1087.2 243.858203)">显式关系 token</text>
+   </g>
+   <g id="text_41">
+    <text style="font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1087.2" y="273.600391" transform="rotate(-0 1087.2 273.600391)">G_ij ← A mask + U_B box</text>
+   </g>
+   <g id="text_42">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1087.2" y="297.88125" transform="rotate(-0 1087.2 297.88125)">位移 · IoA · 侧别 · 层级</text>
+   </g>
+   <g id="text_43">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1087.2" y="336.047813" transform="rotate(-0 1087.2 336.047813)">r^0_ij = φ[A_i; U_j^B; S; g(G_ij)]</text>
+   </g>
+   <g id="text_44">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1087.2" y="409.48125" transform="rotate(-0 1087.2 409.48125)">K_union × 20 候选对 · 每对 256 维</text>
+   </g>
+   <g id="text_45">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #7854ad" x="1087.2" y="435.837813" transform="rotate(-0 1087.2 435.837813)">缺席 A / U_B 槽位屏蔽</text>
+   </g>
+   <g id="text_46">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #7854ad" x="1087.2" y="494.400781" transform="rotate(-0 1087.2 494.400781)">关系 Transformer · 2 层</text>
+   </g>
+   <g id="text_47">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #7854ad" x="1087.2" y="544.657031" transform="rotate(-0 1087.2 544.657031)">关系表示 r_ij</text>
+   </g>
+   <g id="text_48">
+    <text style="font-weight: 700; font-size: 19px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #7854ad" x="1375.92" y="264.018203" transform="rotate(-0 1375.92 264.018203)">R_B  生物异常关系绑定</text>
+   </g>
+   <g id="text_49">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1375.92" y="296.44125" transform="rotate(-0 1375.92 296.44125)">异常属于 / 影响哪个解剖？</text>
+   </g>
+   <g id="text_50">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1375.92" y="330.425625" transform="rotate(-0 1375.92 330.425625)">sigmoid：软关系</text>
+   </g>
+   <g id="text_51">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1375.92" y="358.137969" transform="rotate(-0 1375.92 358.137969)">softmax(K_union + none)：有效主宿主</text>
+   </g>
+   <g id="text_52">
+    <text style="font-weight: 700; font-size: 19px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #b47b21" x="1375.92" y="480.018203" transform="rotate(-0 1375.92 480.018203)">E  关系可观测性</text>
+   </g>
+   <g id="text_53">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1375.92" y="511.00125" transform="rotate(-0 1375.92 511.00125)">当前图像证据够不够？</text>
+   </g>
+   <g id="text_54">
+    <text style="font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1375.92" y="542.160391" transform="rotate(-0 1375.92 542.160391)">[r_ij ; F_ij^local] → E_ij</text>
+   </g>
+   <g id="text_55">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #596b83" x="1375.92" y="579.117813" transform="rotate(-0 1375.92 579.117813)">关系级输出 · 局部保真度代理监督</text>
+   </g>
+   <g id="text_56">
+    <g id="patch_79">
+     <path d="M 913.695313 645.765
+L 951.104688 645.765
+L 951.104688 631.515
+L 913.695313 631.515
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #158879" x="932.4" y="641.474375" transform="rotate(-0 932.4 641.474375)">A mask</text>
+   </g>
+   <g id="text_57">
+    <g id="patch_80">
+     <path d="M 1051.664531 626.325
+L 1102.575469 626.325
+L 1102.575469 612.075
+L 1051.664531 612.075
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #c96657" x="1077.12" y="622.034375" transform="rotate(-0 1077.12 622.034375)">病灶 3D 框</text>
+   </g>
+   <g id="text_58">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #b47b21" x="1047.6" y="681.146563" transform="rotate(-0 1047.6 681.146563)">局部配对区域 Ω_ij</text>
+   </g>
+   <g id="text_59">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1047.6" y="705.837813" transform="rotate(-0 1047.6 705.837813)">病灶框 ∪（A mask ∩ 病灶 8 mm 邻域）</text>
+   </g>
+   <g id="text_60">
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #596b83" x="1047.6" y="729.314375" transform="rotate(-0 1047.6 729.314375)">裁剪至 M_valid · 8 mm 为待验证默认值</text>
+   </g>
+   <g id="text_61">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #b47b21" x="1389.6" y="682.313125" transform="rotate(-0 1389.6 682.313125)">F2 + Ω_ij</text>
+   </g>
+   <g id="text_62">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1389.6" y="708.646484" transform="rotate(-0 1389.6 708.646484)">Masked mean → F_ij^local</text>
+   </g>
+   <g id="text_63">
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #596b83" x="1389.6" y="731.474375" transform="rotate(-0 1389.6 731.474375)">输入 / E* 监督使用同一区域</text>
+   </g>
+   <g id="text_64">
+    <g id="patch_81">
+     <path d="M 770.624531 767.445
+L 847.935469 767.445
+L 847.935469 753.195
+L 770.624531 753.195
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #b47b21" x="809.28" y="763.154375" transform="rotate(-0 809.28 763.154375)">F2 局部证据旁路</text>
+   </g>
+   <g id="text_65">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="46.8" y="828.635234" transform="rotate(-0 46.8 828.635234)">B  仅训练：受控物理干预</text>
+   </g>
+   <g id="text_66">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="133.2" y="884.706797" transform="rotate(-0 133.2 884.706797)">多线圈 raw k-space</text>
+   </g>
+   <g id="text_67">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #596b83" x="133.2" y="918.52125" transform="rotate(-0 133.2 918.52125)">同一病例</text>
+   </g>
+   <g id="text_68">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #c96657" x="367.2" y="884.932266" transform="rotate(-0 367.2 884.932266)">受控退化 + 重建</text>
+   </g>
+   <g id="text_69">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="367.2" y="918.54" transform="rotate(-0 367.2 918.54)">运动 / 噪声 / 欠采样</text>
+   </g>
+   <g id="text_70">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="670.32" y="884.640781" transform="rotate(-0 670.32 884.640781)">X^0   X^q1   X^q2   X^q3</text>
+   </g>
+   <g id="text_71">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #596b83" x="670.32" y="918.480156" transform="rotate(-0 670.32 918.480156)">同一 raw k-space · 不同干预强度</text>
+   </g>
+   <g id="text_72">
+    <text style="font-weight: 700; font-size: 17px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #3578c4" x="966.24" y="885.515234" transform="rotate(-0 966.24 885.515234)">同一网络</text>
+   </g>
+   <g id="text_73">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="966.24" y="918.52125" transform="rotate(-0 966.24 918.52125)">四视图 · 参数共享</text>
+   </g>
+   <g id="text_74">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1126.08" y="877.48125" transform="rotate(-0 1126.08 877.48125)">保留干净视图 L_rel；退化视图 L_rel 由外部 E* 门控</text>
+   </g>
+   <g id="text_75">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1126.08" y="903.40125" transform="rotate(-0 1126.08 903.40125)">E* &gt; τ：确定性关系监督有效</text>
+   </g>
+   <g id="text_76">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1126.08" y="929.32125" transform="rotate(-0 1126.08 929.32125)">E* ≤ τ：关闭确定性关系监督；鼓励不确定性</text>
+   </g>
+   <g id="text_77">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="1126.08" y="955.265625" transform="rotate(-0 1126.08 955.265625)">U_Q 学习类型 / 强度；E 回归 + 排序</text>
+   </g>
+   <g id="text_78">
+    <text style="font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #b47b21" x="436.32" y="994.403438" transform="rotate(-0 436.32 994.403438)">干净 / 退化图对 + 固定 Ω_ij → 外部 E*（detach）</text>
+   </g>
+   <g id="text_79">
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #596b83" x="436.32" y="1015.884531" transform="rotate(-0 436.32 1015.884531)">各视图共用参考 mask / box；ROI 坐标与 M_valid 同步固定并 detach</text>
+   </g>
+   <g id="text_80">
+    <g id="patch_82">
+     <path d="M 888.59875 994.245
+L 1010.76125 994.245
+L 1010.76125 979.995
+L 888.59875 979.995
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #b47b21" x="949.68" y="989.954375" transform="rotate(-0 949.68 989.954375)">门控退化关系监督 + E 监督</text>
+   </g>
+   <g id="text_81">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #596b83" x="46.8" y="1052.157813" transform="rotate(-0 46.8 1052.157813)">推理与评估：仅当前视图预测 ROI；无干净参考。缺失 / 空 ROI 不输出 E，需报告覆盖率与参考 / 预测 ROI 差距。</text>
+   </g>
+   <g id="text_82">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="46.8" y="1096.029297" transform="rotate(-0 46.8 1096.029297)">训练顺序</text>
+   </g>
+   <g id="text_83">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="237.6" y="1134.480781" transform="rotate(-0 237.6 1134.480781)">I  自监督骨干</text>
+   </g>
+   <g id="text_84">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="655.2" y="1134.690781" transform="rotate(-0 655.2 1134.690781)">II  实体 / 事件感知</text>
+   </g>
+   <g id="text_85">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1072.8" y="1134.480781" transform="rotate(-0 1072.8 1134.480781)">III  关系绑定</text>
+   </g>
+   <g id="text_86">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'Noto Sans CJK JP'; text-anchor: middle; fill: #17263f" x="1490.4" y="1134.606563" transform="rotate(-0 1490.4 1134.606563)">IV  干预 / 可观测性</text>
+   </g>
+   <g id="text_87">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #158879" x="46.8" y="1191.497813" transform="rotate(-0 46.8 1191.497813)">已采纳</text>
+   </g>
+   <g id="text_88">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="150.48" y="1191.117813" transform="rotate(-0 150.48 1191.117813)">1A 退化独立；2A 统一本体 + 存在性门控；3B E* 门控关系监督；4B 输入 / 监督使用同一局部配对区域。</text>
+   </g>
+   <g id="text_89">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #b47b21" x="46.8" y="1220.297813" transform="rotate(-0 46.8 1220.297813)">验证边界</text>
+   </g>
+   <g id="text_90">
+    <text style="font-size: 11px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #17263f" x="150.48" y="1219.917813" transform="rotate(-0 150.48 1219.917813)">E* 为保真度代理；需验证预测 ROI 下的失效预测能力。8 mm 邻域与门控阈值仍需验证。</text>
+   </g>
+   <g id="text_91">
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: start; fill: #596b83" x="46.8" y="1254.919844" transform="rotate(-0 46.8 1254.919844)">实线：前向数据流    虚线：训练监督    ·    来源：RESEARCH_PLAN.md v2.1 / 2026-09-06 架构评审</text>
+   </g>
+   <g id="text_92">
+    <text style="font-size: 10px; font-family: 'Noto Sans CJK JP'; text-anchor: end; fill: #596b83" x="1681.2" y="1254.914375" transform="rotate(-0 1681.2 1254.914375)">设计示意 · 非实验结果</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p86787cb867">
+   <rect x="0" y="0" width="1728" height="1281.6"/>
+  </clipPath>
+ </defs>
+</svg>

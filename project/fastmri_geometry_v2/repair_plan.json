@@ -1,0 +1,852 @@
+{
+  "created_at": "2026-09-06T22:50:45.632133+08:00",
+  "baseline_commit": "b0d1b72e3a7af745bb4758f5a5a286a1048b748b",
+  "source_manifest": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/manifest.csv",
+  "source_manifest_sha256": "b65ad37bd0251d6e7e8e11b24cba64ea0782eb4f3d4f97320b0cb5c5537eb8cd",
+  "source_evidence_sha256": "f24db7afc8b1455610ae2f237351eb818a50760705c39c70d60f4aa2faa0e5a0",
+  "affected_count": 139,
+  "affected_series": {
+    "AXFLAIR_201": 10,
+    "AXFLAIR_202": 65,
+    "AXFLAIR_206": 2,
+    "AXT1_202": 62
+  },
+  "new_work_root": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain_geometry_v2",
+  "policy": "Pending independent geometry-reference check; preserve original outputs, use current versioned geometry for any regenerated predictions. No hand-edited segmentation headers.",
+  "inputs": [
+    {
+      "stem": "file_brain_AXFLAIR_201_6002888",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002888.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21635/stage/file_brain_AXFLAIR_201_6002888.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002888_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002894",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002894.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21635/stage/file_brain_AXFLAIR_201_6002894.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002894_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002909",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002909.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21635/stage/file_brain_AXFLAIR_201_6002909.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002909_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002914",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002914.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21635/stage/file_brain_AXFLAIR_201_6002914.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002914_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002933",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002933.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21636/stage/file_brain_AXFLAIR_201_6002933.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002933_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002956",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002956.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21637/stage/file_brain_AXFLAIR_201_6002956.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002956_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002968",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_201_6002968.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21637/stage/file_brain_AXFLAIR_201_6002968.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002968_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002980",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002980.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21637/stage/file_brain_AXFLAIR_201_6002980.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002980_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6002995",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6002995.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21638/stage/file_brain_AXFLAIR_201_6002995.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6002995_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_201_6003003",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_201_6003003.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21638/stage/file_brain_AXFLAIR_201_6003003.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_201_6003003_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000418",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000418.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000418.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000418_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000420",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000420.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000420.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000420_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000421",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000421.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000421.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000421_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000422",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000422.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000422.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000422_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000423",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000423.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000423.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000423_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000424",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000424.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000424.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000424_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000427",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000427.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000427.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000427_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000428",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000428.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000428.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000428_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000431",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000431.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000431.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000431_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000436",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000436.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000436.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000436_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000440",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000440.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000440.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000440_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000447",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000447.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000447.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000447_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000450",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000450.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000450.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000450_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000455",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000455.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000455.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000455_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000456",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000456.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000456.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000456_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000460",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000460.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000460.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000460_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000464",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000464.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000464.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000464_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000468",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000468.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000468.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000468_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000469",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000469.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21639/stage/file_brain_AXFLAIR_202_6000469.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000469_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000472",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000472.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000472.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000472_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000474",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000474.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000474.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000474_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000476",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000476.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000476.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000476_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000477",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000477.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000477.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000477_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000480",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000480.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000480.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000480_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000481",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000481.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000481.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000481_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000483",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000483.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000483.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000483_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000486",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000486.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000486.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000486_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000489",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000489.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000489.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000489_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000492",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000492.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000492.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000492_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000493",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000493.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000493.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000493_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000496",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000496.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000496.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000496_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000498",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000498.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000498.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000498_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000499",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000499.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000499.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000499_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000502",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000502.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000502.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000502_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000507",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000507.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000507.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000507_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000508",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000508.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000508.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000508_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000510",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000510.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000510.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000510_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000511",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000511.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000511.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000511_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000517",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000517.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000517.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000517_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000520",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000520.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000520.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000520_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000521",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000521.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000521.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000521_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000522",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000522.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000522.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000522_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000524",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000524.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21640/stage/file_brain_AXFLAIR_202_6000524.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000524_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000526",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000526.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000526.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000526_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000528",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000528.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000528.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000528_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000529",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000529.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000529.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000529_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000530",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000530.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000530.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000530_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000531",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000531.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000531.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000531_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000533",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000533.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000533.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000533_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000536",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000536.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000536.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000536_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000539",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000539.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000539.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000539_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000542",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000542.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000542.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000542_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000543",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000543.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000543.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000543_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000548",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000548.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000548.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000548_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000551",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000551.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000551.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000551_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000553",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000553.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000553.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000553_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000554",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000554.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000554.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000554_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000555",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000555.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000555.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000555_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000556",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000556.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000556.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000556_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000557",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000557.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000557.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000557_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000558",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000558.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000558.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000558_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000559",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_202_6000559.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000559.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000559_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000561",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000561.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000561.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000561_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000562",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000562.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000562.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000562_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_202_6000563",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_202_6000563.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21641/stage/file_brain_AXFLAIR_202_6000563.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_202_6000563_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_206_6000260",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXFLAIR_206_6000260.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21646/stage/file_brain_AXFLAIR_206_6000260.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_206_6000260_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXFLAIR_206_6000262",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXFLAIR_206_6000262.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21646/stage/file_brain_AXFLAIR_206_6000262.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXFLAIR_206_6000262_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_2020393",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_2020393.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21665/stage/file_brain_AXT1_202_2020393.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_2020393_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000275",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000275.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000275.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000275_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000279",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000279.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000279.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000279_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000284",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000284.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000284.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000284_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000286",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000286.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000286.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000286_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000288",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000288.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000288.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000288_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000290",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000290.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000290.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000290_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000292",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000292.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000292.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000292_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000294",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000294.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000294.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000294_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000296",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000296.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000296.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000296_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000299",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000299.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000299.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000299_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000303",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000303.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000303.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000303_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000305",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000305.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000305.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000305_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000306",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000306.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000306.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000306_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000308",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000308.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000308.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000308_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000315",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000315.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000315.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000315_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000317",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000317.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000317.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000317_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000319",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000319.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000319.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000319_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000324",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000324.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000324.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000324_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000326",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000326.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000326.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000326_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000328",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000328.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000328.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000328_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000333",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000333.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21668/stage/file_brain_AXT1_202_6000333.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000333_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000336",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000336.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000336.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000336_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000342",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000342.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000342.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000342_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000345",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000345.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000345.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000345_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000347",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000347.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000347.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000347_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000349",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000349.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000349.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000349_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000353",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000353.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000353.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000353_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000363",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000363.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000363.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000363_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000372",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000372.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000372.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000372_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000374",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000374.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000374.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000374_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000382",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000382.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000382.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000382_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000384",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000384.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000384.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000384_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000389",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000389.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000389.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000389_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000392",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000392.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000392.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000392_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000398",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000398.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000398.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000398_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000402",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000402.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000402.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000402_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000404",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000404.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000404.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000404_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000408",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000408.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000408.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000408_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000411",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000411.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000411.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000411_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000413",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000413.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21669/stage/file_brain_AXT1_202_6000413.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000413_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000416",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000416.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000416.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000416_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000419",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000419.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000419.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000419_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000432",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000432.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000432.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000432_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000438",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000438.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000438.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000438_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000445",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000445.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000445.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000445_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000448",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000448.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000448.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000448_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000451",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000451.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000451.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000451_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000470",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000470.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000470.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000470_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000478",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000478.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000478.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000478_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000490",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000490.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000490.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000490_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000500",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000500.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000500.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000500_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000503",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000503.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000503.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000503_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000512",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000512.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000512.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000512_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000515",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000515.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000515.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000515_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000518",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000518.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000518.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000518_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000534",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000534.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000534.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000534_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000537",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000537.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000537.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000537_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000544",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000544.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000544.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000544_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000574",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_train/file_brain_AXT1_202_6000574.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21670/stage/file_brain_AXT1_202_6000574.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000574_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000587",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000587.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21671/stage/file_brain_AXT1_202_6000587.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000587_seg.nii.gz"
+    },
+    {
+      "stem": "file_brain_AXT1_202_6000591",
+      "source_h5": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain/multicoil_val/file_brain_AXT1_202_6000591.h5",
+      "previous_stage": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/chunks/21671/stage/file_brain_AXT1_202_6000591.nii.gz",
+      "previous_native": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native/file_brain_AXT1_202_6000591_seg.nii.gz"
+    }
+  ]
+}
