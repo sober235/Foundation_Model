@@ -22,8 +22,8 @@ FM = Path("/data2/congcong/data/FM_data")
 DEST = FM / "SKM-TEA_ltr/segmentation_masks/raw-data-track"
 ARCHIVES = FM / "SKM-TEA_ltr/redivis_archives"
 RAW = FM / "SKM-TEA/files_recon_calib-24"
-ORG = "stanford"
-DATASET_NAMES = ("skm_tea", "SKM-TEA", "skm-tea", "5r8z")     # the URL id is 5r8z-achpw6q4f
+ORG = "aimi"   # the dataset page lives under the Stanford institution domain, the owner is the AIMI organization
+DATASET_NAMES = ("skm_tea", "SKM-TEA")     # the URL id is 5r8z-achpw6q4f
 MAX_FILES = 100000
 
 
