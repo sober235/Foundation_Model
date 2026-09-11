@@ -30,6 +30,7 @@ class Backbone(nn.Module):
         patch_size=(2, 4, 4),
         window_size=(4, 8, 8),
         in_chans=1,
+        use_checkpoint=False,
     ):
         super().__init__()
         self.swin = SwinTransformer(
@@ -40,6 +41,7 @@ class Backbone(nn.Module):
             depths=depths,
             num_heads=num_heads,
             spatial_dims=3,
+            use_checkpoint=use_checkpoint,
         )
         # F1..F4 stop at stride (16,32,32); the last stage would be dead weight.
         del self.swin.layers4
