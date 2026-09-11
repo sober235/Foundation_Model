@@ -1,0 +1,37 @@
+ready scans 155
+in_seg instances with known host: 308
+V0 argmax IoA all labels (repo oracle)           label 0.854  family 0.854  n=308
+V1 class-aware IoA + nearest fallback            label 0.958  family 0.958  n=308
+V2 class-aware padded-IoA + nearest fallback     label 0.948  family 0.948  n=308
+V3 class-aware nearest only                      label 0.825  family 0.825  n=308
+
+per supercategory (family level):
+  Meniscal Tear    n=100  V0 0.780  V1 1.000  V2 1.000  V3 1.000
+  Cartilage Lesion n=208  V0 0.889  V1 0.938  V2 0.923  V3 0.740
+
+per fold (family level, V0 vs V1 vs V2):
+  fold 0 n= 56  V0 0.839  V1 0.929  V2 0.911
+  fold 1 n= 56  V0 0.893  V1 0.964  V2 0.946
+  fold 2 n= 64  V0 0.891  V1 1.000  V2 0.984
+  fold 3 n= 66  V0 0.803  V1 0.939  V2 0.924
+  fold 4 n= 66  V0 0.848  V1 0.955  V2 0.970
+
+remaining family-level errors under V2:
+  MTR_020 ann  67 Cartilage Lesio host=2 pred=4 IoA_host=0.000 d_host=3.75mm side=single_no_overlap
+  MTR_023 ann  74 Cartilage Lesio host=2 pred=3 IoA_host=0.350 d_host=0.00mm side=single
+  MTR_052 ann  82 Cartilage Lesio host=2 pred=1 IoA_host=0.037 d_host=0.00mm side=single
+  MTR_052 ann  83 Cartilage Lesio host=1 pred=2 IoA_host=0.000 d_host=0.00mm side=single
+  MTR_094 ann 173 Cartilage Lesio host=2 pred=3 IoA_host=0.108 d_host=0.00mm side=single
+  MTR_094 ann 174 Cartilage Lesio host=3 pred=2 IoA_host=0.021 d_host=0.00mm side=medial
+  MTR_094 ann 175 Cartilage Lesio host=1 pred=2 IoA_host=0.136 d_host=0.00mm side=single
+  MTR_101 ann 241 Cartilage Lesio host=1 pred=2 IoA_host=0.000 d_host=9.38mm side=single_no_overlap
+  MTR_110 ann  17 Cartilage Lesio host=1 pred=2 IoA_host=0.231 d_host=0.00mm side=single
+  MTR_115 ann  85 Cartilage Lesio host=1 pred=2 IoA_host=0.278 d_host=0.00mm side=single
+  MTR_150 ann 124 Cartilage Lesio host=1 pred=2 IoA_host=0.000 d_host=2.62mm side=single_no_overlap
+  MTR_154 ann  44 Cartilage Lesio host=3 pred=2 IoA_host=0.144 d_host=0.00mm side=medial
+  MTR_163 ann 135 Cartilage Lesio host=1 pred=2 IoA_host=0.045 d_host=0.00mm side=single
+  MTR_164 ann  92 Cartilage Lesio host=2 pred=1 IoA_host=0.110 d_host=0.00mm side=single
+  MTR_194 ann  17 Cartilage Lesio host=2 pred=3 IoA_host=0.545 d_host=0.00mm side=single
+  MTR_207 ann  63 Cartilage Lesio host=3 pred=2 IoA_host=0.091 d_host=0.00mm side=medial
+
+remaining label-level errors under V2 that are family-correct (side errors): 0

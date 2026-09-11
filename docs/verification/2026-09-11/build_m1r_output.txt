@@ -1,0 +1,5 @@
+155 scans, 0 failed: []
+in_seg host_side m1 : {'medial': 76, 'single': 160, 'lateral': 68, 'single_no_overlap': 5, 'unresolved': 2}
+in_seg host_side m1r: {'medial': 75, 'single': 159, 'lateral': 68, 'single_no_overlap': 6, 'unresolved': 3}
+host_label changed on 1 rows (scan, ann_id, m1, m1r):
+   MTR_110 15 5 
