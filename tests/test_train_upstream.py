@@ -25,6 +25,7 @@ def test_a_tiny_run_writes_metrics_and_a_last_checkpoint(synthetic_m1r, tmp_path
     assert [r["step"] for r in rows] == [1, 2]
     last = torch.load(tmp_path / "run/last.pt", map_location="cpu", weights_only=False)
     assert last["step"] == 2 and last["config"]["model"]["M"] == 4
+    assert len(rows[0]["scans"]) == 4                     # four whole volumes per step by default
 
 
 def test_resume_continues_from_the_checkpoint(synthetic_m1r, tmp_path):

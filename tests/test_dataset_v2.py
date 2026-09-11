@@ -74,3 +74,21 @@ def test_collate_one_adds_the_batch_axis(synthetic_m1r):
     b = collate_one([WholeVolumeDataset(scans[:1], cache, export, train=False, views=("us16",))[0]])
     assert b["image"].shape == (1, 1, 32, 64, 64) and b["seg"].shape == (1, 32, 64, 64)
     assert b["boxes"][0].shape == (4, 6) and b["view"] == ["us16"] and b["valid_depth"].tolist() == [30]
+
+
+def test_collate_batch_pads_every_volume_to_the_deepest_member(tmp_path):
+    from synth import DEFAULT_BOXES, write_synthetic_scan
+
+    from anatobind.train.cache import cache_scan
+    from anatobind.train.dataset_v2 import collate_batch
+
+    for scan, depth in (("MTR_001", 30), ("MTR_002", 40)):
+        d = write_synthetic_scan(tmp_path / "exp", scan, DEFAULT_BOXES, shape=(64, 64, depth))
+        cache_scan(d, tmp_path / "cache" / scan)
+    ds = WholeVolumeDataset(["MTR_001", "MTR_002"], tmp_path / "cache", tmp_path / "exp", train=False, views=("clean",))
+    b = collate_batch([ds[0], ds[1]])
+    assert b["image"].shape == (2, 1, 64, 64, 64) and b["seg"].shape == (2, 64, 64, 64)
+    assert b["valid_depth"].tolist() == [30, 40]
+    assert (b["seg"][0, 30:] == 0).all()
+    assert (b["image"][0, 0, 30:] == b["image"][0, 0, :30].min()).all()
+    assert len(b["boxes"]) == 2 and b["view"] == ["clean", "clean"]

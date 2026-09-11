@@ -1,10 +1,12 @@
 """Stage-II training of the whole-volume upstream for one fold (RESEARCH_PLAN v2.2 13.6).
 
 Fixed step count, last checkpoint, no validation: nothing is selected on held-out scans.
+Four whole volumes per step (user decision 2026-09-11): on the shared GPUs every kernel launch
+stalls about 1.2 ms, so a step costs about the same whatever it carries; 7500 steps = 30,000 volumes.
 Resumable: ckpt.pt is rewritten every --ckpt-every steps; last.pt is written at the end.
 
   CUDA_VISIBLE_DEVICES=6 PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python \
-      scripts/train_upstream.py --fold 0 --steps 30000 --out runs/upstream_fold0 --resume
+      scripts/train_upstream.py --fold 0 --steps 7500 --out runs/upstream_fold0 --resume
 """
 import argparse
 import json
@@ -20,7 +22,7 @@ from torch.utils.data import DataLoader
 from anatobind.model.upstream import Upstream
 from anatobind.model.upstream_losses import upstream_loss
 from anatobind.train.dataset import load_fold
-from anatobind.train.dataset_v2 import WholeVolumeDataset, collate_one, seed_worker
+from anatobind.train.dataset_v2 import WholeVolumeDataset, collate_batch, seed_worker
 
 FM = Path("/data2/congcong/data/FM_data/derived/skmtea")
 FULL = dict(K=6, M=20, num_classes=4, d_model=256, embed_dim=64, layers=6, heads=8, mask_dim=32)
@@ -30,8 +32,9 @@ TINY = dict(K=6, M=4, num_classes=4, d_model=32, embed_dim=16, layers=2, heads=4
 def parse(argv):
     ap = argparse.ArgumentParser()
     ap.add_argument("--fold", type=int, required=True)
-    ap.add_argument("--steps", type=int, default=30000)
-    ap.add_argument("--warmup", type=int, default=500)
+    ap.add_argument("--steps", type=int, default=7500)
+    ap.add_argument("--warmup", type=int, default=125)
+    ap.add_argument("--batch", type=int, default=4, help="whole volumes per step")
     ap.add_argument("--lr", type=float, default=2e-4)
     ap.add_argument("--wd", type=float, default=0.05)
     ap.add_argument("--seed", type=int, default=0)
@@ -84,8 +87,8 @@ def main(argv=None):
     device = torch.device("cuda" if torch.cuda.is_available() and not a.cpu else "cpu")
     train_ids, _ = load_fold(a.export_root, a.fold)
     ds = WholeVolumeDataset(train_ids, a.cache_root, a.export_root, train=True, seed=a.seed)
-    loader = DataLoader(ds, batch_size=1, shuffle=True, drop_last=True, num_workers=a.workers,
-                        collate_fn=collate_one, worker_init_fn=seed_worker, persistent_workers=a.workers > 0)
+    loader = DataLoader(ds, batch_size=a.batch, shuffle=True, drop_last=True, num_workers=a.workers,
+                        collate_fn=collate_batch, worker_init_fn=seed_worker, persistent_workers=a.workers > 0)
     cfg = TINY if a.tiny else FULL
     model = Upstream(**cfg, use_checkpoint=a.grad_ckpt).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr, weight_decay=a.wd)
@@ -121,7 +124,7 @@ def main(argv=None):
             step += 1
             row = {"step": step, "loss": float(loss), **parts, "grad_norm": float(gnorm),
                    "lr": sched.get_last_lr()[0], "seconds": round(time.time() - t0, 1),
-                   "scan": batch["scan_id"][0], "view": batch["view"][0]}
+                   "scans": batch["scan_id"], "views": batch["view"]}
             log.write(json.dumps(row) + "\n")
             log.flush()
             if step == 1 or step % a.log_every == 0:

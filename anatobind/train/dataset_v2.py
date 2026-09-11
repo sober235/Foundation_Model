@@ -118,3 +118,28 @@ def collate_one(samples):
         "host_label": [torch.from_numpy(s["host_label"])], "tissue_id": [torch.from_numpy(s["tissue_id"])],
         "ann_id": [torch.from_numpy(s["ann_id"])], "scan_id": [s["scan_id"]], "view": [s["view"]],
     }
+
+
+def collate_batch(samples):
+    """Stack whole volumes, padding each at the end of Z to the deepest member of the batch.
+
+    Every sample is already padded to a multiple of 32; only a batch holding one of the four scans
+    whose depth is not 160 needs more, and those slices fall outside valid_depth like any padding.
+    """
+    depth = max(s["image"].shape[1] for s in samples)
+
+    def to_depth(a, value):
+        extra = depth - a.shape[-3]
+        if not extra:
+            return a
+        return np.pad(a, [(0, 0)] * (a.ndim - 3) + [(0, extra), (0, 0), (0, 0)], constant_values=value)
+
+    return {
+        "image": torch.from_numpy(np.stack([to_depth(s["image"], float(s["image"].min())) for s in samples])),
+        "seg": torch.from_numpy(np.stack([to_depth(s["seg"], 0) for s in samples])),
+        "valid_depth": torch.tensor([s["valid_depth"] for s in samples]),
+        "present": torch.from_numpy(np.stack([s["present"] for s in samples])),
+        "spacing_mm": torch.from_numpy(np.stack([s["spacing_mm"] for s in samples])),
+        **{k: [torch.from_numpy(s[k]) for s in samples] for k in ("boxes", "box_classes", "host_label", "tissue_id", "ann_id")},
+        "scan_id": [s["scan_id"] for s in samples], "view": [s["view"] for s in samples],
+    }
