@@ -51,6 +51,26 @@ def extract_raw_track(archive, dest):
     return sorted(written)
 
 
+ARCHIVE = re.compile(r"(segmentation|raw-data-track)[^/]*\.(tar\.gz|tgz|tar|zip)$", re.IGNORECASE)
+
+
+def select_api_files(files):
+    """Split Redivis File objects into (raw-data-track NIfTIs, candidate archives).
+
+    A NIfTI is selected only when its path names the raw-data-track folder; a bare MTR_xxx.nii.gz
+    cannot be told from its dicom-track twin and is left alone. Archives whose name mentions
+    segmentation masks or the raw-data track are returned separately for extract_raw_track.
+    """
+    niftis, archives = [], []
+    for f in files:
+        path = f.properties.get("path") or f.name
+        if MEMBER.search(str(path)):
+            niftis.append(f)
+        elif ARCHIVE.search(f.name):
+            archives.append(f)
+    return niftis, archives
+
+
 def check_complete(written, scans):
     """(missing scan ids, unexpected scan ids) of a written file list against the expected scans."""
     got = {w[: -len(".nii.gz")] for w in written}
