@@ -53,3 +53,21 @@ def test_backbone_checkpointing_changes_nothing_but_memory():
     ckpt.train()
     sum(f.square().mean() for f in ckpt(x)).backward()
     assert ckpt.swin.patch_embed.proj.weight.grad.abs().sum() > 0
+
+
+def test_token_centres_follow_the_box_normalisation():
+    from anatobind.model.decoders import token_centres
+    c = token_centres((2, 1, 4), "cpu")
+    assert c.shape == (8, 3)
+    torch.testing.assert_close(c[0], torch.tensor([0.25, 0.5, 0.125]))
+    torch.testing.assert_close(c[-1], torch.tensor([0.75, 0.5, 0.875]))
+
+
+def test_coordinates_are_off_by_default_and_change_the_output_when_on(feats):
+    torch.manual_seed(0)
+    plain = UBDecoder(CHANNELS, d_model=64, M=6, layers=2, num_classes=4).eval()
+    torch.manual_seed(0)
+    placed = UBDecoder(CHANNELS, d_model=64, M=6, layers=2, num_classes=4, coords=True).eval()
+    assert plain.stack.coord is None and placed.stack.coord is not None
+    with torch.no_grad():
+        assert not torch.allclose(plain(feats)["boxes"], placed(feats)["boxes"])

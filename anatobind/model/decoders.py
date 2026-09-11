@@ -17,6 +17,16 @@ import torch.nn.functional as F
 from einops import rearrange
 
 
+def token_centres(shape, device):
+    """Normalised (z, y, x) centre of every token of a (D, H, W) grid, flattened in token order.
+
+    Token i of an axis of n tokens covers [i/n, (i+1)/n) of the input extent, the same normalisation
+    the lesion boxes use, so its centre is (i + 0.5) / n.
+    """
+    axes = [(torch.arange(n, device=device, dtype=torch.float32) + 0.5) / n for n in shape]
+    return torch.stack(torch.meshgrid(*axes, indexing="ij"), -1).reshape(-1, 3)
+
+
 class _Layer(nn.Module):
     """Pre-norm cross-attention, query self-attention, feed-forward."""
 
@@ -42,15 +52,24 @@ class _Layer(nn.Module):
 class _QueryStack(nn.Module):
     """Learned queries attending the feature levels in turn, coarse to fine."""
 
-    def __init__(self, mem_channels, d_model, n_queries, layers, heads):
+    def __init__(self, mem_channels, d_model, n_queries, layers, heads, coords=False):
         super().__init__()
         self.query = nn.Parameter(torch.randn(n_queries, d_model) * 0.02)
         self.proj = nn.ModuleList(nn.Conv3d(c, d_model, 1) for c in mem_channels)
         self.layers = nn.ModuleList(_Layer(d_model, heads) for _ in range(layers))
         self.norm = nn.LayerNorm(d_model)
+        # Absolute position for the memory tokens. The Swin features carry only relative position,
+        # so without this a query can find a lesion by content but cannot say where it is.
+        self.coord = (nn.Sequential(nn.Linear(3, d_model), nn.GELU(), nn.Linear(d_model, d_model))
+                      if coords else None)
 
     def forward(self, mems, return_all=False):
-        toks = [rearrange(p(m), "b c d h w -> b (d h w) c") for p, m in zip(self.proj, mems)]
+        toks = []
+        for p, m in zip(self.proj, mems):
+            t = rearrange(p(m), "b c d h w -> b (d h w) c")
+            if self.coord is not None:
+                t = t + self.coord(token_centres(m.shape[2:], m.device))[None].to(t.dtype)
+            toks.append(t)
         q = self.query[None].expand(mems[0].shape[0], -1, -1)
         every = []
         for i, layer in enumerate(self.layers):
@@ -84,11 +103,11 @@ class ADecoder(nn.Module):
 class UBDecoder(nn.Module):
     """M event queries -> class logits, normalised box, embedding."""
 
-    def __init__(self, channels, d_model=128, M=8, layers=3, num_classes=2, heads=4):
+    def __init__(self, channels, d_model=128, M=8, layers=3, num_classes=2, heads=4, coords=False):
         super().__init__()
         self.M = M
         c1, c2, c3, _ = channels
-        self.stack = _QueryStack((c3, c2, c1), d_model, M, layers, heads)
+        self.stack = _QueryStack((c3, c2, c1), d_model, M, layers, heads, coords=coords)
         self.cls = nn.Linear(d_model, num_classes + 1)
         self.box = nn.Sequential(
             nn.Linear(d_model, d_model), nn.GELU(), nn.Linear(d_model, 6)
