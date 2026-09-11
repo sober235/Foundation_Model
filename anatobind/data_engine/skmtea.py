@@ -133,6 +133,7 @@ def host_seg_label(seg_h5, box, tissue_id, pad=4, ambiguous=(0.4, 0.6)):
 
 # --- per-scan export for M1 -----------------------------------------------------------------------
 import csv  # noqa: E402
+import os  # noqa: E402
 
 from anatobind.data_engine.resample import downsample2_inplane_image, downsample2_inplane_labels, scale_box_inplane  # noqa: E402
 from anatobind.data_engine.skmtea_recon import add_complex_noise, adjoint_sense, embed_poisson, noise_sigma, undersample  # noqa: E402
@@ -163,6 +164,45 @@ def _save(vol, spacing, path):
     img = nib.Nifti1Image(np.ascontiguousarray(vol), _affine(spacing))
     img.header.set_xyzt_units("mm")
     nib.save(img, str(path))
+
+
+def link_files(src_dir, dst_dir, names):
+    """Hard-link names from src_dir into dst_dir (same filesystem); existing links are kept."""
+    dst_dir = Path(dst_dir)
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        dst = dst_dir / name
+        if not dst.exists():
+            os.link(Path(src_dir) / name, dst)
+
+
+def write_seg_and_boxes(seg_h5, spacing, box_rows, out_dir):
+    """seg.nii.gz (2x in-plane) and boxes.csv with hosts resolved on seg_h5 (rule D5, part 3)."""
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    _save(downsample2_inplane_labels(seg_h5), spacing, out_dir / "seg.nii.gz")
+    rows, sides = [], []
+    for b in box_rows:
+        if not b["keep"]:
+            continue
+        full = (b["x0"], b["y0"], b["z0"], b["x1"], b["y1"], b["z1"])
+        host = host_seg_label(seg_h5, full, b["tissue_id"])
+        sides.append(host["side"])
+        half = scale_box_inplane(full)
+        rows.append({
+            "ann_id": b["ann_id"], "split": b["split"], "layer": b["layer"], "supercategory": b["supercategory"],
+            "category_id": b["category_id"], "tissue_id": b["tissue_id"],
+            "host_label": "" if host["label"] is None else host["label"], "host_side": host["side"],
+            "host_ratio": "" if host["ratio"] is None else f"{host['ratio']:.3f}",
+            "x0": half[0], "y0": half[1], "z0": half[2], "x1": half[3], "y1": half[4], "z1": half[5],
+            "x0_full": full[0], "y0_full": full[1], "z0_full": full[2], "x1_full": full[3], "y1_full": full[4], "z1_full": full[5],
+        })
+    with open(out_dir / "boxes.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=BOX_FIELDS)
+        w.writeheader()
+        w.writerows(rows)
+    return {"n_boxes_kept": len(rows), "n_ambiguous": sides.count("ambiguous"),
+            "n_no_overlap": sides.count("single_no_overlap"), "n_unresolved": sides.count("unresolved")}
 
 
 def export_scan(h5_path, seg_nii_path, box_rows, out_dir, conditions, rng_seed, orientation=("SI", "AP", "LR")):
@@ -198,31 +238,8 @@ def export_scan(h5_path, seg_nii_path, box_rows, out_dir, conditions, rng_seed, 
             _save(downsample2_inplane_image(rec), spacing, p)
             files.append(p.name)
     seg_h5 = load_seg_h5_frame(seg_nii_path, orientation)
-    _save(downsample2_inplane_labels(seg_h5), spacing, out_dir / "seg.nii.gz")
-    files.append("seg.nii.gz")
-    rows, sides = [], []
-    for b in box_rows:
-        if not b["keep"]:
-            continue
-        full = (b["x0"], b["y0"], b["z0"], b["x1"], b["y1"], b["z1"])
-        host = host_seg_label(seg_h5, full, b["tissue_id"])
-        sides.append(host["side"])
-        half = scale_box_inplane(full)
-        rows.append({
-            "ann_id": b["ann_id"], "split": b["split"], "layer": b["layer"], "supercategory": b["supercategory"],
-            "category_id": b["category_id"], "tissue_id": b["tissue_id"],
-            "host_label": "" if host["label"] is None else host["label"], "host_side": host["side"],
-            "host_ratio": "" if host["ratio"] is None else f"{host['ratio']:.3f}",
-            "x0": half[0], "y0": half[1], "z0": half[2], "x1": half[3], "y1": half[4], "z1": half[5],
-            "x0_full": full[0], "y0_full": full[1], "z0_full": full[2], "x1_full": full[3], "y1_full": full[4], "z1_full": full[5],
-        })
-    with open(out_dir / "boxes.csv", "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=BOX_FIELDS)
-        w.writeheader()
-        w.writerows(rows)
-    files.append("boxes.csv")
-    return {"scan_id": Path(h5_path).name[:-3], "out_dir": str(out_dir), "n_boxes_kept": len(rows),
-            "n_ambiguous": sides.count("ambiguous"), "n_no_overlap": sides.count("single_no_overlap"),
-            "n_unresolved": sides.count("unresolved"),
+    counts = write_seg_and_boxes(seg_h5, spacing, box_rows, out_dir)
+    files += ["seg.nii.gz", "boxes.csv"]
+    return {"scan_id": Path(h5_path).name[:-3], "out_dir": str(out_dir), **counts,
             "spacing": ";".join(f"{v:.5f}" for v in spacing),
             "nrmse": ";".join(f"{key}={v:.4f}" for key, v in nrmse.items()), "files": files}
