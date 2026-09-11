@@ -17,6 +17,8 @@ from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
+import nibabel as nib
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.data_engine.skmtea import (  # noqa: E402
     link_files, load_orientations, load_rawtrack_seg_h5_frame, rawtrack_spacing_h5_frame, write_seg_and_boxes,
@@ -51,10 +53,17 @@ def job(args):
         seg_h5 = load_rawtrack_seg_h5_frame(RAWSEG / f"{scan}.nii.gz", orientation)
         sx, sy, sz = rawtrack_spacing_h5_frame(RAWSEG / f"{scan}.nii.gz", orientation)
         spacing = (sx * 2, sy * 2, sz)
+        # The corrected NIfTI's zooms differ from the image's by up to 1e-4 mm (0.79988 vs 0.79998 on
+        # MTR_112). Same grid, so the seg header takes the image's spacing exactly: nnU-Net's integrity
+        # check compares the two headers and rejects even that difference.
         m1_spacing = tuple(float(v) for v in m1_row["spacing"].split(";"))
         if max(abs(a - b) for a, b in zip(spacing, m1_spacing)) > 1e-3:
             raise ValueError(f"spacing {spacing} differs from m1 {m1_spacing}")
-        counts = write_seg_and_boxes(seg_h5, spacing, rows, out)
+        image_zooms = tuple(float(v) for v in nib.load(str(M1 / scan / "image_clean_e1.nii.gz")).header.get_zooms()[:3])
+        counts = write_seg_and_boxes(seg_h5, image_zooms, rows, out)
+        seg_zooms = tuple(float(v) for v in nib.load(str(out / "seg.nii.gz")).header.get_zooms()[:3])
+        if seg_zooms != image_zooms:
+            raise ValueError(f"seg zooms {seg_zooms} != image zooms {image_zooms}")
         row = {"scan_id": scan, "out_dir": str(out), **counts, "spacing": m1_row["spacing"], "nrmse": m1_row["nrmse"],
                "files": ";".join(IMAGES + ["seg.nii.gz", "boxes.csv"]), "status": "ok"}
     except Exception as exc:
