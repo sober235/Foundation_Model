@@ -56,13 +56,12 @@ def test_completeness_reports_missing_and_unexpected_scans():
 
 
 class _F:
-    """Stand-in for a redivis File: a name and the properties dict the client exposes."""
+    """Stand-in for a redivis File: bare name, path with folder, and the properties dict the client exposes."""
 
     def __init__(self, name, path=None, size=1):
-        self.name = name
-        self.properties = {"file_name": name, "size": size}
-        if path is not None:
-            self.properties["path"] = path
+        self.name = name.rsplit("/", 1)[-1]
+        self.path = path or name
+        self.properties = {"file_name": path or name, "size": size}
 
 
 def test_api_files_are_selected_by_their_raw_track_path():
@@ -74,6 +73,17 @@ def test_api_files_are_selected_by_their_raw_track_path():
              _F("MTR_009.nii.gz"),                                   # no path: cannot tell the track, not selected
              _F("segmentation_masks.tar.gz", size=10)]
     niftis, archives = select_api_files(files)
-    assert [f.properties.get("path", f.name) for f in niftis] == [
+    assert [str(f.path) for f in niftis] == [
         "segmentation_masks/raw-data-track/MTR_001.nii.gz", "raw-data-track/MTR_005.nii.gz"]
     assert [f.name for f in archives] == ["segmentation_masks.tar.gz"]
+
+
+def test_md5_base64_matches_redivis_encoding(tmp_path):
+    import base64
+    import hashlib
+
+    from anatobind.data_engine.rawtrack_fetch import md5_base64
+
+    p = tmp_path / "x.bin"
+    p.write_bytes(b"segmentation")
+    assert md5_base64(p) == base64.b64encode(hashlib.md5(b"segmentation").digest()).decode()

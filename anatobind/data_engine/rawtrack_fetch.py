@@ -5,6 +5,7 @@ carry the vendor's gradient-warp correction; the raw-data-track masks were regis
 authors onto the SENSE reconstructions (paper appendix A.3). Anything paired with images
 reconstructed from raw k-space must use the raw-data-track set (appendix A.6).
 """
+import base64
 import hashlib
 import re
 import shutil
@@ -63,12 +64,31 @@ def select_api_files(files):
     """
     niftis, archives = [], []
     for f in files:
-        path = f.properties.get("path") or f.name
-        if MEMBER.search(str(path)):
+        if MEMBER.search(file_path(f)):
             niftis.append(f)
         elif ARCHIVE.search(f.name):
             archives.append(f)
     return niftis, archives
+
+
+def file_path(f):
+    """The path of a Redivis File including its folder: File.path, else the file_name variable, else name."""
+    path = getattr(f, "path", None)
+    if path is not None and str(path):
+        return str(path)
+    return str(f.properties.get("file_name") or f.name)
+
+
+def md5_base64(path, chunk=1 << 20):
+    """Redivis reports md5_hash as base64 of the raw digest."""
+    md5 = hashlib.md5()
+    with open(path, "rb") as fh:
+        while True:
+            block = fh.read(chunk)
+            if not block:
+                break
+            md5.update(block)
+    return base64.b64encode(md5.digest()).decode()
 
 
 def check_complete(written, scans):

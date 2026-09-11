@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from anatobind.data_engine.rawtrack_fetch import check_complete, extract_raw_track, select_api_files  # noqa: E402
+from anatobind.data_engine.rawtrack_fetch import check_complete, extract_raw_track, file_path, md5_base64, select_api_files  # noqa: E402
 
 TOKEN_FILE = Path.home() / ".redivis_token"
 FM = Path("/data2/congcong/data/FM_data")
@@ -57,13 +57,17 @@ def find_dataset(redivis):
     raise SystemExit("dataset not found:\n  " + "\n  ".join(errors))
 
 
-def all_files(ds):
+def all_files(ds, only=None):
+    """Files of every file-index table (or of the tables named in `only`)."""
     out = []
     for table in ds.list_tables():
         table.get()
         props = table.properties
-        kind = props.get("kind") or props.get("tableType") or ""
-        print(f"table {props.get('name')!r} kind={kind!r} rows={props.get('numRows')} files={props.get('numFiles')}")
+        if only and props.get("name") not in only:
+            continue
+        print(f"table {props.get('name')!r} rows={props.get('numRows')} file index={props.get('isFileIndex')}")
+        if not props.get("isFileIndex"):
+            continue
         try:
             files = table.list_files(MAX_FILES)
         except Exception as exc:
@@ -85,13 +89,13 @@ def main():
     ds = find_dataset(redivis)
     print(f"dataset {ds.properties.get('name')!r} reference {ds.qualified_reference!r} "
           f"version {ds.properties.get('version', {}).get('tag') if isinstance(ds.properties.get('version'), dict) else ds.properties.get('version')}")
-    files = all_files(ds)
+    files = all_files(ds, only=None if a.list else {"segmentation_masks"})
     print(f"{len(files)} files in total")
     niftis, archives = select_api_files(files)
     print(f"raw-data-track NIfTIs by path: {len(niftis)}; candidate archives: {[f.name for f in archives]}")
     if a.list:
-        for f in sorted(files, key=lambda f: str(f.properties.get("path") or f.name))[:80]:
-            print(f"  {f.properties.get('size', '?'):>12}  {f.properties.get('path') or f.name}")
+        for f in sorted(files, key=file_path)[:80]:
+            print(f"  {f.properties.get('size', '?'):>12}  {file_path(f)}")
         if len(files) > 80:
             print(f"  ... {len(files) - 80} more")
         return
@@ -100,12 +104,18 @@ def main():
     DEST.mkdir(parents=True, exist_ok=True)
     written = []
     if niftis:
+        bad = []
         for f in niftis:
             target = DEST / f.name
             if not target.exists():
-                f.download(str(target), overwrite=False)
+                f.download(str(target), overwrite=False, progress=False)
+            expected = f.properties.get("md5_hash")
+            if expected and md5_base64(target) != expected:
+                bad.append(f.name)
             written.append(f.name)
-        print(f"downloaded {len(written)} NIfTIs")
+        print(f"downloaded {len(written)} NIfTIs, md5 mismatches: {bad}")
+        if bad:
+            raise SystemExit(f"md5 mismatch on {bad}")
     elif archives:
         ARCHIVES.mkdir(parents=True, exist_ok=True)
         for f in archives:
