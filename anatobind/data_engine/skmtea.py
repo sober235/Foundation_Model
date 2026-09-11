@@ -87,6 +87,31 @@ def load_seg_h5_frame(nii_path, orientation=("SI", "AP", "LR")):
     return np.ascontiguousarray(seg_nifti_to_h5_frame(np.asarray(nib.load(str(nii_path)).dataobj), orientation)).astype(np.uint8)
 
 
+from anatobind.data_engine.seg_frames import apply_frame, parse_frame_name, zooms_in_h5_frame  # noqa: E402
+
+# Frame of the gradient-warp-corrected raw-data-track NIfTIs, keyed by the third axis of the annotation
+# orientation. Measured on all 155 scans on 2026-09-11 with scripts/discover_rawtrack_frame.py
+# (docs/verification/2026-09-11/rawtrack_frame.csv): the corrected masks are stored directly on the h5
+# (x, y, z) grid, so neither the transpose nor the RL flip of the dicom-track set applies. Every scan's
+# best frame was the identity with a cartilage score of at least 2.35 (gate line 1.5), and the margin
+# over the second-best frame was at least 0.26. tests/test_rawtrack_frames.py keeps the constant and the
+# measurement in step.
+RAW_TRACK_FRAMES = {"LR": "----", "RL": "----"}
+
+
+def rawtrack_frame(orientation):
+    return parse_frame_name(RAW_TRACK_FRAMES[tuple(orientation)[2]])
+
+
+def load_rawtrack_seg_h5_frame(nii_path, orientation=("SI", "AP", "LR")):
+    arr = np.asarray(nib.load(str(nii_path)).dataobj)
+    return np.ascontiguousarray(apply_frame(arr, rawtrack_frame(orientation))).astype(np.uint8)
+
+
+def rawtrack_spacing_h5_frame(nii_path, orientation=("SI", "AP", "LR")):
+    return zooms_in_h5_frame(nib.load(str(nii_path)).header.get_zooms(), rawtrack_frame(orientation))
+
+
 def load_orientations(annotation_dir):
     """scan_id -> orientation tuple from the three split JSON files."""
     out = {}
