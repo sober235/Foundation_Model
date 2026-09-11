@@ -35,8 +35,8 @@ VARIANTS = ("nnunet", "ours")
 TITLES = {"nnunet": "B0 on nnU-Net masks (decides G2)", "ours": "B0 on our masks (report only)"}
 BUCKET_COLORS = {"correct": "#2a78d6", "wrong_host": "#eb6834", "wrong_class": "#1baf7a", "miss": "#eda100"}
 INK, MUTED, GRID, BASELINE = "#0b0b0b", "#898781", "#e1e0d9", "#c3c2b7"
-VIEW_LABELS = {"clean": "clean", "noise_q1": "noise q1", "noise_q2": "noise q2", "noise_q3": "noise q3",
-               "us4": "4× us", "us8": "8× us", "us16": "16× us"}
+VIEW_LABELS = {"clean": "clean", "noise_q1": "noise\nq1", "noise_q2": "noise\nq2", "noise_q3": "noise\nq3",
+               "us4": "us\n4×", "us8": "us\n8×", "us16": "us\n16×"}
 FIELDS = ["fold", "scan", "view", "thr", "ann_id", "layer", "gt_cls", "tissue_id", "host_label", "pred_cls", "iou",
           "b0_nnunet", "b0_ours", "bucket_nnunet", "bucket_ours"]
 
@@ -153,7 +153,7 @@ def fig_buckets(tables, path):
     axes[0].set_ylabel("share of in-segmentation lesions")
     axes[1].legend(loc="upper left", bbox_to_anchor=(1.0, 1.0))
     fig.tight_layout()
-    fig.savefig(path, dpi=200)
+    fig.savefig(path, dpi=200, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -181,9 +181,9 @@ def fig_paired(pairs, path):
     ax.set_ylabel("wrong-host rate, view minus clean")
     ax.yaxis.grid(True, color=GRID, linewidth=0.6)
     ax.set_axisbelow(True)
-    ax.legend(loc="upper left")
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2)
     fig.tight_layout()
-    fig.savefig(path, dpi=200)
+    fig.savefig(path, dpi=200, bbox_inches="tight")
     plt.close(fig)
 
 
