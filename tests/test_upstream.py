@@ -9,6 +9,7 @@ from anatobind.model.upstream_losses import upstream_loss, valid_slices
 
 SMALL = dict(K=6, M=4, num_classes=4, d_model=32, embed_dim=16, layers=2, heads=4, mask_dim=8)
 SHAPE = (32, 64, 64)
+GRID = (16, 16, 16)       # F1 grid, stride (2, 4, 4)
 
 
 def _batch(valid_depth=28):
@@ -34,19 +35,17 @@ def test_forward_takes_the_image_and_nothing_else():
     assert list(inspect.signature(Upstream.forward).parameters) == ["self", "image"]
 
 
-def test_output_shapes_and_auxiliary_heads_in_training(model):
+def test_output_shapes(model):
     model.train()
     out = model(_batch()["image"])
     assert out["masks"].shape == (1, 6, *SHAPE) and out["presence"].shape == (1, 6)
-    assert out["a_embed"].shape == (1, 6, 32) and out["u_embed"].shape == (1, 4, 32)
-    assert out["logits"].shape == (1, 4, 5) and out["boxes"].shape == (1, 4, 6)
-    assert len(out["aux"]) == 1
+    assert out["a_embed"].shape == (1, 6, 32)
+    assert out["heat"].shape == (1, 4, *GRID) and out["offset"].shape == (1, 3, *GRID)
+    assert out["size"].shape == (1, 3, *GRID) and out["feat"].shape == (1, 32, *GRID)
 
 
-def test_evaluation_mode_has_no_auxiliary_heads(model):
-    model.eval()
-    with torch.no_grad():
-        assert "aux" not in model(_batch()["image"])
+def test_the_lesion_head_is_dense(model):
+    assert hasattr(model, "u_head") and not hasattr(model, "u_dec")
 
 
 def test_the_loss_is_finite_and_reaches_every_head(model):
@@ -54,10 +53,10 @@ def test_the_loss_is_finite_and_reaches_every_head(model):
     model.zero_grad()
     b = _batch()
     loss, parts = upstream_loss(model(b["image"]), b)
-    assert torch.isfinite(loss) and set(parts) >= {"mask", "presence", "cls", "l1", "giou", "aux"}
+    assert torch.isfinite(loss) and set(parts) == {"mask", "presence", "heat", "offset", "size"}
     loss.backward()
     for p in (model.backbone.swin.patch_embed.proj.weight, model.mask_head.img[0].weight,
-              model.presence.weight, model.u_dec.cls.weight):
+              model.presence.weight, model.u_head.heat.weight, model.u_head.size.weight):
         assert p.grad is not None and p.grad.abs().sum() > 0
 
 

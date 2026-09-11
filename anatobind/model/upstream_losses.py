@@ -1,14 +1,13 @@
 """Stage-II losses for the whole-volume upstream (RESEARCH_PLAN v2.2 13.6).
 
 Anatomy: per-structure BCE + Dice over the valid (unpadded) slices, weighted by presence, plus a
-presence BCE. Lesions: the DETR set loss on the final decoder layer and on every auxiliary layer,
-each layer Hungarian-matched on its own. Losses run in float32 whatever the forward's autocast.
+presence BCE. Lesions: the centre-heatmap losses of anatobind/model/dense_head.py (focal loss on the
+heatmaps, L1 on the offset and log size). Losses run in float32 whatever the forward's autocast.
 """
 import torch
 import torch.nn.functional as F
 
-from anatobind.model.armb import boxes_vox_to_norm
-from anatobind.model.losses import CLS_WEIGHT, GIOU_WEIGHT, L1_WEIGHT, hungarian_match, ub_loss
+from anatobind.model.dense_head import centre_loss
 
 
 def valid_slices(valid_depth, depth, device):
@@ -31,25 +30,8 @@ def anatomy_loss(masks, presence, seg, present, valid_depth):
             "presence": F.binary_cross_entropy_with_logits(presence.float(), w)}
 
 
-def _weighted(parts):
-    return CLS_WEIGHT * parts["cls"] + L1_WEIGHT * parts["l1"] + GIOU_WEIGHT * parts["giou"]
-
-
-def detection_loss(logits, boxes, tgt_classes, tgt_norm):
-    matches = [hungarian_match(logits[b], boxes[b], tgt_classes[b], tgt_norm[b]) for b in range(logits.shape[0])]
-    return ub_loss(logits, boxes, tgt_classes, tgt_norm, matches)
-
-
 def upstream_loss(out, batch):
-    device = out["masks"].device
-    shape = out["masks"].shape[2:]
     parts = anatomy_loss(out["masks"], out["presence"], batch["seg"], batch["present"], batch["valid_depth"])
-    tgt_classes = [c.to(device) for c in batch["box_classes"]]
-    tgt_norm = [boxes_vox_to_norm(b.to(device).float(), shape) for b in batch["boxes"]]
-    final = detection_loss(out["logits"].float(), out["boxes"].float(), tgt_classes, tgt_norm)
-    parts.update(final)
-    aux = sum((_weighted(detection_loss(a["logits"].float(), a["boxes"].float(), tgt_classes, tgt_norm))
-               for a in out.get("aux", [])), torch.zeros((), device=device))
-    parts["aux"] = aux
-    total = parts["mask"] + parts["presence"] + _weighted(final) + aux
+    parts.update(centre_loss(out, batch))
+    total = parts["mask"] + parts["presence"] + parts["heat"] + parts["offset"] + parts["size"]
     return total, {k: float(v) for k, v in parts.items()}

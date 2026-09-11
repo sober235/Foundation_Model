@@ -22,16 +22,23 @@ def test_a_prediction_is_cropped_to_the_valid_depth_and_typed(tmp_path):
 
 
 class _Fixed(torch.nn.Module):
-    """Every structure is off except structure 3 at one voxel; one centred box."""
+    """Every structure is off except structure 3 at one voxel; one lesion peak of class 1."""
+
+    M = 3
 
     def forward(self, image):
         masks = torch.full((1, 6, 32, 8, 8), -10.0)
         masks[0, 2, 5, 1, 1] = 10.0
-        return {"masks": masks, "presence": torch.zeros(1, 6), "a_embed": torch.zeros(1, 6, 4),
-                "logits": torch.zeros(1, 2, 5), "boxes": torch.full((1, 2, 6), 0.5), "u_embed": torch.zeros(1, 2, 4)}
+        heat = torch.full((1, 4, 16, 2, 2), -10.0)
+        heat[0, 1, 4, 1, 0] = 10.0
+        return {"masks": masks, "presence": torch.zeros(1, 6), "a_embed": torch.zeros(1, 6, 4), "heat": heat,
+                "offset": torch.zeros(1, 3, 16, 2, 2), "size": torch.zeros(1, 3, 16, 2, 2),
+                "feat": torch.zeros(1, 4, 16, 2, 2)}
 
 
-def test_only_confident_voxels_get_a_label_and_boxes_are_in_voxels():
+def test_only_confident_voxels_get_a_label_and_the_peak_becomes_a_box():
     pred = predict_volume(_Fixed(), torch.zeros(1, 1, 32, 8, 8), valid_depth=32, device=torch.device("cpu"))
     assert pred["label_map"].sum() == 3 and pred["label_map"][5, 1, 1] == 3
-    assert np.allclose(pred["boxes_vox"][0], [8, 2, 2, 24, 6, 6])
+    assert pred["cls_prob"].shape == (3, 5) and int(pred["cls_prob"][0].argmax()) == 1
+    # peak cell (4, 1, 0), size one cell: centre (9, 6, 2) voxels, extent (2, 4, 4)
+    assert np.allclose(pred["boxes_vox"][0], [8, 4, 0, 10, 8, 4])
