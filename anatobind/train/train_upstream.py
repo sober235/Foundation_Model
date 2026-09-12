@@ -25,7 +25,9 @@ from anatobind.train.dataset import load_fold
 from anatobind.train.dataset_v2 import WholeVolumeDataset, collate_batch, seed_worker
 
 FM = Path("/data2/congcong/data/FM_data/derived/skmtea")
-FULL = dict(K=6, M=20, num_classes=4, d_model=256, embed_dim=64, layers=6, heads=8, mask_dim=32)
+# pixel_dim=0: the fold-0 pilot configuration. The top-down pixel decoder (pixel_dim=64) was not better
+# after 500 steps on 2026-09-12 (mask loss 0.83 vs 0.70), so the batch-1 folds keep the tested head.
+FULL = dict(K=6, M=20, num_classes=4, d_model=256, embed_dim=64, layers=6, heads=8, mask_dim=32, pixel_dim=0)
 TINY = dict(K=6, M=4, num_classes=4, d_model=32, embed_dim=16, layers=2, heads=4, mask_dim=8)
 
 
