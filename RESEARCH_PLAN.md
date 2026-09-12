@@ -710,7 +710,7 @@ d = 两法 ABA 之差,p_disc = 不一致率
 - nnU-Net 3d_fullres 五折,同视图、同划分,干净图同样占一半,用 checkpoint_final 在各自测试折上出分割。
 - 什么都不在测试折上调:步数固定、检出规则固定、检查点固定。
 
-**算力**:只用 GPU 6、7,各跑一个任务;其余先问用户。
+**算力**:原定只用 GPU 6、7。2026-09-12 实测两张卡与他人共用时每次下发算子都排队:上游 19.6 s/步(单折约 41 h),nnU-Net 一个 epoch 1200–1540 s(1000 epoch 要 14–18 天)。用户同意借空闲的 GPU 0、1:上游五折在 GPU 0,nnU-Net 在 GPU 1;nnU-Net 改用 `nnUNetTrainer_250epochs`(250 epoch),仍取 checkpoint_final。其余卡先问用户。
 
 ## 附:关键参考
 

@@ -14,7 +14,8 @@ from anatobind.train.cache import VIEW_FILES
 
 DATASET_ID = 901
 DATASET_NAME = f"Dataset{DATASET_ID}_SKMTEAm1r"
-TRAINER_DIR = "nnUNetTrainer__nnUNetPlans__3d_fullres"
+TRAINER = "nnUNetTrainer_250epochs"   # user decision 2026-09-12: 1000 epochs cost 14-18 days per fold on a shared GPU
+TRAINER_DIR = f"{TRAINER}__nnUNetPlans__3d_fullres"
 LABELS = {"background": 0, "patellar_cartilage": 1, "femoral_cartilage": 2, "tibial_cartilage_medial": 3,
           "tibial_cartilage_lateral": 4, "meniscus_medial": 5, "meniscus_lateral": 6}
 CLEAN_COPIES = 6

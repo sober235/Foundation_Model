@@ -43,5 +43,5 @@ def test_splits_keep_every_case_of_a_scan_in_its_fold(tmp_path):
 
 def test_the_validation_path_points_at_nnunets_final_validation_output(tmp_path):
     p = validation_path(tmp_path, 3, "MTR_001", "clean")
-    assert p == tmp_path / DATASET_NAME / "nnUNetTrainer__nnUNetPlans__3d_fullres" / "fold_3" / "validation" / "MTR_001_clean0.nii.gz"
+    assert p == tmp_path / DATASET_NAME / "nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres" / "fold_3" / "validation" / "MTR_001_clean0.nii.gz"
     assert validation_path(tmp_path, 0, "MTR_001", "us8").name == "MTR_001_us8.nii.gz"
