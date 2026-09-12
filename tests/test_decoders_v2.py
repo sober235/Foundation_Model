@@ -71,3 +71,22 @@ def test_coordinates_are_off_by_default_and_change_the_output_when_on(feats):
     assert plain.stack.coord is None and placed.stack.coord is not None
     with torch.no_grad():
         assert not torch.allclose(plain(feats)["boxes"], placed(feats)["boxes"])
+
+
+def test_the_pixel_decoder_returns_a_context_map_on_the_f1_grid():
+    from anatobind.model.decoders import PixelDecoder
+
+    dec = PixelDecoder(CHANNELS, dim=16)
+    p1 = dec([torch.randn(*s) for s in SHAPES])
+    assert p1.shape == (2, 16, 8, 8, 8)
+    p1.square().mean().backward()
+    for lat in dec.lateral:
+        assert lat.weight.grad is not None and lat.weight.grad.abs().sum() > 0   # every level reaches the output
+
+
+def test_the_pixel_decoder_handles_odd_grids():
+    from anatobind.model.decoders import PixelDecoder
+
+    dec = PixelDecoder(CHANNELS, dim=8)
+    feats = [torch.randn(1, 32, 12, 10, 10), torch.randn(1, 64, 6, 5, 5), torch.randn(1, 128, 3, 3, 3), torch.randn(1, 256, 2, 2, 2)]
+    assert dec(feats).shape == (1, 8, 12, 10, 10)

@@ -8,6 +8,7 @@ from anatobind.model.upstream import Upstream
 from anatobind.model.upstream_losses import upstream_loss, valid_slices
 
 SMALL = dict(K=6, M=4, num_classes=4, d_model=32, embed_dim=16, layers=2, heads=4, mask_dim=8)
+PILOT = {**SMALL, "pixel_dim": 0}     # the fold-0 pilot configuration: raw F1 under the heads
 SHAPE = (32, 64, 64)
 GRID = (16, 16, 16)       # F1 grid, stride (2, 4, 4)
 
@@ -81,3 +82,17 @@ def test_bfloat16_autocast_gives_a_finite_loss(model):
     with torch.autocast("cpu", dtype=torch.bfloat16):
         out = model(b["image"])
     assert torch.isfinite(upstream_loss(out, b)[0])
+
+
+def test_the_pilot_configuration_is_still_constructible():
+    torch.manual_seed(0)
+    m = Upstream(**PILOT)
+    assert m.pixel is None
+    out = m.eval()(torch.randn(1, 1, *SHAPE))
+    assert out["masks"].shape == (1, 6, *SHAPE) and out["heat"].shape == (1, 4, *GRID)
+
+
+def test_the_pixel_decoder_feeds_both_heads(model):
+    model.eval()
+    assert model.pixel is not None and model.mask_head.up.in_channels == model.pixel.dim
+    assert model.u_head.trunk[0].in_channels == model.pixel.dim

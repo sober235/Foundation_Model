@@ -147,3 +147,26 @@ class FullResMaskHead(nn.Module):
     def forward(self, q, f1, image):
         pix = self.fuse(torch.cat([self.up(f1), self.img(image)], 1))
         return torch.einsum("bkc,bczyx->bkzyx", self.embed(q), pix)
+
+
+class PixelDecoder(nn.Module):
+    """Top-down feature pyramid F4 -> F1: one map on the F1 grid that carries context from every level.
+
+    F1 is the raw patch embedding (no attention block runs before it), so a mask head that dots the
+    anatomy queries with F1 alone sees texture without context; on fold 0 that head plateaued at a
+    Dice of 0.3-0.6 while nnU-Net reached 0.85. Lateral 1x1 convolutions bring each level to `dim`,
+    coarser levels are upsampled and added, and a 3x3 convolution smooths each sum.
+    """
+
+    def __init__(self, channels, dim=64):
+        super().__init__()
+        self.lateral = nn.ModuleList(nn.Conv3d(c, dim, 1) for c in channels)
+        self.smooth = nn.ModuleList(nn.Sequential(nn.Conv3d(dim, dim, 3, padding=1), nn.GELU()) for _ in channels)
+        self.dim = dim
+
+    def forward(self, feats):
+        p = self.smooth[3](self.lateral[3](feats[3]))
+        for i in (2, 1, 0):
+            lat = self.lateral[i](feats[i])
+            p = self.smooth[i](lat + F.interpolate(p, size=lat.shape[2:], mode="trilinear", align_corners=False))
+        return p
