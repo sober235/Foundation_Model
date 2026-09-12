@@ -1,6 +1,9 @@
 #!/usr/bin/env python
-"""Gates G1 and G2 on the m1r export (RESEARCH_PLAN v2.2 13.6).
+"""Gates G1 and G2 on the m1r export (RESEARCH_PLAN v2.2 13.6, amended 2026-09-12).
 
+Gate path: each annotated lesion enters the lookup with its annotated box and class, and only the
+anatomy is predicted (nnU-Net masks decide G2; our masks are reported). Auxiliary path: our own
+detections, matched to the truth, so detection recall and its buckets are still reported.
 Predictions come only from the cached files (m1r_pred); the export supplies the truth.
 
   D=docs/verification/$(date +%F); mkdir -p $D
@@ -38,7 +41,10 @@ INK, MUTED, GRID, BASELINE = "#0b0b0b", "#898781", "#e1e0d9", "#c3c2b7"
 VIEW_LABELS = {"clean": "clean", "noise_q1": "noise\nq1", "noise_q2": "noise\nq2", "noise_q3": "noise\nq3",
                "us4": "us\n4×", "us8": "us\n8×", "us16": "us\n16×"}
 FIELDS = ["fold", "scan", "view", "thr", "ann_id", "layer", "gt_cls", "tissue_id", "host_label", "pred_cls", "iou",
-          "b0_nnunet", "b0_ours", "bucket_nnunet", "bucket_ours"]
+          "b0_nnunet", "b0_ours", "bucket_nnunet", "bucket_ours",
+          "given_b0_nnunet", "given_b0_ours", "given_bucket_nnunet", "given_bucket_ours"]
+GATE_KEY = "given_bucket"          # annotated box and class, predicted anatomy (user decision Q19, 2026-09-12)
+AUX_KEY = "bucket"                 # our detections
 
 
 def parse(argv):
@@ -88,23 +94,27 @@ def evaluate(a, folds):
                         label = None if p is None else b0_host(index[v], pboxes[p], pc)
                         rec[f"b0_{v}"] = "" if label is None else label
                         rec[f"bucket_{v}"] = bucket(r["cls"], r["tissue_id"], pc, label) if r["layer"] == "in_seg" else ""
+                        given = b0_host(index[v], gt[j], r["cls"])
+                        rec[f"given_b0_{v}"] = "" if given is None else given
+                        rec[f"given_bucket_{v}"] = (bucket(r["cls"], r["tissue_id"], r["cls"], given)
+                                                    if r["layer"] == "in_seg" else "")
                     records.append(rec)
     return records, det_counts
 
 
-def outcomes_of(records, variant, thr=PRIMARY):
+def outcomes_of(records, variant, thr=PRIMARY, key=GATE_KEY):
     out = defaultdict(dict)
     for r in records:
         if r["thr"] == thr and r["layer"] == "in_seg":
-            out[(r["scan"], r["ann_id"])][r["view"]] = r[f"bucket_{variant}"]
+            out[(r["scan"], r["ann_id"])][r["view"]] = r[f"{key}_{variant}"]
     return out
 
 
-def bucket_table(records, variant, thr):
+def bucket_table(records, variant, thr, key=GATE_KEY):
     t = {v: Counter() for v in VIEWS}
     for r in records:
         if r["thr"] == thr and r["layer"] == "in_seg":
-            t[r["view"]][r[f"bucket_{variant}"]] += 1
+            t[r["view"]][r[f"{key}_{variant}"]] += 1
     return t
 
 
@@ -216,24 +226,34 @@ def main(argv=None):
         summary["detection"][v] = {"recall": rec, "precision": prec, **c}
         print(f"  {v:9s} recall {rec:.3f}  precision {prec:.3f}  ({c['matched']}/{c['truth']} truth, {c['detections']} detections)")
 
+    print("\nGATE PATH: annotated box and class, predicted anatomy (decision 2026-09-12); "
+          "AUXILIARY PATH: our detections at IoU 0.1")
     tables = {}
+    for variant in VARIANTS:
+        t = bucket_table(records, variant, PRIMARY, GATE_KEY)
+        tables[variant] = t
+        summary["buckets"][f"given:{variant}"] = {v: dict(t[v]) for v in VIEWS}
+        print(f"\nbuckets, gate path, {TITLES[variant]}:")
+        print("  " + " " * 9 + "".join(f"{b:>13s}" for b in BUCKETS))
+        for v in VIEWS:
+            n = max(sum(t[v].values()), 1)
+            print(f"  {v:9s}" + "".join(f"{t[v][b] / n:13.3f}" for b in BUCKETS) + f"   n={sum(t[v].values())}")
     for thr in THRESHOLDS:
         for variant in VARIANTS:
-            t = bucket_table(records, variant, thr)
-            if thr == PRIMARY:
-                tables[variant] = t
-            summary["buckets"][f"{variant}@{thr}"] = {v: dict(t[v]) for v in VIEWS}
-            print(f"\nbuckets, {TITLES[variant]}, IoU {thr}:")
+            t = bucket_table(records, variant, thr, AUX_KEY)
+            summary["buckets"][f"predicted:{variant}@{thr}"] = {v: dict(t[v]) for v in VIEWS}
+            print(f"\nbuckets, auxiliary path (our detections), {TITLES[variant]}, IoU {thr}:")
             print("  " + " " * 9 + "".join(f"{b:>13s}" for b in BUCKETS))
             for v in VIEWS:
                 n = max(sum(t[v].values()), 1)
                 print(f"  {v:9s}" + "".join(f"{t[v][b] / n:13.3f}" for b in BUCKETS) + f"   n={sum(t[v].values())}")
 
+    summary["g2_predicted"] = {variant: g2(outcomes_of(records, variant, key=AUX_KEY)) for variant in VARIANTS}
     for variant in VARIANTS:
-        outcomes = outcomes_of(records, variant)
+        outcomes = outcomes_of(records, variant, key=GATE_KEY)
         summary["g2"][variant] = g2(outcomes)
         summary["paired"][variant] = paired_by_view(outcomes)
-        print(f"\nG2, {TITLES[variant]}:")
+        print(f"\nG2 (gate path), {TITLES[variant]}:")
         for v in VIEWS[1:]:
             p = summary["paired"][variant][v]
             gate = " <- gate" if v in GATE_VIEWS else ""
@@ -258,7 +278,11 @@ def main(argv=None):
     fig_paired(summary["paired"], a.figs / "paired_wrong_host.png")
     (a.out / "summary.json").write_text(json.dumps(summary, indent=1, default=float))
     verdict = "PASS" if summary["g2"]["nnunet"]["pass"] else "FAIL"
-    print(f"\nG2 VERDICT (B0 on nnU-Net masks, IoU 0.1, pre-registered): {verdict}")
+    print(f"\nG2 VERDICT (gate path: annotated box and class on nnU-Net masks; +5 points at noise_q3 or us16, "
+          f"scan bootstrap CI excluding 0): {verdict}")
+    aux = summary["g2_predicted"]["nnunet"]
+    print(f"auxiliary (our detections, IoU 0.1): noise_q3 delta {aux['noise_q3']['delta']:+.3f} n={aux['noise_q3']['n_lesions']}, "
+          f"us16 delta {aux['us16']['delta']:+.3f} n={aux['us16']['n_lesions']}")
 
 
 if __name__ == "__main__":
