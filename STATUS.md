@@ -1,59 +1,45 @@
-# STATUS:2026-09-09 交接点(tag `handoff/2026-09-09`)
+# STATUS:2026-09-12（M1 第一批执行中；上一交接点 tag `handoff/2026-09-09`）
 
 每次交接前整体重写本文件。五段固定:已验证、待拍板、下一步、坑与别重做、为什么。
 
 ## 1. 已完成且已验证
 
-- **数据**。全库副本在 `/data2/congcong/data/FM_data`(5.85 TB,校验一致)。脑侧 SynthSeg-robust 伪标签五库完成:fastMRI 标注卷 996/997、PDGM 501、BMSR 461、HCP 1113、ISLES 250(`derived/synthseg/<ds>/seg_native/`,33 类 aseg 粒度,**没有脑叶**)。SKM-TEA M1 导出 155/155(`derived/skmtea/m1/`,44 GB;每卷 `image_clean_e{1,2}`、`image_noise_q{1,2,3}_e1`(k 空间加噪 0.25/0.5/1.0,只加在采集支撑上)、`image_us{4,8,16}_e1`(Poisson,adjoint SENSE)、`seg.nii.gz`、`boxes.csv`;`manifest.csv` 155 行全 ok)。
-- **代码**。数据引擎 + arm-B 最小可训通路;130 测试通过(命令见 `CLAUDE.md`)。
-- **fold-0 smoke run**(`runs/armb_fold0_first`,300 步,682 s):无 NaN,八项损失全降;host acc 0.652 是 `NOT_EVIDENCE`(真值几何)。
-- **实测 2026-09-08**(`docs/verification/2026-09-08/REPORT.md`):不看类别的 oracle 重叠绑定器组织族级 0.860(fold 0,n=57;裁块内 0.804);14% 实例的标注宿主不是其框重叠最多的结构;M1 判据定在组织族级(§13.4);重叠答错的实例一律保留(§13.5)。
-- **实测 2026-09-09**(`REVIEW_expert_comments_audit_2026-09-09.md` §2,`docs/verification/2026-09-09/`):**类别感知查表 oracle(候选按病灶类别限定,零重叠取最近结构)组织族级 0.968(n=309,全部 5 折 0.955–0.984);半月板撕裂 1.000(n=101,D5 规则②使类别蕴含组织族);软骨病变 0.952(n=208);侧别 0 错。可争空间约 3 个点;M1 的 10 点门槛在干净数据上不可达(§9.7:d=0.03–0.05 需 470–1500 例,手上 309)。** MTR_110 ann 15 被最近结构兜底答对;MTR_020 ann 67 仍答错。复现:
-
-  ```bash
-  cd /data0/congcong/code/Project_Doing/foundation_model
-  PYTHONNOUSERSITE=1 ~/anaconda3/envs/nvgen/bin/python \
-    docs/verification/2026-09-09/lookup_ceiling.py /tmp/lookup_ceiling.json
-  ```
-
-- **专家评论审计**:第二段对仓库的 12 条断言全部属实;七条外部引用全部核到;第一段四条已过时。
-- **仓库整理**:审计分支 `review-expert-comments` 已合入 main 并删除;本文件与 `CLAUDE.md` 随本次交接提交。
+- **方案 v2.2**(`RESEARCH_PLAN.md` §13.6):M1 判据改为 G1/G2/G4 三道门(G3 只报曲线),G2 判据事先写死;2026-09-12 修订:判门路径以**标注的病灶框和类别**进查表,只预测解剖(Q19,见下)。实施计划 `docs/superpowers/plans/2026-09-11-m1-batch1-g1-g2.md`(含执行记录与修订)。
+- **分割换成官方校正版**(`SKM-TEA_ltr/segmentation_masks/raw-data-track/`,155 个,md5 全对,来源 Redivis `aimi.skm_tea:5r8z`)。实测坐标系为恒等(155/155);旧 dicom-track 分割错位中位 0.3–0.9 mm、最大 3.8 mm,髌骨软骨 18 卷 Dice<0.5。**MTR_150 旧帧门槛失败的真正原因是旧分割髌骨软骨错位 3.84 mm,校正版得分 3.386**(推翻 09-07 的"扫描异常"结论)。`docs/verification/2026-09-11/REPORT.md`。
+- **新导出 m1r**(`derived/skmtea/m1r/`,图像硬链接 m1,只重做 seg 与宿主;seg 头信息抄图像的层距,否则 nnU-Net 完整性检查拒收)。宿主标签只变 1 行(MTR_110 ann 15 → unresolved)。**查表天花板复核**:类别感知查表组织族级 m1 0.968 → m1r 0.958(n=308),软骨病变 0.952 → 0.938,结论不变。
+- **训练缓存** `derived/skmtea/m1r_cache/`(155 卷 × 7 视图,float16,23 GB)。
+- **代码**:整卷数据集(4 类病灶,积液 none/韧带 unknown)、上游(Swin + 身份锚定 A + 全分辨率 mask 头 + 密集中心热图 U_B)、固定步数训练器(每步 4 个整卷)、预测缓存、B0 查表、IoU 匹配与分桶、G2 统计、评估脚本、单折速览。224 个测试通过。
+- **实测**(`docs/verification/2026-09-12/fold0_pilot.md`):fold-0 试跑 7500 步 4.5 h,损失全降;但**从零训的检测头在留出扫描上不泛化**(训练扫描全槽位召回 0.96,留出 0.57,留出上命中/落空槽位分数 0.17/0.15 分不开,按 ≥0.5 规则检出 0/84);**mask 头欠拟合**(训练与留出 Dice 都只有 0.28–0.63,nnU-Net 0.81–0.88)。两个对照实验都没能改善 mask:热图项降权 + 放宽裁剪(0.713 vs 0.699),自顶向下像素解码器(0.831 vs 0.699,500 步)。
+- **nnU-Net**:`Dataset901_SKMTEAm1r`,1860 例(干净 ×6 + 六档退化),`nnUNetTrainer_250epochs`,3d_fullres patch [96,160,160];fold 0 完成(250 epoch,伪 Dice 0.81–0.88,留出 217 例分割已出),fold 1–4 在 GPU 1 自动串行。
 
 ## 2. 待用户拍板
 
-- **A) M1 判据怎么改。** 推荐:门 = Gate 3(公平管线在退化下确有绑定失效,按"漏检"与"检出后绑错"分开报)+ Gate 4(E 在每一退化档内显著优于 softmax、熵、全局/局部 NRMSE、ConfidNet 类 learned failure prediction);"绑定 vs 查表"只作退化梯度上的曲线报告,不设门槛。维持现判据等于预先注定阴性。
-- **B) 是否修改方案文档。** §9.1/§9.6 写入类别感知查表基线;§13.4 的"14% 空间"改为约 3%;§13.5 的例子由 MTR_110 ann 15 换成 MTR_020 ann 67。
-- **C) 是否为脑侧重跑 SynthSeg `--parc`。** 与 `--robust` 可同用(README 里"不适用于 --robust"只针对 `--fast`),得到 Desikan-Killiany 皮层分区再聚合成脑叶;PDGM/BMSR/HCP 共 2075 卷,CPU 单进程约 15 h、4 进程约 4 h。只在决定继续第二战场(BMSR 多灶)时做。
-- **旧遗留(多次未答)**:Q9 删除授权(SKM-TEA 2.4G truncated 残留 + 820G 原 tar,两处副本都有);fastMRI 其余 4850 卷未标注脑要不要跑 SynthSeg;多线圈运动仿真谁写(建议先出物理设计页);是否删除已合并的旧分支(plan-v2/v3/v4/v5、armb、review-cui-feasibility 都已在 main 里)。
+- 无新的待拍板项。已拍板:Q1–Q19(见计划文档),其中 Q18 借 GPU 0、1,Q19 判门路径用标注框。
+- 旧遗留(多次未答):Q9 删除授权(SKM-TEA 2.4G truncated 残留 + 820G 原 tar);fastMRI 其余 4850 卷是否跑 SynthSeg;运动仿真谁写;是否删除已合并的旧分支。
+- 提醒:对话里出现过两个 Redivis token,事后请在 https://redivis.com/workspace/settings/tokens 删除;`~/.redivis_token` 用完可删。
 
-## 3. 下一步(按顺序;A 定了才动第 2 步之后的)
+## 3. 下一步(自动进行中)
 
-1. 三处 teacher forcing 换预测量:`armb.py` 两处 `MINIMAL PATH`(几何用预测 mask 与预测框)+ 存在性门控用预测 presence。评估计入漏检(§9.5)。
-2. 臂 A = nnU-Net 分割 + 3D 检测 + **类别感知查表**(类别限候选 + IoA argmax + 零重叠取最近);两臂训同一套退化视图,同参数量级,都从零训练(A4)。估 2–3 周(nnU-Net 五折约 1–2 GPU 天/折,可并行)。
-3. 对照四臂同上游预测:B0 类别感知查表 / B1 pair MLP / B2 无几何关系 Transformer(`geo` 置零)/ B3 全量;另报 B0-naive(不看类别)以说明稻草人差多少。
-4. Gate 3 → E:失效概率口径(冻结教师的关系是否仍正确),标签来自折外教师(交叉拟合),按退化档内评估 AUROC/AURC/Brier;NRMSE 局部保真度降为辅助回归。→ Gate 4。
-5. 硬负样本、运动仿真、脑侧、S/U_Q 头,都在其后。
+1. 上游五折在 GPU 0 串行(试跑配置,按收敛规则延到 11250 步),每折训完即缓存预测(`derived/skmtea/m1r_pred/ours/fold{f}/`)。链脚本与日志在本会话 scratchpad(`upstream_folds.sh/.log`);断了就按 `docs/superpowers/plans/…` Task 10/12 的命令续跑(`--resume`)。
+2. nnU-Net fold 1–4 在 GPU 1 串行(`nnunet_folds_1_4.sh/.log`),每折约 20 h。
+3. 两者都完成后:`scripts/collect_nnunet_predictions.py` → `scripts/eval_g1_g2.py --out docs/verification/<日期>` → 报告(Task 15),G2 裁决按 §13.6。
+4. G2 过 → 第二批(B1–B3、E、G4 门槛先问用户);不过 → 运动仿真,再判。
 
 ## 4. 坑与别重做
 
-- **轴约定**:导出 (X,Y,Z)=(256,256,160),模型工作在 (Z,Y,X);数组、框、间距同步置换。间距逐卷从 header 读(0.6249083/0.625/0.8006518;MTR_049/066/095/173 是 0.7032),永远别硬编码 0.625。
-- 强度未归一(min 2.3e4 / max 5.3e7),逐卷 [0.5, 99.5] 百分位裁剪 + z-score。
-- 导出续跑判据是 `<scan>/boxes.csv` 是否存在;任何中断后跑一次"有 boxes.csv 但不在 manifest"的交叉检查。
-- MTR_150 帧门槛失败已破案(16 线圈组 + 髌软骨三处全层缺损),变换正确,不改。
-- fastMRI 脑左右手性未知,按放射学约定 (L,P,S) 假设;16 层只盖侧脑室到颅顶,实为 2.5D。
-- SKM-TEA 原始 k-space 采集支撑只有 38.5%;X^0 是数据集 `target` 重建,退化图是 adjoint SENSE,做 E* 前统一重建口径。
-- 欠采倍率跨扫描排不出损伤顺序(NRMSE us4 0.17–0.32 与 us16 0.22–0.41 重叠),卷内顺序成立;噪声档可排(q1 0.064–0.068 / q2 0.130–0.136 / q3 0.266–0.282)。U_Q 强度头拿 R 当标签会排不出真实损伤序。
-- τ_E 无处定标:155 扫描 = 155 受试者,无重复扫描。
-- 积液 116 / 韧带 38 例目前对 U_B 呈背景(计划文档 F5),正式跑分前要定处理。
-- `RESEARCH_PLAN.md` §12 的 M0 状态过时(SynthSeg 已完成);§13.4 的 0.860 不是公平基线。
-- 别信 `val_host_acc_NOT_EVIDENCE`。别把最小通路的规模(embed_dim 32、约 4M 参数)当正式配置(A5)。
-- 侧别对任何重叠类查表都是白送的;标签级 ABA 没有独立信息。
+- 与 SENSE 图配对的分割一律用 raw-data-track;m1 只作历史,别再在它上面出数。
+- m1r 的 seg 头信息必须与图像层距完全一致(nnU-Net 拒收 1e-4 mm 的差)。
+- 共用 GPU 上每次下发算子排队约 1.2 ms:上游 19.6 s/步、nnU-Net 1200–1500 s/epoch;空卡上 4.7 s/步、277 s/epoch。别在共用卡上估时间。
+- `pkill -f <模式>` 会连自己的 shell 一起杀(退出码 144);nnU-Net 主进程被杀后 12 个数据增广子进程会变孤儿,要按 PID `kill -9`。
+- 检测头(密集中心热图)在 124 卷上过拟合,峰值分数不可用;判门不再依赖它。
+- 收敛规则:最后 750 步比前 750 步再降 >2% 就延到 11250 步(fold 0 触发,3.45%)。
+- 轴约定、强度归一、导出续跑判据、fastMRI 手性等旧坑见上一版本文件(git 历史 `29142bb`)。
 
 ## 5. 关键决定的为什么
 
-- 关系真值用 `tissue_id` 不用重叠率:重叠定义会把真值送给查表管线,M1 失去意义。
-- M1 判据取组织族级:侧别由 D5 规则用重叠解析,对重叠基线是循环的。
-- 重叠答错的实例保留(§13.5):逐个剔除等于构造偏袒基线的测试集。
-- v2.1 的 1A/2A/3B/4B:U_Q 独立全局分支、无 R_Q;统一本体 + 存在性门控;退化图的关系监督由外部 detach 的 E* 门控;E 输入与 E* 共用病灶局部 ROI。
-- 两臂都从零训练(A4):否则臂 B 的胜利是权重或数据优势,不是关系建模优势。
-- 09-09 审计的结论:`located_in` 关系在有分割可用时本质是几何查表;项目非平凡的内容在退化后预测几何失效时的绑定鲁棒性、无宿主 mask 的关系、以及关系可靠性 E,不在干净数据上的绑定差。这就是 A 项要重定判据的原因。
+- 判据从"高 10 个点"改为 G1/G2/G4:类别感知查表干净数据上 0.968(m1r 0.958),没有 10 个点可赢。
+- 判门路径用标注框:从零训的检测头在留出扫描上给不出框,G2 的配对集合会是空集;关系问题本来就以"已有一个异常"为前提。这是看过 fold 0 之后改的,论文里明写。
+- 检测头换成密集中心热图:DETR 解码器在合成实验里 2.4 万样本后仍定不了位(IoU 0.01),热图头 8000 样本 0.89。
+- 借 GPU 0、1:共用卡上 nnU-Net 一折 14–18 天。
+- nnU-Net 250 epoch:1000 epoch 在空卡上也要 3 天/折。
+- 上游 mask 头留在试跑配置:两个改进假设都被 500 步对照否定;G2 不依赖它,第二批的几何可以直接用 nnU-Net 的分割。
