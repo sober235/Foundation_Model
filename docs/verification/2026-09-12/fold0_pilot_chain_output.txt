@@ -1,0 +1,18 @@
+[2026-09-12 13:23:54] fold 0 finished
+steps logged 7500; wall 4.5 h; mean loss 6.0k-6.75k 1.8132, 6.75k-7.5k 1.7506, relative drop 3.454% -> EXTEND to 11250 steps
+  mask      first 50    1.233   last 50    0.542
+  presence  first 50    0.070   last 50    0.000
+  heat      first 50  277.878   last 50    0.770
+  offset    first 50    1.355   last 50    0.152
+  size      first 50    5.904   last 50    0.252
+fold 0: 1085 predictions in /data2/congcong/data/FM_data/derived/skmtea/m1r_pred/ours/fold0
+fold 0: 31 held-out scans, 124 training scans (IoU 0.1)
+view       recall   prec   det |  correct  wr_host  wr_cls  miss | Dice held Dice train
+clean       0.000  0.000     0 |    0.000    0.000   0.000 1.000 |     0.386      0.453
+noise_q1    0.000  0.000     1 |    0.000    0.000   0.000 1.000 |     0.385      0.452
+noise_q2    0.000  0.000     1 |    0.000    0.000   0.000 1.000 |     0.387      0.449
+noise_q3    0.000  0.000     0 |    0.000    0.000   0.000 1.000 |     0.375      0.426
+us4         0.000  0.000     0 |    0.000    0.000   0.000 1.000 |     0.368      0.423
+us8         0.000  0.000     0 |    0.000    0.000   0.000 1.000 |     0.357      0.410
+us16        0.000  0.000     0 |    0.000    0.000   0.000 1.000 |     0.350      0.394
+[2026-09-12 13:37:21] checkpoint 2 inputs ready
