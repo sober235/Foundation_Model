@@ -1,0 +1,125 @@
+G1: 1085 held-out (scan, view) pairs; 0 prediction files missing
+in-segmentation lesions scored at family level: 311
+
+detection at IoU 0.1 (our U_B): recall = matched / truth over all layers, precision = matched / detections
+  clean     recall 0.000  precision 0.000  (0/465 truth, 6 detections)
+  noise_q1  recall 0.000  precision 0.000  (0/465 truth, 7 detections)
+  noise_q2  recall 0.000  precision 0.000  (0/465 truth, 7 detections)
+  noise_q3  recall 0.002  precision 0.100  (1/465 truth, 10 detections)
+  us4       recall 0.006  precision 0.429  (3/465 truth, 7 detections)
+  us8       recall 0.002  precision 0.250  (1/465 truth, 4 detections)
+  us16      recall 0.006  precision 0.333  (3/465 truth, 9 detections)
+
+GATE PATH: annotated box and class, predicted anatomy (decision 2026-09-12); AUXILIARY PATH: our detections at IoU 0.1
+
+buckets, gate path, B0 on nnU-Net masks (decides G2):
+                 correct   wrong_host  wrong_class         miss
+  clean            0.961        0.039        0.000        0.000   n=311
+  noise_q1         0.961        0.039        0.000        0.000   n=311
+  noise_q2         0.965        0.035        0.000        0.000   n=311
+  noise_q3         0.965        0.035        0.000        0.000   n=311
+  us4              0.965        0.035        0.000        0.000   n=311
+  us8              0.968        0.032        0.000        0.000   n=311
+  us16             0.965        0.035        0.000        0.000   n=311
+
+buckets, gate path, B0 on our masks (report only):
+                 correct   wrong_host  wrong_class         miss
+  clean            0.920        0.080        0.000        0.000   n=311
+  noise_q1         0.920        0.080        0.000        0.000   n=311
+  noise_q2         0.920        0.080        0.000        0.000   n=311
+  noise_q3         0.907        0.093        0.000        0.000   n=311
+  us4              0.910        0.090        0.000        0.000   n=311
+  us8              0.894        0.106        0.000        0.000   n=311
+  us16             0.907        0.093        0.000        0.000   n=311
+
+buckets, auxiliary path (our detections), B0 on nnU-Net masks (decides G2), IoU 0.05:
+                 correct   wrong_host  wrong_class         miss
+  clean            0.000        0.000        0.000        1.000   n=311
+  noise_q1         0.000        0.000        0.000        1.000   n=311
+  noise_q2         0.000        0.000        0.000        1.000   n=311
+  noise_q3         0.003        0.000        0.000        0.997   n=311
+  us4              0.006        0.000        0.003        0.990   n=311
+  us8              0.000        0.000        0.003        0.997   n=311
+  us16             0.003        0.000        0.003        0.994   n=311
+
+buckets, auxiliary path (our detections), B0 on our masks (report only), IoU 0.05:
+                 correct   wrong_host  wrong_class         miss
+  clean            0.000        0.000        0.000        1.000   n=311
+  noise_q1         0.000        0.000        0.000        1.000   n=311
+  noise_q2         0.000        0.000        0.000        1.000   n=311
+  noise_q3         0.003        0.000        0.000        0.997   n=311
+  us4              0.006        0.000        0.003        0.990   n=311
+  us8              0.000        0.000        0.003        0.997   n=311
+  us16             0.003        0.000        0.003        0.994   n=311
+
+buckets, auxiliary path (our detections), B0 on nnU-Net masks (decides G2), IoU 0.1:
+                 correct   wrong_host  wrong_class         miss
+  clean            0.000        0.000        0.000        1.000   n=311
+  noise_q1         0.000        0.000        0.000        1.000   n=311
+  noise_q2         0.000        0.000        0.000        1.000   n=311
+  noise_q3         0.003        0.000        0.000        0.997   n=311
+  us4              0.006        0.000        0.003        0.990   n=311
+  us8              0.000        0.000        0.003        0.997   n=311
+  us16             0.003        0.000        0.003        0.994   n=311
+
+buckets, auxiliary path (our detections), B0 on our masks (report only), IoU 0.1:
+                 correct   wrong_host  wrong_class         miss
+  clean            0.000        0.000        0.000        1.000   n=311
+  noise_q1         0.000        0.000        0.000        1.000   n=311
+  noise_q2         0.000        0.000        0.000        1.000   n=311
+  noise_q3         0.003        0.000        0.000        0.997   n=311
+  us4              0.006        0.000        0.003        0.990   n=311
+  us8              0.000        0.000        0.003        0.997   n=311
+  us16             0.003        0.000        0.003        0.994   n=311
+
+buckets, auxiliary path (our detections), B0 on nnU-Net masks (decides G2), IoU 0.25:
+                 correct   wrong_host  wrong_class         miss
+  clean            0.000        0.000        0.000        1.000   n=311
+  noise_q1         0.000        0.000        0.000        1.000   n=311
+  noise_q2         0.000        0.000        0.000        1.000   n=311
+  noise_q3         0.000        0.000        0.000        1.000   n=311
+  us4              0.003        0.000        0.000        0.997   n=311
+  us8              0.000        0.000        0.000        1.000   n=311
+  us16             0.000        0.000        0.000        1.000   n=311
+
+buckets, auxiliary path (our detections), B0 on our masks (report only), IoU 0.25:
+                 correct   wrong_host  wrong_class         miss
+  clean            0.000        0.000        0.000        1.000   n=311
+  noise_q1         0.000        0.000        0.000        1.000   n=311
+  noise_q2         0.000        0.000        0.000        1.000   n=311
+  noise_q3         0.000        0.000        0.000        1.000   n=311
+  us4              0.003        0.000        0.000        0.997   n=311
+  us8              0.000        0.000        0.000        1.000   n=311
+  us16             0.000        0.000        0.000        1.000   n=311
+
+G2 (gate path), B0 on nnU-Net masks (decides G2):
+  noise_q1  paired n= 311  clean 0.039  view 0.039  delta +0.000  95% CI [+0.000, +0.000]
+  noise_q2  paired n= 311  clean 0.039  view 0.035  delta -0.003  95% CI [-0.010, +0.000]
+  noise_q3  paired n= 311  clean 0.039  view 0.035  delta -0.003  95% CI [-0.010, +0.000] <- gate
+  us4       paired n= 311  clean 0.039  view 0.035  delta -0.003  95% CI [-0.010, +0.000]
+  us8       paired n= 311  clean 0.039  view 0.032  delta -0.006  95% CI [-0.017, +0.000]
+  us16      paired n= 311  clean 0.039  view 0.035  delta -0.003  95% CI [-0.010, +0.000] <- gate
+
+G2 (gate path), B0 on our masks (report only):
+  noise_q1  paired n= 311  clean 0.080  view 0.080  delta +0.000  95% CI [+0.000, +0.000]
+  noise_q2  paired n= 311  clean 0.080  view 0.080  delta +0.000  95% CI [+0.000, +0.000]
+  noise_q3  paired n= 311  clean 0.080  view 0.093  delta +0.013  95% CI [+0.000, +0.028] <- gate
+  us4       paired n= 311  clean 0.080  view 0.090  delta +0.010  95% CI [-0.007, +0.026]
+  us8       paired n= 311  clean 0.080  view 0.106  delta +0.026  95% CI [+0.006, +0.046]
+  us16      paired n= 311  clean 0.080  view 0.093  delta +0.013  95% CI [-0.007, +0.032] <- gate
+
+effusion: 812 (scan, view) rows, detected 1, right class 1
+
+ligament: 266 (scan, view) rows, detected 0, right class 0
+
+geometry gap, our masks, mean Dice over present structures:
+  clean     training 0.473   held-out 0.403
+  noise_q1  training 0.473   held-out 0.402
+  noise_q2  training 0.469   held-out 0.400
+  noise_q3  training 0.447   held-out 0.383
+  us4       training 0.443   held-out 0.383
+  us8       training 0.427   held-out 0.372
+  us16      training 0.408   held-out 0.359
+
+G2 VERDICT (gate path: annotated box and class on nnU-Net masks; +5 points at noise_q3 or us16, scan bootstrap CI excluding 0): FAIL
+auxiliary (our detections, IoU 0.1): noise_q3 delta +nan n=0, us16 delta +nan n=0
