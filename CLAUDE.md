@@ -10,7 +10,8 @@
 
 - 数据只从 `/data2/congcong/data/FM_data` 读。`/data0/congcong/data/FM_Data` 是冷备份,不读不写。当前导出是 `derived/skmtea/m1r/`(校正版分割),缓存 `m1r_cache/`,预测 `m1r_pred/`,nnU-Net 在 `derived/nnunet/`;`m1/` 只作历史,只读。
 - Python:`~/anaconda3/envs/nvgen/bin/python`(torch 2.5.1+cu121、MONAI 1.5.2),命令前缀 `PYTHONNOUSERSITE=1 PYTHONPATH=.`(`~/.local` 里的 torch 2.11/cu130 会覆盖 env)。SynthSeg 用 env `synthseg`(py3.8/TF2.2,`~/src/SynthSeg`,权重 robust_2.0),全 CPU 跑。
-- 测试:`PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`(2026-09-12:224 passed,约 45 s)。每个函数先写测试;结构性测试是"loss 在降但标签错了"的唯一自动防线。
+- 测试:`PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`(2026-09-13:224 passed,约 25 s)。
+- **当前状态:M1 第一批已完成,G2 不过(2026-09-13)。先读 `STATUS.md`,再读 `docs/verification/2026-09-13/G2_verdict.md` 与方案 §13.7。别再在 SKM-TEA 膝关节上找"退化让绑定失效"——已测死。**每个函数先写测试;结构性测试是"loss 在降但标签错了"的唯一自动防线。
 - 提交:作者用仓库本地配置(Congcong Liu);消息英文、句首大写、像现有历史一样描述做了什么;**不写 Co-Authored-By、Generated with 等任何 AI 痕迹**。push 偶发 TLS 失败时加 `https_proxy=http://127.0.0.1:7897`;凭据走 gh(sober235)。
 - 分支:`main` 是权威版本,协作者只读 main。会话边界 = 提交 + 合回 main + tag `handoff/YYYY-MM-DD`。不每个会话开新分支;分支只给真正并行的工作线,合完就删。
 - 根目录两个未跟踪的原始文件(`AnatoBind-MRI_cui.md`、`粘贴的 markdown …`)保持 untracked,别 stage。`runs/` 在 .gitignore 里。
