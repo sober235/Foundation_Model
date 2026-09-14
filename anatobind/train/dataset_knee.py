@@ -28,6 +28,18 @@ def seed_worker(worker_id):
     info.dataset.rng = np.random.default_rng(info.seed % 2 ** 32)
 
 
+def _shift(img, dy, dx):
+    """Translate with edge fill. np.roll would wrap a border lesion to the opposite side while its
+    box moved linearly, which silently turns the box into background."""
+    out = np.full_like(img, float(img.min()))
+    h, w = img.shape[-2:]
+    ys0, ys1 = max(0, dy), min(h, h + dy)
+    xs0, xs1 = max(0, dx), min(w, w + dx)
+    if ys1 > ys0 and xs1 > xs0:
+        out[..., ys0:ys1, xs0:xs1] = img[..., ys0 - dy:ys1 - dy, xs0 - dx:xs1 - dx]
+    return out
+
+
 class SlabDataset(torch.utils.data.Dataset):
     def __init__(self, files, export_root, lesions, train=True, views=VIEWS, p_clean=0.5, slab=5, seed=0):
         self.root = Path(export_root)
@@ -50,7 +62,10 @@ class SlabDataset(torch.utils.data.Dataset):
 
     def _view(self, i):
         if self.train:
-            return "clean" if self.rng.random() < self.p_clean else DEGRADED[int(self.rng.integers(len(DEGRADED)))]
+            degraded = tuple(v for v in DEGRADED if v in self.views)
+            if "clean" in self.views and (not degraded or self.rng.random() < self.p_clean):
+                return "clean"
+            return degraded[int(self.rng.integers(len(degraded)))]
         return self.views[i // len(self.index)]
 
     def __getitem__(self, i):
@@ -64,12 +79,12 @@ class SlabDataset(torch.utils.data.Dataset):
         classes = [CLASS_OF_FAMILY[L["family"]] for L in self.by_slice.get((file, z), [])]
         boxes = np.array(boxes, dtype=np.float32).reshape(-1, 4)
         if self.train:
-            img, boxes = self._augment(img, boxes)
+            img, boxes, classes = self._augment(img, boxes, classes)
         return {"image": torch.from_numpy(img)[None], "boxes": torch.from_numpy(boxes),
                 "box_classes": torch.tensor(classes, dtype=torch.long),
                 "file": file, "slice": int(z), "view": view}
 
-    def _augment(self, img, boxes):
+    def _augment(self, img, boxes, classes):
         w = img.shape[-1]
         if self.rng.random() < 0.5:                                  # left-right flip
             img = img[..., ::-1]
@@ -77,13 +92,19 @@ class SlabDataset(torch.utils.data.Dataset):
                 boxes = boxes.copy()
                 boxes[:, [1, 3]] = w - boxes[:, [3, 1]]
         dy, dx = self.rng.integers(-MAX_SHIFT, MAX_SHIFT + 1, size=2)
-        img = np.roll(img, (int(dy), int(dx)), axis=(-2, -1))
+        img = _shift(img, int(dy), int(dx))
         if len(boxes):
             boxes = boxes.copy()
             boxes[:, [0, 2]] += dy
             boxes[:, [1, 3]] += dx
+        if len(boxes):
+            centres_y = (boxes[:, 0] + boxes[:, 2]) / 2
+            centres_x = (boxes[:, 1] + boxes[:, 3]) / 2
+            h, w = img.shape[-2:]
+            keep = (centres_y >= 0) & (centres_y < h) & (centres_x >= 0) & (centres_x < w)
+            boxes, classes = boxes[keep], [c for c, k in zip(classes, keep) if k]
         img = img * float(self.rng.uniform(0.9, 1.1)) + float(self.rng.normal(0, 0.02))
-        return np.ascontiguousarray(img), boxes
+        return np.ascontiguousarray(img), boxes, classes
 
 
 def collate_slabs(samples):

@@ -81,3 +81,32 @@ def test_training_mode_samples_views_and_can_flip(tmp_path):
     ds = SlabDataset(["file1"], root, lesions=lesions, train=True, p_clean=0.0, seed=0)
     views = {ds[i]["view"] for i in range(30)}
     assert views and "clean" not in views                       # p_clean=0 never draws the clean view
+
+
+def test_translation_fills_rather_than_wrapping():
+    from anatobind.train.dataset_knee import _shift
+    img = np.zeros((1, 4, 4), np.float32)
+    img[0, 0, :] = 1.0
+    out = _shift(img, 2, 0)
+    assert out[0, 2].tolist() == [1.0] * 4          # content moved down by two
+    assert out[0, 0].tolist() == [0.0] * 4          # filled
+    assert out[0, 3].tolist() == [0.0] * 4          # the top row did NOT reappear at the bottom
+    assert _shift(img, 9, 9).sum() == 0.0           # a shift past the image empties it
+
+
+def test_a_box_whose_centre_leaves_the_image_is_dropped(tmp_path):
+    root, lesions = _export(tmp_path)
+    ds = SlabDataset(["file1"], root, lesions=lesions, train=True, seed=0)
+    for i in range(40):
+        s = ds[i % len(ds)]
+        h, w = s["image"].shape[-2:]
+        for b in s["boxes"]:
+            cy, cx = (b[0] + b[2]) / 2, (b[1] + b[3]) / 2
+            assert 0 <= cy < h and 0 <= cx < w
+        assert len(s["boxes"]) == len(s["box_classes"])
+
+
+def test_training_mode_only_draws_views_it_was_given(tmp_path):
+    root, lesions = _export(tmp_path)
+    ds = SlabDataset(["file1"], root, lesions=lesions, train=True, views=("clean", "us16"), p_clean=0.5, seed=0)
+    assert {ds[i % len(ds)]["view"] for i in range(60)} <= {"clean", "us16"}
