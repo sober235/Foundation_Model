@@ -1,7 +1,9 @@
 import numpy as np
 import pytest
 
-from anatobind.eval.gate import GATE_BINS, VIEW_ORDER, aurc, h2, h3, risk_coverage, threshold_at_risk
+from anatobind.eval.gate import (
+    GATE_BINS, VIEW_ORDER, _rule_coverage, aurc, h2, h3, risk_coverage, threshold_at_risk,
+)
 
 
 def test_risk_coverage_is_monotone_in_coverage_for_a_perfect_ranker():
@@ -106,6 +108,38 @@ def test_h2_fails_rather_than_passes_when_a_bin_has_no_usable_data():
     assert res["pass"] is False
 
 
+def test_h2_fails_when_the_point_estimate_favors_the_head_but_the_interval_does_not():
+    """Five patients where the head clearly beats the peak, plus one outlier patient (with
+    many more lesions than any single "good" patient) where the peak is excellent and the
+    head is uninformative. The pooled point estimate still favors the head, but patient-level
+    bootstrap resampling can weight that one outlier heavily enough to push the interval's
+    upper bound to (or past) zero -- the point-estimate sign alone must not be enough to pass."""
+    rng = np.random.default_rng(0)
+    rows = []
+    for p in range(5):
+        patient = f"good{p}"
+        for v in VIEW_ORDER:
+            for _ in range(20):
+                correct = float(rng.integers(0, 2))
+                peak = float(rng.uniform(0, 1))
+                head = correct + rng.uniform(0, 0.05)
+                rows.append({"view": v, "patient": patient, "correct": correct,
+                             "peak_score": peak, "head_score": head})
+    for v in VIEW_ORDER:
+        for _ in range(60):
+            correct = float(rng.integers(0, 2))
+            head = rng.uniform(0, 1)               # uninformative for this one patient
+            peak = correct + rng.uniform(0, 0.05)   # excellent for this one patient
+            rows.append({"view": v, "patient": "outlier", "correct": correct,
+                         "peak_score": peak, "head_score": head})
+
+    res = h2(rows, reps=300, seed=0)
+    d = res["noise_q2"]
+    assert d["delta_aurc"] < 0
+    assert d["ci95"][1] >= 0
+    assert d["pass"] is False
+
+
 def _scan_rows(n_patients, correct_frac, head_fn, min_fn=None, seed=0):
     """One synthetic scan row per (patient, view). correct_frac[view] is the fraction of
     patients correct in that view (the first that many patients, by index, are correct).
@@ -165,3 +199,51 @@ def test_h3_verdict_is_decided_by_the_rule_comparison_not_the_min_baseline():
     assert res["coverage_min_baseline"] > res["coverage_head"]
     assert res["vs_min"]["pass"] is False
     assert res["pass"] is True
+
+
+def test_h3_fails_when_the_point_estimate_favors_the_head_but_the_interval_does_not():
+    """Same shape as the H2 analogue above: eight ordinary patients where the head clearly
+    beats the acceleration rule, plus one outlier patient who is confidently wrong exactly
+    where the rule would already reject them (us8/us16). The pooled point estimate still
+    favors the head, but resampling that one patient can drag the interval's lower bound to
+    (or past) zero, so the criterion must fail even though the average looks like a win."""
+    rng = np.random.default_rng(0)
+    rows = []
+    n_good = 8
+    for i in range(n_good):
+        patient = f"good{i}"
+        for v in VIEW_ORDER:
+            correct = 1.0 if i < round(CORRECT_FRAC.get(v, 1.0) * n_good) else 0.0
+            head = correct + rng.uniform(0, 0.05)
+            rows.append({"view": v, "patient": patient, "correct": correct, "head_score": head,
+                         "min_lesion": head})
+    for v in ("clean", "noise_q1", "noise_q2", "noise_q3", "us4"):
+        head = 1.0 + rng.uniform(0, 0.05)
+        rows.append({"view": v, "patient": "outlier", "correct": 1.0, "head_score": head,
+                     "min_lesion": head})
+    for v in ("us8", "us16"):
+        head = 1.06 + rng.uniform(0, 0.01)          # confidently wrong
+        rows.append({"view": v, "patient": "outlier", "correct": 0.0, "head_score": head,
+                     "min_lesion": head})
+
+    res = h3(rows, reps=300, seed=0)
+    d = res["vs_rule"]
+    assert d["delta_coverage"] > 0
+    assert d["ci95"][0] <= 0
+    assert res["pass"] is False
+
+
+def test_rule_coverage_keeps_exactly_the_views_up_to_the_risk_breaking_point():
+    """Pins _rule_coverage's numeric output directly, not just relationally: accepting
+    through us4 meets the risk target, accepting through us8 (or everything) does not, so
+    the only correct cutoff is the five views clean..us4 -- neither the loosest (all 7) nor
+    whatever the search reaches first if it runs in the wrong direction."""
+    rows = []
+    for v in ("clean", "noise_q1", "noise_q2", "noise_q3", "us4"):
+        rows += [{"view": v, "correct": 1.0} for _ in range(10)]
+    rows += [{"view": "us8", "correct": 1.0} for _ in range(5)]
+    rows += [{"view": "us8", "correct": 0.0} for _ in range(5)]
+    rows += [{"view": "us16", "correct": 1.0} for _ in range(10)]
+
+    cov = _rule_coverage(rows, r_max=0.05)
+    assert cov == pytest.approx(5 / 7)
