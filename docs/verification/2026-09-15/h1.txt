@@ -1,0 +1,20 @@
+threshold 0.05: scan-level positive rate on training folds 0.876
+threshold 0.10: scan-level positive rate on training folds 0.823
+threshold 0.15: scan-level positive rate on training folds 0.823
+threshold 0.20: scan-level positive rate on training folds 0.823
+threshold 0.25: scan-level positive rate on training folds 0.823
+threshold 0.30: scan-level positive rate on training folds 0.823
+threshold 0.35: scan-level positive rate on training folds 0.823
+threshold 0.40: scan-level positive rate on training folds 0.823
+threshold 0.45: scan-level positive rate on training folds 0.823
+threshold 0.50: scan-level positive rate on training folds 0.823
+threshold 0.55: scan-level positive rate on training folds 0.823
+threshold 0.60: scan-level positive rate on training folds 0.823
+threshold 0.65: scan-level positive rate on training folds 0.823
+threshold 0.70: scan-level positive rate on training folds 0.823
+threshold 0.75: scan-level positive rate on training folds 0.823
+threshold 0.80: scan-level positive rate on training folds 0.823
+threshold 0.85: scan-level positive rate on training folds 0.823
+threshold 0.90: scan-level positive rate on training folds 0.823
+threshold 0.95: scan-level positive rate on training folds 0.823
+H1 FAIL: no threshold puts the scan-level positive rate in [0.2, 0.5]
