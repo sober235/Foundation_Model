@@ -53,6 +53,30 @@ def test_h1_fails_cleanly_with_no_detections_at_all():
     assert verdict == {"n_det": 0, "correct_rate": 0.0, "passed": False}
 
 
+def test_h1_passes_at_the_exact_lower_bound_of_the_correct_rate():
+    verdict = _load().h1_verdict(_dets(60, 240))            # 300 detections, correct rate exactly 0.2
+    assert verdict["correct_rate"] == pytest.approx(0.2)
+    assert verdict["passed"] is True
+
+
+def test_h1_passes_at_the_exact_upper_bound_of_the_correct_rate():
+    verdict = _load().h1_verdict(_dets(240, 60))            # 300 detections, correct rate exactly 0.8
+    assert verdict["correct_rate"] == pytest.approx(0.8)
+    assert verdict["passed"] is True
+
+
+def test_h1_fails_just_below_the_lower_bound_of_the_correct_rate():
+    verdict = _load().h1_verdict(_dets(59, 241))            # 300 detections, correct rate ~0.197
+    assert verdict["correct_rate"] < 0.2
+    assert verdict["passed"] is False
+
+
+def test_h1_fails_just_above_the_upper_bound_of_the_correct_rate():
+    verdict = _load().h1_verdict(_dets(241, 59))            # 300 detections, correct rate ~0.803
+    assert verdict["correct_rate"] > 0.8
+    assert verdict["passed"] is False
+
+
 def test_threshold_search_picks_the_lowest_admissible_threshold():
     # 0.10 and 0.15 both land the rate in [0.2, 0.5]; the search must stop at the first (lowest), not
     # keep going and return some other admissible one.
@@ -66,3 +90,20 @@ def test_threshold_search_reports_failure_rather_than_guessing():
     # silently fall back to the first or last threshold it looked at.
     chosen = _load().pick_threshold([0.05, 0.10, 0.15, 0.20], lambda thr: 0.9)
     assert chosen is None
+
+
+def test_the_threshold_is_chosen_without_the_held_out_fold_but_measured_with_it():
+    asked = []
+
+    def fake_gather(folds, thr):
+        asked.append(tuple(folds))
+        # scan-level rate lands in [0.2, 0.5] only from thr = 0.3 upward
+        n_pos = 1 if thr >= 0.3 else 0
+        scan = [{"label": 1}] * n_pos + [{"label": 0}] * (4 - n_pos)
+        per = [{"correct": 1}] * 200 + [{"correct": 0}] * 200
+        return per, scan
+
+    chosen, per, scan = _load().choose_and_measure(fake_gather, [0.1, 0.2, 0.3, 0.4])
+    assert chosen == 0.3
+    assert all(0 not in f for f in asked[:-1]), "fold 0 must never be used to choose the threshold"
+    assert 0 in asked[-1], "but it must be included in the final measurement"

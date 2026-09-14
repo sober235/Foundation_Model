@@ -62,24 +62,45 @@ def h1_verdict(per, min_det=300, lo=0.2, hi=0.8):
     return {"n_det": n_det, "correct_rate": correct_rate, "passed": passed}
 
 
+TRAIN_FOLDS = (1, 2, 3, 4)
+ALL_FOLDS = (0, 1, 2, 3, 4)
+
+
+def choose_and_measure(gather_fn, thresholds, train_folds=TRAIN_FOLDS, all_folds=ALL_FOLDS, on_threshold=None):
+    """阈值只在 train_folds 的折外检出上选；选定后用它在 all_folds 上算 H1 的两个条件。
+
+    gather_fn(folds, score_min) -> (per, scan)，与 gather() 同型，测试时可换成假的，
+    不用碰真实文件系统。找不到可采纳的阈值时返回 (None, [], [])，不悄悄挑一个凑数。
+    """
+    def rate_of(thr):
+        rate = scan_positive_rate(gather_fn(train_folds, thr)[1])
+        if on_threshold is not None:
+            on_threshold(thr, rate)
+        return rate
+
+    chosen = pick_threshold(thresholds, rate_of)
+    if chosen is None:
+        return None, [], []
+    per, scan = gather_fn(all_folds, chosen)
+    return chosen, per, scan
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--export-root", type=Path, default=EXPORT_ROOT)
     ap.add_argument("--det-root", type=Path, default=EXPORT_ROOT / "detections")
     a = ap.parse_args()
 
-    def rate_of(thr):
-        _, scan = gather(a.export_root, a.det_root, [1, 2, 3, 4], thr)
-        rate = scan_positive_rate(scan)
+    def log(thr, rate):
         print(f"threshold {thr:.2f}: scan-level positive rate on training folds {rate:.3f}")
-        return rate
 
-    chosen = pick_threshold(np.arange(0.05, 0.96, 0.05), rate_of)
+    chosen, per, scan = choose_and_measure(
+        lambda folds, thr: gather(a.export_root, a.det_root, folds, thr),
+        np.arange(0.05, 0.96, 0.05), on_threshold=log)
     if chosen is None:
         print("H1 FAIL: no threshold puts the scan-level positive rate in [0.2, 0.5]")
         sys.exit(1)
 
-    per, scan = gather(a.export_root, a.det_root, [0, 1, 2, 3, 4], chosen)
     verdict = h1_verdict(per)
     print(f"\nSCORE_MIN = {chosen:.2f}")
     print(f"detections (all folds, all views): {verdict['n_det']}; "
