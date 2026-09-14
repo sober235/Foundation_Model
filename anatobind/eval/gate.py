@@ -24,14 +24,18 @@ def aurc(scores, labels):
 
 
 def threshold_at_risk(scores, labels, r_max=RISK_TARGET):
-    """满足风险上限的最小分数阈值；无解返回 inf。"""
+    """Smallest score threshold whose accepted set has risk <= r_max; inf if none exists.
+
+    Evaluates the real accepted set at each distinct score rather than a rank prefix: when many rows
+    share a score — every scan with no detections scores exactly 0.0 — a rank cutoff would admit the
+    whole tie cluster and could exceed r_max.
+    """
     scores, labels = np.asarray(scores, float), np.asarray(labels, float)
-    order = np.argsort(-scores)
-    lab, sc = labels[order], scores[order]
-    k = np.arange(1, len(lab) + 1)
-    risk = 1.0 - np.cumsum(lab) / k
-    ok = np.nonzero(risk <= r_max)[0]
-    return float(sc[ok[-1]]) if len(ok) else float("inf")
+    for tau in np.unique(scores):
+        keep = scores >= tau
+        if keep.any() and 1.0 - labels[keep].mean() <= r_max:
+            return float(tau)
+    return float("inf")
 
 
 def bootstrap_delta(per_patient, fn, reps=REPS, seed=0, alpha=0.05):

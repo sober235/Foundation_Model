@@ -34,6 +34,16 @@ def test_an_impossible_risk_target_returns_infinity():
     assert threshold_at_risk(scores, labels, r_max=0.01) == float("inf")
 
 
+def test_a_tie_at_the_threshold_cannot_push_the_accepted_set_past_the_risk_target():
+    # every scan with no detections scores exactly 0.0, so this cluster is real, not hypothetical
+    scores = np.array([0.9] * 20 + [0.0] * 10)
+    labels = np.array([1.0] * 20 + [0.0] * 2 + [1.0] * 8)
+    tau = threshold_at_risk(scores, labels, r_max=0.05)
+    keep = scores >= tau
+    assert keep.any()
+    assert 1.0 - labels[keep].mean() <= 0.05
+
+
 # ---------------------------------------------------------------------------
 # h2 and h3 are the pre-registered criteria (spec 3.4) and had no unit tests of
 # their own in the brief beyond the end-to-end script test. These lock down the
