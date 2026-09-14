@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # scripts/cache_detections.py
-"""把某折检测器在其留出患者上的折外检出缓存成 npz。
+"""把某折检测器在其留出患者上的折外检出缓存成 pickle。
 
   CUDA_VISIBLE_DEVICES=0 PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python \
       scripts/cache_detections.py --fold 0

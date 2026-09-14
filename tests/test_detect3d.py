@@ -47,3 +47,23 @@ def test_a_miss_makes_the_scan_label_one_with_no_per_lesion_row():
     gt = [_les(3, 5, 10, 10, 30, 30)]
     per, scan = failure_labels(gt, [])
     assert per == [] and scan == 1
+
+
+def test_a_detection_matching_nothing_makes_the_scan_label_one():
+    pred = [{"family": "meniscus", "score": 0.9, "z0": 3, "z1": 5,
+             "y0": 10, "x0": 10, "y1": 30, "x1": 30, "embed": np.zeros(4, np.float32)}]
+    per, scan = failure_labels([], pred)
+    assert [p["correct"] for p in per] == [0] and scan == 1
+
+
+def test_a_false_positive_alongside_a_correct_detection_still_fails_the_scan():
+    gt = [_les(3, 5, 10, 10, 30, 30)]
+    pred = [
+        {"family": "meniscus", "score": 0.9, "z0": 3, "z1": 5,
+         "y0": 10, "x0": 10, "y1": 30, "x1": 30, "embed": np.zeros(4, np.float32)},
+        {"family": "cartilage", "score": 0.8, "z0": 20, "z1": 21,
+         "y0": 200, "x0": 200, "y1": 220, "x1": 220, "embed": np.zeros(4, np.float32)},
+    ]
+    per, scan = failure_labels(gt, pred)
+    assert sorted(p["correct"] for p in per) == [0, 1]
+    assert scan == 1                       # the lesion was found, but the spurious detection is an error
