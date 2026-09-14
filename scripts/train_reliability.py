@@ -9,6 +9,7 @@
 """
 import argparse
 import csv
+import json
 import pickle
 import sys
 from pathlib import Path
@@ -42,6 +43,7 @@ def gather(export_root, det_root, fold, score_min, by_file):
     _, held, _ = load_fold(export_root, fold)
     lesion_rows, scan_rows = [], []
     for f in held:
+        patient = json.loads((Path(export_root) / f / "meta.json").read_text())["patient_id"]
         for view in VIEWS:
             path = Path(det_root) / f"fold{fold}" / f"{f}__{view}.pkl"
             if not path.exists():
@@ -50,10 +52,10 @@ def gather(export_root, det_root, fold, score_min, by_file):
             dets = [d for d in blob["dets"] if d["score"] >= score_min]
             per, scan = failure_labels(by_file.get(f, []), dets)
             for r in per:
-                lesion_rows.append({"file": f, "view": view, "fold": fold, "patient": f,
+                lesion_rows.append({"file": f, "view": view, "fold": fold, "patient": patient,
                                     "embed": r["embed"], "scalars": lesion_scalars(r),
                                     "label": float(r["correct"]), "peak_score": r["score"]})
-            scan_rows.append({"file": f, "view": view, "fold": fold, "patient": f,
+            scan_rows.append({"file": f, "view": view, "fold": fold, "patient": patient,
                               "global_feat": blob["global_feat"], "scalars": scan_scalars(per),
                               "label": float(1 - scan),
                               "peak_score": max([r["score"] for r in per], default=0.0),
@@ -112,6 +114,10 @@ def main():
                 out_rows.append({"kind": "lesion", "file": r["file"], "view": r["view"], "fold": k,
                                  "patient": r["patient"], "head_score": float(sc),
                                  "peak_score": r["peak_score"], "correct": r["label"], "min_lesion": ""})
+
+        if not (tr_scan and te_scan):
+            print(f"fold {k}: no scan rows, skipping the scan head", flush=True)
+            continue
 
         head = ScanReliability(global_dim=len(tr_scan[0]["global_feat"]), n_scalar=5)
         fit(head, stack(tr_scan, "global_feat"), stack(tr_scan, "scalars"),
