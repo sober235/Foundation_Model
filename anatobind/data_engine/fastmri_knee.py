@@ -4,9 +4,14 @@
 的连通分量得到；同一类别族但空间分离的两串因此分成两个病灶。
 """
 import csv
+import json
 from collections import Counter, defaultdict
+from pathlib import Path
 
+import h5py
 import numpy as np
+
+from anatobind.train.dataset import normalise_volume
 
 FAMILIES = ("meniscus", "cartilage", "bone", "ligament", "effusion")
 FAMILY_OF_LABEL = {
@@ -158,3 +163,54 @@ def degrade(kspace, view, seed):
     accel, centre = ACCEL[view]
     mask = equispaced_mask(kspace.shape[-1], accel, centre, seed)
     return kspace * mask
+
+
+KSPACE_ROOT = Path("/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/knee")
+ANNOTATIONS = Path("/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/Annotations/knee.csv")
+EXPORT_ROOT = Path("/data2/congcong/data/FM_data/derived/fastmri_knee/leg2")
+
+
+def volume_paths(root=KSPACE_ROOT):
+    return {p.stem: p for split in ("multicoil_train", "multicoil_val") for p in sorted((Path(root) / split).glob("*.h5"))}
+
+
+def patient_of(paths):
+    out = {}
+    for name, p in paths.items():
+        with h5py.File(p) as h:
+            out[name] = str(h.attrs.get("patient_id", name))
+    return out
+
+
+def make_folds(patients, k=5, seed=0):
+    """按患者切 k 折；同一患者的全部卷同折。"""
+    uniq = sorted(set(patients.values()))
+    order = np.random.default_rng(seed).permutation(len(uniq))
+    fold_of_patient = {uniq[int(j)]: i % k for i, j in enumerate(order)}
+    return {vol: fold_of_patient[p] for vol, p in patients.items()}
+
+
+def _view_seed(view, volume_seed, slice_index):
+    """One mask per volume for undersampling; independent noise per slice."""
+    return volume_seed if view in ACCEL else volume_seed + 1 + slice_index
+
+
+def export_volume(h5_path, lesions, out_dir, seed, size=320):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        with h5py.File(h5_path) as h:
+            kspace = h["kspace"][()]
+            meta = {"patient_id": str(h.attrs.get("patient_id", "")),
+                    "acquisition": str(h.attrs.get("acquisition", ""))}
+        for view in VIEWS:
+            vol = np.stack([reconstruct_rss(degrade(kspace[s], view, _view_seed(view, seed, s)), size)
+                            for s in range(kspace.shape[0])])
+            np.save(out_dir / f"{view}.npy", normalise_volume(vol).astype(np.float16))
+        meta.update({"slices": int(kspace.shape[0]), "size": size, "n_lesions": len(lesions), "seed": seed})
+        (out_dir / "meta.json").write_text(json.dumps(meta, indent=1))
+        return {"file": Path(h5_path).stem, "out_dir": str(out_dir), "slices": meta["slices"],
+                "n_lesions": len(lesions), "status": "ok"}
+    except Exception as exc:
+        return {"file": Path(h5_path).stem, "out_dir": str(out_dir), "slices": 0, "n_lesions": 0,
+                "status": f"error: {type(exc).__name__}: {exc}"[:200]}
