@@ -1,15 +1,16 @@
-# 2026-09-14 fastMRI+ 膝关节未标注核查：确认逐层审阅，零标签 = 读片正常
+# 2026-09-14 fastMRI+ 膝关节未标注核查：卷级零标签 = 读片正常，层级逐层审阅文献未解决
 
 对应 spec `docs/superpowers/specs/2026-09-14-leg2-fastmri-knee-detection-gate-design.md` §1.7 的两处未决事实。结论供 Task 7（数据集取负样本）直接使用。
 
 ## 0. 结论
 
 ```
-UNANNOTATED_ARE_NEGATIVE = True
+UNANNOTATED_VOLUMES_ARE_NEGATIVE = True
+UNANNOTATED_SLICES_IN_ANNOTATED_VOLUMES_ARE_NEGATIVE = False
 ```
 
-- 已标注卷内、没有落框的层：可作负样本。
-- 198 卷完全无标注的卷：作为全负样本（整卷所有层、所有类别族）纳入，不排除。
+- 198 卷完全无标注的卷：作为全负样本（整卷所有层、所有类别族）纳入。
+- 已标注卷内没有落框的层：从样本索引中整体剔除，既不算正类也不算负类，不参与训练。
 
 依据见第 1 节（文献）与第 2 节（数据交叉验证）。
 
@@ -33,9 +34,11 @@ Methods → Annotations 段，原文（逐句引用）：
 
 > "If no relevant pathology was identified on an examination, no labels were provided."
 
-三句合起来读：标注粒度是"层"（slice-by-slice），标注员对整套冠状位序列逐层判断，在"发现代表性病理的每一层"打框。要做到"每一层"精确对应"是否发现病理"，前提就是每一层都被看过、都被做出了有/无病理的判断——否则无法解释为什么某些层有框、其余层没有。论文没有出现"reviewed every slice"这样的字面陈述（数据描述文章通常不会这样逐字声明工作细节），但"逐层（slice-by-slice）+ 在发现病理的每一层打框 + 没发现病理就不给标签"这条因果链，是该文能给出的最直接确认。
+**round 1 复核后更正**：第三句是 examination（整卷）级别的规则，不能直接拿来当"某一层没发现病理，这一层就不给标签"的 slice 级证据——原稿这样用是错的。第二句里的 "representative" 也留了口子：它同样可以读成"只标有代表性的那几层"（严重程度/显著性筛选，或者一个跨多层的病灶只挑代表层打框），不必然是"每一层都做过有/无病理的判断"。评审意见原话："'representative' is at least as consistent with a severity/salience filter (or marking only representative slices of a multi-slice lesion) as with 'every slice was adjudicated present/absent.'"
 
-回答：**是，逐层审阅；未标注层 = 该层被看过但未发现代表性病灶，可作负样本。**
+三句合起来，文献能确认的只有：标注粒度是"层"（第一句），标注在序列层面按 slice 记录框（第二句）。但没有一句直接给出 slice 级的"无发现→不给该层标签"规则；第三句给的是 exam 级规则，套不到 slice 级。
+
+回答：**文献未能解决这个问题。** 项目不依赖这一推断：已标注卷内没有落框的层，既不当"确认无异常"，也不当负样本用（见第 0 节 `UNANNOTATED_SLICES_IN_ANNOTATED_VOLUMES_ARE_NEGATIVE = False`），第 2 节末尾另有一条支持性但非结论性的数据观察。
 
 ### 问题 2：完全没有标注的卷是"读片为正常"还是"未标注"？
 
@@ -47,7 +50,7 @@ Methods → Annotations 段，原文：
 
 第一句明确：全部 1172 例是普查式全覆盖，不是抽样——每一卷都走过了"clinically annotated"的流程，不存在"跳过某些卷不看"的情况。第二句直接把"零标签"翻译成"没有发现相关病理"（no relevant pathology was identified），而不是"没有被标注/没时间看"。
 
-回答：**是"读片为正常"，不是"漏标"；198 卷可视为全负样本纳入。**
+回答：**是"读片为正常"，不是"漏标"；198 卷可视为全负样本纳入（`UNANNOTATED_VOLUMES_ARE_NEGATIVE = True`）。**
 
 ### 如实披露的限制（不影响上面的结论，但影响假阳性率解读）
 
@@ -55,7 +58,7 @@ Methods 原文承认单一标注者、无复核：
 
 > "Note there are several limitations to this dataset that bear acknowledgement. First, while the annotators are subspecialist radiologists in practice at leading academic medical centers, the lack of multiple annotators/repeated annotations to determine inter-rater/intra-rater reliability metrics or ensure consensus agreement is a limitation and should be considered in the use of these labels."
 
-即：协议是"逐层审阅、零标签=正常读片"，但协议不保证零漏诊——单一放射科医生仍可能漏掉真实存在的病灶。这是标注质量问题，不是"有没有被审阅"的问题，本任务只回答后者。无论 True/False 分支，这一残余不确定性都消不掉。
+即：exam 级协议已确认为"零标签=正常读片"，但协议不保证零漏诊——单一放射科医生仍可能漏掉真实存在的病灶。这是标注质量问题，独立于"某一层是否被逐层审阅过"（后者见问题 1，round 1 复核后判定文献未解决，本项目已不再依赖它）。这一残余不确定性在 `UNANNOTATED_VOLUMES_ARE_NEGATIVE = True` 之下依然存在，消不掉。
 
 另外，"Artifact" 是唯一的膝关节 study-level 标签（Table 1 脚注：*Artifact is study-level label*，13 例），在 `knee.csv` 里以 slice 0、无 x/y/width/height 坐标的形式写入（Data Records 段："Study-level labels are marked as 'Yes' in column 'Study Level' for slice 0 of the corresponding subjects with no specified bounding box information."）。本任务对"完全无标注"的判定标准是"`knee.csv` 里连一行都没有"，13 例 Artifact 只影响 974 例"已标注"卷内部的标注形式，不影响 198 例的认定，故不改变结论。
 
@@ -122,11 +125,49 @@ acquisition of ALL volumes: {'CORPD_FBK': 584, 'CORPDFS_FBK': 588}
 
   输出：`total rows 16167` / `study_level==Yes rows 13` / `bounding-box rows 16154`。`knee.csv` 共 16167 行，其中 13 行是 study-level 的 "Artifact" 标签（slice=0，无坐标，即 Table 1 脚注和 Data Records 段描述的那种记录），其余 16154 行才是真正的逐层边界框，与任务背景给出的数字一致。
 
+### 为什么仍然认为病灶是逐层标满的（支持性观察，非结论依据）
+
+命令：
+
+```bash
+PYTHONNOUSERSITE=1 ~/anaconda3/envs/nvgen/bin/python - <<'PY'
+import csv
+from collections import defaultdict
+rows = list(csv.DictReader(open("/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/Annotations/knee.csv")))
+by = defaultdict(list)
+for r in rows:
+    if r["study_level"].strip() == "Yes":
+        continue
+    by[(r["file"], r["label"].strip())].append(int(r["slice"]))
+runs = [sorted(v) for v in by.values()]
+gaps = [b - a for v in runs for a, b in zip(v, v[1:])]
+n = len(runs)
+print(f"(volume,label) groups {n}")
+print(f"single-slice groups {sum(1 for v in runs if len(v) == 1)} ({sum(1 for v in runs if len(v) == 1)/n:.0%})")
+print(f"consecutive gaps {sum(1 for g in gaps if g == 1)}, non-consecutive gaps {sum(1 for g in gaps if g > 1)}")
+print(f"slices per group: median {sorted(len(v) for v in runs)[n//2]}, max {max(len(v) for v in runs)}")
+PY
+```
+
+输出：
+
+```
+(volume,label) groups 2585
+single-slice groups 156 (6%)
+consecutive gaps 11348, non-consecutive gaps 436
+slices per group: median 5, max 33
+```
+
+含义：一个病灶一旦被发现，几乎总是被逐层连续标满其空间范围，而不是只挑一张代表层——单层病灶只占 6%，层间距里 96%（11348/11784）是连续相邻层。这与"逐层标注"的操作习惯一致，但它证明的是"找到病灶之后怎么标"，不能反过来证明"没打框的层确实被看过、确认无病灶"，所以只是支持性观察，不是结论依据。
+
 ## 3. 决策（供 Task 7 使用）
 
 ```
-UNANNOTATED_ARE_NEGATIVE = True
+UNANNOTATED_VOLUMES_ARE_NEGATIVE = True
+UNANNOTATED_SLICES_IN_ANNOTATED_VOLUMES_ARE_NEGATIVE = False
 ```
 
-- 已标注卷内没有落框的层：可作负样本。
-- 198 卷完全无标注的卷：作为全负样本（整卷所有层、所有类别族）纳入训练/评估集，不排除。
+- 198 卷完全无标注的卷：作为全负样本（整卷所有层、所有类别族）纳入训练/评估集，不排除；约 198×35≈6900 张负样本层，是本数据集负样本的来源。
+- 已标注卷内没有落框的层：从样本索引中整体剔除，既不算正类也不算负类，不参与训练/评估。
+
+决策代价：排除这些层，损失的是已标注卷内本可以多拿到的一批负样本；这个代价可恢复——以后要改，重新跑一次导出脚本就行，不会引入静默污染。而如果这里判断反了、把这些层当负样本纳入训练（即误判为 True），后果是训练检测器压制真实存在的病灶，这在重采闸门场景下不可接受。
