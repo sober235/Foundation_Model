@@ -6,6 +6,8 @@
 import csv
 from collections import Counter, defaultdict
 
+import numpy as np
+
 FAMILIES = ("meniscus", "cartilage", "bone", "ligament", "effusion")
 FAMILY_OF_LABEL = {
     "Meniscus Tear": "meniscus",
@@ -102,3 +104,57 @@ def merge_to_3d(rows, iou_min=0.3):
                 "n_boxes": len(members),
             })
     return lesions
+
+
+VIEWS = ("clean", "noise_q1", "noise_q2", "noise_q3", "us4", "us8", "us16")
+NOISE_C = {"noise_q1": 1.0, "noise_q2": 2.0, "noise_q3": 4.0}
+ACCEL = {"us4": (4, 0.08), "us8": (8, 0.04), "us16": (16, 0.04)}
+
+
+def reconstruct_rss(kspace, size=320):
+    """干净与退化共用的唯一重建算子：逐线圈中心化 2D IFFT，线圈平方和开方，中心裁剪。
+
+    与 fastMRI 自带的 reconstruction_rss 一致（2026-09-14 在 file1000001 第 10 层实测 NRMSE 7.3e-8）。
+    """
+    img = np.fft.fftshift(np.fft.ifft2(np.fft.ifftshift(kspace, axes=(-2, -1)), norm="ortho"), axes=(-2, -1))
+    rss = np.sqrt((np.abs(img) ** 2).sum(axis=-3))
+    out = rss
+    for axis in (-2, -1):
+        n = out.shape[axis]
+        if n > size:
+            lo = (n - size) // 2
+            out = out.take(range(lo, lo + size), axis=axis)
+    return out.astype(np.float32)
+
+
+def noise_sigma(kspace, c):
+    return float(c * np.median(np.abs(kspace)))
+
+
+def equispaced_mask(n_pe, accel, centre_fraction, seed, nest_centre_fraction=0.08):
+    """1D 相位编码掩膜。中心全采；外围顺序由最宽的中心块决定，因此不同加速倍数的掩膜互相嵌套。"""
+    mask = np.zeros(n_pe, dtype=bool)
+    n_centre = int(round(centre_fraction * n_pe))
+    lo = (n_pe - n_centre) // 2
+    mask[lo:lo + n_centre] = True
+    n_wide = int(round(nest_centre_fraction * n_pe))
+    wlo = (n_pe - n_wide) // 2
+    rest = np.array([i for i in range(n_pe) if not (wlo <= i < wlo + n_wide)])
+    order = np.random.default_rng(seed).permutation(len(rest))
+    n_extra = max(0, int(round(n_pe / accel)) - n_centre)
+    mask[rest[order[:n_extra]]] = True
+    return mask
+
+
+def degrade(kspace, view, seed):
+    if view == "clean":
+        return kspace
+    if view in NOISE_C:
+        sigma = noise_sigma(kspace, NOISE_C[view])
+        rng = np.random.default_rng(seed)
+        n = rng.normal(scale=sigma / np.sqrt(2), size=kspace.shape) \
+            + 1j * rng.normal(scale=sigma / np.sqrt(2), size=kspace.shape)
+        return kspace + n.astype(kspace.dtype)
+    accel, centre = ACCEL[view]
+    mask = equispaced_mask(kspace.shape[-1], accel, centre, seed)
+    return kspace * mask
