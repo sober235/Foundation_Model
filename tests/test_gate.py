@@ -44,6 +44,14 @@ def test_a_tie_at_the_threshold_cannot_push_the_accepted_set_past_the_risk_targe
     assert 1.0 - labels[keep].mean() <= 0.05
 
 
+def test_the_threshold_is_never_inside_a_tie_group():
+    scores = np.array([0.9] * 20 + [0.0] * 10)
+    labels = np.array([1.0] * 20 + [0.0] * 2 + [1.0] * 8)
+    tau = threshold_at_risk(scores, labels, r_max=0.05)
+    assert tau in set(np.unique(scores).tolist())      # a real score, not a rank position
+    assert (scores >= tau).sum() == 20                 # the whole tie cluster is excluded, not split
+
+
 # ---------------------------------------------------------------------------
 # h2 and h3 are the pre-registered criteria (spec 3.4) and had no unit tests of
 # their own in the brief beyond the end-to-end script test. These lock down the

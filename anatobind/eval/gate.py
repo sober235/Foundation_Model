@@ -26,16 +26,22 @@ def aurc(scores, labels):
 def threshold_at_risk(scores, labels, r_max=RISK_TARGET):
     """Smallest score threshold whose accepted set has risk <= r_max; inf if none exists.
 
-    Evaluates the real accepted set at each distinct score rather than a rank prefix: when many rows
-    share a score — every scan with no detections scores exactly 0.0 — a rank cutoff would admit the
-    whole tie cluster and could exceed r_max.
+    Only rank positions at the end of a tie group are real thresholds: when many rows share a score —
+    every scan with no detections scores exactly 0.0 — a cut inside the group would describe an
+    accepted set that `scores >= tau` cannot produce.
     """
     scores, labels = np.asarray(scores, float), np.asarray(labels, float)
-    for tau in np.unique(scores):
-        keep = scores >= tau
-        if keep.any() and 1.0 - labels[keep].mean() <= r_max:
-            return float(tau)
-    return float("inf")
+    if scores.size == 0:
+        return float("inf")
+    order = np.argsort(-scores)
+    sc, lab = scores[order], labels[order]
+    k = np.arange(1, len(lab) + 1)
+    risk = 1.0 - np.cumsum(lab) / k
+    boundary = np.empty(len(sc), dtype=bool)
+    boundary[-1] = True
+    boundary[:-1] = sc[:-1] != sc[1:]
+    ok = np.nonzero(boundary & (risk <= r_max))[0]
+    return float(sc[ok[-1]]) if len(ok) else float("inf")
 
 
 def bootstrap_delta(per_patient, fn, reps=REPS, seed=0, alpha=0.05):
