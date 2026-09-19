@@ -1,0 +1,60 @@
+{
+ "volumes": [
+  "file_brain_AXFLAIR_200_6002605",
+  "file_brain_AXFLAIR_200_6002572",
+  "file_brain_AXFLAIR_200_6002585",
+  "file_brain_AXFLAIR_201_6002867",
+  "file_brain_AXFLAIR_200_6002638",
+  "file_brain_AXFLAIR_200_6002608",
+  "file_brain_AXFLAIR_201_6002871",
+  "file_brain_AXFLAIR_200_6002553",
+  "file_brain_AXFLAIR_200_6002525",
+  "file_brain_AXFLAIR_201_6002876",
+  "file_brain_AXFLAIR_200_6002562",
+  "file_brain_AXFLAIR_201_6002873",
+  "file_brain_AXFLAIR_200_6002458",
+  "file_brain_AXFLAIR_200_6002558",
+  "file_brain_AXFLAIR_201_6002882",
+  "file_brain_AXFLAIR_200_6002650",
+  "file_brain_AXFLAIR_200_6002658",
+  "file_brain_AXFLAIR_200_6002462",
+  "file_brain_AXFLAIR_200_6002567",
+  "file_brain_AXFLAIR_200_6002467",
+  "file_brain_AXFLAIR_200_6002579",
+  "file_brain_AXFLAIR_200_6002603",
+  "file_brain_AXFLAIR_200_6002488",
+  "file_brain_AXFLAIR_200_6002516"
+ ],
+ "n_lesions": 804,
+ "n_small": 780,
+ "orientation": {
+  "as_is": {
+   "WM": 0.48709169379874306,
+   "cortex": 0.3146861512834103,
+   "ventricle/CSF": 0.06701597637616416,
+   "deep gray": 0.009538880896494283,
+   "background": 0.12149769061861135
+  },
+  "flip_y": {
+   "WM": 0.4961883849473764,
+   "cortex": 0.3165654577118195,
+   "ventricle/CSF": 0.07202998409934126,
+   "deep gray": 0.008353146058908155,
+   "background": 0.10672067842810631
+  },
+  "flip_x": {
+   "WM": 0.45372605436510943,
+   "cortex": 0.3330597410464148,
+   "ventricle/CSF": 0.06564094798213069,
+   "deep gray": 0.006820625425910502,
+   "background": 0.14053910804876202
+  },
+  "flip_xy": {
+   "WM": 0.4418338759748618,
+   "cortex": 0.33338229726660107,
+   "ventricle/CSF": 0.07330960854092526,
+   "deep gray": 0.005663663208904369,
+   "background": 0.1456697206027107
+  }
+ }
+}

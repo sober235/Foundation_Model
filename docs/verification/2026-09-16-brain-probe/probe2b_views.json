@@ -1,0 +1,214 @@
+{
+ "all_structures": {
+  "floor_flip_rate": 0.0,
+  "views": {
+   "noise_q1": {
+    "n": 780,
+    "flip_rate": 0.03076923076923077,
+    "delta": 0.03076923076923077,
+    "ci": [
+     0.016091799944531755,
+     0.046969951189749844
+    ],
+    "gate": false
+   },
+   "noise_q2": {
+    "n": 780,
+    "flip_rate": 0.046153846153846156,
+    "delta": 0.046153846153846156,
+    "ci": [
+     0.028885141840360777,
+     0.06578994428130411
+    ],
+    "gate": false
+   },
+   "noise_q3": {
+    "n": 780,
+    "flip_rate": 0.07435897435897436,
+    "delta": 0.07435897435897436,
+    "ci": [
+     0.055,
+     0.09477222026535163
+    ],
+    "gate": true
+   },
+   "us4": {
+    "n": 780,
+    "flip_rate": 0.4358974358974359,
+    "delta": 0.4358974358974359,
+    "ci": [
+     0.33817419857993725,
+     0.5406270401305684
+    ],
+    "gate": true
+   },
+   "us8": {
+    "n": 780,
+    "flip_rate": 0.9794871794871794,
+    "delta": 0.9794871794871794,
+    "ci": [
+     0.9642857142857143,
+     0.9932736932831863
+    ],
+    "gate": true
+   },
+   "us16": {
+    "n": 780,
+    "flip_rate": 0.9974358974358974,
+    "delta": 0.9974358974358974,
+    "ci": [
+     0.992986945922696,
+     1.0
+    ],
+    "gate": true
+   }
+  },
+  "us16_transitions": {
+   "R cerebral WM -> background": 266,
+   "L cerebral WM -> background": 261,
+   "R cortex -> background": 73,
+   "L cortex -> background": 48,
+   "R cerebral WM -> CSF": 41,
+   "L cerebral WM -> CSF": 37,
+   "CSF -> background": 19,
+   "R cortex -> CSF": 15,
+   "L cerebral WM -> R cortex": 9,
+   "L cortex -> CSF": 7,
+   "L caudate -> background": 1,
+   "L cortex -> R cortex": 1
+  }
+ },
+ "parenchyma_only": {
+  "floor_flip_rate": 0.0,
+  "views": {
+   "noise_q1": {
+    "n": 780,
+    "flip_rate": 0.029487179487179487,
+    "delta": 0.029487179487179487,
+    "ci": [
+     0.014457831325301205,
+     0.04628330995792426
+    ],
+    "gate": false
+   },
+   "noise_q2": {
+    "n": 780,
+    "flip_rate": 0.04487179487179487,
+    "delta": 0.04487179487179487,
+    "ci": [
+     0.02631503759398496,
+     0.06549617699060144
+    ],
+    "gate": false
+   },
+   "noise_q3": {
+    "n": 780,
+    "flip_rate": 0.06923076923076923,
+    "delta": 0.06923076923076923,
+    "ci": [
+     0.051700768055498204,
+     0.08712640763183312
+    ],
+    "gate": true
+   },
+   "us4": {
+    "n": 780,
+    "flip_rate": 0.3923076923076923,
+    "delta": 0.3923076923076923,
+    "ci": [
+     0.3004204559472446,
+     0.48846153846153845
+    ],
+    "gate": true
+   },
+   "us8": {
+    "n": 780,
+    "flip_rate": 0.9282051282051282,
+    "delta": 0.9282051282051282,
+    "ci": [
+     0.8900799242546594,
+     0.9646934871113115
+    ],
+    "gate": true
+   },
+   "us16": {
+    "n": 780,
+    "flip_rate": 0.9782051282051282,
+    "delta": 0.9782051282051282,
+    "ci": [
+     0.9518405065019284,
+     0.997115325656402
+    ],
+    "gate": true
+   }
+  },
+  "us16_transitions": {
+   "R cerebral WM -> background": 266,
+   "L cerebral WM -> background": 261,
+   "R cortex -> background": 85,
+   "L cortex -> background": 55,
+   "L cerebral WM -> R cortex": 46,
+   "R cerebral WM -> R cortex": 41,
+   "L cortex -> R cortex": 8,
+   "L caudate -> background": 1
+  }
+ },
+ "structures": {
+  "noise_q1": {
+   "cerebral WM": 0.9723675247943776,
+   "cortex": 0.970814305470423,
+   "lateral ventricles": 0.8890145351731723,
+   "deep gray": 0.7758997872628011,
+   "centroid_median_mm": 0.5128249791707009,
+   "centroid_p90_mm": 2.7073869014502434
+  },
+  "noise_q2": {
+   "cerebral WM": 0.9520261888971739,
+   "cortex": 0.9485328026295816,
+   "lateral ventricles": 0.8051896802997405,
+   "deep gray": 0.6496120663997997,
+   "centroid_median_mm": 0.8516690764542928,
+   "centroid_p90_mm": 3.7715736010598344
+  },
+  "noise_q3": {
+   "cerebral WM": 0.9113988041247078,
+   "cortex": 0.90316993692887,
+   "lateral ventricles": 0.6542875864208315,
+   "deep gray": 0.48615272771240575,
+   "centroid_median_mm": 1.5049707690514544,
+   "centroid_p90_mm": 6.002439700944001
+  },
+  "us4": {
+   "cerebral WM": 0.5689905996717327,
+   "cortex": 0.5814714712119863,
+   "lateral ventricles": 0.09749389751688228,
+   "deep gray": 0.08576737624540008,
+   "centroid_median_mm": 10.008178996196037,
+   "centroid_p90_mm": 22.811863875195602
+  },
+  "us8": {
+   "cerebral WM": 0.009184817012284617,
+   "cortex": 0.045032847986943736,
+   "lateral ventricles": 0.0,
+   "deep gray": 0.0,
+   "centroid_median_mm": 37.38254115937926,
+   "centroid_p90_mm": 51.99589148635915
+  },
+  "us16": {
+   "cerebral WM": 0.0005937518348592616,
+   "cortex": 0.00451274340386298,
+   "lateral ventricles": 0.0,
+   "deep gray": 0.0,
+   "centroid_median_mm": 48.440683083018975,
+   "centroid_p90_mm": 83.30974359377372
+  },
+  "existing": {
+   "cerebral WM": 0.9999979474660785,
+   "cortex": 0.9999951342074066,
+   "lateral ventricles": 1.0,
+   "deep gray": 0.9999297209923396,
+   "centroid_median_mm": 0.0,
+   "centroid_p90_mm": 0.0
+  }
+ }
+}

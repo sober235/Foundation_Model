@@ -1,0 +1,512 @@
+{
+ "noise_q1": {
+  "file_brain_AXFLAIR_200_6002605": {
+   "nrmse_noisy": 0.052078597247600555,
+   "nrmse_floor": 0.18574576079845428,
+   "nrmse_dn": 0.18509744107723236,
+   "brain_nrmse_noisy": 0.01758468709886074,
+   "brain_nrmse_dn": 0.041709303855895996
+  },
+  "file_brain_AXFLAIR_200_6002572": {
+   "nrmse_noisy": 0.041538115590810776,
+   "nrmse_floor": 0.13313953578472137,
+   "nrmse_dn": 0.1328703612089157,
+   "brain_nrmse_noisy": 0.014003473334014416,
+   "brain_nrmse_dn": 0.027685042470693588
+  },
+  "file_brain_AXFLAIR_200_6002585": {
+   "nrmse_noisy": 0.04867437854409218,
+   "nrmse_floor": 0.1561860293149948,
+   "nrmse_dn": 0.15607181191444397,
+   "brain_nrmse_noisy": 0.016062183305621147,
+   "brain_nrmse_dn": 0.03205406293272972
+  },
+  "file_brain_AXFLAIR_201_6002867": {
+   "nrmse_noisy": 0.04809889197349548,
+   "nrmse_floor": 0.1720637083053589,
+   "nrmse_dn": 0.1714116930961609,
+   "brain_nrmse_noisy": 0.017598440870642662,
+   "brain_nrmse_dn": 0.043851666152477264
+  },
+  "file_brain_AXFLAIR_200_6002638": {
+   "nrmse_noisy": 0.05448061227798462,
+   "nrmse_floor": 0.18591725826263428,
+   "nrmse_dn": 0.1851441115140915,
+   "brain_nrmse_noisy": 0.018022887408733368,
+   "brain_nrmse_dn": 0.04199022799730301
+  },
+  "file_brain_AXFLAIR_200_6002608": {
+   "nrmse_noisy": 0.04863888397812843,
+   "nrmse_floor": 0.17404191195964813,
+   "nrmse_dn": 0.17414607107639313,
+   "brain_nrmse_noisy": 0.01820034720003605,
+   "brain_nrmse_dn": 0.04398902505636215
+  },
+  "file_brain_AXFLAIR_201_6002871": {
+   "nrmse_noisy": 0.04708418622612953,
+   "nrmse_floor": 0.14641526341438293,
+   "nrmse_dn": 0.1463560312986374,
+   "brain_nrmse_noisy": 0.0169156976044178,
+   "brain_nrmse_dn": 0.032727573066949844
+  },
+  "file_brain_AXFLAIR_200_6002553": {
+   "nrmse_noisy": 0.04682721197605133,
+   "nrmse_floor": 0.14557631313800812,
+   "nrmse_dn": 0.14507615566253662,
+   "brain_nrmse_noisy": 0.016913052648305893,
+   "brain_nrmse_dn": 0.03339489549398422
+  },
+  "file_brain_AXFLAIR_200_6002525": {
+   "nrmse_noisy": 0.05197415128350258,
+   "nrmse_floor": 0.16718371212482452,
+   "nrmse_dn": 0.16741085052490234,
+   "brain_nrmse_noisy": 0.018429534509778023,
+   "brain_nrmse_dn": 0.039198439568281174
+  },
+  "file_brain_AXFLAIR_201_6002876": {
+   "nrmse_noisy": 0.044612593948841095,
+   "nrmse_floor": 0.15656203031539917,
+   "nrmse_dn": 0.1558070331811905,
+   "brain_nrmse_noisy": 0.014857723377645016,
+   "brain_nrmse_dn": 0.03310887888073921
+  },
+  "file_brain_AXFLAIR_200_6002562": {
+   "nrmse_noisy": 0.03441267088055611,
+   "nrmse_floor": 0.12399130314588547,
+   "nrmse_dn": 0.12387894839048386,
+   "brain_nrmse_noisy": 0.010213506408035755,
+   "brain_nrmse_dn": 0.022048447281122208
+  },
+  "file_brain_AXFLAIR_201_6002873": {
+   "nrmse_noisy": 0.04503155127167702,
+   "nrmse_floor": 0.14496538043022156,
+   "nrmse_dn": 0.14527368545532227,
+   "brain_nrmse_noisy": 0.015987355262041092,
+   "brain_nrmse_dn": 0.03226223960518837
+  },
+  "file_brain_AXFLAIR_200_6002458": {
+   "nrmse_noisy": 0.05438976734876633,
+   "nrmse_floor": 0.18764963746070862,
+   "nrmse_dn": 0.18674549460411072,
+   "brain_nrmse_noisy": 0.01665203832089901,
+   "brain_nrmse_dn": 0.03690829128026962
+  },
+  "file_brain_AXFLAIR_200_6002558": {
+   "nrmse_noisy": 0.048324376344680786,
+   "nrmse_floor": 0.16721339523792267,
+   "nrmse_dn": 0.16566424071788788,
+   "brain_nrmse_noisy": 0.014231985434889793,
+   "brain_nrmse_dn": 0.031426604837179184
+  },
+  "file_brain_AXFLAIR_201_6002882": {
+   "nrmse_noisy": 0.07894568890333176,
+   "nrmse_floor": 0.26792123913764954,
+   "nrmse_dn": 0.2664642632007599,
+   "brain_nrmse_noisy": 0.03086663968861103,
+   "brain_nrmse_dn": 0.067515067756176
+  },
+  "file_brain_AXFLAIR_200_6002650": {
+   "nrmse_noisy": 0.05304095149040222,
+   "nrmse_floor": 0.19575515389442444,
+   "nrmse_dn": 0.19523674249649048,
+   "brain_nrmse_noisy": 0.01782277412712574,
+   "brain_nrmse_dn": 0.04442571848630905
+  },
+  "file_brain_AXFLAIR_200_6002658": {
+   "nrmse_noisy": 0.054239869117736816,
+   "nrmse_floor": 0.17643176019191742,
+   "nrmse_dn": 0.17591843008995056,
+   "brain_nrmse_noisy": 0.018110226839780807,
+   "brain_nrmse_dn": 0.0375935435295105
+  },
+  "file_brain_AXFLAIR_200_6002462": {
+   "nrmse_noisy": 0.04439477622509003,
+   "nrmse_floor": 0.14293217658996582,
+   "nrmse_dn": 0.14295677840709686,
+   "brain_nrmse_noisy": 0.014663638547062874,
+   "brain_nrmse_dn": 0.029890211299061775
+  },
+  "file_brain_AXFLAIR_200_6002567": {
+   "nrmse_noisy": 0.05230605974793434,
+   "nrmse_floor": 0.18460997939109802,
+   "nrmse_dn": 0.18385863304138184,
+   "brain_nrmse_noisy": 0.01618507131934166,
+   "brain_nrmse_dn": 0.03500234708189964
+  },
+  "file_brain_AXFLAIR_200_6002467": {
+   "nrmse_noisy": 0.04593075066804886,
+   "nrmse_floor": 0.16098962724208832,
+   "nrmse_dn": 0.16078981757164001,
+   "brain_nrmse_noisy": 0.014169749803841114,
+   "brain_nrmse_dn": 0.03056052140891552
+  },
+  "file_brain_AXFLAIR_200_6002579": {
+   "nrmse_noisy": 0.05268785357475281,
+   "nrmse_floor": 0.1866312325000763,
+   "nrmse_dn": 0.18608860671520233,
+   "brain_nrmse_noisy": 0.017754191532731056,
+   "brain_nrmse_dn": 0.037462372332811356
+  },
+  "file_brain_AXFLAIR_200_6002603": {
+   "nrmse_noisy": 0.04856204614043236,
+   "nrmse_floor": 0.16084574162960052,
+   "nrmse_dn": 0.16141678392887115,
+   "brain_nrmse_noisy": 0.01861872524023056,
+   "brain_nrmse_dn": 0.039531607180833817
+  },
+  "file_brain_AXFLAIR_200_6002488": {
+   "nrmse_noisy": 0.05600987374782562,
+   "nrmse_floor": 0.17738954722881317,
+   "nrmse_dn": 0.17575843632221222,
+   "brain_nrmse_noisy": 0.016789104789495468,
+   "brain_nrmse_dn": 0.033660005778074265
+  },
+  "file_brain_AXFLAIR_200_6002516": {
+   "nrmse_noisy": 0.05368005111813545,
+   "nrmse_floor": 0.18547694385051727,
+   "nrmse_dn": 0.1857682317495346,
+   "brain_nrmse_noisy": 0.01769067719578743,
+   "brain_nrmse_dn": 0.03830958530306816
+  }
+ },
+ "noise_q2": {
+  "file_brain_AXFLAIR_200_6002605": {
+   "nrmse_noisy": 0.15676899254322052,
+   "nrmse_floor": 0.18666552007198334,
+   "nrmse_dn": 0.1734083741903305,
+   "brain_nrmse_noisy": 0.04400558024644852,
+   "brain_nrmse_dn": 0.04839804023504257
+  },
+  "file_brain_AXFLAIR_200_6002572": {
+   "nrmse_noisy": 0.12127335369586945,
+   "nrmse_floor": 0.1367948204278946,
+   "nrmse_dn": 0.12521827220916748,
+   "brain_nrmse_noisy": 0.03027462773025036,
+   "brain_nrmse_dn": 0.03475547581911087
+  },
+  "file_brain_AXFLAIR_200_6002585": {
+   "nrmse_noisy": 0.14239254593849182,
+   "nrmse_floor": 0.1581714153289795,
+   "nrmse_dn": 0.1454477608203888,
+   "brain_nrmse_noisy": 0.035903751850128174,
+   "brain_nrmse_dn": 0.04017668217420578
+  },
+  "file_brain_AXFLAIR_201_6002867": {
+   "nrmse_noisy": 0.14461994171142578,
+   "nrmse_floor": 0.17188017070293427,
+   "nrmse_dn": 0.1603815257549286,
+   "brain_nrmse_noisy": 0.04481486603617668,
+   "brain_nrmse_dn": 0.05063951760530472
+  },
+  "file_brain_AXFLAIR_200_6002638": {
+   "nrmse_noisy": 0.1636553704738617,
+   "nrmse_floor": 0.18686313927173615,
+   "nrmse_dn": 0.1734817773103714,
+   "brain_nrmse_noisy": 0.04360697418451309,
+   "brain_nrmse_dn": 0.050144363194704056
+  },
+  "file_brain_AXFLAIR_200_6002608": {
+   "nrmse_noisy": 0.14560715854167938,
+   "nrmse_floor": 0.17511481046676636,
+   "nrmse_dn": 0.16381476819515228,
+   "brain_nrmse_noisy": 0.045047204941511154,
+   "brain_nrmse_dn": 0.05027120187878609
+  },
+  "file_brain_AXFLAIR_201_6002871": {
+   "nrmse_noisy": 0.13350145518779755,
+   "nrmse_floor": 0.1523553878068924,
+   "nrmse_dn": 0.13722732663154602,
+   "brain_nrmse_noisy": 0.03626694157719612,
+   "brain_nrmse_dn": 0.03972618654370308
+  },
+  "file_brain_AXFLAIR_200_6002553": {
+   "nrmse_noisy": 0.13670606911182404,
+   "nrmse_floor": 0.14780335128307343,
+   "nrmse_dn": 0.13507068157196045,
+   "brain_nrmse_noisy": 0.03926824405789375,
+   "brain_nrmse_dn": 0.0414079949259758
+  },
+  "file_brain_AXFLAIR_200_6002525": {
+   "nrmse_noisy": 0.15223778784275055,
+   "nrmse_floor": 0.16994544863700867,
+   "nrmse_dn": 0.1561858355998993,
+   "brain_nrmse_noisy": 0.04295387864112854,
+   "brain_nrmse_dn": 0.04725978896021843
+  },
+  "file_brain_AXFLAIR_201_6002876": {
+   "nrmse_noisy": 0.13370735943317413,
+   "nrmse_floor": 0.16066057980060577,
+   "nrmse_dn": 0.14898648858070374,
+   "brain_nrmse_noisy": 0.034526608884334564,
+   "brain_nrmse_dn": 0.04075682908296585
+  },
+  "file_brain_AXFLAIR_200_6002562": {
+   "nrmse_noisy": 0.10293754190206528,
+   "nrmse_floor": 0.12455420941114426,
+   "nrmse_dn": 0.11660972237586975,
+   "brain_nrmse_noisy": 0.022337382659316063,
+   "brain_nrmse_dn": 0.027279499918222427
+  },
+  "file_brain_AXFLAIR_201_6002873": {
+   "nrmse_noisy": 0.13131336867809296,
+   "nrmse_floor": 0.14690425992012024,
+   "nrmse_dn": 0.13538989424705505,
+   "brain_nrmse_noisy": 0.03617829456925392,
+   "brain_nrmse_dn": 0.039194729179143906
+  },
+  "file_brain_AXFLAIR_200_6002458": {
+   "nrmse_noisy": 0.16102805733680725,
+   "nrmse_floor": 0.18831247091293335,
+   "nrmse_dn": 0.17282558977603912,
+   "brain_nrmse_noisy": 0.0394357405602932,
+   "brain_nrmse_dn": 0.04364755377173424
+  },
+  "file_brain_AXFLAIR_200_6002558": {
+   "nrmse_noisy": 0.14555436372756958,
+   "nrmse_floor": 0.16647247970104218,
+   "nrmse_dn": 0.153702974319458,
+   "brain_nrmse_noisy": 0.0341825969517231,
+   "brain_nrmse_dn": 0.03810541331768036
+  },
+  "file_brain_AXFLAIR_201_6002882": {
+   "nrmse_noisy": 0.23369966447353363,
+   "nrmse_floor": 0.2734358608722687,
+   "nrmse_dn": 0.24870480597019196,
+   "brain_nrmse_noisy": 0.07887543737888336,
+   "brain_nrmse_dn": 0.07816411554813385
+  },
+  "file_brain_AXFLAIR_200_6002650": {
+   "nrmse_noisy": 0.1599660962820053,
+   "nrmse_floor": 0.19607201218605042,
+   "nrmse_dn": 0.18272823095321655,
+   "brain_nrmse_noisy": 0.044748712331056595,
+   "brain_nrmse_dn": 0.050975169986486435
+  },
+  "file_brain_AXFLAIR_200_6002658": {
+   "nrmse_noisy": 0.15965744853019714,
+   "nrmse_floor": 0.1781923621892929,
+   "nrmse_dn": 0.1633327454328537,
+   "brain_nrmse_noisy": 0.043131038546562195,
+   "brain_nrmse_dn": 0.04654374718666077
+  },
+  "file_brain_AXFLAIR_200_6002462": {
+   "nrmse_noisy": 0.12986165285110474,
+   "nrmse_floor": 0.14425794780254364,
+   "nrmse_dn": 0.13275662064552307,
+   "brain_nrmse_noisy": 0.03249925747513771,
+   "brain_nrmse_dn": 0.03644019365310669
+  },
+  "file_brain_AXFLAIR_200_6002567": {
+   "nrmse_noisy": 0.1573011726140976,
+   "nrmse_floor": 0.18376265466213226,
+   "nrmse_dn": 0.17060010135173798,
+   "brain_nrmse_noisy": 0.03843855485320091,
+   "brain_nrmse_dn": 0.042291417717933655
+  },
+  "file_brain_AXFLAIR_200_6002467": {
+   "nrmse_noisy": 0.1375572383403778,
+   "nrmse_floor": 0.16018910706043243,
+   "nrmse_dn": 0.14930792152881622,
+   "brain_nrmse_noisy": 0.032279662787914276,
+   "brain_nrmse_dn": 0.037451133131980896
+  },
+  "file_brain_AXFLAIR_200_6002579": {
+   "nrmse_noisy": 0.157978817820549,
+   "nrmse_floor": 0.18680524826049805,
+   "nrmse_dn": 0.17383120954036713,
+   "brain_nrmse_noisy": 0.0423130989074707,
+   "brain_nrmse_dn": 0.044452182948589325
+  },
+  "file_brain_AXFLAIR_200_6002603": {
+   "nrmse_noisy": 0.14178507030010223,
+   "nrmse_floor": 0.16263075172901154,
+   "nrmse_dn": 0.1503920704126358,
+   "brain_nrmse_noisy": 0.043471559882164,
+   "brain_nrmse_dn": 0.047377269715070724
+  },
+  "file_brain_AXFLAIR_200_6002488": {
+   "nrmse_noisy": 0.16520501673221588,
+   "nrmse_floor": 0.1783720701932907,
+   "nrmse_dn": 0.16182167828083038,
+   "brain_nrmse_noisy": 0.0387377068400383,
+   "brain_nrmse_dn": 0.042040690779685974
+  },
+  "file_brain_AXFLAIR_200_6002516": {
+   "nrmse_noisy": 0.15802085399627686,
+   "nrmse_floor": 0.18735751509666443,
+   "nrmse_dn": 0.17335927486419678,
+   "brain_nrmse_noisy": 0.04118045046925545,
+   "brain_nrmse_dn": 0.046353600919246674
+  }
+ },
+ "noise_q3": {
+  "file_brain_AXFLAIR_200_6002605": {
+   "nrmse_noisy": 0.43397313356399536,
+   "nrmse_floor": 0.21094830334186554,
+   "nrmse_dn": 0.14266091585159302,
+   "brain_nrmse_noisy": 0.1218903586268425,
+   "brain_nrmse_dn": 0.061431873589754105
+  },
+  "file_brain_AXFLAIR_200_6002572": {
+   "nrmse_noisy": 0.3301892876625061,
+   "nrmse_floor": 0.16310343146324158,
+   "nrmse_dn": 0.10494284331798553,
+   "brain_nrmse_noisy": 0.07438959181308746,
+   "brain_nrmse_dn": 0.048440467566251755
+  },
+  "file_brain_AXFLAIR_200_6002585": {
+   "nrmse_noisy": 0.3868214786052704,
+   "nrmse_floor": 0.18736253678798676,
+   "nrmse_dn": 0.12102171778678894,
+   "brain_nrmse_noisy": 0.09208206087350845,
+   "brain_nrmse_dn": 0.05684805288910866
+  },
+  "file_brain_AXFLAIR_201_6002867": {
+   "nrmse_noisy": 0.39846310019493103,
+   "nrmse_floor": 0.19152134656906128,
+   "nrmse_dn": 0.13239775598049164,
+   "brain_nrmse_noisy": 0.12403220683336258,
+   "brain_nrmse_dn": 0.06363988667726517
+  },
+  "file_brain_AXFLAIR_200_6002638": {
+   "nrmse_noisy": 0.45023268461227417,
+   "nrmse_floor": 0.21305283904075623,
+   "nrmse_dn": 0.144675612449646,
+   "brain_nrmse_noisy": 0.12056484818458557,
+   "brain_nrmse_dn": 0.06655962020158768
+  },
+  "file_brain_AXFLAIR_200_6002608": {
+   "nrmse_noisy": 0.40391939878463745,
+   "nrmse_floor": 0.20047473907470703,
+   "nrmse_dn": 0.13880005478858948,
+   "brain_nrmse_noisy": 0.12464507669210434,
+   "brain_nrmse_dn": 0.06375134736299515
+  },
+  "file_brain_AXFLAIR_201_6002871": {
+   "nrmse_noisy": 0.36015796661376953,
+   "nrmse_floor": 0.1890844702720642,
+   "nrmse_dn": 0.11461685597896576,
+   "brain_nrmse_noisy": 0.0870552510023117,
+   "brain_nrmse_dn": 0.05304044485092163
+  },
+  "file_brain_AXFLAIR_200_6002553": {
+   "nrmse_noisy": 0.3699929118156433,
+   "nrmse_floor": 0.17703315615653992,
+   "nrmse_dn": 0.11250796169042587,
+   "brain_nrmse_noisy": 0.10319282114505768,
+   "brain_nrmse_dn": 0.0581667460501194
+  },
+  "file_brain_AXFLAIR_200_6002525": {
+   "nrmse_noisy": 0.41514095664024353,
+   "nrmse_floor": 0.20366257429122925,
+   "nrmse_dn": 0.13042572140693665,
+   "brain_nrmse_noisy": 0.11390762776136398,
+   "brain_nrmse_dn": 0.06388452649116516
+  },
+  "file_brain_AXFLAIR_201_6002876": {
+   "nrmse_noisy": 0.3717932403087616,
+   "nrmse_floor": 0.18580809235572815,
+   "nrmse_dn": 0.12731203436851501,
+   "brain_nrmse_noisy": 0.0926082506775856,
+   "brain_nrmse_dn": 0.05499756336212158
+  },
+  "file_brain_AXFLAIR_200_6002562": {
+   "nrmse_noisy": 0.28393450379371643,
+   "nrmse_floor": 0.13966882228851318,
+   "nrmse_dn": 0.09795385599136353,
+   "brain_nrmse_noisy": 0.05538877472281456,
+   "brain_nrmse_dn": 0.03781578689813614
+  },
+  "file_brain_AXFLAIR_201_6002873": {
+   "nrmse_noisy": 0.3566010296344757,
+   "nrmse_floor": 0.1743112951517105,
+   "nrmse_dn": 0.11222478002309799,
+   "brain_nrmse_noisy": 0.09304648637771606,
+   "brain_nrmse_dn": 0.05366450548171997
+  },
+  "file_brain_AXFLAIR_200_6002458": {
+   "nrmse_noisy": 0.4400218427181244,
+   "nrmse_floor": 0.2152903825044632,
+   "nrmse_dn": 0.1380985826253891,
+   "brain_nrmse_noisy": 0.10381440073251724,
+   "brain_nrmse_dn": 0.05738590285181999
+  },
+  "file_brain_AXFLAIR_200_6002558": {
+   "nrmse_noisy": 0.3984539806842804,
+   "nrmse_floor": 0.18493875861167908,
+   "nrmse_dn": 0.12459301203489304,
+   "brain_nrmse_noisy": 0.09151903539896011,
+   "brain_nrmse_dn": 0.05272760987281799
+  },
+  "file_brain_AXFLAIR_201_6002882": {
+   "nrmse_noisy": 0.6453149318695068,
+   "nrmse_floor": 0.3261411190032959,
+   "nrmse_dn": 0.20593716204166412,
+   "brain_nrmse_noisy": 0.22518277168273926,
+   "brain_nrmse_dn": 0.09973014146089554
+  },
+  "file_brain_AXFLAIR_200_6002650": {
+   "nrmse_noisy": 0.44436919689178467,
+   "nrmse_floor": 0.22065997123718262,
+   "nrmse_dn": 0.1515241414308548,
+   "brain_nrmse_noisy": 0.1241091936826706,
+   "brain_nrmse_dn": 0.06441406160593033
+  },
+  "file_brain_AXFLAIR_200_6002658": {
+   "nrmse_noisy": 0.4345811903476715,
+   "nrmse_floor": 0.20988763868808746,
+   "nrmse_dn": 0.13395707309246063,
+   "brain_nrmse_noisy": 0.11553563922643661,
+   "brain_nrmse_dn": 0.06454761326313019
+  },
+  "file_brain_AXFLAIR_200_6002462": {
+   "nrmse_noisy": 0.3516963720321655,
+   "nrmse_floor": 0.16913361847400665,
+   "nrmse_dn": 0.10861758142709732,
+   "brain_nrmse_noisy": 0.08159448206424713,
+   "brain_nrmse_dn": 0.0498335137963295
+  },
+  "file_brain_AXFLAIR_200_6002567": {
+   "nrmse_noisy": 0.4326172471046448,
+   "nrmse_floor": 0.20507873594760895,
+   "nrmse_dn": 0.13769640028476715,
+   "brain_nrmse_noisy": 0.10469397157430649,
+   "brain_nrmse_dn": 0.05728932470083237
+  },
+  "file_brain_AXFLAIR_200_6002467": {
+   "nrmse_noisy": 0.3774982988834381,
+   "nrmse_floor": 0.1789524108171463,
+   "nrmse_dn": 0.12093459814786911,
+   "brain_nrmse_noisy": 0.08488059788942337,
+   "brain_nrmse_dn": 0.05131850019097328
+  },
+  "file_brain_AXFLAIR_200_6002579": {
+   "nrmse_noisy": 0.43624669313430786,
+   "nrmse_floor": 0.21092338860034943,
+   "nrmse_dn": 0.14322462677955627,
+   "brain_nrmse_noisy": 0.11643228679895401,
+   "brain_nrmse_dn": 0.059456028044223785
+  },
+  "file_brain_AXFLAIR_200_6002603": {
+   "nrmse_noisy": 0.3866557776927948,
+   "nrmse_floor": 0.19150954484939575,
+   "nrmse_dn": 0.12398749589920044,
+   "brain_nrmse_noisy": 0.11532827466726303,
+   "brain_nrmse_dn": 0.06336753070354462
+  },
+  "file_brain_AXFLAIR_200_6002488": {
+   "nrmse_noisy": 0.4467795193195343,
+   "nrmse_floor": 0.20870138704776764,
+   "nrmse_dn": 0.13035143911838531,
+   "brain_nrmse_noisy": 0.10083071142435074,
+   "brain_nrmse_dn": 0.05897713825106621
+  },
+  "file_brain_AXFLAIR_200_6002516": {
+   "nrmse_noisy": 0.4335624575614929,
+   "nrmse_floor": 0.2179417908191681,
+   "nrmse_dn": 0.1427907943725586,
+   "brain_nrmse_noisy": 0.10877415537834167,
+   "brain_nrmse_dn": 0.06277584284543991
+  }
+ }
+}

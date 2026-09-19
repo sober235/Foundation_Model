@@ -1,7 +1,7 @@
 # V7 方案可行性评审（2026-09-16）
 
 对象：`docs/AnatoBind_MRI_完整技术方案_V7_基于REPORT重构版.md`（09-16 11:55）。
-依据：09-15 脑侧探针 `~/outputs/anatobind_brain_probe_2026-09-15/REPORT.md`、G2 裁决（09-13）、H1 裁决（09-15）、leg 2 设计、FM_data 实测计数（本文件第 4 节，命令可重跑）。
+依据：09-15 脑侧探针 `~/outputs/anatobind_brain_probe_2026-09-15/REPORT.md`（仓库副本 `docs/verification/2026-09-16-brain-probe/`）、G2 裁决（09-13）、H1 裁决（09-15）、leg 2 设计、FM_data 实测计数（本文件第 4 节，命令可重跑）。
 用户给定的核心目标：识别解剖位置、病灶位置、病灶名称、病灶属于哪个解剖位置。
 
 ## 0. 结论
