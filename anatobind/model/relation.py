@@ -2,10 +2,9 @@
 
 Two formulations intentionally coexist:
 
-1. HostCompetitionHead is the A/U/R core-path implementation. Each lesion
-   independently compares the same candidate anatomy entities and produces one
-   host distribution. It is deliberately small so that a relation claim must
-   beat strong priors / geometry / ROI baselines rather than win by capacity.
+1. IndependentCandidateHead is the B1 baseline/prototype. Each lesion-candidate
+   pair is scored independently before a host softmax; there is no candidate
+   interaction. It must not be described as B3 host competition.
 
 2. RelationModule is the earlier global KxM pair-Transformer formulation from
    spec 4.6. It is kept as an ablation and for backward compatibility.
@@ -53,8 +52,8 @@ def geometry_features(masks, boxes_vox, spacing_mm):
         return torch.cat([delta, dist, ioa[..., None]], -1)
 
 
-class HostCompetitionHead(nn.Module):
-    """Per-lesion candidate competition for explicit anatomy binding.
+class IndependentCandidateHead(nn.Module):
+    """Independent per-candidate scorer (B1), followed by host softmax.
 
     Inputs:
         a_embed: (B, K, d) anatomy entity embeddings.
@@ -67,8 +66,9 @@ class HostCompetitionHead(nn.Module):
         host_logits: (B, M, K + 1), final column is ``none``.
         pair_repr: (B, K, M, d), independently scored pair representations.
 
-    There is intentionally no attention across different lesions. Cross-lesion
-    reasoning must be added explicitly and justified by an ablation.
+    There is intentionally no interaction across anatomy candidates or lesions.
+    A true B3 candidate-competition head must add interaction across the K host
+    candidates for each lesion and should be implemented as a separate module.
     """
 
     def __init__(
@@ -133,6 +133,10 @@ class HostCompetitionHead(nn.Module):
             "pair_repr": pair_repr,
             "host_logits": torch.cat([host, none], dim=-1),
         }
+
+# Backward-compatible alias for PR #4 callers/tests. The v2.4 plan classifies
+# this implementation as B1; new code should import IndependentCandidateHead.
+HostCompetitionHead = IndependentCandidateHead
 
 class _PairBlock(nn.Module):
     def __init__(self, d_model, heads):
