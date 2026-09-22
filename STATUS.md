@@ -1,4 +1,4 @@
-# STATUS:2026-09-22 晚(v2.6 实验设计定稿,在分支 `plan/aur-v2.6-experiment-design-2026-09-22`;上一交接点 tag `handoff/2026-09-22`)
+# STATUS:2026-09-22 晚(v2.6 实验设计定稿已合入 main = PR #7 merge `fb25da9`;本交接点 tag `handoff/2026-09-22-v2.6`,上一交接点 tag `handoff/2026-09-22`)
 
 每次交接前整体重写本文件。五段固定:已验证、待拍板、下一步、坑与别重做、为什么。
 
@@ -12,8 +12,8 @@
   - `interface_check`:"到任意两块候选脑区交界面的距离"与"到最近其他候选结构的距离"差值 100% 在一个体素对角线内(median 1.4 mm、max 5.09 mm);单卷 3.6 s,252 卷约 15 CPU 分钟;那一卷 89% 白质体素离交界面 < 3 mm(体素级)。
   - `power_sim`:只看全体 raw 的漏洞成立(白质全一致、皮层一半一致 → raw 0.893、κ 0.62、AC1 0.88 全过线,皮层 positive agreement 0.67、困难组 raw 0.52);患者聚簇模拟(400 sims × 300 boots,ICC≈0.02)80% 功效的最小可检 d:全标 1297 约 0.03 / 108 h,H1 全标+H2 600 约 0.035 / 72 h,H1 全标+H2 300 约 0.04 / 47 h,随机 700 约 0.045 / 58 h;解析 SE 比 1.38 / 1.12,Neyman 分配六成给 H2。
   - 四篇引文均核到(PMC10820331、PMID 31359448、PMC11041453、PMC10388213)。
-- **v2.6 已写**(本分支):Gate 0.5、两层一致率门、排除单一留出 + 两设计试标后模拟、H1 = 交界面距离 + Δd、集合值主终点 + singleton rate、脑室不作宿主、嵌套 CV + patient_id 折断言 + 标签封存 + 700 例中期规则、读者字段 not_a_lesion / A_local_quality / time_seconds、脑侧 U 降为次要、B4/B2/Bgeo+ 初始配置与训练标签规则(§10.1)、200/201 与低分辨率分层、§25 决定记录、十步顺序。
-- **测试**(本分支实测,文档改动不影响代码):
+- **v2.6 已合入 main**(PR #7 https://github.com/sober235/Foundation_Model/pull/7 ,merge commit `fb25da9`,2026-09-22 17:18;分支 `plan/aur-v2.6-experiment-design-2026-09-22` 未删):Gate 0.5、两层一致率门、排除单一留出 + 两设计试标后模拟、H1 = 交界面距离 + Δd、集合值主终点 + singleton rate、脑室不作宿主、嵌套 CV + patient_id 折断言 + 标签封存 + 700 例中期规则、读者字段 not_a_lesion / A_local_quality / time_seconds、脑侧 U 降为次要、B4/B2/Bgeo+ 初始配置与训练标签规则(§10.1)、200/201 与低分辨率分层、§25 决定记录、十步顺序。
+- **测试**(合并后 main 实测,文档改动不影响代码):
   ```
   PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
   311 passed
@@ -26,10 +26,10 @@
 
 - **已决定(2026-09-22,记录在 v2.6 §25,Gate 0.5 之前可推翻)**:两层 raw 一致率门;排除单一留出、全标与分层抽样试标后模拟择一;主终点全部病灶 + 集合值;脑室不作宿主;H1 = 交界面距离 + Δd;B4 两种证据都用并由 §10.1 初值起步;训练标签先用伪标签、医生标签微调为预注册升级路径;B2 与 B4 绑定。
 - 读片人姓名、裁定人、临床负责人、标注工具、机构伦理备案确认。
-- **本分支是否合回 main**(v2.6 + 外部 review + 核验);`summary/2026-09-22-v2.5-feasibility-review` 分支(大白话总结)是否合回。
+- `summary/2026-09-22-v2.5-feasibility-review` 分支(大白话总结 `docs/handoff/2026-09-22-v2.5-review-summary.md`,f08b6a1)是否合回 main;它写于 v2.6 之前,若合回须注明 §25 五项已决定。
 - **删已合并分支**(按"不删数据与代码"规矩,由用户手动执行):
   ```
-  git push origin --delete review-core-target-a-u-r-2026-09-22 feature/aur-structured-perception-2026-09-22 plan/aur-v2.4-review-response-2026-09-22 plan/aur-v2.5-complete-route-2026-09-22
+  git push origin --delete review-core-target-a-u-r-2026-09-22 feature/aur-structured-perception-2026-09-22 plan/aur-v2.4-review-response-2026-09-22 plan/aur-v2.5-complete-route-2026-09-22 plan/aur-v2.6-experiment-design-2026-09-22
   ```
 - 旧遗留(多次未答):Q9 删除授权(SKM-TEA 2.4G truncated 残留 + 820G 原 tar);fastMRI 其余 4850 卷是否跑 SynthSeg;Redivis token 事后删除。
 
