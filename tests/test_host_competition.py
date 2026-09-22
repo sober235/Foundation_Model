@@ -2,7 +2,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from anatobind.model.relation import HostCompetitionHead
+from anatobind.model.relation import IndependentCandidateHead
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def parts():
 
 
 def _head(p, **kwargs):
-    return HostCompetitionHead(
+    return IndependentCandidateHead(
         d_model=p["d"], geometry_channels=p["G"], geo_dim=16, hidden_dim=24, **kwargs
     )
 
