@@ -26,7 +26,7 @@ def _head(p, **kwargs):
     )
 
 
-def test_host_competition_output_shapes(parts):
+def test_independent_candidate_output_shapes(parts):
     out = _head(parts)(parts["a"], parts["u"], parts["geo"], parts["present"])
     assert out["pair_repr"].shape == (parts["B"], parts["K"], parts["M"], parts["d"])
     assert out["host_logits"].shape == (parts["B"], parts["M"], parts["K"] + 1)
