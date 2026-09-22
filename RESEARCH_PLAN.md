@@ -2,11 +2,11 @@
 
 *Anatomy-Centered Structured Perception and Explicit Lesion–Anatomy Binding for 3D MRI*
 
-**研究方案 v2.5**(2026-09-22;完整 Gate + Level R 统计/本体闭环)
+**研究方案 v2.6**(2026-09-22 晚;实验设计定稿:Gate 0.5、两层一致率门、抽样与功效模拟、嵌套 CV 与封存、B4/B2 初始配置与训练标签规则。v2.5 = 2026-09-22 完整 Gate + Level R 统计/本体闭环)
 
 v2.5 吸收 PR #5 review (`pullrequestreview-5274417275`) 及后续复核。第一原则仍为 **Anatomy → Lesion → Binding**，但把剩余科学风险明确拆成 Gate 0（数据坐标）→ Gate A/U（基础感知）→ Gate R0（独立人标关系是否可定义）→ Gate R1（learned R 是否 beyond geometry）→ Robustness / E。Level R 不再只是“有人标”，而是包含抽样、双阅片、一致率、ambiguity、population weighting 与最终样本量重估的正式统计协议。
 
-**v2.5 权威执行计划**：[`docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`](docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md)。若本文历史章节与该计划冲突，以 v2.5 计划为准。v2.4 文档保留为上一轮审计记录。
+**v2.6 权威执行计划**：[`docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`](docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md)。若本文历史章节与该计划冲突，以 v2.6 计划为准。v2.5 与 v2.4 文档保留为审计记录；v2.6 的依据是 `REVIEW_v2.5_feasibility_2026-09-22.md` 与 `REVIEW_external_experiment_design_2026-09-22.md`。
 
 新的执行顺序：
 
@@ -505,7 +505,7 @@ B4 > B2
 
 主分析必须在 all-lesion population 上做 patient-level bootstrap；near-boundary / geometry-conflict 只作为预注册 subgroup，不能只在困难子集宣称优势。
 
-完整执行细节见 `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`（v2.4 文档仅作审计记录）。
+完整执行细节见 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`（v2.5 与 v2.4 文档仅作审计记录）。
 
 ### 9.2 五个主实验与证伪条件
 
@@ -643,7 +643,7 @@ d = 两法 ABA 之差,p_disc = 不一致率
 
 ## 12. 路线图与范围裁剪
 
-> **v2.5 历史路线图，M2/M3 不再执行。** 当前路线以 `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md` §19 为唯一执行顺序。
+> **v2.5 历史路线图，M2/M3 不再执行。** 当前路线以 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md` §19 为唯一执行顺序。
 
 ### 里程碑
 
@@ -686,6 +686,10 @@ V5 方案（`docs/AnatoBind_MRI_完整技术方案_V5_排版校正版.pdf`）在
 
 **下一步**（2026-09-13 用户确认）：(a) 把测量结果落盘并按测量类论文收尾；(b) 查证是否存在人工标注病灶–解剖结构对应的脑数据集，结果决定要不要开新方向。
 
+
+### 13.8 v2.6 实验设计决定(2026-09-22 晚,用户拍板)
+
+用户指示吸收外部 review(`REVIEW_external_experiment_design_2026-09-22.md`,经核验)并追加三项模型决定:B4 的局部证据同时用图像小块与距离图,结构细节由 v2.6 §10.1 的初值起步、在预注册范围内按内层 CV 调整;训练标签先用伪标签("先用软件算"),医生标签微调为预注册升级路径;B2 的图像小块与 B4 的病灶编码器绑定。由此 v2.5 §25 的五项未决(一致率门槛、CV vs 留出、主终点人群、脑室是否宿主、H1 定义)按 v2.6 §25 记录为已决定,Gate 0.5 之前可推翻。完整条文见 v2.6 §25。
 
 ### 13.1 v2.1 用户已确认的四项接口(2026-09-06)
 
@@ -816,6 +820,7 @@ V5 方案（`docs/AnatoBind_MRI_完整技术方案_V5_排版校正版.pdf`）在
 
 ## 版本记录
 
+- **v2.6(2026-09-22 晚)**:吸收冷启动独立评审 `REVIEW_v2.5_feasibility_2026-09-22.md` 与外部 review `REVIEW_external_experiment_design_2026-09-22.md`(经核验,三处修正:分层抽样不省时、嵌套 CV 按方法分级、交界面距离补表面/面内/t 后定)。新增 Gate 0.5 全集几何盘点;Gate R0 改两层 raw 一致率门;排除单一留出,全标与分层抽样在 pilot 后用患者聚簇模拟择一;H1 = 病灶表面到任意两块候选脑区交界面的距离 ≤ t,加连续余量 Δd;主终点全部病灶集合值正确性 + singleton rate;脑室/CSF 只作地标;外层五折患者级 CV(h5 patient_id 断言)+ 内层选择 + 外层测试折标签封存 + 700 例非约束性中期分析;读者字段加 not_a_lesion / A_local_quality / time_seconds;脑侧 U 降为次要;B4 同时用图像小块与距离图、由 §10.1 初值起步,训练先用伪标签、医生标签微调为预注册升级路径,B2 与 B4 绑定;200/201 与低分辨率分层。§25 由未决改为决定记录。
 - **v2.5(2026-09-22)**:吸收 PR #5 review 与后续复核。补齐 Gate R0 标注统计设计：100–150 lesion pilot、双阅片+adjudication、host/topography/adjacency/ambiguity 分层 ontology、reader agreement、set-valued ambiguity、富集抽样 standardization/IPW、pilot 后重估 final N；删除 B1 的 HostCompetitionHead 误导别名；旧 §4.6/§4.7/§8/§9.2–9.5/§11/§12 明确标历史。完整路线见 `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`。
 - **v2.4(2026-09-22)**:吸收 PR #4 专家评审。取消 clean pseudo-reference first gate；Level R 前置；SKM-TEA 改作 geometry-easy control；brain small focal lesions 作为 R 主战场；当前 `HostCompetitionHead` 定义为 B1 prototype；新增 B3 candidate-interaction 与 geometry parity；Gate 0 前置 fastMRI+ box flip；robustness 改为 `ΔA/ΔU/ΔR` 二阶段机制研究。完整计划见 `docs/plans/2026-09-22-aur-v2.4-review-response.md`。
 - **v2.3(2026-09-22)**:核心目标重构为 `X → (A,U) → R`。A=解剖实体,U=病灶类型+3D空间位置,R=病灶宿主解剖。degradation/U_Q/E/motion/scanner shift 降为 robustness 与 error-propagation 扩展。relation 主实验先比较 Bprior/Bgeo+/Broi/Brel;新增最小 per-lesion `HostCompetitionHead`,旧 global K×M RelationModule 保留作消融。

@@ -4,14 +4,14 @@
 
 ## 项目一句话
 
-面向 3D MRI 的解剖实体 A、病灶实体 U 与显式病灶–解剖绑定 R 的结构化感知(`X → (A, U) → R`)。不称 foundation model。方案是 `RESEARCH_PLAN.md` v2.5,权威执行计划是 `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`(冲突以它为准);Gate 链 = Gate 0(fastMRI+ 框坐标)→ A/U → Level R 人标(Gate R0)→ 公平关系基线(Gate R1)→ 鲁棒性/E。关系主战场是 fastMRI+ 脑 FLAIR 小病灶,SKM-TEA 只作几何容易的对照。主投 MedIA。
+面向 3D MRI 的解剖实体 A、病灶实体 U 与显式病灶–解剖绑定 R 的结构化感知(`X → (A, U) → R`)。不称 foundation model。权威执行计划是 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`(v2.6,冲突以它为准;v2.5/v2.4 文件只作审计记录);Gate 链 = Gate 0(fastMRI+ 框坐标、患者 ID 折)→ Gate 0.5(全集 1297 病灶几何盘点,冻结困难组阈值 t)→ A/U(膝侧)→ Level R 人标(Gate R0,两层一致率门)→ 公平关系基线(Gate R1)→ 鲁棒性/E。关系主战场是 fastMRI+ 脑 FLAIR 小病灶,SKM-TEA 只作几何容易的对照。主投 MedIA。
 
 ## 硬规矩
 
 - 数据只从 `/data2/congcong/data/FM_data` 读。`/data0/congcong/data/FM_Data` 是冷备份,不读不写。当前导出是 `derived/skmtea/m1r/`(校正版分割),缓存 `m1r_cache/`,预测 `m1r_pred/`,nnU-Net 在 `derived/nnunet/`;`m1/` 只作历史,只读。
 - Python:`~/anaconda3/envs/nvgen/bin/python`(torch 2.5.1+cu121、MONAI 1.5.2),命令前缀 `PYTHONNOUSERSITE=1 PYTHONPATH=.`(`~/.local` 里的 torch 2.11/cu130 会覆盖 env)。SynthSeg 用 env `synthseg`(py3.8/TF2.2,`~/src/SynthSeg`,权重 robust_2.0),全 CPU 跑。
 - 测试:`PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`(2026-09-22 合并 PR #6 后:311 passed,约 34 s)。仓库没有 CI,评审 PR 时把分支导出到临时目录跑:`git archive <ref> | tar -x -C <dir>`。
-- **当前状态:v2.5 路线已合入 main(`779123f`,2026-09-22),读片人已确认可找到,下一步是 PR-A Gate 0(fastMRI+ 框上下翻转修复)。先读 `STATUS.md`,再读 v2.5 计划 §2、§4、§7–§12、§19、§23、§25(待拍板的 5 项)。别再在 SKM-TEA 膝关节上找"退化让绑定失效"(G2 裁决已测死),也别把 SynthSeg 查表当脑侧真值。**每个函数先写测试;结构性测试是"loss 在降但标签错了"的唯一自动防线。
+- **当前状态:v2.6 实验设计定稿(2026-09-22 晚,分支 `plan/aur-v2.6-experiment-design-2026-09-22`,待合 main),读片人已确认可找到,§25 五项已决定,下一步是 PR-A Gate 0(fastMRI+ 框上下翻转修复 + 患者 ID 折断言)与 PR-A′ Gate 0.5(全集几何盘点)。先读 `STATUS.md`,再读 v2.6 计划 §1(修订记录)、§2、§4、§7–§12、§10.1(模型初始配置与训练标签)、§19、§23、§25(决定记录)。别再在 SKM-TEA 膝关节上找"退化让绑定失效"(G2 裁决已测死),也别把 SynthSeg 查表当脑侧真值。**每个函数先写测试;结构性测试是"loss 在降但标签错了"的唯一自动防线。
 - 提交:作者用仓库本地配置(Congcong Liu);消息英文、句首大写、像现有历史一样描述做了什么;**不写 Co-Authored-By、Generated with 等任何 AI 痕迹**。push 偶发 TLS 失败时加 `https_proxy=http://127.0.0.1:7897`;凭据走 gh(sober235)。
 - 分支:`main` 是权威版本,协作者只读 main。会话边界 = 提交 + 合回 main + tag `handoff/YYYY-MM-DD`。不每个会话开新分支;分支只给真正并行的工作线,合完就删。
 - 根目录两个未跟踪的原始文件(`AnatoBind-MRI_cui.md`、`粘贴的 markdown …`)保持 untracked,别 stage。`runs/` 在 .gitignore 里。
@@ -29,15 +29,18 @@
 - G2 的判门路径(2026-09-12 起):每个标注病灶以标注框和类别进查表,只预测解剖;nnU-Net 分割定 G2,本模型分割只报告;检测为附带报告。评估脚本 `scripts/eval_g1_g2.py`,`GATE_KEY = "given_bucket"`。
 - **脑侧关系真值只能来自 Level R 放射科医生人标**;SynthSeg + 重叠查表只是 C1/C2 伪参照(与 B0 同源,良性预处理就让它改答 2.8–6.0%),只用于训练、调试与分层,不定义任何"更准"的主张。
 - **fastMRI+ 的框 y 从 RSS 底部数起**(官方 README:转 DICOM 时上下翻转),框占行 `[nr − y − h, nr − y)`。Gate 0 落地前,`fastmri_knee.py` / `dataset_knee.py` 与 `derived/fastmri_knee/leg2` 的 56 GB 导出都是原样框,不能用来训练、评估或给医生看。
-- 关系基线矩阵固定为 B0 / Bprior / Bgeo+ / B1 / B2 / B3 / B4 / B5(v2.5 §10);Bgeo+ 与学习模型必须共用同一套 16 维扩展几何(§11)。`IndependentCandidateHead` 是 B1,不是候选竞争模型。
+- 关系基线矩阵固定为 B0 / Bprior / Bgeo+ / B1 / B2 / B3 / B4 / B5(v2.6 §10);Bgeo+ 与学习模型必须共用同一套 16 维扩展几何(§11)。`IndependentCandidateHead` 是 B1,不是候选竞争模型。B2 的图像小块与 B4 的病灶编码器输入完全相同(§10.1)。
+- **折按 h5 `patient_id` 划分**并断言不重叠(v2.6 §4.4);外层五折只用一次,所有选模型、调参在内层;外层测试折的 Level R 标签封存,开发者不看(§12.6–12.7)。
+- **困难组 H1 的定义与任何模型、任何宿主答案无关**:病灶表面到任意两块候选脑区交界面的距离 ≤ t,t 在 Gate 0.5 后、模型前冻结(§4.5、§7.3)。脑室与 CSF 只作地标,不作宿主(§3)。主终点是全部病灶的集合值正确性(§7.8)。
+- 所有学习方法在同一阶段使用同一标签来源(先伪标签;医生标签微调只按 §10.1 的预注册规则升级),否则比较不公平。
 - 不是证据的数字一律标明。每个数字附可粘贴的命令与原始输出;样板是 `docs/verification/2026-09-08/REPORT.md`。
 
 ## 阅读顺序
 
 1. `STATUS.md`:当前状态、待拍板决定、下一步、坑。
-2. `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`:权威执行计划(Gate 链、Level R 协议与统计、基线矩阵、PR 顺序)。`RESEARCH_PLAN.md` v2.5 的 §0、§1、§9.1、§9.6、§13 是摘要与决策记录,其余多为已标记的历史章节。
+2. `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`:权威执行计划(Gate 链含 Gate 0.5、Level R 协议与两层一致率门、抽样与功效模拟、基线矩阵与 §10.1 初始配置、嵌套 CV 与封存、十步顺序、§25 决定记录)。`docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md` 与 v2.4 文件只作审计记录。`RESEARCH_PLAN.md` 的 §0、§1、§9.1、§9.6、§13 是摘要与决策记录,其余多为已标记的历史章节。
 3. `docs/verification/2026-09-13/G2_verdict.md`、`docs/verification/2026-09-15/H1_verdict.md`、`docs/verification/2026-09-16-brain-probe/REPORT.md`:三条实验裁决(膝 G2 不过、膝检测 H1 不过但被翻转框污染、脑探针 q3 改答 7.4%)。
-4. `REVIEW_v7_feasibility_2026-09-16.md`、`REVIEW_v7_feasibility_2026-09-19.md`、`REVIEW_core_target_AUR_2026-09-22.md`:三份评审;`REVIEW_v2.5_feasibility_2026-09-22.md`:v2.5 合入后的冷启动独立可行性评审(有条件 GO;先读其 §0、§2、§7、§9);PR #4/#5/#6 的评审在 GitHub(链接见 STATUS.md §1)。
+4. `REVIEW_v7_feasibility_2026-09-16.md`、`REVIEW_v7_feasibility_2026-09-19.md`、`REVIEW_core_target_AUR_2026-09-22.md`:三份评审;`REVIEW_v2.5_feasibility_2026-09-22.md`:v2.5 合入后的冷启动独立可行性评审(有条件 GO;先读其 §0、§2、§7、§9);`REVIEW_external_experiment_design_2026-09-22.md`:外部 review 原文 + 逐条核验 + 取舍(核验脚本与输出在 `docs/verification/2026-09-22-external-review-check/`),v2.6 的直接依据;PR #4/#5/#6 的评审在 GitHub(链接见 STATUS.md §1)。
 5. `REVIEW_expert_comments_audit_2026-09-09.md`:类别感知查表天花板 0.968 的审计。
 6. `docs/superpowers/specs/2026-09-14-leg2-fastmri-knee-detection-gate-design.md`、`docs/superpowers/plans/`:leg 1/leg 2 实施记录与执行发现。
 7. `docs/data_engine_skmtea.md`、`docs/data_engine_synthseg.md`:数据引擎事实。`docs/architecture_and_novelty_2026-09-08.md`:旧架构说明(历史)。
