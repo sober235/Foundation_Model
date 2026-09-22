@@ -134,9 +134,6 @@ class IndependentCandidateHead(nn.Module):
             "host_logits": torch.cat([host, none], dim=-1),
         }
 
-# Backward-compatible alias for PR #4 callers/tests. The v2.4 plan classifies
-# this implementation as B1; new code should import IndependentCandidateHead.
-HostCompetitionHead = IndependentCandidateHead
 
 class _PairBlock(nn.Module):
     def __init__(self, d_model, heads):
