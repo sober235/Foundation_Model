@@ -18,7 +18,7 @@
   - **脑侧探针**(09-15/16,`docs/verification/2026-09-16-brain-probe/REPORT.md`,24 卷 FLAIR、780 小病灶、SynthSeg 33 类无类别限定查表):噪声 q1/q2/q3 改答 3.1% / 4.6% / **7.4% [5.5, 9.5]**,白质 Dice 0.972 / 0.952 / 0.911;零填充 1D 欠采 4× 即整幅鬼影不可用;免训练去噪关不掉窗口(仅噪声底 6.9%,加 NLM 9.1%);**干净参照自身在良性预处理下改答 2.8%–6.0%**,与效应同量级。
   - **fastMRI+ 框上下翻转**(官方 README:转 DICOM 时像素上下翻转,CSV 的 y 从 RSS 底部数起,框占行 `[nr − y − h, nr − y)`);实测脑 22/24 卷、膝 30/30 卷翻转后框才落在病灶上。`anatobind/data_engine/fastmri_knee.py` 与 `anatobind/train/dataset_knee.py` 目前仍按原样用框。
   - 评审文件:`REVIEW_v7_feasibility_2026-09-16.md`(SynthSeg+ 就是已用的 --robust;DETR 应换热图头)、`REVIEW_v7_feasibility_2026-09-19.md`(Gate A′ / Gate B 两道生死门)、`REVIEW_core_target_AUR_2026-09-22.md`(A/U/R 核心目标)。
-  - 三份 PR 评审只在 GitHub,仓库内无副本:#4 https://github.com/sober235/Foundation_Model/pull/4#pullrequestreview-5274086790 、#5 https://github.com/sober235/Foundation_Model/pull/5#pullrequestreview-5274417275 、#6 https://github.com/sober235/Foundation_Model/pull/6#pullrequestreview-5274706631 。#6 的 11 条内联评论是 v2.5 待改清单。
+  - 三份 PR 评审只在 GitHub,仓库内无副本:#4 https://github.com/sober235/Foundation_Model/pull/4#pullrequestreview-5274086790 、#5 https://github.com/sober235/Foundation_Model/pull/5#pullrequestreview-5274417275 、#6 https://github.com/sober235/Foundation_Model/pull/6#pullrequestreview-5274706631 。#6 的 11 条内联评论：6 条机械修改已并入文档(2026-09-22 第二次提交,清单在 v2.5 §25 末段),5 条待拍板项列在 v2.5 §25 与本文件 §2。
 - **读片人**:用户 2026-09-22 确认 Level R 的读片人是医生、可以找到 → Gate R0 / R1 可执行。人选、时间、裁定人、临床负责人、标注工具仍待填(v2.5 §18 的 TBD)。
 - 关键实测数字(判断余量用):SKM-TEA 类别感知查表 clean 天花板 0.958(m1r)–0.968(oracle),余量约 3 点,311 例检不出(§9.7:d=0.03 需约 700 例);fastMRI+ 脑有框 476 卷,FLAIR 252 患者、1825 病灶、1297 小病灶(165 卷),约 79% 小病灶完全在白质内。
 
@@ -56,7 +56,7 @@
 - GLI-AL(arXiv 2607.22135):Synapse 受控访问、只有标签,需另取 BraTS 2023-GLI 影像;与 UCSF-PDGM 重叠(仓库记 298 例,须实测去重);只作 A/U 预训练。
 - 仓库无 CI。评审 PR 时把分支导出到临时目录跑测试:`git archive <ref> | tar -x -C <dir>`,再在该目录 pytest;别 checkout 到工作树。
 - GitHub 上 owner 账号不能对自己的 PR 选 Approve / Request changes,评审用 Comment 发,结论写在正文第一段。
-- 方案文档里 §4.6 / §4.7 / §8 / §9.2–9.5 / §11 / §12 是历史章节(已打标记);第 240 / 485 / 508 / 584 / 669 行仍残留 v2.4 措辞,v2.4 文档没有"已被取代"头。
+- 方案文档里 §4.6 / §4.7 / §8 / §9.2–9.5 / §11 / §12 是历史章节(已打标记);残留的 v2.4 措辞与 v2.4 文档缺"已被取代"头的问题已于 2026-09-22 第二次提交修复。
 - 共用 GPU 估时、`pkill -f` 误杀、nnU-Net 孤儿进程、m1r 头信息等旧坑见上一版 STATUS(tag `handoff/2026-09-13`)与 git 历史 `29142bb`。
 
 ## 5. 关键决定的为什么

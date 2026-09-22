@@ -237,7 +237,7 @@ Q_c = head_c(z_Q), c ∈ {motion, noise, aliasing}
 每类输出:存在概率 p_c · 类型内归一化强度 s_c · 全局退化 token
 ```
 
-- **v2.4 默认 lesion head = dense centre-heatmap head**，与当前 `anatobind/model/upstream.py` 一致。输出 heatmap、offset、size 与 dense feature，再解码为 lesion type + 3D center/box；旧 DETR/Hungarian query detector 只保留为历史/消融，不再写成默认实现。
+- **v2.5 默认 lesion head = dense centre-heatmap head**，与当前 `anatobind/model/upstream.py` 一致。输出 heatmap、offset、size 与 dense feature，再解码为 lesion type + 3D center/box；旧 DETR/Hungarian query detector 只保留为历史/消融，不再写成默认实现。
 - 修复 fastMRI+ box vertical flip 后必须重跑 held-out detector；此前 H1 collapse 受错误 box direction 污染，不能作为最终 detector verdict。
 - 跨 clean/degraded view 的 lesion 对应优先使用 reference lesion id / annotation geometry 建立；不能把相同 query 或 heatmap peak 序号假设为同一病灶。漏检必须作为 U 层失败计入，不得通过跳过样本抬高 R 指标。
 - **独立退化分支(1A,已确认)**:U_Q 从 F4 提取全局特征,不占用 M 个生物事件 query,不做框回归、Hungarian 匹配或宿主选择。每类独立存在概率允许多种退化同时出现;强度在各自干预算子的标度内监督,不把运动位移、噪声标准差和欠采倍数直接混成同一物理量。头结构为两层 MLP(**默认**);用类型 BCE 与有已知强度标签的回归项监督。合成参考的零标签表示“未施加额外退化”,不等于绝对无噪声;质量未知的真实图不能直接标作三类均不存在。
@@ -482,7 +482,7 @@ E 头                —        —         —          训练
 
 ### 9.1 第一道科学链：Gate 0 → A/U → Level R → Gate R
 
-**v2.4 新第一道科学门 = 独立 Level R + 公平 relation gate。** 旧 v2.2/G2 仍作为 robustness 历史证据，不再决定整个 A/U/R 项目是否继续。
+**v2.5 第一道科学门 = 独立 Level R + 公平 relation gate。** 旧 v2.2/G2 仍作为 robustness 历史证据，不再决定整个 A/U/R 项目是否继续。
 
 执行分成三层：
 
@@ -505,7 +505,7 @@ B4 > B2
 
 主分析必须在 all-lesion population 上做 patient-level bootstrap；near-boundary / geometry-conflict 只作为预注册 subgroup，不能只在困难子集宣称优势。
 
-完整执行细节见 `docs/plans/2026-09-22-aur-v2.4-review-response.md`。
+完整执行细节见 `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`（v2.4 文档仅作审计记录）。
 
 ### 9.2 五个主实验与证伪条件
 
@@ -581,7 +581,7 @@ Split 原则:hold out 的是**组合**而非样本(训 brain+motion、knee+alias
 
 ### 9.7 统计功效
 
-**v2.4 解释**：下表只保留为 SKM-TEA 历史功效参考，不能直接拿来决定 brain Level R 的最终样本量。brain relation 的 N 必须在双阅片 pilot 后，用实测 `p_disc`、ambiguous rate、host imbalance 与 patient clustering 重新计算；primary inference 使用 patient-level cluster bootstrap，McNemar 作配对正确/错误的辅助分析。
+**v2.5 解释**：下表只保留为 SKM-TEA 历史功效参考，不能直接拿来决定 brain Level R 的最终样本量。brain relation 的 N 必须在双阅片 pilot 后，用实测 `p_disc`、ambiguous rate、host imbalance 与 patient clustering 重新计算；primary inference 使用 patient-level cluster bootstrap，McNemar 作配对正确/错误的辅助分析。
 
 历史 SKM-TEA 配对 McNemar,α = 0.05 双侧,功效 0.8:
 
@@ -666,7 +666,7 @@ d = 两法 ABA 之差,p_disc = 不一致率
 
 ## 13. 决策记录
 
-### 13.7 G2 裁决与停止（2026-09-13；v2.4 中仅作为 robustness 历史证据）
+### 13.7 G2 裁决与停止（2026-09-13；v2.5 中仅作为 robustness 历史证据）
 
 完整证据 `docs/verification/2026-09-13/G2_verdict.md`（含四个可复跑脚本）与 `docs/verification/2026-09-13/report/`。
 
