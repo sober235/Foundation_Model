@@ -2,9 +2,19 @@
 
 *Evidence-Aware Relational Representation Learning with a Variable-Size 3D MRI Transformer*
 
-**研究方案 v2.2**(2026-09-11;分支 `main`)
+**研究方案 v2.3**(2026-09-22;A/U/R 核心目标重构)
 
-v2.2 按 2026-09-10/11 与用户逐条问答的结果修订:M1 判据改为 G1/G2/G4 三道门,G3 只报曲线;分割换成 SKM-TEA 官方梯度畸变校正版;第一批实施口径见 §13.6。以下 v2.1 的说明保留作历史。
+v2.3 按 2026-09-22 用户重新明确的核心目标修订:项目第一原则改为 **Anatomy → Lesion → Binding**。模型首先识别解剖实体 A,再识别病灶类型与 3D 空间位置 U,最终显式输出病灶属于哪个解剖结构 R。degradation、motion、scanner shift、U_Q 与 reliability E 不再定义项目本身,而作为 structured perception 的 robustness / error-propagation / selective prediction 扩展。旧 v2.2 的受控退化与关系失效实验继续保留,但其角色从“项目生死门”调整为“robustness mechanism claim 的生死门”。
+
+**v2.3 执行优先级覆盖规则**:若旧章节与本段冲突,以以下顺序为准:
+
+1. 先证明 `X → A` 的 anatomy perception;
+2. 再证明 `X → U` 的 lesion type + 3D localization;
+3. 再证明 `(A,U) → R` 的 explicit lesion-to-anatomy binding;
+4. 只有 R 在强 `Bprior / Bgeo+ / Broi` 基线上仍有独立增益,才扩展 E;
+5. q1/q2/q3、motion、undersampling、protocol/scanner shift 均作为后续 stress test。
+
+v2.2 的历史修订与门定义继续保留在下文,用于追溯为什么 robustness 分支被建立。
 
 本次按用户确认的 **1A / 2A / 3B / 4B** 修订:U_Q 独立为全局退化分支;A 使用跨器官统一本体与存在性门控;退化视图的关系监督由外部 E* 门控;E 的输入与监督使用同一病灶局部配对区域。详细决策见 §13.1,架构图见 [v2.1 PNG](docs/figures/anatobind_plan_v2_1_architecture.png) / [SVG](docs/figures/anatobind_plan_v2_1_architecture.svg)。这是方案修订,完整模型与训练仍待实现。§7 的资产清单保留 09-05 盘点口径;后续脑伪标签运行状态以 [数据引擎记录](docs/data_engine_synthseg.md) 为准。
 
@@ -21,21 +31,28 @@ v2.0 是两份前稿的合并稿:
 
 ## 0. 一页纸
 
-**一句话**:训练一个接受任意尺寸 3D MRI 的编码器,对每张图输出解剖实体 A、采集条件 S、带位置的生物异常 U_B、全局退化类型与强度 U_Q、生物异常与解剖之间的关系 R,以及当前图像是否仍有足够局部证据判断这条关系 E;用 raw k-space 上的受控物理干预来训练它、验证它。
+**一句话**:训练一个接受 3D MRI 的结构化感知编码器,先建立解剖实体 A,再识别病灶类型与 3D 空间位置 U,最后显式输出每个病灶的宿主解剖结构 R。采集退化 U_Q、关系可靠性 E、motion / undersampling / scanner shift 用来检验这一核心结构化感知在什么条件下失效,而不是作为核心任务本身。
 
 **回答三个问题**:
 
 ```
-WHAT                  生物异常是什么、图像有何退化       → U_B / U_Q(独立分支)
-WHERE                 生物异常绑在哪个解剖实体上         → R_B
-CAN WE STILL SEE IT   当前图像还够不够支撑这条关系      → E
+WHAT ANATOMY          当前 MRI 中有哪些解剖结构           → A
+WHAT LESION + WHERE   病灶是什么、其 3D 空间位置在哪里    → U
+WHICH HOST            该病灶属于哪个解剖结构              → R
 ```
 
-**核心命题**:识别 ≠ 关系绑定。编码器即使能分别识别 lesion 和 left frontal lobe,也不保证建立 `lesion → left frontal` 这条关系;运动、噪声、欠采之后,即使真实病灶未变,当前图像也可能已经不足以支撑这条关系。
+第二阶段再回答:
 
-**三个贡献**(§1.2):MRI 关系绑定问题;关系中心的变尺寸 3D MRI Transformer;证据感知、干预一致的关系学习。
+```
+WHAT BREAKS FIRST     退化后 A / U / R 哪一层先失效       → ΔA / ΔU / ΔR
+CAN WE TRUST R        当前 relation 是否值得输出          → E
+```
 
-**第一道门**(M1,§9.1、§13.6):不再比"高 10 个点"。类别感知的查表在干净数据上已达 0.968,那道门槛不可达。改为三道门:**G1** 推理不喂任何真值,整条管线端到端跑通,漏检记错;**G2(生死门)** 退化确实让公平查表 B0 把病灶绑到错的组织族,判据事先写死在 §13.6;**G4** 关系可靠性 E 在每个退化档内赢过置信度类基线,数字在 G2 之后定。G3(关系模型比查表稳)只报曲线,不设门。G2 不过则先补运动仿真再判,仍不过则方向重议。
+**核心命题**:MRI 的完整结构化理解不止是 segmentation 或 lesion detection。模型需要显式完成 `anatomy entity → lesion entity → lesion-to-anatomy binding`。分别识别 lesion 和 anatomy 并不等价于知道 `lesion → host anatomy`。受控 acquisition degradation 用于进一步研究小的局部感知误差是否会被放大成临床有意义的 relation error。
+
+**核心贡献顺序**(§1.2):统一的 anatomy / lesion entity perception;显式 lesion-to-anatomy binding;在受控 MRI acquisition perturbation 下分解并测量 `ΔA / ΔU / ΔR` 的 error propagation。
+
+**当前第一道门**:不先问退化是否制造足够多的 binding failure,而先问 clean / standard condition 下显式 R 是否具有独立价值。固定同一 A/U 上游后,`Brel` 必须与 `Bprior`、强几何 `Bgeo+`、直接局部 ROI 分类器 `Broi` 比较;主报告 host accuracy / macro-F1 / top-k 与 patient-bootstrap net rescue。旧 G2/G4 继续保留给 robustness 分支:robust perception 若能消除退化 binding failure,只否定“退化 rescue 必须靠 relation”这一 claim,不否定 A/U/R 主任务。
 
 **主投** MedIA;MICCAI 2027 顺路;NeurIPS/ICLR 备选;NBE 二阶段(§10)。
 
@@ -47,11 +64,11 @@ CAN WE STILL SEE IT   当前图像还够不够支撑这条关系      → E
 
 ### 1.1 主线
 
-不写成"我们训练了一个 MRI foundation model,可以做很多任务"。主问题是:
+不写成"我们训练了一个 MRI foundation model,可以做很多任务"。第一篇主问题改为:
 
-> 现有 MRI 编码器能识别实体,但是否真正形成可靠、可组合的异常–解剖关系?
+> 能否让一个 MRI 模型同时建立 anatomical entities 与 lesion entities,并在显式控制空间先验与几何基线后,可靠地判断每个 lesion 的 anatomical host?
 
-围绕它建立关系中心的 MRI 表征学习框架:变尺寸 3D ViT + 关系 token + 受控 MRI 干预 + 关系可观测性。第一篇把脑 + 膝做扎实;跨器官外测用 SPIDER 脊柱(前列腺在库只有解剖、无病灶,§7.3)。
+核心前向固定为 `X → (A,U) → R`:A 负责解剖结构身份与空间支撑,U 负责病灶类型、3D 位置与事件表征,R 负责 lesion-to-anatomy host assignment。受控 MRI 干预、E、motion 与 scanner shift 是第二层机制研究,用来回答 `A/U/R` 中哪一层先失效、relation error 是否发生放大。
 
 ### 1.2 三个贡献
 
@@ -62,14 +79,19 @@ CAN WE STILL SEE IT   当前图像还够不够支撑这条关系      → E
 ### 1.3 最终模型具备的五种底层感知能力
 
 ```
-A   识别并定位解剖
-S   理解序列 / 采集条件
-U   定位生物异常 U_B;独立识别全局退化 U_Q 的类型与强度
-R   知道生物异常属于哪个解剖(可跨多个结构)
-E   知道当前 MRI 是否足以支撑这条关系
+A   Anatomy parsing: 识别解剖身份、mask/空间支撑、物理位置与 anatomy token
+U   Lesion parsing: 识别病灶类型、3D box/mask、毫米坐标、大小与 lesion token
+R   Anatomical binding: 对每个 lesion 输出 P(host anatomy | lesion, X)
 ```
 
-同一骨干后续可接自动 QC、异常候选检测、分割、定量、VLM。第一篇只证明这五种能力。
+扩展能力不再与核心三项并列:
+
+```
+S / U_Q   采集条件与退化状态，用于 robustness / error attribution
+E         relation-level reliability / abstention，仅在 R 被证明有独立价值后加入
+```
+
+第一篇必须先把 A/U/R 三项分别测清，再报告受控退化下的 `ΔA / ΔU / ΔR`。
 
 ---
 
@@ -753,7 +775,7 @@ V5 方案（`docs/AnatoBind_MRI_完整技术方案_V5_排版校正版.pdf`）在
 
 ## 版本记录
 
-- **v2.2(2026-09-11)**:与用户逐条问答后修订。M1 判据改为 G1/G2/G4(G3 只报曲线),G2 判据事先写死;B0 改为类别感知查表(nnU-Net 分割 + 本模型框与类别);分割换成官方梯度畸变校正版,另建导出 m1r;第一批范围、上游规格、训练与评估口径、算力约束见 §13.6。实测记下:数据集 target 与本仓 adjoint SENSE 相同(9 卷,NRMSE 1.1–1.2e-7)。
+- **v2.3(2026-09-22)**:核心目标重构为 `X → (A,U) → R`。A=解剖实体,U=病灶类型+3D空间位置,R=病灶宿主解剖。degradation/U_Q/E/motion/scanner shift 降为 robustness 与 error-propagation 扩展。relation 主实验先比较 Bprior/Bgeo+/Broi/Brel;新增最小 per-lesion `HostCompetitionHead`,旧 global K×M RelationModule 保留作消融。\n- **v2.2(2026-09-11)**:与用户逐条问答后修订。M1 判据改为 G1/G2/G4(G3 只报曲线),G2 判据事先写死;B0 改为类别感知查表(nnU-Net 分割 + 本模型框与类别);分割换成官方梯度畸变校正版,另建导出 m1r;第一批范围、上游规格、训练与评估口径、算力约束见 §13.6。实测记下:数据集 target 与本仓 adjoint SENSE 相同(9 卷,NRMSE 1.1–1.2e-7)。
 - **v2.1 补记(2026-09-06 晚)**:SKM-TEA 标注纳入规则写入 §5.1 与 §13.2,可用实例 465(311/116/38),§0、§9.1、§9.7、§11 的实例数同步;fastMRI 139 卷旧间距标签按当前几何规则重新生成(记录见 docs/data_engine_synthseg.md)。
 - **v2.1(2026-09-06)**:用户确认 1A/2A/3B/4B。拆分 U_B 检测与 U_Q 全局类型/强度分支,移除 R_Q;统一本体与存在性门控;明确干净关系监督 + E* 门控退化监督及低证据熵项;E 输入与物理代理共用病灶局部 ROI,区分训练参考 ROI 与推理/评估预测 ROI,新增覆盖率口径。同步更新联合干预叙事、阶段 IV 损失、指标、风险和架构图;完整模型仍未实现。
 - **v2.0(2026-09-05)**:合并稿。骨架换为 `_cui` 的 `X → (A, S, U) → R → E`(§3–§5、§8),新增变尺寸 3D Swin 骨干与物理坐标 RoPE(§4.1–4.2)、显式关系 token 与关系 Transformer(§4.6)、关系可观测性 E 及其物理定标真值(§4.7、§5.2)、四阶段训练(§8)、五个带证伪条件的主实验(§9.2);吸收 09-04 评审必改清单:多线圈运动仿真(§6.1)、R* 以 tissue_id 为主与三层报告(§5.1)、seg-then-lookup 与 learned failure prediction 进 baseline(§9.6)、SynthSeg 伪标签管线为 M0 阻塞项(§7.3)、KMAR 只测(§8)、BraTS → PDGM / PI-CAI → SPIDER / MR-ART 移出必需项(§7.3)、SKM-TEA 0.625 mm 与 fastMRI 脑 2.5D(§4.1)、赌注实验 155 例 CV 与 10 个百分点门槛(§9.1、§9.7)、退化类型三档(§6.4)、"foundation model"措辞收窄;v1.1 的 P_θ 残差、Sinkhorn 绑定矩阵、L_factor、对侧同源替换、frozen-LLM probe 的处置见 §4.9;数据表改为 /data2 副本实测路径(§7.2),脑 val 缺口关闭;风险表重排为 20 项;韧带实例数按标注 JSON 实测为 40(评审稿写 39;319 + 117 + 40 = 476);评审 §7 十项决策按推荐写入(§13)。
