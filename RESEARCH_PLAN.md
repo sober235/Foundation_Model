@@ -2,19 +2,19 @@
 
 *Anatomy-Centered Structured Perception and Explicit Lesion–Anatomy Binding for 3D MRI*
 
-**研究方案 v2.4**(2026-09-22;Level R 前置 + 公平 relation gate)
+**研究方案 v2.5**(2026-09-22;完整 Gate + Level R 统计/本体闭环)
 
-v2.4 吸收 PR #4 review (`pullrequestreview-5274086790`) 后再次修订。项目第一原则仍为 **Anatomy → Lesion → Binding**，但取消 v2.3 的“clean pseudo-reference 上 Brel 必须先赢 Bgeo+”作为第一道科学门。原因：SKM-TEA 的 class-aware lookup 已达约 0.958–0.968，clean 余量仅约 3–4 个百分点；fastMRI+ brain 的 clean host reference 又来自 SynthSeg + geometry lookup，与 B0 同源，不能定义 learned R 的 clinical correctness。
+v2.5 吸收 PR #5 review (`pullrequestreview-5274417275`) 及后续复核。第一原则仍为 **Anatomy → Lesion → Binding**，但把剩余科学风险明确拆成 Gate 0（数据坐标）→ Gate A/U（基础感知）→ Gate R0（独立人标关系是否可定义）→ Gate R1（learned R 是否 beyond geometry）→ Robustness / E。Level R 不再只是“有人标”，而是包含抽样、双阅片、一致率、ambiguity、population weighting 与最终样本量重估的正式统计协议。
 
-**v2.4 权威执行计划**：[`docs/plans/2026-09-22-aur-v2.4-review-response.md`](docs/plans/2026-09-22-aur-v2.4-review-response.md)。若本文历史章节与该计划冲突，以 v2.4 计划为准。
+**v2.5 权威执行计划**：[`docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`](docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md)。若本文历史章节与该计划冲突，以 v2.5 计划为准。v2.4 文档保留为上一轮审计记录。
 
 新的执行顺序：
 
 1. **Gate 0**：修复 fastMRI+ box vertical flip，冻结坐标约定并加测试；
-2. **A/U**：先把 anatomy parsing 与 lesion type + 3D localization 做稳定；
-3. **Level R 前置**：先做人标 relation pilot，估计 reader agreement、ambiguity、`p_disc` 与聚簇效应，再锁定最终样本量；
-4. **公平 relation gate**：固定同一 A/U、同一 geometry、同一 split，比较 B0 / Bprior / Bgeo+ / B1 / B2 / B3 / B4；
-5. **Robustness**：只有 R 在 Level R 上有独立价值后，再研究 `ΔA / ΔU / ΔR`、robust perception、relation rescue 与 E。
+2. **Gate A/U**：验证 anatomy parsing 与 lesion type + 3D localization；
+3. **Gate R0**：约 100–150 lesion 双阅片 pilot，冻结 relation ontology、reader agreement、ambiguity 与抽样/加权规则，再估最终 N；
+4. **Gate R1**：固定同一 A/U、同一 geometry、同一 split，比较 B0 / Bprior / Bgeo+ / B1 / B2 / B3 / B4 / B5；
+5. **Robustness / E**：只有 learned R 在 Level R 上有独立价值后，再研究 ΔA / ΔU / ΔR、robust perception、relation rescue 与 selective reliability。
 
 **重要语义修正**：PR #4 当前 `HostCompetitionHead` 按实现属于 **B1 independent candidate MLP prototype**，不是最终 B3。真正 B3 必须在同一 lesion 的 K 个 host candidates 之间显式建模 candidate interaction；Bgeo+ 与 B1–B4 必须共享同一套扩展 geometry。
 
@@ -54,7 +54,7 @@ CAN WE TRUST R        当前 relation 是否值得输出          → E
 
 **核心贡献顺序**(§1.2):统一的 anatomy / lesion entity perception;显式 lesion-to-anatomy binding;在受控 MRI acquisition perturbation 下分解并测量 `ΔA / ΔU / ΔR` 的 error propagation。
 
-**当前第一道科学门**:先完成 Gate 0 数据坐标修复与 A/U 可用性验证，然后建立独立 Level R 人标 relation truth。只有 Level R 存在后，才比较 `Bprior / Bgeo+ / B1 / B2 / B3 / B4` 并判断 learned R 是否有独立价值。clean SynthSeg + geometry pseudo-reference 不再用于定义 superiority。旧 G2/G4 只保留为 robustness 历史与后续机制分支。
+**当前 Gate 系统**:Gate 0 数据坐标正确性 → Gate A/U 基础感知 → Gate R0 独立人标 relation truth 与可标注性 → Gate R1 learned relation 的增量价值 → Robustness / E。clean SynthSeg + geometry pseudo-reference 只用于训练、debug 与分层，不定义 superiority。
 
 **主投** MedIA;MICCAI 2027 顺路;NeurIPS/ICLR 备选;NBE 二阶段(§10)。
 
@@ -246,6 +246,8 @@ Q_c = head_c(z_Q), c ∈ {motion, noise, aliasing}
 
 ### 4.6 关系 token 与关系 Transformer(R)
 
+> **v2.5 历史章节，非当前默认实现。** 当前 relation 主线以 v2.5 的 B0–B5 为准：B1=IndependentCandidateHead，B3=同一 lesion 内 candidate interaction，B4=B3+local boundary evidence；旧 global K×M RelationModule 仅作 ablation。
+
 给每一对 (A_i, U_j),其中 U_j 仅来自 U_B,建显式 token,再在有效配对之间做自注意:
 
 ```
@@ -266,6 +268,8 @@ I_j    = 通过存在性门控的解剖候选集,仅对有效生物事件 j 定�
 - **硬关系负样本**:真实关系 `lesion → left frontal`,构造 `lesion → right frontal`、`lesion → left parietal` 作负样本;膝部内侧半月板 ↔ 外侧半月板。`L_rel = L_bind + λ_h·L_hard`,迫使模型学 WHAT IS WHERE,而不是两个独立识别器。
 
 ### 4.7 关系可观测性(E)
+
+> **v2.5 历史章节，Gate R1 通过前不执行。** E 已降为 residual relation failure 的后续 selective-reliability 扩展。
 
 ```
 C_j        = dilate(B_j^U, r = 8 mm)                  (默认;U_j ∈ U_B)
@@ -448,6 +452,8 @@ PDGM/BMSR(剥颅配准域)、HCP(研究级各向同性域)、fastMRI(临床 2D �
 
 ## 8. 四阶段训练
 
+> **v2.5 历史训练纲领，非当前执行顺序。** 当前执行顺序为 Gate 0 → A/U → Level R pilot/final cohort → relation baselines → learned relation → robustness → E。
+
 不做一步端到端硬训。四个阶段按依赖顺序排列,每一阶段只打开它需要的损失。
 
 | 阶段 | 训练什么 | 数据 | 损失 | 产出与备注 |
@@ -474,7 +480,7 @@ E 头                —        —         —          训练
 
 ## 9. 实验设计
 
-### 9.1 M1 赌注实验(第一道门,先于一切全量训练)
+### 9.1 第一道科学链：Gate 0 → A/U → Level R → Gate R
 
 **v2.4 新第一道科学门 = 独立 Level R + 公平 relation gate。** 旧 v2.2/G2 仍作为 robustness 历史证据，不再决定整个 A/U/R 项目是否继续。
 
@@ -503,6 +509,8 @@ B4 > B2
 
 ### 9.2 五个主实验与证伪条件
 
+> **v2.5 历史实验框架，待后续按 v2.5 Gate 重新实现。** 第一篇当前 primary question 是 independent Level R 上 B4 是否 beyond Bgeo+ / B2。
+
 | 实验 | 设计 | 证伪条件 |
 |---|---|---|
 | **Exp 1 识别–绑定 gap** | 普通强 3D Swin backbone,Acc(A)、Acc(U) 很高时 ABA(U→A) 是否明显下降。SKM-TEA 用 tissue_id 直接算 ABA;只在(a)退化条件下、(b)对无 mask 头的纯分类/检测 baseline 测;分割外 157 例不拿来制造 gap | gap 不存在 → 整个课题的动机重审 |
@@ -512,6 +520,8 @@ B4 > B2
 | **Exp 5 可观测性失效预测** | E 预测某条关系是否即将失效;报 AURC、ECE、Brier、AUROC;对照 maximum softmax、predictive entropy、关系置信、全局质量分、**learned failure prediction(ConfidNet 类)**;E 只在三类干预上训练,在五种 held-out 退化上测 AURC/ECE 是否保持 | E 不显著优于置信度/熵 → 不构成独立贡献 |
 
 ### 9.3 组合矩阵与 split
+
+> **v2.5 历史扩展设计。** 多器官/组合泛化不进入第一篇最小闭环，第一篇以 brain focal lesion 为 R 主战场、SKM-TEA 为 geometry-easy control。
 
 ```
 脑   × { 胶质瘤(PDGM), 转移瘤(BMSR), 卒中(ISLES), WM 病灶(fastMRI+),
@@ -529,11 +539,15 @@ Split 原则:hold out 的是**组合**而非样本(训 brain+motion、knee+alias
 
 ### 9.4 sim-to-real 退化迁移与跨采集协议泛化
 
+> **v2.5 历史扩展设计。** 仅在 Gate R1 通过并完成 robust-perception control 后重新启用。
+
 - **主通道:膝**——SKM-TEA raw 上 3D 物理仿真运动(qDESS 按 ky–kz 分段,段间运动建模比 2D 更真实)训练 → KMAR-50K **真实**配对膝运动上测试。两端在库,即刻可闭环;配对前做头信息审计,约 5% 不一致的配准或剔除。
 - 脑通道(fastMRI raw 仿真训 → MR-ART 真实测)待 MR-ART 补下后加入,现为可选。
 - **跨采集协议泛化**:同一 do(motion) 机制横跨三种采集物理(fastMRI 脑 2D 多线圈多对比度、fastMRI 膝 2D 15ch TSE、SKM-TEA 3D qDESS 双回波)。三种协议下同时观察到生物关系选择性保持、U_Q 响应及 E 有效校准,可支持跨协议干预泛化;仍须排除数据集与协议捷径,不能仅凭一致性指标宣称机制已被识别。
 
 ### 9.5 指标
+
+> **v2.5 历史指标表。** 当前 R 主统计以 all-lesion host accuracy/macro-F1/coverage/rescue/harm/net rescue + patient-level bootstrap 为准；富集抽样必须做 stratified standardization 或 IPW。
 
 主表不以 Dice 为主。
 
@@ -600,6 +614,8 @@ d = 两法 ABA 之差,p_disc = 不一致率
 
 ## 11. 风险清单
 
+> **v2.5 历史风险表。** 仍可用于审计，但当前最高优先级风险已更新为：坐标正确性、U 可用性、Level R 可标注性/reader availability、sampling bias、Bgeo+ ceiling。
+
 | # | 风险 | 修法 / 对策 | 状态 |
 |---|---|---|---|
 | 1 | seg-then-lookup 平凡管线胜出 | 赌注实验前置(§9.1,SKM-TEA tissue_id 真值,退化条件),不成立则重议 | 待验证 |
@@ -627,6 +643,8 @@ d = 两法 ABA 之差,p_disc = 不一致率
 
 ## 12. 路线图与范围裁剪
 
+> **v2.5 历史路线图，M2/M3 不再执行。** 当前路线以 `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md` §19 为唯一执行顺序。
+
 ### 里程碑
 
 - **M0**(2026-09-11 状态):膝 raw、SKM-TEA 解压、全库副本 ✓;脑侧 SynthSeg 伪标签五库 ✓(09-06);SKM-TEA M1 导出 ✓(09-07);分割改用官方校正版并另建 m1r(§13.6)。待做:zip 解压与格式统一(不在第一批);SKM-TEA 残留与原 tar 清理(须授权)。
@@ -652,7 +670,9 @@ d = 两法 ABA 之差,p_disc = 不一致率
 
 完整证据 `docs/verification/2026-09-13/G2_verdict.md`（含四个可复跑脚本）与 `docs/verification/2026-09-13/report/`。
 
-**v2.4 解释**：该裁决证明 SKM-TEA 不是 relation robustness 的合适主战场，但不再作为整个 A/U/R structured perception 的停止条件。\n\n**原裁决**：G2 不过。退化不让公平查表把病灶绑到错的组织族。
+**v2.5 解释**：该裁决证明 SKM-TEA 不是 relation robustness 的合适主战场，但不再作为整个 A/U/R structured perception 的停止条件。
+
+**原裁决**：G2 不过。退化不让公平查表把病灶绑到错的组织族。
 
 **为何不按原定去补运动仿真**，三项补测：
 
@@ -796,6 +816,7 @@ V5 方案（`docs/AnatoBind_MRI_完整技术方案_V5_排版校正版.pdf`）在
 
 ## 版本记录
 
+- **v2.5(2026-09-22)**:吸收 PR #5 review 与后续复核。补齐 Gate R0 标注统计设计：100–150 lesion pilot、双阅片+adjudication、host/topography/adjacency/ambiguity 分层 ontology、reader agreement、set-valued ambiguity、富集抽样 standardization/IPW、pilot 后重估 final N；删除 B1 的 HostCompetitionHead 误导别名；旧 §4.6/§4.7/§8/§9.2–9.5/§11/§12 明确标历史。完整路线见 `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`。
 - **v2.4(2026-09-22)**:吸收 PR #4 专家评审。取消 clean pseudo-reference first gate；Level R 前置；SKM-TEA 改作 geometry-easy control；brain small focal lesions 作为 R 主战场；当前 `HostCompetitionHead` 定义为 B1 prototype；新增 B3 candidate-interaction 与 geometry parity；Gate 0 前置 fastMRI+ box flip；robustness 改为 `ΔA/ΔU/ΔR` 二阶段机制研究。完整计划见 `docs/plans/2026-09-22-aur-v2.4-review-response.md`。
 - **v2.3(2026-09-22)**:核心目标重构为 `X → (A,U) → R`。A=解剖实体,U=病灶类型+3D空间位置,R=病灶宿主解剖。degradation/U_Q/E/motion/scanner shift 降为 robustness 与 error-propagation 扩展。relation 主实验先比较 Bprior/Bgeo+/Broi/Brel;新增最小 per-lesion `HostCompetitionHead`,旧 global K×M RelationModule 保留作消融。
 - **v2.2(2026-09-11)**:与用户逐条问答后修订。M1 判据改为 G1/G2/G4(G3 只报曲线),G2 判据事先写死;B0 改为类别感知查表(nnU-Net 分割 + 本模型框与类别);分割换成官方梯度畸变校正版,另建导出 m1r;第一批范围、上游规格、训练与评估口径、算力约束见 §13.6。实测记下:数据集 target 与本仓 adjoint SENSE 相同(9 卷,NRMSE 1.1–1.2e-7)。
