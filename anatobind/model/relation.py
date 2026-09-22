@@ -1,15 +1,17 @@
-"""Relation token, pair transformer and main-host head (spec 4.6).
+"""Lesion--anatomy binding modules.
 
-    r_ij_0 = phi[ A_i ; U_j ; g(G_ij) ]   ->  Transformer_R  ->  r_ij
-    R_ij   = sigmoid(h_R(r_ij))
-    host_j = softmax over { i in present } U { none }
+Two formulations intentionally coexist:
 
-``S`` is omitted from phi because the S head is out of scope for the minimal
-path (decision A6); laterality and hierarchy are omitted from ``G_ij`` because
-identity-anchored queries already encode them in the query index.
+1. HostCompetitionHead is the A/U/R core-path implementation. Each lesion
+   independently compares the same candidate anatomy entities and produces one
+   host distribution. It is deliberately small so that a relation claim must
+   beat strong priors / geometry / ROI baselines rather than win by capacity.
 
-``IoA`` is an input feature here, which spec 4.6 allows.  What spec 5.1 forbids
-is deriving the relation *truth* from overlap -- truth stays ``host_label``.
+2. RelationModule is the earlier global KxM pair-Transformer formulation from
+   spec 4.6. It is kept as an ablation and for backward compatibility.
+
+Both consume geometry as an input feature. Relation truth must still come from
+the annotated host relation, never from overlap or distance heuristics.
 """
 
 import torch
@@ -50,6 +52,87 @@ def geometry_features(masks, boxes_vox, spacing_mm):
                 ioa[b, :, j] = m[b][:, z0:z1, y0:y1, x0:x1].flatten(1).sum(-1) / vol
         return torch.cat([delta, dist, ioa[..., None]], -1)
 
+
+class HostCompetitionHead(nn.Module):
+    """Per-lesion candidate competition for explicit anatomy binding.
+
+    Inputs:
+        a_embed: (B, K, d) anatomy entity embeddings.
+        u_embed: (B, M, d) lesion entity embeddings.
+        geo: (B, K, M, G) pairwise physical geometry.
+        present: (B, K) bool mask for anatomy candidates present in the scan.
+        local_evidence: optional (B, K, M, local_dim) image/boundary evidence.
+
+    Returns:
+        host_logits: (B, M, K + 1), final column is ``none``.
+        pair_repr: (B, K, M, d), independently scored pair representations.
+
+    There is intentionally no attention across different lesions. Cross-lesion
+    reasoning must be added explicitly and justified by an ablation.
+    """
+
+    def __init__(
+        self,
+        d_model=128,
+        geometry_channels=GEOMETRY_CHANNELS,
+        geo_dim=64,
+        local_dim=0,
+        hidden_dim=None,
+    ):
+        super().__init__()
+        self.local_dim = int(local_dim)
+        hidden_dim = int(hidden_dim or d_model)
+        self.g = nn.Sequential(
+            nn.Linear(geometry_channels, geo_dim),
+            nn.GELU(),
+            nn.Linear(geo_dim, geo_dim),
+        )
+        pair_in = 2 * d_model + geo_dim + self.local_dim
+        self.pair = nn.Sequential(
+            nn.Linear(pair_in, hidden_dim),
+            nn.GELU(),
+            nn.Linear(hidden_dim, d_model),
+            nn.LayerNorm(d_model),
+        )
+        self.h_host = nn.Linear(d_model, 1)
+        self.h_none = nn.Sequential(
+            nn.Linear(d_model, d_model),
+            nn.GELU(),
+            nn.Linear(d_model, 1),
+        )
+
+    def forward(self, a_embed, u_embed, geo, present, local_evidence=None):
+        B, K, d = a_embed.shape
+        Bu, M, du = u_embed.shape
+        if Bu != B or du != d:
+            raise ValueError("a_embed and u_embed must share batch size and embedding dimension")
+        if geo.shape[:3] != (B, K, M):
+            raise ValueError("geo must have shape (B, K, M, G)")
+        if present.shape != (B, K):
+            raise ValueError("present must have shape (B, K)")
+
+        pieces = [
+            a_embed[:, :, None, :].expand(B, K, M, d),
+            u_embed[:, None, :, :].expand(B, K, M, d),
+            self.g(geo),
+        ]
+        if self.local_dim:
+            if local_evidence is None or local_evidence.shape != (B, K, M, self.local_dim):
+                raise ValueError(
+                    "local_evidence must have shape (B, K, M, local_dim) when local_dim > 0"
+                )
+            pieces.append(local_evidence)
+        elif local_evidence is not None:
+            raise ValueError("local_evidence was provided but local_dim == 0")
+
+        pair_repr = self.pair(torch.cat(pieces, dim=-1))
+        host = self.h_host(pair_repr).squeeze(-1).transpose(1, 2)
+        host = host.masked_fill(~present[:, None, :], float("-inf"))
+        none = self.h_none(u_embed)
+        return {
+            "pair_repr": pair_repr,
+            "host_logits": torch.cat([host, none], dim=-1),
+        }
 
 class _PairBlock(nn.Module):
     def __init__(self, d_model, heads):
