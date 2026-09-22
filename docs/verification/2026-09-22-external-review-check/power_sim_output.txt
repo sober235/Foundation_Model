@@ -1,0 +1,29 @@
+# cmd: PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=4 nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-22-external-review-check/power_sim.py
+# run: 2026-09-22 (corrected heterogeneity model) at 1b8a33e
+[1] lesions N=1297 in K=165 volumes; m_eff=29.45; DE(ICC .02/.05/.10)=1.57/2.42/3.85; N/DE(.05)=535
+[2] scenario: perfect agreement on WM, 50% on cortex/other -> overall raw 0.893 (passes 0.80), kappa 0.62, AC1 0.88, cortex positive agreement 0.67, raw within H1 (22% of lesions) 0.52
+
+[3] power (P[CI_lower>0], alpha .05 two-sided, patient cluster bootstrap), 400 sims x 300 boots; hours = 2 readers x N_annotated x 2.5 min
+ pd_H1  pd_H2    q    kq ICC_A d_true |         A_full |  B_H1all_H2300 |  B_H1all_H2600 |       D_srs700
+  0.25   0.03 0.65   inf 0.007  0.022 | 0.84 n=1297  108h | 0.64 n= 558   46h | 0.73 n= 860   72h | 0.56 n= 700   58h
+  0.25   0.03 0.65   8.0 0.018  0.022 | 0.74 n=1297  108h | 0.57 n= 559   47h | 0.72 n= 859   72h | 0.51 n= 700   58h
+  0.25   0.03 0.65   2.0 0.038  0.022 | 0.60 n=1297  108h | 0.47 n= 559   47h | 0.53 n= 860   72h | 0.42 n= 700   58h
+  0.25   0.03 0.70   inf 0.009  0.030 | 0.98 n=1297  108h | 0.88 n= 558   46h | 0.94 n= 860   72h | 0.81 n= 700   58h
+  0.25   0.03 0.70   8.0 0.016  0.030 | 0.94 n=1297  108h | 0.79 n= 559   47h | 0.90 n= 859   72h | 0.79 n= 700   58h
+  0.25   0.03 0.70   2.0 0.036  0.030 | 0.81 n=1297  108h | 0.76 n= 560   47h | 0.84 n= 859   72h | 0.72 n= 700   58h
+  0.35   0.05 0.65   inf 0.003  0.033 | 0.95 n=1297  108h | 0.78 n= 560   47h | 0.91 n= 859   72h | 0.74 n= 700   58h
+  0.35   0.05 0.65   8.0 0.020  0.033 | 0.89 n=1297  108h | 0.70 n= 560   47h | 0.83 n= 860   72h | 0.69 n= 700   58h
+  0.35   0.05 0.65   2.0 0.046  0.033 | 0.76 n=1297  108h | 0.56 n= 559   47h | 0.65 n= 860   72h | 0.64 n= 700   58h
+  0.35   0.05 0.70   inf 0.006  0.044 | 0.99 n=1297  108h | 0.96 n= 560   47h | 0.99 n= 859   72h | 0.93 n= 700   58h
+  0.35   0.05 0.70   8.0 0.019  0.044 | 0.98 n=1297  108h | 0.91 n= 560   47h | 0.96 n= 859   72h | 0.92 n= 700   58h
+  0.35   0.05 0.70   2.0 0.044  0.044 | 0.90 n=1297  108h | 0.83 n= 559   47h | 0.88 n= 859   72h | 0.84 n= 700   58h
+  0.50   0.08 0.65   inf 0.002  0.049 | 0.99 n=1297  108h | 0.90 n= 558   46h | 0.97 n= 859   72h | 0.88 n= 700   58h
+  0.50   0.08 0.65   8.0 0.024  0.049 | 0.93 n=1297  108h | 0.81 n= 560   47h | 0.91 n= 860   72h | 0.81 n= 700   58h
+  0.50   0.08 0.65   2.0 0.063  0.049 | 0.81 n=1297  108h | 0.68 n= 559   47h | 0.74 n= 859   72h | 0.65 n= 700   58h
+  0.50   0.08 0.70   inf 0.004  0.066 | 1.00 n=1297  108h | 0.99 n= 558   46h | 1.00 n= 859   72h | 0.99 n= 700   58h
+  0.50   0.08 0.70   8.0 0.024  0.066 | 0.99 n=1297  108h | 0.96 n= 559   47h | 0.99 n= 860   72h | 0.96 n= 700   58h
+  0.50   0.08 0.70   2.0 0.062  0.066 | 0.94 n=1297  108h | 0.88 n= 560   47h | 0.93 n= 859   72h | 0.89 n= 700   58h
+(sim time 20s)
+[3b] analytic SE (no clustering): full 1297 0.0092; H1-all + H2 300: 0.0127 (ratio 1.38); Neyman share of H2 would be 60%
+[3b] analytic SE (no clustering): full 1297 0.0092; H1-all + H2 600: 0.0104 (ratio 1.12); Neyman share of H2 would be 60%
+[3b] analytic SE (no clustering): full 1297 0.0092; H1-all + H2 1038: 0.0092 (ratio 1.00); Neyman share of H2 would be 60%

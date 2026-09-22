@@ -1,0 +1,10 @@
+# cmd: PYTHONNOUSERSITE=1 OMP_NUM_THREADS=4 nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-22-external-review-check/interface_check.py
+# run: 2026-09-22 16:59:01 at 1b8a33e
+volume file_brain_AXFLAIR_200_6002425_seg.nii.gz shape (320, 320, 16) spacing (0.6875, 0.6875, 5.0)
+candidate labels present: 11; brain voxels 309592
+(a) nearest-other-structure distance: 2.3s; (b) nearest-interface distance: 1.2s
+|d_other - d_iface| over brain voxels: median 1.375 mm, p95 5.000 mm, max 5.094 mm; one voxel diagonal = 5.09 mm; share within one in-plane voxel (0.6875 mm): 28.3%; within one diagonal: 100.0%
+WM voxels with d_iface <= 2 mm: 82.7%   (voxel-level, not lesion-level)
+WM voxels with d_iface <= 3 mm: 89.2%   (voxel-level, not lesion-level)
+WM voxels with d_iface <= 5 mm: 97.3%   (voxel-level, not lesion-level)
+extrapolation: 14.5 CPU-minutes for 252 FLAIR volumes (single thread)
