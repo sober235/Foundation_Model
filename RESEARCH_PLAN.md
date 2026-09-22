@@ -1,6 +1,6 @@
-# AnatoBind-MRI:解剖–异常关系绑定与关系可观测性的 3D MRI 结构化感知编码器
+# AnatoBind-MRI:解剖–病灶结构化感知与显式解剖绑定
 
-*Evidence-Aware Relational Representation Learning with a Variable-Size 3D MRI Transformer*
+*Anatomy-Centered Structured Perception and Explicit Lesion–Anatomy Binding for 3D MRI*
 
 **研究方案 v2.3**(2026-09-22;A/U/R 核心目标重构)
 
@@ -72,11 +72,11 @@ CAN WE TRUST R        当前 relation 是否值得输出          → E
 
 ### 1.2 三个贡献
 
-1. **MRI 关系绑定问题**:分别识别 WHAT 与 WHERE ≠ 知道 WHAT IS WHERE。现有 MRI 表征学习分别关注解剖识别、病灶检测、图像质量,没有研究异常视觉事件与解剖实体之间是否形成可靠、可组合的关系表示。
-2. **关系中心的变尺寸 3D MRI Transformer**:`Patch → Entity/Event → Relation → Observability`。变尺寸层级 3D Swin、物理坐标位置编码、解剖实体 token、异常事件 token、显式关系 token、关系 Transformer;不同 D×H×W 的 MRI 不需要固定 resize。
-3. **证据感知、干预一致的关系学习**:利用公开 raw k-space 上的物理可控干预,要求证据充分时 `R_B(T_q X) ≈ R_B(X)`、U_Q 响应干预类型与强度、E 反映局部证据变化;证据不足时放松确定性关系监督。v2.1 已移除 R_Q,因此不再把退化响应写成 R 本身的非平凡等变;响应来自联合输出 (R_B, U_Q, E)。
+1. **统一的 anatomy / lesion entity perception**:同一 3D MRI 编码框架显式产生解剖实体 A 与病灶实体 U。A 不只是 segmentation label,还包含身份、空间支撑、物理位置与 entity token;U 不只是 detector score,还包含病灶类型、3D box/mask、毫米坐标、大小与 lesion token。
+2. **显式 lesion-to-anatomy binding**:把 `WHAT lesion`、`WHERE in physical space` 与 `WHICH anatomical host` 分开建模。第一实现采用 per-lesion HostCompetition,并必须在相同 A/U 上游下与 Bprior、Bgeo+、Broi 公平比较;旧 global K×M Relation Transformer 仅作消融,不预设其必要性。
+3. **structured-perception error propagation under controlled MRI perturbation**:利用 raw k-space 受控干预分别测量 `ΔA / ΔU / ΔR`,检验小的局部 anatomy/lesion perception error 是否被放大为临床有意义的 binding error。E、motion、scanner/protocol shift 属于该机制研究的后续扩展。
 
-### 1.3 最终模型具备的五种底层感知能力
+### 1.3 核心三种底层感知能力
 
 ```
 A   Anatomy parsing: 识别解剖身份、mask/空间支撑、物理位置与 anatomy token
