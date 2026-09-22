@@ -18,7 +18,7 @@ v2.4 吸收 PR #4 review (`pullrequestreview-5274086790`) 后再次修订。项�
 
 **重要语义修正**：PR #4 当前 `HostCompetitionHead` 按实现属于 **B1 independent candidate MLP prototype**，不是最终 B3。真正 B3 必须在同一 lesion 的 K 个 host candidates 之间显式建模 candidate interaction；Bgeo+ 与 B1–B4 必须共享同一套扩展 geometry。
 
-本次按用户确认的 **1A / 2A / 3B / 4B** 修订:U_Q 独立为全局退化分支;A 使用跨器官统一本体与存在性门控;退化视图的关系监督由外部 E* 门控;E 的输入与监督使用同一病灶局部配对区域。详细决策见 §13.1,架构图见 [v2.1 PNG](docs/figures/anatobind_plan_v2_1_architecture.png) / [SVG](docs/figures/anatobind_plan_v2_1_architecture.svg)。这是方案修订,完整模型与训练仍待实现。§7 的资产清单保留 09-05 盘点口径;后续脑伪标签运行状态以 [数据引擎记录](docs/data_engine_synthseg.md) 为准。
+**以下 v2.1/v2.2 决策保留为历史记录，不覆盖 v2.4 的执行顺序。** 当时用户确认的 1A / 2A / 3B / 4B 包括 U_Q 独立全局退化分支、跨器官统一本体、E* 门控和局部 E；这些模块在 v2.4 中均降为 Gate R 之后的 robustness / reliability 扩展。历史架构图仍见 [v2.1 PNG](docs/figures/anatobind_plan_v2_1_architecture.png) / [SVG](docs/figures/anatobind_plan_v2_1_architecture.svg)。
 
 v2.0 是两份前稿的合并稿:
 
@@ -54,7 +54,7 @@ CAN WE TRUST R        当前 relation 是否值得输出          → E
 
 **核心贡献顺序**(§1.2):统一的 anatomy / lesion entity perception;显式 lesion-to-anatomy binding;在受控 MRI acquisition perturbation 下分解并测量 `ΔA / ΔU / ΔR` 的 error propagation。
 
-**当前第一道门**:不先问退化是否制造足够多的 binding failure,而先问 clean / standard condition 下显式 R 是否具有独立价值。固定同一 A/U 上游后,`Brel` 必须与 `Bprior`、强几何 `Bgeo+`、直接局部 ROI 分类器 `Broi` 比较;主报告 host accuracy / macro-F1 / top-k 与 patient-bootstrap net rescue。旧 G2/G4 继续保留给 robustness 分支:robust perception 若能消除退化 binding failure,只否定“退化 rescue 必须靠 relation”这一 claim,不否定 A/U/R 主任务。
+**当前第一道科学门**:先完成 Gate 0 数据坐标修复与 A/U 可用性验证，然后建立独立 Level R 人标 relation truth。只有 Level R 存在后，才比较 `Bprior / Bgeo+ / B1 / B2 / B3 / B4` 并判断 learned R 是否有独立价值。clean SynthSeg + geometry pseudo-reference 不再用于定义 superiority。旧 G2/G4 只保留为 robustness 历史与后续机制分支。
 
 **主投** MedIA;MICCAI 2027 顺路;NeurIPS/ICLR 备选;NBE 二阶段(§10)。
 
@@ -75,7 +75,7 @@ CAN WE TRUST R        当前 relation 是否值得输出          → E
 ### 1.2 三个贡献
 
 1. **统一的 anatomy / lesion entity perception**:同一 3D MRI 编码框架显式产生解剖实体 A 与病灶实体 U。A 不只是 segmentation label,还包含身份、空间支撑、物理位置与 entity token;U 不只是 detector score,还包含病灶类型、3D box/mask、毫米坐标、大小与 lesion token。
-2. **显式 lesion-to-anatomy binding**:把 `WHAT lesion`、`WHERE in physical space` 与 `WHICH anatomical host` 分开建模。第一实现采用 per-lesion HostCompetition,并必须在相同 A/U 上游下与 Bprior、Bgeo+、Broi 公平比较;旧 global K×M Relation Transformer 仅作消融,不预设其必要性。
+2. **显式 lesion-to-anatomy binding**:把 `WHAT lesion`、`WHERE in physical space` 与 `WHICH anatomical host` 分开建模。当前 PR #4 的逐候选 MLP 正式归为 **B1 independent candidate baseline**；真正 B3 只在同一 lesion 的 K 个 host candidates 之间建模 candidate interaction。B1–B4 必须在相同 A/U 上游和共享 geometry 下与 Bprior、Bgeo+、Broi 公平比较；旧 global K×M Relation Transformer 仅作消融。
 3. **structured-perception error propagation under controlled MRI perturbation**:利用 raw k-space 受控干预分别测量 `ΔA / ΔU / ΔR`,检验小的局部 anatomy/lesion perception error 是否被放大为临床有意义的 binding error。E、motion、scanner/protocol shift 属于该机制研究的后续扩展。
 
 ### 1.3 核心三种底层感知能力
