@@ -568,7 +568,7 @@ Split 原则:hold out 的是**组合**而非样本(训 brain+motion、knee+alias
 
 1. **B0 — deterministic geometry lookup**：class-aware overlap，zero-overlap nearest candidate。
 2. **Bprior — anatomical prior**：majority host；`P(host | lesion type, side, coarse location)`。
-3. **Bgeo+ — strong geometry classifier**：logistic regression + tree/XGBoost 类 baseline + 2-layer MLP；输入完整共享 geometry。
+3. **Bgeo+ — strong geometry classifier**：logistic regression + sklearn HistGradientBoosting 类树模型（不新增 XGBoost 依赖，见 v2.5 §10）+ 2-layer MLP；输入完整共享 geometry。
 4. **B1 — independent candidate MLP**：每个 `(A_i,U_j)` 独立打分后对 host softmax。PR #4 当前 `HostCompetitionHead` 实质属于 B1 prototype。
 5. **B2 — direct local ROI classifier**：局部 lesion ROI/context 直接预测 host，不构造 anatomy–lesion pair。
 6. **B3 — candidate-interaction host competition**：固定 lesion j，只在其 K 个 host candidates 上做 1–2 层 self-attention / set interaction；默认不跨 lesion mixing。

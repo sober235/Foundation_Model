@@ -37,7 +37,7 @@
 1. `STATUS.md`:当前状态、待拍板决定、下一步、坑。
 2. `docs/plans/2026-09-22-aur-v2.5-complete-technical-route.md`:权威执行计划(Gate 链、Level R 协议与统计、基线矩阵、PR 顺序)。`RESEARCH_PLAN.md` v2.5 的 §0、§1、§9.1、§9.6、§13 是摘要与决策记录,其余多为已标记的历史章节。
 3. `docs/verification/2026-09-13/G2_verdict.md`、`docs/verification/2026-09-15/H1_verdict.md`、`docs/verification/2026-09-16-brain-probe/REPORT.md`:三条实验裁决(膝 G2 不过、膝检测 H1 不过但被翻转框污染、脑探针 q3 改答 7.4%)。
-4. `REVIEW_v7_feasibility_2026-09-16.md`、`REVIEW_v7_feasibility_2026-09-19.md`、`REVIEW_core_target_AUR_2026-09-22.md`:三份评审;PR #4/#5/#6 的评审在 GitHub(链接见 STATUS.md §1)。
+4. `REVIEW_v7_feasibility_2026-09-16.md`、`REVIEW_v7_feasibility_2026-09-19.md`、`REVIEW_core_target_AUR_2026-09-22.md`:三份评审;`REVIEW_v2.5_feasibility_2026-09-22.md`:v2.5 合入后的冷启动独立可行性评审(有条件 GO;先读其 §0、§2、§7、§9);PR #4/#5/#6 的评审在 GitHub(链接见 STATUS.md §1)。
 5. `REVIEW_expert_comments_audit_2026-09-09.md`:类别感知查表天花板 0.968 的审计。
 6. `docs/superpowers/specs/2026-09-14-leg2-fastmri-knee-detection-gate-design.md`、`docs/superpowers/plans/`:leg 1/leg 2 实施记录与执行发现。
 7. `docs/data_engine_skmtea.md`、`docs/data_engine_synthseg.md`:数据引擎事实。`docs/architecture_and_novelty_2026-09-08.md`:旧架构说明(历史)。
