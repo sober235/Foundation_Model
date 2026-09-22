@@ -14,9 +14,9 @@
 
 最小核心输出应收缩为：
 
-[
+$
 f_\theta(X)=\{A,U,R\}
-]
+$
 
 其中：
 
@@ -26,9 +26,9 @@ f_\theta(X)=\{A,U,R\}
 
 推荐把当前研究主线重构为：
 
-[
+$
 X \rightarrow (A,U) \rightarrow R
-]
+$
 
 而不是继续让 acquisition degradation、reliability、motion、scanner shift 或大型 Relation Transformer 定义整个项目。
 
@@ -48,15 +48,15 @@ X \rightarrow (A,U) \rightarrow R
 
 输入 MRI (X)，输出：
 
-[
+$
 A=\{A_1,\dots,A_K\}
-]
+$
 
 每个解剖实体建议表示为：
 
-[
+$
 A_i=(c_i^A,M_i,b_i,p_i,a_i)
-]
+$
 
 其中：
 
@@ -74,15 +74,15 @@ A_i=(c_i^A,M_i,b_i,p_i,a_i)
 
 输出：
 
-[
+$
 U=\{U_1,\dots,U_M\}
-]
+$
 
 每个 lesion entity 建议表示为：
 
-[
+$
 U_j=(c_j^U,b_j,m_j,p_j,s_j,u_j)
-]
+$
 
 其中：
 
@@ -101,19 +101,19 @@ U_j=(c_j^U,b_j,m_j,p_j,s_j,u_j)
 
 对每个 lesion (U_j)，在所有候选 anatomy (A_i) 上计算：
 
-[
+$
 P(A_i\mid U_j,X)
-]
+$
 
 最终：
 
-[
+$
 \hat A_j=\arg\max_i P(A_i\mid U_j,X)
-]
+$
 
 模型输出应能形成类似：
 
-[
+$
 \text{Lesion}_j
 \rightarrow
 \text{lesion type}
@@ -121,7 +121,7 @@ P(A_i\mid U_j,X)
 \text{3D location}
 \rightarrow
 \text{host anatomy}
-]
+$
 
 的结构化结果。
 
@@ -141,7 +141,7 @@ P(A_i\mid U_j,X)
 
 当前 V7 把主要论证收缩到：
 
-[
+$
 \text{degradation}
 \rightarrow
 \text{geometry failure}
@@ -149,17 +149,17 @@ P(A_i\mid U_j,X)
 \text{binding failure}
 \rightarrow
 \text{relation rescue}
-]
+$
 
 这条链本身仍有研究价值，但不应再作为项目的定义。
 
 原因是用户真正需要的能力在 clean MRI 上也成立：
 
-[
+$
 X\rightarrow A,quad
 X\rightarrow U,quad
 (A,U)\rightarrow R
-]
+$
 
 Relation 不应只因为 segmentation 在 q3 噪声下会错才存在。即使在 clean MRI 中，显式输出 lesion-to-anatomy assignment 仍然是核心任务。
 
@@ -167,21 +167,21 @@ Relation 不应只因为 segmentation 在 q3 噪声下会错才存在。即使�
 
 ### Core
 
-[
+$
 X\rightarrow(A,U)\rightarrow R
-]
+$
 
 ### Robustness study
 
-[
+$
 X^q\rightarrow(A^q,U^q,R^q)
-]
+$
 
 ### Reliability extension
 
-[
+$
 R^q\rightarrow E
-]
+$
 
 也就是说，degradation 是用于检验 structured perception 的干预变量，而不是定义 structured perception 本身。
 
@@ -193,9 +193,9 @@ R^q\rightarrow E
 
 ### Stage I — Anatomy Parsing
 
-[
+$
 X\rightarrow\{A_i\}_{i=1}^{K}
-]
+$
 
 目标：
 
@@ -210,9 +210,9 @@ X\rightarrow\{A_i\}_{i=1}^{K}
 
 ### Stage II — Lesion Parsing
 
-[
+$
 X\rightarrow\{U_j\}_{j=1}^{M}
-]
+$
 
 目标：
 
@@ -231,7 +231,7 @@ X\rightarrow\{U_j\}_{j=1}^{M}
 
 对每个 lesion 单独进行 host competition：
 
-[
+$
 r_{ij}
 =
 f(
@@ -240,7 +240,7 @@ u_j,
 g_{ij},
 l_{ij}
 )
-]
+$
 
 其中：
 
@@ -251,23 +251,23 @@ l_{ij}
 
 然后：
 
-[
+$
 P(host_i\mid U_j)
 =
 \operatorname{softmax}_i h(r_{ij})
-]
+$
 
 推荐使用 **per-lesion host competition**，而不是继续默认当前 `relation.py` 的 global (K\times M) flattened pair Transformer。
 
 原因：当前任务本质上是：
 
-[
+$
 \text{one lesion}
 +
 \text{candidate anatomies}
 \rightarrow
 \text{one host distribution}
-]
+$
 
 首先应证明这一最小问题本身需要 learned relational evidence，再决定是否引入更复杂的全局 graph / Transformer。
 
@@ -277,9 +277,9 @@ P(host_i\mid U_j)
 
 当前 `relation.py` 中：
 
-[
+$
 G_{ij}=(\Delta z,\Delta y,\Delta x,\|\Delta\|,IoA)
-]
+$
 
 过于简单。
 
@@ -315,9 +315,9 @@ segmentation + overlap / nearest structure。
 
 ### Bprior — anatomical prior
 
-[
+$
 P(host\mid lesion\ type,side,coarse\ location)
-]
+$
 
 用来排除“模型只是记住病灶通常出现在哪”的 shortcut。
 
@@ -345,9 +345,9 @@ clean / GT geometry，仅作为上限，不参与 superiority claim。
 
 ### E1. Anatomy perception
 
-[
+$
 X\rightarrow A
-]
+$
 
 指标：
 
@@ -360,9 +360,9 @@ X\rightarrow A
 
 ### E2. Lesion perception
 
-[
+$
 X\rightarrow U
-]
+$
 
 指标：
 
@@ -375,9 +375,9 @@ X\rightarrow U
 
 ### E3. Lesion–anatomy binding
 
-[
+$
 (A,U)\rightarrow R
-]
+$
 
 指标：
 
@@ -402,34 +402,34 @@ X\rightarrow U
 
 因此需要比较：
 
-[
+$
 B_{rel}
 \quad vs.\quad
 B_0,,
 B_{prior},,
 B_{geo+},,
 B_{roi}
-]
+$
 
 推荐继续使用当前 V7 中定义的：
 
-[
+$
 \text{rescue}
 =
 P(B_0\ wrong,B_{rel}\ correct)
-]
+$
 
-[
+$
 \text{harm}
 =
 P(B_0\ correct,B_{rel}\ wrong)
-]
+$
 
-[
+$
 \text{net rescue}
 =
 \text{rescue}-\text{harm}
-]
+$
 
 但应把这个指标从“退化专用指标”提升为 binding module 的通用评价之一。
 
@@ -445,21 +445,21 @@ P(B_0\ correct,B_{rel}\ wrong)
 
 对同一患者：
 
-[
+$
 X\rightarrow(A,U,R)
-]
+$
 
-[
+$
 X^q\rightarrow(A^q,U^q,R^q)
-]
+$
 
 分别追踪三个层面的变化：
 
-[
+$
 \Delta A,quad
 \Delta U,quad
 \Delta R
-]
+$
 
 真正有价值的问题是：
 
@@ -467,15 +467,15 @@ X^q\rightarrow(A^q,U^q,R^q)
 
 例如如果：
 
-[
+$
 Dice(A)\downarrow 2\%
-]
+$
 
 但：
 
-[
+$
 Accuracy(R)\downarrow 15\%
-]
+$
 
 则可以提出比“noise hurts segmentation”更强的科学结论：
 
@@ -491,11 +491,11 @@ Accuracy(R)\downarrow 15\%
 
 需要检验：
 
-[
+$
 \text{corruption-trained robust segmentation}
 \rightarrow
 \text{does it remove most binding failures?}
-]
+$
 
 如果是，则说明 degradation 下的大部分 relation error 源于 perception error。
 
@@ -517,11 +517,11 @@ Accuracy(R)\downarrow 15\%
 
 所以：
 
-[
+$
 \text{return to clean pseudo-reference}
 \neq
 \text{return to clinical truth}
-]
+$
 
 这一判断仍然成立。
 
@@ -562,9 +562,9 @@ Accuracy(R)\downarrow 15\%
 
 只有在 (R) 本身被证明有独立价值以后，再增加：
 
-[
+$
 E_j=P(\hat R_j\ correct\mid X)
-]
+$
 
 或 event-level selective confidence。
 
@@ -614,13 +614,13 @@ E_j=P(\hat R_j\ correct\mid X)
 
 逻辑：
 
-[
+$
 (A_1,\dots,A_K,U_j)
 \rightarrow
 \{r_{1j},\dots,r_{Kj}\}
 \rightarrow
 softmax_i
-]
+$
 
 先验证 per-lesion binding，再决定是否保留全局 RelationModule 作为消融。
 
@@ -705,9 +705,9 @@ robustness 部分再问：
 
 No-Go 不意味着项目失败；此时仍可保留：
 
-[
+$
 X\rightarrow(A,U)
-]
+$
 
 作为 structured anatomy + lesion perception 方向，只是不应继续包装为 relational reasoning。
 
@@ -723,7 +723,7 @@ X\rightarrow(A,U)
 
 因此当前推荐的核心架构可以压缩成一句：
 
-[
+$
 \boxed{
 \text{MRI}
 \rightarrow
@@ -733,6 +733,6 @@ X\rightarrow(A,U)
 \rightarrow
 \text{Explicit Anatomical Binding}
 }
-]
+$
 
 这应作为后续修改 `RESEARCH_PLAN.md`、架构图、模型接口、实验矩阵和论文叙事时的第一原则。
