@@ -90,7 +90,9 @@ def test_gradients_reach_anatomy_lesion_geometry_and_local_evidence(parts):
     u = parts["u"].clone().requires_grad_(True)
     geo = parts["geo"].clone().requires_grad_(True)
     local = torch.randn(parts["B"], parts["K"], parts["M"], 4, requires_grad=True)
-    loss = model(a, u, geo, parts["present"], local)["host_logits"].square().mean()
+    logits = model(a, u, geo, parts["present"], local)["host_logits"]
+    finite = torch.isfinite(logits)
+    loss = logits[finite].square().mean()
     loss.backward()
     for x in (a, u, geo, local):
         assert x.grad is not None and x.grad.abs().sum() > 0
