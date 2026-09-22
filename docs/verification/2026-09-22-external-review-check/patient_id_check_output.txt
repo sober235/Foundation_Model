@@ -1,0 +1,10 @@
+# cmd: PYTHONNOUSERSITE=1 nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-22-external-review-check/patient_id_check.py
+# run: 2026-09-22 16:59:01 at 1b8a33e
+FLAIR files with >=1 box row: 252; with >=1 small-lesion box: 165
+h5 located: 252; missing: 0 []
+attr keys seen: {'acquisition': 252, 'max': 252, 'norm': 252, 'patient_id': 252}
+files with a patient_id attr: 252/252
+unique patient_id among box FLAIR files: 252; files-per-patient histogram: {1: 252}
+patients with volumes in both multicoil_train and multicoil_val: 0
+small-lesion FLAIR volumes: 165 -> unique patients: 165; multi-volume patients among them: 0
+example patient_id value (format check): 'dcfc3e70496246a709dab23831262b60589f4383d6e05bf5559731ea8d80bb1f'
