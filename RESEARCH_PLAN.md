@@ -16,9 +16,9 @@ v2.5 吸收 PR #5 review (`pullrequestreview-5274417275`) 及后续复核。第�
 4. **Gate R1**：固定同一 A/U、同一 geometry、同一 split，比较 B0 / Bprior / Bgeo+ / B1 / B2 / B3 / B4 / B5；
 5. **Robustness / E**：只有 learned R 在 Level R 上有独立价值后，再研究 ΔA / ΔU / ΔR、robust perception、relation rescue 与 selective reliability。
 
-**重要语义修正**：PR #4 当前 `HostCompetitionHead` 按实现属于 **B1 independent candidate MLP prototype**，不是最终 B3。真正 B3 必须在同一 lesion 的 K 个 host candidates 之间显式建模 candidate interaction；Bgeo+ 与 B1–B4 必须共享同一套扩展 geometry。
+**重要语义修正**：PR #4 曾把 B1 命名为 `HostCompetitionHead`；v2.5 已删除该误导别名，正式名称为 `IndependentCandidateHead`。真正 B3 将单独实现 `CandidateCompetitionHead`，只在同一 lesion 的 K 个 host candidates 之间显式建模 candidate interaction；Bgeo+ 与 B1–B4 必须共享同一套扩展 geometry。
 
-**以下 v2.1/v2.2 决策保留为历史记录，不覆盖 v2.4 的执行顺序。** 当时用户确认的 1A / 2A / 3B / 4B 包括 U_Q 独立全局退化分支、跨器官统一本体、E* 门控和局部 E；这些模块在 v2.4 中均降为 Gate R 之后的 robustness / reliability 扩展。历史架构图仍见 [v2.1 PNG](docs/figures/anatobind_plan_v2_1_architecture.png) / [SVG](docs/figures/anatobind_plan_v2_1_architecture.svg)。
+**以下 v2.1/v2.2 决策保留为历史记录，不覆盖 v2.5 的执行顺序。** 当时用户确认的 1A / 2A / 3B / 4B 包括 U_Q 独立全局退化分支、跨器官统一本体、E* 门控和局部 E；这些模块在 v2.5 中均降为 Gate R1 之后的 robustness / reliability 扩展。历史架构图仍见 [v2.1 PNG](docs/figures/anatobind_plan_v2_1_architecture.png) / [SVG](docs/figures/anatobind_plan_v2_1_architecture.svg)。
 
 v2.0 是两份前稿的合并稿:
 
