@@ -16,7 +16,7 @@
 - 解释器一律 `PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python`；nnU-Net 命令前先 `source scripts/nnunet_env.sh`（它导出 `nnUNet_raw/preprocessed/results`、`nnUNet_n_proc_DA=8`、`PYTHONNOUSERSITE=1` 并把 nvgen 放进 PATH）。
 - 测试一律 `PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`（基线 311 passed，约 35 s；每个任务结束时全套必须全过）。
 - 分支 `build/aur-system`（已从 main 开出）。提交作者用仓库本地身份（Congcong Liu），消息英文、句首大写，**不写任何 AI trailer**。
-- GPU 只用 `GPUS=(0 1 4 6)`（用户可改此一处），每卡一个 nnU-Net 训练，`CUDA_VISIBLE_DEVICES` 钉死，后台用 `setsid nohup … &`，日志进 `logs/`（未跟踪）。CPU 任务 `nice -n 19`，总线程 ≤ 48。
+- GPU 只用 0、1、4、6 四张 A800（用户可改；zsh 数组从 1 起数，命令里写显式卡号，不用数组），每卡一个 nnU-Net 训练，`CUDA_VISIBLE_DEVICES` 钉死，后台用 `setsid nohup … &`，日志进 `logs/`（未跟踪）。CPU 任务 `nice -n 19`，总线程 ≤ 48。
 - 标签号与坐标帧：nnU-Net 病灶标签 `1 cartilage_lesion / 2 meniscal_tear / 3 ligament_tear / 4 effusion`；查表类号 `dataset_v2.CLASSES`（`Meniscal Tear 0 / Cartilage Lesion 1 / Effusion 2 / Ligament Tear 3`）；两者的转换只在 `anatobind/nnunet/lesion_labels.py` 做。**本计划的新代码全部在导出帧 (X, Y, Z) = (256, 256, 160) 工作**（与 `seg.nii.gz`、`boxes.csv` 的 `x0..z1` 同帧），不用 `to_model_frame`。间距从 `seg.nii.gz` 头读，(X, Y, Z) 顺序约 (0.625, 0.625, 0.8) mm。
 - 匹配：3D IoU ≥ 0.1，一对一（`anatobind.eval.matching.match`）。工作点：每卷假阳 ≤ 2 下灵敏度最高的分数阈值。**达标线（止损门）：干净视图、大类正确的灵敏度 ≥ 0.5 且每卷假阳 ≤ 2。Task 7 不过就停下来交用户，不做 Task 8–10。**
 - 任何数字都要附可粘贴命令与原始输出（样板 `docs/verification/2026-09-08/REPORT.md`）；以伪标签或重叠率为参照的数字标 `NOT_EVIDENCE`。
@@ -413,10 +413,10 @@ grep -o '"patch_size": \[[^]]*\]' $nnUNet_preprocessed/Dataset902_SKMTEAlesion/n
 ```bash
 cd /data0/congcong/code/Project_Doing/foundation_model
 source scripts/nnunet_env.sh
-GPUS=(0 1 4 6)
-for f in 0 1 2 3; do
-  CUDA_VISIBLE_DEVICES=${GPUS[$f]} setsid nohup nnUNetv2_train 902 3d_fullres $f -tr nnUNetTrainer_250epochs --npz \
-      > logs/nnunet902_fold$f.log 2>&1 &
+# zsh arrays are 1-indexed, so the fold -> GPU map is written out explicitly (fold 0 lost its GPU on 2026-09-23 with ${GPUS[$f]})
+for pair in 0:6 1:0 2:1 3:4; do f=${pair%%:*}; g=${pair##*:}
+  CUDA_VISIBLE_DEVICES=$g setsid nohup nnUNetv2_train 902 3d_fullres $f -tr nnUNetTrainer_250epochs --npz \
+      > logs/nnunet902_fold$f.log 2>&1 < /dev/null &
 done
 sleep 120; nvidia-smi --query-compute-apps=pid,used_memory --format=csv    # 期望 4 个进程
 ```
@@ -1079,7 +1079,8 @@ def load_scan(a, scan, fold, view, missing):
     seg = np.asanyarray(seg_img.dataobj).astype(np.uint8)
     dice = {k: 2.0 * np.logical_and(anatomy == k, seg == k).sum() / ((anatomy == k).sum() + (seg == k).sum())
             for k in range(1, 7) if (seg == k).any()}
-    return {"scan": scan, "fold": fold, "view": view, "gt": read_boxes_xyz(a.export_root / scan / "boxes.csv"),
+    gt = [{**r, "family": r["supercategory"]} for r in read_boxes_xyz(a.export_root / scan / "boxes.csv")]  # metrics key on "family"
+    return {"scan": scan, "fold": fold, "view": view, "gt": gt,
             "dets": dets, "index": LabelIndex(anatomy, spacing), "dice": dice}
 
 
