@@ -58,3 +58,30 @@ def b0_host(index, box, cls):
     if ioa[best] > 0:
         return best
     return min(cands, key=lambda label: index.distance_mm(b, label))
+
+
+# --- set-valued host (spec 2026-09-23 §3.3, decision N4) ------------------------------------------
+SIDE_OF_LABEL = {1: "single", 2: "single", 3: "medial", 4: "lateral", 5: "medial", 6: "lateral"}
+HOST_NAMES = {1: "patellar_cartilage", 2: "femoral_cartilage", 3: "tibial_cartilage_medial",
+              4: "tibial_cartilage_lateral", 5: "meniscus_medial", 6: "meniscus_lateral"}
+
+
+def host_fractions(index, box, cls):
+    """Fraction of the box's voxels inside each class candidate present in the map."""
+    if cls in (EFFUSION, LIGAMENT):
+        return {}
+    b = clip_box(box, index.label_map.shape)
+    sub = index.label_map[b[0]:b[3], b[1]:b[4], b[2]:b[5]]
+    vol = max(sub.size, 1)
+    return {int(label): float((sub == label).sum()) / vol for label in CANDIDATES[cls] if index.present(label)}
+
+
+def describe_host(index, box, cls):
+    host = b0_host(index, box, cls)
+    fractions = host_fractions(index, box, cls)
+    if host in (NONE, UNKNOWN):
+        return {"host_label": None, "host_name": host, "side": "-", "host_fractions": fractions}
+    if host is None:
+        return {"host_label": None, "host_name": "", "side": "-", "host_fractions": fractions}
+    return {"host_label": int(host), "host_name": HOST_NAMES[int(host)], "side": SIDE_OF_LABEL[int(host)],
+            "host_fractions": fractions}
