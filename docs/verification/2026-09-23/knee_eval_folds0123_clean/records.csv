@@ -1,0 +1,365 @@
+fold,scan,view,ann_id,layer,gt_family,tissue_id,host_label,host_side,matched,det_score,det_family,iou,pred_host_label,pred_side,pred_host_fractions,bucket,side_correct,given_host_label,given_side,given_bucket,given_side_correct
+3,MTR_001,clean,57,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+2,MTR_005,clean,60,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+2,MTR_005,clean,61,in_seg,Cartilage Lesion,5,1,single,1,0.8667,Cartilage Lesion,0.3776,1,single,"{""1"": 0.1889, ""2"": 0.1399, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+1,MTR_006,clean,62,in_seg,Meniscal Tear,1,5,medial,1,0.87,Meniscal Tear,0.3369,5,medial,"{""5"": 0.2768, ""6"": 0.0}",correct,1,5,medial,correct,1
+1,MTR_006,clean,63,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+1,MTR_006,clean,64,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+1,MTR_006,clean,65,in_seg,Cartilage Lesion,4,2,single,1,0.7786,Cartilage Lesion,0.327,2,single,"{""1"": 0.0, ""2"": 0.0907, ""3"": 0.068, ""4"": 0.0}",correct,,2,single,correct,
+1,MTR_006,clean,66,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_006,clean,67,effusion,Effusion,-1,,none,1,0.8479,Effusion,0.7257,,-,{},,,,-,,
+2,MTR_008,clean,58,ligament,Ligament Tear,3,,none,0,,,,,-,{},,,,-,,
+2,MTR_008,clean,59,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_008,clean,60,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+0,MTR_015,clean,33,effusion,Effusion,-1,,none,1,0.8617,Effusion,0.6634,,-,{},,,,-,,
+0,MTR_015,clean,34,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_015,clean,35,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+0,MTR_015,clean,36,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_015,clean,37,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_016,clean,61,effusion,Effusion,-1,,none,1,0.8157,Effusion,0.7872,,-,{},,,,-,,
+3,MTR_016,clean,62,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_016,clean,63,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_018,clean,39,effusion,Effusion,-1,,none,1,0.7898,Effusion,0.2779,,-,{},,,,-,,
+3,MTR_019,clean,226,in_seg,Meniscal Tear,1,5,medial,1,0.8303,Meniscal Tear,0.2758,5,medial,"{""5"": 0.7038, ""6"": 0.0}",correct,1,5,medial,correct,1
+3,MTR_019,clean,227,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+3,MTR_019,clean,228,effusion,Effusion,-1,,none,1,0.8371,Effusion,0.2975,,-,{},,,,-,,
+1,MTR_020,clean,64,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_020,clean,65,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_020,clean,66,in_seg,Cartilage Lesion,4,2,single_no_overlap,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_020,clean,67,in_seg,Cartilage Lesion,4,2,single_no_overlap,0,,,,,-,{},miss,,4,lateral,wrong_host,
+0,MTR_023,clean,70,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_023,clean,71,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_023,clean,72,ligament,Ligament Tear,3,,none,0,,,,,-,{},,,,-,,
+0,MTR_023,clean,74,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_026,clean,99,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_026,clean,100,effusion,Effusion,-1,,none,1,0.8415,Effusion,0.3808,,-,{},,,,-,,
+3,MTR_030,clean,68,in_seg,Meniscal Tear,1,6,lateral,1,0.8317,Meniscal Tear,0.2624,6,lateral,"{""5"": 0.0, ""6"": 0.5755}",correct,1,6,lateral,correct,1
+3,MTR_030,clean,69,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+3,MTR_030,clean,70,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+3,MTR_030,clean,71,ligament,Ligament Tear,2,,none,1,0.8185,Ligament Tear,0.141,,-,{},,,,-,,
+3,MTR_030,clean,72,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+3,MTR_030,clean,73,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_030,clean,74,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_030,clean,75,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+3,MTR_030,clean,76,in_seg,Cartilage Lesion,5,1,single,1,0.8134,Cartilage Lesion,0.5392,1,single,"{""1"": 0.2579, ""2"": 0.0558, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+0,MTR_033,clean,68,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_033,clean,69,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_033,clean,70,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_034,clean,77,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_034,clean,78,effusion,Effusion,-1,,none,1,0.8893,Effusion,0.8332,,-,{},,,,-,,
+2,MTR_040,clean,71,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_040,clean,72,effusion,Effusion,-1,,none,1,0.8613,Effusion,0.2449,,-,{},,,,-,,
+2,MTR_040,clean,73,in_seg,Meniscal Tear,1,5,medial,1,0.7637,Cartilage Lesion,0.2176,2,single,"{""1"": 0.0, ""2"": 0.0916, ""3"": 0.0193, ""4"": 0.0077}",wrong_class,0,5,medial,correct,1
+2,MTR_040,clean,74,in_seg,Meniscal Tear,1,,unresolved,0,,,,,-,{},miss,,5,medial,correct,
+1,MTR_044,clean,75,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_044,clean,76,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_044,clean,77,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_044,clean,78,in_seg,Cartilage Lesion,5,1,single,1,0.8148,Cartilage Lesion,0.2355,1,single,"{""1"": 0.1125, ""2"": 0.0057, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+1,MTR_044,clean,79,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_045,clean,101,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+3,MTR_045,clean,102,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+3,MTR_045,clean,103,in_seg,Cartilage Lesion,5,1,single,1,0.8161,Cartilage Lesion,0.2032,1,single,"{""1"": 0.3698, ""2"": 0.0, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+3,MTR_045,clean,104,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_046,clean,18,effusion,Effusion,-1,,none,1,0.8574,Cartilage Lesion,0.1963,1,single,"{""1"": 0.2931, ""2"": 0.1042, ""3"": 0.0, ""4"": 0.0}",,,,-,,
+3,MTR_046,clean,19,effusion,Effusion,-1,,none,1,0.8294,Effusion,0.1668,,-,{},,,,-,,
+3,MTR_046,clean,20,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_046,clean,21,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_047,clean,28,effusion,Effusion,-1,,none,1,0.7908,Effusion,0.1853,,-,{},,,,-,,
+2,MTR_047,clean,30,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_048,clean,79,effusion,Effusion,-1,,none,1,0.8104,Effusion,0.7952,,-,{},,,,-,,
+2,MTR_049,clean,229,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+2,MTR_049,clean,230,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+2,MTR_049,clean,231,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_049,clean,232,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_049,clean,233,effusion,Effusion,-1,,none,1,0.7958,Effusion,0.3635,,-,{},,,,-,,
+0,MTR_052,clean,80,in_seg,Meniscal Tear,1,,unresolved,0,,,,,-,{},miss,,6,lateral,correct,
+0,MTR_052,clean,81,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_052,clean,82,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_052,clean,83,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,2,single,wrong_host,
+0,MTR_052,clean,84,effusion,Effusion,-1,,none,1,0.8706,Effusion,0.607,,-,{},,,,-,,
+1,MTR_053,clean,103,in_seg,Meniscal Tear,1,5,medial,1,0.8203,Meniscal Tear,0.3956,5,medial,"{""5"": 0.3116, ""6"": 0.0}",correct,1,5,medial,correct,1
+1,MTR_053,clean,104,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_053,clean,105,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+1,MTR_053,clean,106,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+1,MTR_053,clean,107,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+1,MTR_053,clean,108,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_053,clean,109,effusion,Effusion,-1,,none,1,0.7801,Effusion,0.376,,-,{},,,,-,,
+0,MTR_056,clean,168,in_seg,Meniscal Tear,1,5,medial,1,0.887,Meniscal Tear,0.4368,5,medial,"{""5"": 0.7153, ""6"": 0.0}",correct,1,5,medial,correct,1
+0,MTR_056,clean,169,in_seg,Cartilage Lesion,5,1,single,1,0.8312,Cartilage Lesion,0.2788,1,single,"{""1"": 0.3709, ""2"": 0.0436, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+0,MTR_056,clean,170,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_056,clean,171,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_056,clean,172,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_057,clean,51,effusion,Effusion,-1,,none,1,0.859,Effusion,0.5162,,-,{},,,,-,,
+2,MTR_057,clean,52,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_057,clean,53,in_seg,Cartilage Lesion,4,2,single,1,0.7848,Cartilage Lesion,0.1015,1,single,"{""1"": 0.0523, ""2"": 0.0485, ""3"": 0.0, ""4"": 0.0}",wrong_host,,2,single,correct,
+0,MTR_061,clean,234,in_seg,Cartilage Lesion,5,1,single,1,0.808,Cartilage Lesion,0.2552,1,single,"{""1"": 0.1869, ""2"": 0.0248, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+0,MTR_061,clean,235,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_062,clean,80,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_062,clean,81,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_062,clean,82,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_062,clean,83,effusion,Effusion,-1,,none,1,0.8747,Effusion,0.3725,,-,{},,,,-,,
+2,MTR_062,clean,84,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_065,clean,85,in_seg,Meniscal Tear,1,5,medial,1,0.8604,Meniscal Tear,0.1709,5,medial,"{""5"": 0.38, ""6"": 0.0}",correct,1,5,medial,correct,1
+3,MTR_065,clean,86,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_065,clean,87,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_065,clean,88,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+3,MTR_065,clean,89,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_066,clean,90,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_066,clean,91,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+2,MTR_066,clean,92,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+2,MTR_066,clean,93,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_066,clean,94,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_066,clean,95,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_066,clean,96,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_066,clean,97,effusion,Effusion,-1,,none,1,0.8504,Effusion,0.3386,,-,{},,,,-,,
+2,MTR_066,clean,98,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_069,clean,31,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+0,MTR_069,clean,32,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_069,clean,33,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_071,clean,34,in_seg,Cartilage Lesion,5,1,single,1,0.7595,Cartilage Lesion,0.3046,1,single,"{""1"": 0.3808, ""2"": 0.0, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+0,MTR_071,clean,35,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_077,clean,110,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_079,clean,99,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+2,MTR_079,clean,100,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+2,MTR_079,clean,101,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_079,clean,102,effusion,Effusion,-1,,none,1,0.866,Effusion,0.7118,,-,{},,,,-,,
+3,MTR_080,clean,103,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+3,MTR_080,clean,104,effusion,Effusion,-1,,none,1,0.8958,Effusion,0.8261,,-,{},,,,-,,
+3,MTR_083,clean,11,effusion,Effusion,-1,,none,1,0.8573,Effusion,0.4538,,-,{},,,,-,,
+3,MTR_083,clean,12,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_083,clean,13,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+3,MTR_084,clean,236,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+3,MTR_084,clean,237,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_084,clean,238,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_093,clean,239,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_094,clean,173,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,3,medial,wrong_host,
+3,MTR_094,clean,174,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,2,single,wrong_host,0
+3,MTR_094,clean,175,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,2,single,wrong_host,
+3,MTR_094,clean,176,effusion,Effusion,-1,,none,1,0.8597,Effusion,0.6183,,-,{},,,,-,,
+3,MTR_094,clean,177,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_095,clean,79,in_seg,Cartilage Lesion,4,2,single_no_overlap,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_095,clean,80,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_096,clean,105,in_seg,Cartilage Lesion,5,1,single,1,0.8126,Cartilage Lesion,0.1172,1,single,"{""1"": 0.3743, ""2"": 0.0375, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+3,MTR_097,clean,81,effusion,Effusion,-1,,none,1,0.8462,Effusion,0.3304,,-,{},,,,-,,
+3,MTR_097,clean,82,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_097,clean,83,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_097,clean,84,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_097,clean,85,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_097,clean,86,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+3,MTR_097,clean,87,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_098,clean,111,in_seg,Meniscal Tear,1,5,medial,1,0.8235,Meniscal Tear,0.3741,5,medial,"{""5"": 0.8014, ""6"": 0.0}",correct,1,5,medial,correct,1
+1,MTR_098,clean,112,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+1,MTR_098,clean,113,effusion,Effusion,-1,,none,1,0.7688,Effusion,0.5258,,-,{},,,,-,,
+2,MTR_099,clean,106,ligament,Ligament Tear,2,,none,1,0.7964,Ligament Tear,0.3673,,-,{},,,,-,,
+2,MTR_099,clean,107,effusion,Effusion,-1,,none,1,0.8378,Effusion,0.8139,,-,{},,,,-,,
+1,MTR_100,clean,178,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_101,clean,240,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+3,MTR_101,clean,241,in_seg,Cartilage Lesion,5,1,single_no_overlap,0,,,,,-,{},miss,,2,single,wrong_host,
+3,MTR_101,clean,242,effusion,Effusion,-1,,none,1,0.8169,Effusion,0.1381,,-,{},,,,-,,
+0,MTR_104,clean,1,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+0,MTR_104,clean,2,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_104,clean,3,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_105,clean,4,effusion,Effusion,-1,,none,1,0.8566,Effusion,0.5916,,-,{},,,,-,,
+1,MTR_105,clean,5,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_105,clean,6,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+1,MTR_105,clean,7,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_110,clean,14,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_110,clean,15,in_seg,Meniscal Tear,1,,unresolved,0,,,,,-,{},miss,,5,medial,correct,
+0,MTR_110,clean,16,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_110,clean,17,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,2,single,wrong_host,
+0,MTR_110,clean,18,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_112,clean,36,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_112,clean,37,in_seg,Meniscal Tear,1,5,medial,1,0.9029,Meniscal Tear,0.2065,5,medial,"{""5"": 0.5414, ""6"": 0.0}",correct,1,5,medial,correct,1
+2,MTR_112,clean,38,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_112,clean,39,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_112,clean,40,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_112,clean,41,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_112,clean,42,effusion,Effusion,-1,,none,1,0.779,Effusion,0.1548,,-,{},,,,-,,
+2,MTR_113,clean,88,effusion,Effusion,-1,,none,1,0.8013,Effusion,0.6041,,-,{},,,,-,,
+1,MTR_115,clean,85,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+1,MTR_115,clean,86,effusion,Effusion,-1,,none,1,0.7563,Effusion,0.4311,,-,{},,,,-,,
+1,MTR_115,clean,87,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_124,clean,188,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+0,MTR_126,clean,109,ligament,Ligament Tear,2,,none,1,0.7906,Ligament Tear,0.3685,,-,{},,,,-,,
+0,MTR_126,clean,110,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_126,clean,111,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_126,clean,112,effusion,Effusion,-1,,none,1,0.8719,Effusion,0.7384,,-,{},,,,-,,
+0,MTR_129,clean,93,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+0,MTR_129,clean,94,ligament,Ligament Tear,3,,none,0,,,,,-,{},,,,-,,
+2,MTR_130,clean,88,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_133,clean,1,effusion,Effusion,-1,,none,1,0.8963,Effusion,0.4837,,-,{},,,,-,,
+1,MTR_133,clean,2,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_133,clean,3,ligament,Ligament Tear,2,,none,1,0.8571,Ligament Tear,0.1157,,-,{},,,,-,,
+2,MTR_140,clean,114,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_140,clean,115,in_seg,Meniscal Tear,1,5,medial,1,0.7953,Meniscal Tear,0.1026,5,medial,"{""5"": 0.9217, ""6"": 0.0}",correct,1,5,medial,correct,1
+2,MTR_140,clean,116,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+2,MTR_140,clean,117,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_140,clean,118,effusion,Effusion,-1,,none,1,0.8648,Effusion,0.7099,,-,{},,,,-,,
+0,MTR_142,clean,119,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+0,MTR_142,clean,120,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_144,clean,113,ligament,Ligament Tear,3,,none,0,,,,,-,{},,,,-,,
+2,MTR_144,clean,114,in_seg,Cartilage Lesion,5,1,single,1,0.8774,Cartilage Lesion,0.3943,1,single,"{""1"": 0.2202, ""2"": 0.0952, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+3,MTR_145,clean,47,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+3,MTR_145,clean,49,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_145,clean,50,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_149,clean,4,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+0,MTR_152,clean,89,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_152,clean,90,in_seg,Cartilage Lesion,5,1,single,1,0.8486,Cartilage Lesion,0.5769,1,single,"{""1"": 0.3999, ""2"": 0.0162, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+0,MTR_152,clean,91,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_152,clean,92,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_152,clean,93,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_154,clean,43,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_154,clean,44,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+2,MTR_154,clean,45,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_154,clean,46,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+2,MTR_156,clean,115,in_seg,Meniscal Tear,1,6,lateral,1,0.8454,Meniscal Tear,0.1258,6,lateral,"{""5"": 0.0, ""6"": 0.5141}",correct,1,6,lateral,correct,1
+2,MTR_156,clean,116,in_seg,Meniscal Tear,1,5,medial,1,0.8364,Meniscal Tear,0.3955,5,medial,"{""5"": 0.7447, ""6"": 0.0}",correct,1,5,medial,correct,1
+2,MTR_156,clean,118,in_seg,Cartilage Lesion,4,2,single,1,0.7696,Cartilage Lesion,0.4223,2,single,"{""1"": 0.0, ""2"": 0.3796, ""3"": 0.1157, ""4"": 0.0}",correct,,2,single,correct,
+2,MTR_156,clean,119,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_156,clean,120,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+2,MTR_156,clean,121,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_156,clean,122,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_156,clean,123,effusion,Effusion,-1,,none,1,0.871,Effusion,0.7837,,-,{},,,,-,,
+1,MTR_158,clean,124,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_158,clean,125,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+1,MTR_158,clean,126,in_seg,Cartilage Lesion,5,1,single,1,0.762,Cartilage Lesion,0.1194,1,single,"{""1"": 0.3781, ""2"": 0.1762, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+1,MTR_158,clean,127,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+1,MTR_158,clean,128,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_158,clean,129,in_seg,Cartilage Lesion,4,2,single,1,0.8402,Meniscal Tear,0.175,5,medial,"{""5"": 0.1558, ""6"": 0.0}",wrong_class,,2,single,correct,
+1,MTR_158,clean,130,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_159,clean,38,effusion,Effusion,-1,,none,1,0.8174,Effusion,0.4036,,-,{},,,,-,,
+1,MTR_161,clean,192,in_seg,Cartilage Lesion,5,1,single,1,0.7679,Cartilage Lesion,0.5418,1,single,"{""1"": 0.2153, ""2"": 0.0136, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+1,MTR_161,clean,193,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_163,clean,132,in_seg,Meniscal Tear,1,6,lateral,1,0.8338,Cartilage Lesion,0.1422,2,single,"{""1"": 0.0, ""2"": 0.1963, ""3"": 0.0, ""4"": 0.1613}",wrong_class,0,6,lateral,correct,1
+0,MTR_163,clean,133,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+0,MTR_163,clean,134,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_163,clean,135,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,2,single,wrong_host,
+0,MTR_163,clean,136,effusion,Effusion,-1,,none,1,0.8781,Effusion,0.5798,,-,{},,,,-,,
+1,MTR_164,clean,89,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+1,MTR_164,clean,90,effusion,Effusion,-1,,none,1,0.8358,Effusion,0.4495,,-,{},,,,-,,
+1,MTR_164,clean,91,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+1,MTR_164,clean,92,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_173,clean,1,effusion,Effusion,-1,,none,1,0.8581,Effusion,0.2719,,-,{},,,,-,,
+1,MTR_176,clean,2,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+1,MTR_176,clean,3,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_176,clean,4,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+2,MTR_177,clean,24,effusion,Effusion,-1,,none,1,0.8673,Effusion,0.2873,,-,{},,,,-,,
+2,MTR_177,clean,25,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_179,clean,9,effusion,Effusion,-1,,none,1,0.8585,Effusion,0.5314,,-,{},,,,-,,
+3,MTR_179,clean,10,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+3,MTR_183,clean,137,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+3,MTR_183,clean,138,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_183,clean,139,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_183,clean,140,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+3,MTR_183,clean,141,in_seg,Cartilage Lesion,5,1,single,1,0.8329,Effusion,0.3515,,-,{},wrong_class,,1,single,correct,
+3,MTR_184,clean,47,in_seg,Meniscal Tear,1,5,medial,1,0.8625,Meniscal Tear,0.4771,5,medial,"{""5"": 0.1014, ""6"": 0.0}",correct,1,5,medial,correct,1
+3,MTR_184,clean,48,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_184,clean,49,in_seg,Meniscal Tear,1,6,lateral,1,0.7891,Meniscal Tear,0.2214,6,lateral,"{""5"": 0.0, ""6"": 0.3109}",correct,1,6,lateral,correct,1
+3,MTR_184,clean,50,ligament,Ligament Tear,2,,none,1,0.7793,Ligament Tear,0.46,,-,{},,,,-,,
+3,MTR_184,clean,51,in_seg,Cartilage Lesion,4,2,single,1,0.8504,Cartilage Lesion,0.5328,2,single,"{""1"": 0.0, ""2"": 0.0655, ""3"": 0.0622, ""4"": 0.0}",correct,,2,single,correct,
+3,MTR_184,clean,52,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+3,MTR_184,clean,53,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_184,clean,54,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+3,MTR_184,clean,55,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_184,clean,56,effusion,Effusion,-1,,none,1,0.8704,Effusion,0.6869,,-,{},,,,-,,
+1,MTR_188,clean,8,effusion,Effusion,-1,,none,1,0.8736,Effusion,0.3657,,-,{},,,,-,,
+1,MTR_188,clean,9,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+1,MTR_188,clean,10,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_188,clean,11,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_188,clean,12,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_189,clean,55,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_189,clean,56,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_190,clean,142,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+0,MTR_190,clean,143,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_190,clean,144,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_190,clean,145,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_194,clean,11,effusion,Effusion,-1,,none,1,0.8297,Effusion,0.1844,,-,{},,,,-,,
+3,MTR_194,clean,12,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_194,clean,13,in_seg,Meniscal Tear,1,6,lateral,1,0.8312,Meniscal Tear,0.2814,6,lateral,"{""5"": 0.0, ""6"": 0.0484}",correct,1,6,lateral,correct,1
+3,MTR_194,clean,14,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+3,MTR_194,clean,15,in_seg,Cartilage Lesion,6,4,lateral,1,0.8231,Cartilage Lesion,0.1653,2,single,"{""1"": 0.0, ""2"": 0.1317, ""3"": 0.0, ""4"": 0.0586}",wrong_host,0,4,lateral,correct,1
+3,MTR_194,clean,16,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_194,clean,17,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_196,clean,13,effusion,Effusion,-1,,none,1,0.7559,Effusion,0.5246,,-,{},,,,-,,
+2,MTR_196,clean,14,in_seg,Meniscal Tear,1,5,medial,1,0.8789,Meniscal Tear,0.7112,5,medial,"{""5"": 0.7084, ""6"": 0.0}",correct,1,5,medial,correct,1
+2,MTR_196,clean,15,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+2,MTR_196,clean,16,in_seg,Cartilage Lesion,4,2,single,1,0.8511,Cartilage Lesion,0.3462,2,single,"{""1"": 0.0, ""2"": 0.1527, ""3"": 0.0, ""4"": 0.0}",correct,,2,single,correct,
+1,MTR_198,clean,17,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_199,clean,28,effusion,Effusion,-1,,none,1,0.8594,Effusion,0.5678,,-,{},,,,-,,
+3,MTR_200,clean,146,in_seg,Cartilage Lesion,6,4,lateral,1,0.8114,Effusion,0.127,,-,{},wrong_class,0,4,lateral,correct,1
+2,MTR_201,clean,147,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_201,clean,148,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_201,clean,149,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_201,clean,150,in_seg,Meniscal Tear,1,5,medial,1,0.832,Meniscal Tear,0.2715,5,medial,"{""5"": 0.3383, ""6"": 0.0}",correct,1,5,medial,correct,1
+2,MTR_201,clean,151,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+2,MTR_201,clean,152,ligament,Ligament Tear,2,,none,1,0.7502,Ligament Tear,0.37,,-,{},,,,-,,
+2,MTR_201,clean,153,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_201,clean,154,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+2,MTR_201,clean,155,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_201,clean,156,in_seg,Cartilage Lesion,4,2,single,1,0.8058,Meniscal Tear,0.2764,6,lateral,"{""5"": 0.0, ""6"": 0.0869}",wrong_class,,2,single,correct,
+2,MTR_201,clean,157,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_201,clean,158,effusion,Effusion,-1,,none,1,0.817,Effusion,0.1641,,-,{},,,,-,,
+1,MTR_204,clean,159,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_208,clean,23,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+3,MTR_208,clean,24,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_208,clean,25,in_seg,Cartilage Lesion,4,2,single_no_overlap,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_209,clean,160,effusion,Effusion,-1,,none,1,0.8374,Cartilage Lesion,0.1033,1,single,"{""1"": 0.2831, ""2"": 0.0392, ""3"": 0.0, ""4"": 0.0}",,,,-,,
+1,MTR_210,clean,98,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+1,MTR_210,clean,99,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_211,clean,26,effusion,Effusion,-1,,none,1,0.7898,Cartilage Lesion,0.1435,1,single,"{""1"": 0.2453, ""2"": 0.0447, ""3"": 0.0, ""4"": 0.0}",,,,-,,
+0,MTR_211,clean,27,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_211,clean,28,in_seg,Meniscal Tear,1,5,medial,1,0.8595,Meniscal Tear,0.1615,5,medial,"{""5"": 0.4589, ""6"": 0.0}",correct,1,5,medial,correct,1
+3,MTR_212,clean,29,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_212,clean,30,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_212,clean,31,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_218,clean,25,effusion,Effusion,-1,,none,1,0.8307,Effusion,0.4998,,-,{},,,,-,,
+1,MTR_218,clean,26,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_218,clean,27,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+1,MTR_219,clean,18,effusion,Effusion,-1,,none,1,0.8442,Effusion,0.7003,,-,{},,,,-,,
+1,MTR_219,clean,19,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_219,clean,20,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+2,MTR_220,clean,5,effusion,Effusion,-1,,none,1,0.8651,Effusion,0.4914,,-,{},,,,-,,
+2,MTR_220,clean,6,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+2,MTR_220,clean,7,ligament,Ligament Tear,3,,none,0,,,,,-,{},,,,-,,
+2,MTR_220,clean,8,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+2,MTR_220,clean,9,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_224,clean,29,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_224,clean,30,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_224,clean,31,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+1,MTR_224,clean,32,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+1,MTR_224,clean,33,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+3,MTR_225,clean,32,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+1,MTR_227,clean,34,effusion,Effusion,-1,,none,1,0.8652,Cartilage Lesion,0.1564,1,single,"{""1"": 0.4036, ""2"": 0.0438, ""3"": 0.0, ""4"": 0.0}",,,,-,,
+1,MTR_227,clean,35,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+1,MTR_227,clean,36,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_229,clean,161,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_229,clean,162,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+0,MTR_230,clean,203,in_seg,Meniscal Tear,1,5,medial,1,0.7867,Cartilage Lesion,0.3179,2,single,"{""1"": 0.0, ""2"": 0.1786, ""3"": 0.0597, ""4"": 0.0}",wrong_class,0,5,medial,correct,1
+0,MTR_230,clean,204,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+0,MTR_230,clean,205,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+0,MTR_230,clean,206,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+0,MTR_230,clean,207,ligament,Ligament Tear,2,,none,1,0.7604,Ligament Tear,0.4067,,-,{},,,,-,,
+0,MTR_230,clean,208,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+0,MTR_230,clean,209,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+0,MTR_230,clean,210,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+0,MTR_230,clean,211,in_seg,Cartilage Lesion,6,4,lateral,0,,,,,-,{},miss,,4,lateral,correct,1
+0,MTR_230,clean,212,effusion,Effusion,-1,,none,1,0.8136,Effusion,0.2266,,-,{},,,,-,,
+0,MTR_230,clean,213,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+1,MTR_233,clean,214,in_seg,Cartilage Lesion,5,1,single,1,0.779,Cartilage Lesion,0.4029,1,single,"{""1"": 0.3881, ""2"": 0.0414, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+0,MTR_236,clean,215,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+0,MTR_236,clean,216,in_seg,Cartilage Lesion,5,1,single,1,0.7523,Cartilage Lesion,0.214,1,single,"{""1"": 0.4907, ""2"": 0.0211, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
+0,MTR_236,clean,217,effusion,Effusion,-1,,none,0,,,,,-,{},,,,-,,
+3,MTR_237,clean,39,effusion,Effusion,-1,,none,1,0.8872,Effusion,0.8146,,-,{},,,,-,,
+3,MTR_237,clean,40,ligament,Ligament Tear,2,,none,0,,,,,-,{},,,,-,,
+3,MTR_237,clean,41,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+3,MTR_237,clean,42,in_seg,Cartilage Lesion,6,3,medial,0,,,,,-,{},miss,,3,medial,correct,1
+1,MTR_240,clean,43,effusion,Effusion,-1,,none,1,0.8121,Effusion,0.6988,,-,{},,,,-,,
+1,MTR_240,clean,44,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_240,clean,45,in_seg,Cartilage Lesion,5,1,single,0,,,,,-,{},miss,,1,single,correct,
+1,MTR_240,clean,46,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+2,MTR_248,clean,56,effusion,Effusion,-1,,none,1,0.8485,Effusion,0.5747,,-,{},,,,-,,
+2,MTR_248,clean,57,in_seg,Meniscal Tear,1,6,lateral,0,,,,,-,{},miss,,6,lateral,correct,1
+2,MTR_248,clean,58,ligament,Ligament Tear,3,,none,0,,,,,-,{},,,,-,,
+2,MTR_248,clean,59,in_seg,Cartilage Lesion,4,2,single,0,,,,,-,{},miss,,2,single,correct,
+1,MTR_251,clean,166,in_seg,Meniscal Tear,1,5,medial,0,,,,,-,{},miss,,5,medial,correct,1
+1,MTR_251,clean,167,in_seg,Cartilage Lesion,5,1,single,1,0.9024,Cartilage Lesion,0.3931,1,single,"{""1"": 0.3719, ""2"": 0.0528, ""3"": 0.0, ""4"": 0.0}",correct,,1,single,correct,
