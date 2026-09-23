@@ -1,0 +1,9 @@
+{
+ "view": "clean",
+ "pass": false,
+ "thr": 0.75,
+ "sensitivity_family": 0.2537634408602151,
+ "fp_per_scan": 1.5677419354838709,
+ "n_scans": 155,
+ "n_gt": 465
+}

@@ -1,0 +1,13 @@
+clean: 465 annotated boxes in 130 scans, operating threshold 0.75
+
+localisation hits (IoU >= 0.1 at the operating point) by family x size tercile [mL range]:
+  Cartilage Lesion  31/208 (0.15)  terciles: 2/69 [0.0-1.8] | 11/69 [1.8-6.0] | 18/70 [6.1-68.6]
+  Effusion          68/116 (0.59)  terciles: 9/38 [0.1-58.2] | 25/39 [59.5-170.1] | 34/39 [173.2-637.9]
+  Ligament Tear     9/38 (0.24)  terciles: 1/12 [0.0-3.4] | 1/13 [4.9-13.0] | 7/13 [13.1-40.2]
+  Meniscal Tear     23/103 (0.22)  terciles: 1/34 [0.0-0.4] | 9/34 [0.5-2.7] | 13/35 [3.1-31.3]
+
+hits: predicted family = truth?  118/131
+hit scores: min 0.75, median 0.84, max 0.90
+scans with no hit at all: 40/130
+
+binding on hits (in-seg only): correct: 43, wrong_class: 9, wrong_host: 2
