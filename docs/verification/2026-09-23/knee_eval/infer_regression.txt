@@ -1,0 +1,14 @@
+# Entry-point regression against nnU-Net's fold-end validation output (plan Task 8 Step 10)
+# Part A (anatomy, Dataset901 fold 0, MTR_010 clean, --frame h5), run 2026-09-23 via anatobind.infer.knee.run_nnunet on GPU 6:
+A regression: shapes (256, 256, 160) (256, 256, 160) dice vs fold-0 validation {1: 1.0, 2: 0.9999, 3: 1.0, 4: 0.9999, 5: 1.0, 6: 1.0} voxel agreement 1.0
+# Part B (full entry point, Dataset901 + Dataset902 fold 0, MTR_010 clean, --frame h5, GPU 6), run 2026-09-23 16:1x:
+#   PYTHONPATH=. python scripts/infer_knee.py --image .../m1r/MTR_010/image_clean_e1.nii.gz --out .../knee_infer/MTR_010_clean_fold0 --frame h5 --folds 0 --gpu 6
+lesion_id	family	score	x0	y0	z0	x1	y1	z1	n_voxels	host_label	host_name	side	host_fractions
+1	Meniscal Tear	0.8771	150	140	102	158	157	120	1204	5	meniscus_medial	medial	{"5": 0.7541, "6": 0.0}
+2	Cartilage Lesion	0.8463	72	47	46	106	64	96	13181	1	patellar_cartilage	single	{"1": 0.235, "2": 0.0546, "3": 0.0, "4": 0.0}
+3	Effusion	0.8131	58	54	36	103	72	68	14773		none	-	{}
+4	Meniscal Tear	0.7162	147	148	38	151	156	51	242	6	meniscus_lateral	lateral	{"5": 0.0, "6": 0.9808}
+5	Ligament Tear	0.5365	118	118	68	124	123	71	52		unknown	-	{}
+5 lesions -> /data2/congcong/data/FM_data/derived/knee_infer/MTR_010_clean_fold0
+REGRESSION anatomy dice per label {1: np.float64(1.0), 2: np.float64(1.0), 3: np.float64(1.0), 4: np.float64(0.9999), 5: np.float64(0.9999), 6: np.float64(1.0)} agreement 1.0
+REGRESSION lesion voxels entry/validation 29452 29449 voxel agreement 1.0 per-label dice {1: np.float64(0.9999), 2: np.float64(1.0), 3: np.float64(1.0), 4: np.float64(0.9999)}

@@ -1,0 +1,6 @@
+clean: 155 scans, folds [0, 1, 2, 3, 4]
+p_level | thr | sensitivity | sensitivity_family | fp_per_scan | ceiling(sens @ thr 0.05, fp/scan) | per family at op
+ 0.50 | 0.75 | 0.303 | 0.269 | 1.72 | 0.391 @ 4.24 | Cart 32/208, Effu 64/116, Liga 9/38, Meni 20/103
+ 0.30 | 0.65 | 0.295 | 0.260 | 1.58 | 0.430 @ 4.77 | Cart 28/208, Effu 62/116, Liga 9/38, Meni 22/103
+ 0.20 | 0.55 | 0.314 | 0.269 | 1.81 | 0.441 @ 5.33 | Cart 31/208, Effu 63/116, Liga 9/38, Meni 22/103
+ 0.10 | 0.45 | 0.301 | 0.249 | 1.70 | 0.458 @ 6.13 | Cart 28/208, Effu 61/116, Liga 7/38, Meni 20/103

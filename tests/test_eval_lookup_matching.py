@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from anatobind.eval.lookup import NONE, UNKNOWN, LabelIndex, b0_host
 from anatobind.eval.matching import CORRECT, MISS, WRONG_CLASS, WRONG_HOST, bucket, detected, iou3d, match
@@ -66,3 +67,25 @@ def test_buckets_at_the_tissue_family_level():
     assert bucket(1, 4, 1, 1) == WRONG_HOST             # patellar label for a femoral-cartilage lesion
     assert bucket(1, 4, 1, 2) == CORRECT
     assert bucket(0, 1, 0, 6) == CORRECT                # the lateral meniscus is still the meniscus family
+
+from anatobind.eval.lookup import HOST_NAMES, SIDE_OF_LABEL, describe_host, host_fractions  # noqa: E402
+
+
+def test_host_fractions_cover_only_the_class_candidates_present_in_the_map():
+    idx = LabelIndex(_map(), SP)
+    f = host_fractions(idx, (3, 2, 2, 17, 8, 8), 1)      # cartilage: femoral z 3-4 (2 of 14 slices) and patellar z 16
+    assert set(f) == {1, 2} and f[2] == pytest.approx(2 * 36 / (14 * 36)) and f[1] == pytest.approx(36 / (14 * 36))
+    assert host_fractions(idx, (10, 10, 10, 14, 11, 11), 0) == {5: 0.0, 6: 0.0}
+    assert host_fractions(idx, (0, 0, 0, 5, 5, 5), 2) == {} and host_fractions(idx, (0, 0, 0, 5, 5, 5), 3) == {}
+
+
+def test_describe_host_agrees_with_b0_host_and_names_the_side():
+    idx = LabelIndex(_map(), SP)
+    d = describe_host(idx, (10, 2, 2, 14, 8, 8), 0)
+    assert d["host_label"] == b0_host(idx, (10, 2, 2, 14, 8, 8), 0) == 5
+    assert d["host_name"] == "meniscus_medial" and d["side"] == "medial" and d["host_fractions"][5] == 1.0
+    assert describe_host(idx, (0, 0, 0, 5, 5, 5), 2) == {"host_label": None, "host_name": "none", "side": "-", "host_fractions": {}}
+    assert describe_host(idx, (0, 0, 0, 5, 5, 5), 3)["host_name"] == "unknown"
+    empty = np.zeros((10, 10, 10), np.uint8)
+    assert describe_host(LabelIndex(empty, SP), (0, 0, 0, 3, 3, 3), 0) == {"host_label": None, "host_name": "", "side": "-", "host_fractions": {}}
+    assert SIDE_OF_LABEL[3] == "medial" and SIDE_OF_LABEL[6] == "lateral" and HOST_NAMES[2] == "femoral_cartilage"
