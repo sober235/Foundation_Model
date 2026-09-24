@@ -28,6 +28,46 @@ import numpy as np
 MIN_SLICES = 4
 PAD_TO_SLICES = 12
 
+# --- fastMRI+ box convention (Gate 0; v2.6 §4.1) ---------------------------------------------------------------
+# The fastMRI+ README: "In the process of converting the images to DICOM, the pixel arrays were flipped (up/down)
+# to provide a view that was closer to DICOM orientation and assist with labeling." So the CSV y counts rows from
+# the BOTTOM of the reconstruction_rss array. Every export from Gate 0 on stores rows counted from the top, and
+# says so in its manifest (transform_version 2). Verified on 24 brain and 30 knee volumes on 2026-09-15
+# (docs/verification/2026-09-16-brain-probe/REPORT.md §2) and on every annotated volume by
+# scripts/audit_fastmri_plus_boxes.py.
+BOX_CONVENTION_CSV = "fastmri_plus_csv_rows_from_bottom"
+BOX_CONVENTION_RSS = "rss_rows_from_top"
+TRANSFORM_VERSION = 2        # 1 = CSV boxes used as-is (leg 2 before 2026-09-24), 2 = convert_box_csv_to_rss applied
+MIN_BOX_SIDE = 3
+
+
+def convert_box_csv_to_rss(x, y, width, height, n_rows):
+    """fastMRI+ CSV box -> half-open box on the RSS array, (row0, row1, col0, col1), rows counted from the top."""
+    return n_rows - y - height, n_rows - y, x, x + width
+
+
+def convert_box_rss_to_csv(row0, row1, col0, col1, n_rows):
+    """Inverse of convert_box_csv_to_rss: (x, y, width, height) as fastMRI+ would have written it."""
+    return col0, n_rows - row1, col1 - col0, row1 - row0
+
+
+def rss_spacing_mm(header_xml):
+    """(slice, row, col) voxel size in mm of the stored RSS: acquired resolution in plane (encodedSpace
+    FOV / matrix, readout oversampling already folded in), reconSpace fov z through plane. Same rule as
+    rss_h5_to_nifti."""
+    g = parse_recon_geometry(header_xml)
+    return (g["fov_z_mm"], g["enc_fov_x_mm"] / g["enc_nx"], g["enc_fov_y_mm"] / g["enc_ny"])
+
+
+def voxel_to_world(index, spacing):
+    """(slice, row, col) index -> mm. fastMRI h5 files carry no patient position, so the array origin is 0 mm and
+    this is the only physical frame the data has."""
+    return tuple(float(i) * float(s) for i, s in zip(index, spacing))
+
+
+def world_to_voxel(point_mm, spacing):
+    return tuple(float(p) / float(s) for p, s in zip(point_mm, spacing))
+
 
 class TooFewSlices(ValueError):
     """The stack has too few slices to be segmented as a 3D volume."""
