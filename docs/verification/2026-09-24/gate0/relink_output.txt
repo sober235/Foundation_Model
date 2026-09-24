@@ -1,0 +1,51 @@
+{
+ "n_volumes": 1172,
+ "n_lesions": 4016,
+ "legacy_match": 4016,
+ "dropped": {
+  "too_small": 1
+ },
+ "files_without_volume": 0,
+ "by_family": {
+  "cartilage": 1324,
+  "effusion": 327,
+  "ligament": 523,
+  "bone": 615,
+  "meniscus": 1227
+ }
+}
+
+=== ls -la $R/leg2_gate0 | head -5 ===
+total 596
+drwx------ 2 congcongliu congcongliu  36864 Sep 24 12:13 .
+drwx------ 4 congcongliu congcongliu   4096 Sep 24 12:13 ..
+-rw------- 1 congcongliu congcongliu    330 Sep 24 12:13 README.txt
+lrwxrwxrwx 1 congcongliu congcongliu     19 Sep 24 12:13 file1000000 -> ../leg2/file1000000
+
+=== ls $R/leg2_gate0 | wc -l (expect 1172 links + 4 files) ===
+1176
+
+=== readlink $R/leg2_gate0/file1000000 (expect ../leg2/file1000000) ===
+../leg2/file1000000
+
+=== head -3 $R/leg2_gate0/lesions.csv ===
+lesion_id,file,family,z0,z1,x0,y0,x1,y1,n_boxes
+0,file1000000,cartilage,13,15,136,141,158,157,3
+1,file1000000,cartilage,22,25,186,121,227,141,4
+
+=== head -3 $R/leg2/lesions.csv ===
+lesion_id,file,family,z0,z1,x0,y0,x1,y1,n_boxes
+0,file1000000,cartilage,13,15,136,163,158,179,3
+1,file1000000,cartilage,22,25,186,179,227,199,4
+
+=== FOLDS diff ===
+FOLDS_IDENTICAL
+
+=== load_lesions new/legacy check ===
+new: 4016 lesions
+legacy refused: /data2/congcong/data/FM_data/derived/fastmri_knee/leg2/manifest.csv: manifest ha
+
+=== legacy mtimes (expect unchanged, 2026-09-14/15) ===
+2026-09-14 16:39:11.007669113 +0800 103247
+2026-09-14 11:21:04.027200587 +0800 200246
+2026-09-14 11:21:04.433207344 +0800 23457
