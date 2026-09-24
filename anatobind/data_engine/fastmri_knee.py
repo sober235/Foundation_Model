@@ -1,6 +1,6 @@
 """fastMRI+ 膝关节的标注读取、清洗、3D 合并、患者划分与受控退化（leg 2 spec 第 1 节）。
 
-标注是逐层 2D 框，坐标在 320x320 的 RSS 图像空间。3D 病灶由"相邻层、面内 IoU >= 0.3 相连"
+标注是逐层 2D 框；CSV 里的 y 从 RSS 数组底部数起，读入后先经 rows_to_rss_frame 转到行从顶部数的 RSS 帧（320x320）再合并。3D 病灶由"相邻层、面内 IoU >= 0.3 相连"
 的连通分量得到；同一类别族但空间分离的两串因此分成两个病灶。
 """
 import csv
@@ -11,7 +11,7 @@ from pathlib import Path
 import h5py
 import numpy as np
 
-from anatobind.data_engine.fastmri import box_iou_2d, merge_boxes_3d, read_fastmri_plus_rows
+from anatobind.data_engine.fastmri import BOX_CONVENTION_RSS, TRANSFORM_VERSION, box_iou_2d, merge_boxes_3d, read_fastmri_plus_rows, rss_spacing_mm
 from anatobind.train.dataset import normalise_volume
 
 FAMILIES = ("meniscus", "cartilage", "bone", "ligament", "effusion")
@@ -122,19 +122,112 @@ def degrade(kspace, view, seed):
 
 KSPACE_ROOT = Path("/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/knee")
 ANNOTATIONS = Path("/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/Annotations/knee.csv")
-EXPORT_ROOT = Path("/data2/congcong/data/FM_data/derived/fastmri_knee/leg2")
+EXPORT_ROOT = Path("/data2/congcong/data/FM_data/derived/fastmri_knee/leg2_gate0")     # boxes in the RSS frame (Gate 0)
+LEGACY_EXPORT_ROOT = Path("/data2/congcong/data/FM_data/derived/fastmri_knee/leg2")    # 2026-09-14, boxes as-is: read-only history
+IMAGE_ORIENTATION = "reconstruction_rss order (slice, row, col); rows counted from the top"
+MANIFEST_FIELDS = ["file", "out_dir", "slices", "n_lesions", "status", "patient_id", "n_rows", "n_cols",
+                   "spacing_slice_mm", "spacing_row_mm", "spacing_col_mm", "image_orientation",
+                   "box_coordinate_convention", "transform_version"]
+LESION_FIELDS = ["lesion_id", "file", "family", "z0", "z1", "x0", "y0", "x1", "y1", "n_boxes"]
+
+
+class LegacyBoxConvention(ValueError):
+    """The export was written before Gate 0 (CSV rows used as-is, i.e. mirrored boxes); refuse to use it."""
 
 
 def volume_paths(root=KSPACE_ROOT):
     return {p.stem: p for split in ("multicoil_train", "multicoil_val") for p in sorted((Path(root) / split).glob("*.h5"))}
 
 
+def _patient_attr(h, path):
+    if "patient_id" not in h.attrs:
+        raise KeyError(f"{path}: no patient_id attribute; folds are split by patient (v2.6 §4.4)")
+    pid = h.attrs["patient_id"]
+    return pid.decode() if isinstance(pid, bytes) else str(pid)
+
+
 def patient_of(paths):
     out = {}
     for name, p in paths.items():
         with h5py.File(p) as h:
-            out[name] = str(h.attrs.get("patient_id", name))
+            out[name] = _patient_attr(h, p)
     return out
+
+
+def volume_geometry(h5_path):
+    """patient_id, RSS grid and (slice, row, col) spacing of one fastMRI h5 file."""
+    with h5py.File(h5_path) as h:
+        pid = _patient_attr(h, h5_path)
+        hdr = h["ismrmrd_header"][()]
+        n_slices, n_rows, n_cols = h["reconstruction_rss"].shape
+    sp = rss_spacing_mm(hdr.decode() if isinstance(hdr, bytes) else hdr)
+    return {"patient_id": pid, "n_rows": int(n_rows), "n_cols": int(n_cols), "slices": int(n_slices),
+            "spacing_slice_mm": sp[0], "spacing_row_mm": sp[1], "spacing_col_mm": sp[2]}
+
+
+def manifest_row(name, h5_path, out_dir, n_lesions, status):
+    g = volume_geometry(h5_path)
+    return {"file": name, "out_dir": str(out_dir), "slices": g["slices"], "n_lesions": n_lesions, "status": status,
+            "patient_id": g["patient_id"], "n_rows": g["n_rows"], "n_cols": g["n_cols"],
+            "spacing_slice_mm": g["spacing_slice_mm"], "spacing_row_mm": g["spacing_row_mm"],
+            "spacing_col_mm": g["spacing_col_mm"], "image_orientation": IMAGE_ORIENTATION,
+            "box_coordinate_convention": BOX_CONVENTION_RSS, "transform_version": TRANSFORM_VERSION}
+
+
+def write_manifest(path, rows):
+    with open(path, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=MANIFEST_FIELDS, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+
+
+def write_lesions(path, lesions):
+    """lesions.csv: one row per 3D lesion, numbered in (file, family, z0, x0) order; members are not written."""
+    with open(path, "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=LESION_FIELDS, extrasaction="ignore")
+        w.writeheader()
+        for i, L in enumerate(sorted(lesions, key=lambda L: (L["file"], L["family"], L["z0"], L["x0"]))):
+            w.writerow({"lesion_id": i, **L})
+
+
+def load_manifest(export_root):
+    """manifest.csv -> {file: row}; refuses exports whose boxes are not transform_version 2."""
+    path = Path(export_root) / "manifest.csv"
+    with open(path, newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    bad = [r["file"] for r in rows if str(r.get("transform_version", "")) != str(TRANSFORM_VERSION)]
+    if bad:
+        raise LegacyBoxConvention(
+            f"{path}: {len(bad)} of {len(rows)} volumes lack transform_version {TRANSFORM_VERSION} (first {bad[:3]}); "
+            f"their boxes are the mirrored CSV boxes of leg 2 before Gate 0. Build a converted root with "
+            f"scripts/relink_fastmri_knee_gate0.py.")
+    return {r["file"]: r for r in rows}
+
+
+def load_lesions(export_root):
+    """lesions.csv of a Gate-0 export (RSS frame) with integers parsed; refuses legacy exports."""
+    load_manifest(export_root)
+    with open(Path(export_root) / "lesions.csv", newline="") as fh:
+        return [{**r, **{k: int(r[k]) for k in ("z0", "z1", "x0", "y0", "x1", "y1", "n_boxes")}}
+                for r in csv.DictReader(fh)]
+
+
+def assert_folds_by_patient(folds, patients):
+    """Raise if any patient has volumes in two folds. folds: {file: fold}; patients: {file: patient_id}."""
+    fold_of_patient = {}
+    for vol, fold in folds.items():
+        p = patients[vol]
+        if fold_of_patient.setdefault(p, fold) != fold:
+            raise ValueError(f"patient {p} is in fold {fold_of_patient[p]} and fold {fold} ({vol}); "
+                             f"folds must be patient-disjoint (v2.6 §4.4)")
+
+
+def load_folds(export_root):
+    """folds.json -> {file: fold}, asserted patient-disjoint against the manifest's patient_id column."""
+    folds = json.loads((Path(export_root) / "folds.json").read_text())["folds"]
+    manifest = load_manifest(export_root)
+    assert_folds_by_patient(folds, {f: manifest[f]["patient_id"] for f in folds})
+    return folds
 
 
 def make_folds(patients, k=5, seed=0):
