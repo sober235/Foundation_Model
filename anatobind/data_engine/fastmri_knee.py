@@ -5,12 +5,13 @@
 """
 import csv
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 import h5py
 import numpy as np
 
+from anatobind.data_engine.fastmri import box_iou_2d, merge_boxes_3d, read_fastmri_plus_rows
 from anatobind.train.dataset import normalise_volume
 
 FAMILIES = ("meniscus", "cartilage", "bone", "ligament", "effusion")
@@ -37,21 +38,13 @@ MIN_SIDE = 3
 
 
 def read_annotations(csv_path):
-    """CSV 行 -> 带 family 的整数化行；标签两端的空白必须 strip（原文件里 "Joint Effusion " 带尾空格）。"""
+    """CSV rows -> rows with a family (labels outside FAMILY_OF_LABEL are dropped). Still in the CSV frame:
+    the row flip happens once, in rows_to_rss_frame, before merging."""
     out = []
-    with open(csv_path, newline="") as fh:
-        for r in csv.DictReader(fh):
-            if r["study_level"].strip() == "Yes":
-                continue
-            fam = FAMILY_OF_LABEL.get(r["label"].strip())
-            if fam is None:
-                continue
-            try:
-                row = {"file": r["file"], "slice": int(r["slice"]), "x": int(r["x"]), "y": int(r["y"]),
-                       "width": int(r["width"]), "height": int(r["height"]), "family": fam}
-            except ValueError:
-                continue
-            out.append(row)
+    for r in read_fastmri_plus_rows(csv_path):
+        fam = FAMILY_OF_LABEL.get(r["label"])
+        if fam is not None:
+            out.append({**r, "family": fam})
     return out
 
 
@@ -65,50 +58,12 @@ def clean_boxes(rows):
     return kept, dropped
 
 
-def _iou(a, b):
-    ax1, ay1 = a["x"] + a["width"], a["y"] + a["height"]
-    bx1, by1 = b["x"] + b["width"], b["y"] + b["height"]
-    iw = max(0, min(ax1, bx1) - max(a["x"], b["x"]))
-    ih = max(0, min(ay1, by1) - max(a["y"], b["y"]))
-    inter = iw * ih
-    union = a["width"] * a["height"] + b["width"] * b["height"] - inter
-    return inter / union if union else 0.0
+_iou = box_iou_2d       # old name, still imported by the probe scripts under docs/verification
 
 
 def merge_to_3d(rows, iou_min=0.3):
-    """相邻层、面内 IoU >= iou_min 的框属于同一个 3D 病灶。"""
-    lesions = []
-    by_group = defaultdict(list)
-    for r in rows:
-        by_group[(r["file"], r["family"])].append(r)
-    for (file, family), group in sorted(by_group.items()):
-        parent = list(range(len(group)))
-
-        def find(i):
-            while parent[i] != i:
-                parent[i] = parent[parent[i]]
-                i = parent[i]
-            return i
-
-        for i, a in enumerate(group):
-            for j, b in enumerate(group):
-                if j <= i or abs(a["slice"] - b["slice"]) != 1:
-                    continue
-                if _iou(a, b) >= iou_min:
-                    parent[find(i)] = find(j)
-        comps = defaultdict(list)
-        for i in range(len(group)):
-            comps[find(i)].append(group[i])
-        for members in comps.values():
-            lesions.append({
-                "file": file, "family": family,
-                "z0": min(m["slice"] for m in members), "z1": max(m["slice"] for m in members),
-                "x0": min(m["x"] for m in members), "y0": min(m["y"] for m in members),
-                "x1": max(m["x"] + m["width"] for m in members),
-                "y1": max(m["y"] + m["height"] for m in members),
-                "n_boxes": len(members),
-            })
-    return lesions
+    """Adjacent-slice boxes of one family with in-plane IoU >= iou_min are one lesion (fastmri.merge_boxes_3d)."""
+    return merge_boxes_3d(rows, "family", iou_min)
 
 
 VIEWS = ("clean", "noise_q1", "noise_q2", "noise_q3", "us4", "us8", "us16")
