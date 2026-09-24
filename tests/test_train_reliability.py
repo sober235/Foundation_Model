@@ -19,13 +19,16 @@ def _load():
 
 
 def _minimal_export(root, patient_of):
-    """patient_of: {file_name: patient_id}. Writes meta.json per file, a header-only lesions.csv,
-    and folds.json putting every file in fold 0."""
+    """patient_of: {file_name: patient_id}. Writes meta.json per file, a header-only lesions.csv, a Gate-0
+    manifest and folds.json putting every file in fold 0."""
+    from anatobind.data_engine.fastmri_knee import write_manifest
     root.mkdir(parents=True, exist_ok=True)
     for f, pid in patient_of.items():
         (root / f).mkdir()
         (root / f / "meta.json").write_text(json.dumps({"patient_id": pid}))
     (root / "lesions.csv").write_text("lesion_id,file,family,z0,z1,x0,y0,x1,y1,n_boxes\n")
+    write_manifest(root / "manifest.csv",
+                   [{"file": f, "patient_id": pid, "transform_version": 2, "status": "ok"} for f, pid in patient_of.items()])
     (root / "folds.json").write_text(json.dumps({"folds": {f: 0 for f in patient_of}}))
 
 

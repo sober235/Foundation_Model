@@ -14,18 +14,16 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from anatobind.data_engine.fastmri_knee import EXPORT_ROOT, VIEWS  # noqa: E402
+from anatobind.data_engine.fastmri_knee import EXPORT_ROOT, VIEWS, load_lesions  # noqa: E402
 from anatobind.eval.detect3d import failure_labels  # noqa: E402
 from anatobind.train.train_detector import load_fold  # noqa: E402
 
 
 def gather(export_root, det_root, folds, score_min):
     per_all, scan_all = [], []
-    with open(Path(export_root) / "lesions.csv", newline="") as fh:
-        by_file = {}
-        for r in csv.DictReader(fh):
-            by_file.setdefault(r["file"], []).append(
-                {**r, **{k: int(r[k]) for k in ("z0", "z1", "x0", "y0", "x1", "y1")}})
+    by_file = {}
+    for r in load_lesions(export_root):
+        by_file.setdefault(r["file"], []).append(r)
     for fold in folds:
         _, held, _ = load_fold(export_root, fold)
         for f in held:

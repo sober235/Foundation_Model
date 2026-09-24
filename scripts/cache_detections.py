@@ -26,6 +26,8 @@ def main():
     ap.add_argument("--run", type=Path, default=None)
     ap.add_argument("--export-root", type=Path, default=EXPORT_ROOT)
     ap.add_argument("--out", type=Path, default=EXPORT_ROOT / "detections")
+    ap.add_argument("--score-min", type=float, default=0.05,
+                    help="lowest per-slice score kept in the cache (0.01 for the Gate 0 rerun so the FROC sweep has room)")
     a = ap.parse_args()
     run = a.run or Path(f"runs/detector_fold{a.fold}")
     state = torch.load(run / "last.pt", map_location="cpu", weights_only=False)
@@ -39,7 +41,7 @@ def main():
     for f in held:
         for view in VIEWS:
             vol = np.load(a.export_root / f / f"{view}.npy").astype(np.float32)
-            dets, gfeat = detect_volume(model, vol, device)
+            dets, gfeat = detect_volume(model, vol, device, score_min=a.score_min)
             with open(out_dir / f"{f}__{view}.pkl", "wb") as fh:
                 pickle.dump({"dets": aggregate_to_3d(dets), "global_feat": gfeat}, fh)
             n += 1

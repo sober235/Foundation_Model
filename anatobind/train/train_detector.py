@@ -4,7 +4,6 @@
       scripts/train_detector.py --fold 0 --out runs/detector_fold0 --resume
 """
 import argparse
-import csv
 import json
 import math
 import random
@@ -15,7 +14,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from anatobind.data_engine.fastmri_knee import EXPORT_ROOT
+from anatobind.data_engine.fastmri_knee import EXPORT_ROOT, load_folds, load_lesions
 from anatobind.model.dense_head_2d import centre_loss_2d
 from anatobind.model.detector2d import Detector2D
 from anatobind.train.dataset_knee import SlabDataset, collate_slabs, seed_worker
@@ -54,13 +53,12 @@ def lr_lambda(warmup, total):
 
 
 def load_fold(export_root, fold):
-    folds = json.loads((Path(export_root) / "folds.json").read_text())["folds"]
+    """Training and held-out files of one patient-disjoint fold plus the RSS-frame lesions; refuses exports
+    written before Gate 0 (anatobind.data_engine.fastmri_knee.LegacyBoxConvention)."""
+    folds = load_folds(export_root)
     train = sorted(f for f, k in folds.items() if k != fold)
     held = sorted(f for f, k in folds.items() if k == fold)
-    with open(Path(export_root) / "lesions.csv", newline="") as fh:
-        lesions = [{**r, **{k: int(r[k]) for k in ("z0", "z1", "x0", "y0", "x1", "y1", "n_boxes")}}
-                   for r in csv.DictReader(fh)]
-    return train, held, lesions
+    return train, held, load_lesions(export_root)
 
 
 def save_atomic(obj, path):

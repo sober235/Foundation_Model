@@ -19,7 +19,7 @@ import torch
 import torch.nn.functional as F
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from anatobind.data_engine.fastmri_knee import EXPORT_ROOT, VIEWS  # noqa: E402
+from anatobind.data_engine.fastmri_knee import EXPORT_ROOT, VIEWS, load_lesions  # noqa: E402
 from anatobind.eval.detect3d import failure_labels  # noqa: E402
 from anatobind.model.reliability import (  # noqa: E402
     LesionReliability, ScanReliability, lesion_scalars, scan_scalars,
@@ -31,10 +31,8 @@ FOLDS = (0, 1, 2, 3, 4)
 
 def lesions_by_file(export_root):
     out = {}
-    with open(Path(export_root) / "lesions.csv", newline="") as fh:
-        for r in csv.DictReader(fh):
-            out.setdefault(r["file"], []).append(
-                {**r, **{k: int(r[k]) for k in ("z0", "z1", "x0", "y0", "x1", "y1")}})
+    for r in load_lesions(export_root):
+        out.setdefault(r["file"], []).append(r)
     return out
 
 
