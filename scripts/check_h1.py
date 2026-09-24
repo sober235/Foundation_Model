@@ -6,7 +6,6 @@
 再把该阈值固定，用它在全部五折上计算 H1 的两个条件。
 """
 import argparse
-import csv
 import pickle
 import sys
 from pathlib import Path
