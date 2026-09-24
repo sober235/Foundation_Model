@@ -1,0 +1,9 @@
+# requirements-ci.txt — the CPU test suite's third-party imports (torch is installed from the CPU wheel index first)
+numpy
+scipy
+nibabel
+h5py
+matplotlib
+monai==1.5.2
+einops
+pytest
