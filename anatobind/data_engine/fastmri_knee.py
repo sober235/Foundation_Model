@@ -194,7 +194,12 @@ def load_manifest(export_root):
     """manifest.csv -> {file: row}; refuses exports whose boxes are not transform_version 2."""
     path = Path(export_root) / "manifest.csv"
     with open(path, newline="") as fh:
-        rows = list(csv.DictReader(fh))
+        reader = csv.DictReader(fh)
+        if reader.fieldnames is None or "transform_version" not in reader.fieldnames:
+            raise LegacyBoxConvention(
+                f"{path}: manifest has no transform_version column (pre-Gate-0 export). Build a converted root with "
+                f"scripts/relink_fastmri_knee_gate0.py.")
+        rows = list(reader)
     bad = [r["file"] for r in rows if str(r.get("transform_version", "")) != str(TRANSFORM_VERSION)]
     if bad:
         raise LegacyBoxConvention(
@@ -206,10 +211,15 @@ def load_manifest(export_root):
 
 def load_lesions(export_root):
     """lesions.csv of a Gate-0 export (RSS frame) with integers parsed; refuses legacy exports."""
-    load_manifest(export_root)
-    with open(Path(export_root) / "lesions.csv", newline="") as fh:
-        return [{**r, **{k: int(r[k]) for k in ("z0", "z1", "x0", "y0", "x1", "y1", "n_boxes")}}
-                for r in csv.DictReader(fh)]
+    manifest = load_manifest(export_root)
+    path = Path(export_root) / "lesions.csv"
+    with open(path, newline="") as fh:
+        lesions = [{**r, **{k: int(r[k]) for k in ("z0", "z1", "x0", "y0", "x1", "y1", "n_boxes")}}
+                   for r in csv.DictReader(fh)]
+    for r in lesions:
+        if r["file"] not in manifest:
+            raise ValueError(f"{path}: lesion {r['lesion_id']} names {r['file']}, which is not in manifest.csv")
+    return lesions
 
 
 def assert_folds_by_patient(folds, patients):
@@ -226,6 +236,9 @@ def load_folds(export_root):
     """folds.json -> {file: fold}, asserted patient-disjoint against the manifest's patient_id column."""
     folds = json.loads((Path(export_root) / "folds.json").read_text())["folds"]
     manifest = load_manifest(export_root)
+    for f in folds:
+        if f not in manifest:
+            raise ValueError(f"{export_root}/folds.json names {f}, which is not in manifest.csv")
     assert_folds_by_patient(folds, {f: manifest[f]["patient_id"] for f in folds})
     return folds
 

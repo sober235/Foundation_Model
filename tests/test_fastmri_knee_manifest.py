@@ -97,3 +97,37 @@ def test_patient_of_refuses_a_file_without_patient_id(tmp_path):
     assert patient_of({"a": with_id}) == {"a": "pa"}
     with pytest.raises(KeyError, match="patient_id"):
         patient_of({"b": without})
+
+
+def test_a_manifest_with_the_column_but_no_rows_is_valid_and_empty(tmp_path):
+    root = tmp_path / "empty"
+    root.mkdir(parents=True, exist_ok=True)
+    write_manifest(root / "manifest.csv", [])
+    assert load_manifest(root) == {}
+
+
+def test_lesions_for_a_volume_missing_from_the_manifest_are_refused(tmp_path):
+    root = tmp_path / "orphan"
+    root.mkdir(parents=True, exist_ok=True)
+    write_manifest(root / "manifest.csv", [])
+    write_lesions(root / "lesions.csv", [{"file": "file1", "family": "meniscus", "z0": 1, "z1": 2,
+                                          "x0": 4, "y0": 5, "x1": 12, "y1": 15, "n_boxes": 2, "members": []}])
+    with pytest.raises(ValueError, match="not in manifest"):
+        load_lesions(root)
+
+
+def test_a_manifest_without_the_column_is_refused_even_when_empty(tmp_path):
+    root = tmp_path / "no_col"
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "manifest.csv").write_text("file,out_dir,slices,n_lesions,status\n")
+    with pytest.raises(LegacyBoxConvention):
+        load_manifest(root)
+
+
+def test_load_folds_names_the_fold_file_missing_from_the_manifest(tmp_path):
+    root = tmp_path / "orphan_fold"
+    root.mkdir(parents=True, exist_ok=True)
+    write_manifest(root / "manifest.csv", [{"file": "file1", "patient_id": "p1", "transform_version": TRANSFORM_VERSION, "status": "ok"}])
+    (root / "folds.json").write_text(json.dumps({"folds": {"file1": 0, "file2": 1}}))
+    with pytest.raises(ValueError, match="not in manifest"):
+        load_folds(root)
