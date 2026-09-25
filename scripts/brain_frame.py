@@ -166,8 +166,8 @@ def main():
              "share of lesions with d_interface <= t (host classes of v2.6 §3, sides merged, ventricles/CSF landmarks):",
              "".join(f"  t={t}: {v:.3f}" for t, v in s["share_at"].items()), "",
              f"d_interface quantiles {s['d_interface']}", f"delta_d quantiles {s['delta_d']}", "",
-             f"nearest host class: {s['host_class_nearest']}", f"lookup host (all 33): {s['host_lookup_all']}",
-             f"lookup host (parenchyma only): {s['host_lookup_parenchyma']}", "", "strata:"]
+             f"nearest host class: {s['host_class_nearest']}", f"lookup host (all {len(BRAIN_ALL)} non-background aseg labels): {s['host_lookup_all']}",
+             f"lookup host (parenchyma only, {len(BRAIN_PARENCHYMA)} labels): {s['host_lookup_parenchyma']}", "", "strata:"]
     lines += [f"  {k}: {v}" for k, v in s["strata"].items()]
     lines += ["", f"t_frozen = {s['t_frozen']} (smallest t in {T_GRID} with share >= {MIN_SHARE}); hard share {s['hard_share']}; majority_flag {s['majority_flag']}",
               f"GATE05: {verdict}"]
