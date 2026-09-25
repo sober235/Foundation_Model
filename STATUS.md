@@ -1,59 +1,77 @@
-# STATUS:2026-09-23 晚(计划 1"膝侧能力系统"交付;检测门不过,停下待用户定第二臂;本交接点 tag `handoff/2026-09-23-knee-capability`,上一交接点 tag `handoff/2026-09-22-v2.6`)
+# STATUS：2026-09-25（Gate 0 已落地；膝 H1 重跑：迁移判据不过；Gate 0.5 盘点完成但 t 未冻结；本交接点 tag `handoff/2026-09-25-gate0-h1-gate05`，上一交接点 tag `handoff/2026-09-23-knee-capability`）
 
-每次交接前整体重写本文件。五段固定:已验证、待拍板、下一步、坑与别重做、为什么。
+每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 
 ## 1. 已完成且已验证
 
-**主线改了口径(2026-09-23 拷问式设计会,用户拍板)**:先把三条能力做出来(解剖分割图、病灶 3D 框加大类、病灶所在结构主结构/占比/侧别),再谈网络;膝先脑后;S/E/k 空间干预不做;FM_MRI 文档定网络、v2.6 定证据规则。决定记录在 `docs/superpowers/specs/2026-09-23-aur-capability-system-design.md`(Q1–Q12、N1–N8),实施计划 `docs/superpowers/plans/2026-09-23-knee-capability-system.md`。v2.6 的 Gate 链没有作废,Gate 0 被并入计划 3。
+本轮计划 `docs/superpowers/plans/2026-09-24-gate0-h1-rerun-gate05.md`（决定 D1–D13），总报告 `docs/verification/2026-09-24/REPORT.md`（每个数字带命令与原始输出）。用户 2026-09-24 拍板：走 VERDICT §4 的 ① 前半段（修翻转 + 重跑 H1）并顺手做 Gate 0.5；npz 不删；已合并分支不删。
 
-- **代码(分支 `build/aur-system`,已合 main)**:`anatobind/nnunet/lesion_labels.py`(箱填病灶标签图)、`anatobind/nnunet/prepare_lesion.py`(Dataset902,与 901 同视图同折同名)、`anatobind/eval/lesion_boxes.py`(连通域取框 + nnU-Net npz 概率读取,轴序断言)、`anatobind/eval/detection_metrics.py`(灵敏度、每卷假阳、工作点、门)、`anatobind/eval/lookup.py` 加 `host_fractions/describe_host`、`scripts/eval_knee_folds.py`、`anatobind/infer/{canonical,knee}.py` + `scripts/infer_knee.py`(单命令入口,`--frame h5|world`)。
-- **测试**:
+- **Gate 0（fastMRI+ 框上下翻转，v2.6 §4.1–4.4）已落地。** 转换只在 `anatobind/data_engine/fastmri.py::convert_box_csv_to_rss` 一处（行 `[nr − y − h, nr − y)`，列 `[x, x + w)`）；通用读框/合并 `read_fastmri_plus_rows / rows_to_rss_frame / merge_boxes_3d`，膝 `merge_to_3d` 委托。新导出根 `derived/fastmri_knee/leg2_gate0/`：1172 个卷目录是指向 `../leg2/<file>` 的相对链接，只换 `lesions.csv`（RSS 帧）、`folds.json`（从 h5 `patient_id` 重生成，断言患者不跨折，与旧的完全一致）、14 列 `manifest.csv`（`transform_version 2`、逐卷间距、`patient_id`）。4016 个病灶与旧文件逐条对上（只有 y 翻转）。旧根 `leg2/` 一字未动，加载器（`load_manifest / load_lesions / load_folds`）见不到版本列就拒载；训练、H1 门、可靠性、缓存、导出脚本全部改走这些加载器。
+  ```
+  PYTHONPATH=. python scripts/relink_fastmri_knee_gate0.py   -> n_volumes 1172, n_lesions 4016, legacy_match 4016, FOLDS_IDENTICAL, legacy refused
+  PYTHONPATH=. python scripts/audit_fastmri_plus_boxes.py --out docs/verification/2026-09-24/gate0/flair_only --figs ~/figs/anatobind_gate0/flair_only
+  knee 236 卷: 转换后胜出 211 (89.4%) | brain(FLAIR only)165 卷: 158 (95.8%) | 每系列 >= 89.5% (最低 203: 17/19)
+  GATE0_AUDIT: FAIL (knee >= 90%, brain >= 90%, every series with >= 3 volumes >= 75%)
+  ```
+  脑侧第一次审计（`gate0/audit.md`，留作历史）误把 16 个 AXT1 + 7 个 AXT1POST 卷也算了进去（代码没做对比度过滤，统计假设的高信号只对 FLAIR 成立）；按 FLAIR 过滤重跑（`gate0/flair_only/`）后脑过 90% 门槛。**组织级唯一没过的是膝 211/236 = 89.4%，差 0.6 个百分点**；原样胜出的卷差距很小、转换后框仍亮、没有系列失败、叠图一目了然（`~/figs/anatobind_gate0/flair_only/`），**按系列门槛加叠图判 Gate 0 通过**（REPORT §2.4；用户 2026-09-25 明确确认）。门槛没达到的事实保留，脚本与数字不改。
+- **膝 H1 重跑（v2.6 §6.2）：迁移判据不过。** 与 09-15 完全相同的配置（`runs/detector_gate0_fold*`，工作树内，配置逐项核对相同，只换 `export_root`），五折在 GPU 0 串行 7 小时，检出缓存阈值 0.01，8204 个 pkl 在 `leg2_gate0/detections/`。
+  ```
+  PYTHONPATH=. python scripts/eval_fastmri_knee_detection.py --out docs/verification/2026-09-24/h1_rerun
+  clean x shared4 @ thr 0.18: 定位灵敏度 0.155, 大类正确 0.091, 每卷假阳 1.53 (198 卷未标注卷 1.41,其中 100 卷的另一侧已标注、87 卷另一侧有半月板/软骨/韧带病灶,患者级正常只有 98 卷); 上限 0.215 @ 65.7 FP/卷
+  每族(大类正确/定位/真值): cartilage 110/160/1324  meniscus 201/360/1227  ligament 0/7/523  effusion 0/0/327
+  命中 527: 中心误差中位 6.2 mm, IoU 中位 0.24; 患者覆盖 184/496
+  TRANSFER_GATE: FAIL
+  PYTHONPATH=. python scripts/check_h1.py  -> H1 FAIL: no threshold puts the scan-level positive rate in [0.2, 0.5]
+  ```
+  与 09-15 对照：那次最高分 0.067、300 卷 208 个检出（框镜像污染）；这次能学到大病灶（半月板最大三分位 312/409、软骨 147/441 定位），但召回远低于可用线。积液/骨/韧带的检出分数比半月板/软骨低，在工作点阈值 0.18 下全部消失（附注，非判据）。
+- **Gate 0.5（v2.6 §4.5）：1297 个 FLAIR 小病灶几何盘点完成。** `scripts/brain_frame.py`，宿主类按 v2.6 §3 合并左右、脑室/CSF 只作地标（决定 D8），`d_interface` = 到第二近宿主类的距离、`Δd` = 第二近 − 第一近（决定 D9）。
+  ```
+  PYTHONPATH=. OMP_NUM_THREADS=4 nice -n 19 python scripts/brain_frame.py --out docs/verification/2026-09-24/gate05
+  lesions 1297, patients 165, single-slice 0.793, m_eff 29.45   (与 09-22 计数一致)
+  share d_interface <= t:  t=0 0.420  1 0.500  2 0.582  3 0.697  4 0.749  5 0.887
+  nearest host class: white_matter 1147, cortex 150
+  t_frozen = 2 by rule, hard share 0.582 > 0.5 -> GATE05: DECIDE (t 未冻结)
+  ```
+  分层发现：v2.6 按系列号分的"低分辨率组"不准——205/209/210 与 200 同为 0.6875 mm，真正 0.86 mm 面内的是 202(部分)/203/206 共 90 个病灶，另有 43 个在 3 mm 层厚卷上；两种分层都已报告（决定 D11）。
+- **代码与测试**：`anatobind/eval/geometry.py`（新）、`anatobind/eval/lookup.py::BrainLookup`、`anatobind/eval/fastmri_knee_detection.py`（新）、四个新脚本（`relink_fastmri_knee_gate0 / audit_fastmri_plus_boxes / eval_fastmri_knee_detection / brain_frame`）、`cache_detections.py --score-min`（默认模型改为 `runs/detector_gate0_fold*`，已有缓存不加 `--overwrite` 不覆盖）、`build_fastmri_knee.py` 的导出根守卫（有 manifest 或卷目录是链接就拒跑，防止顺着 `leg2_gate0` 的链接写进旧根）；`.github/workflows/tests.yml` + `requirements-ci.txt`（未在 GitHub 上跑过）。整体评审（09-25）的 6 条 Important 已全部修掉，复审确认。
   ```
   PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
-  342 passed
+  413 passed
   ```
-- **Dataset902 五折训练**(nnU-Net 3d_fullres,250 轮,每折约 3.7 h,GPU 0/1/4/6):模型与折末验证输出(含 npz 概率)在 `/data2/congcong/data/FM_data/derived/nnunet/results/Dataset902_SKMTEAlesion/`(179 GB)。
-- **五折数字(clean 视图,155 卷、465 框,`docs/verification/2026-09-23/knee_eval/`)**:
-  ```
-  目标 1 解剖 Dice(Dataset901 六类): 0.886 / 0.873 / 0.852 / 0.858 / 0.845 / 0.839
-  目标 2 病灶: 工作点 thr 0.75, 定位灵敏度 0.282, 大类正确灵敏度 0.254, 每卷假阳 1.57  -> 门(>=0.5)不过
-             每族: 软骨 25/208, 积液 64/116, 韧带 9/38, 半月板 20/103; 阈值上限 0.394 @ 4.3 FP/卷
-  目标 3 所在结构(命中上): 组织族正确 0.796 (n=54; 大类判对时 0.96), 侧别 0.81 (n=26)
-             给定标注框对照: 0.961 / 0.979 (n=311/143)
-  ```
-  裁决与原因在 `VERDICT.md`(小病灶几乎全漏;解码变体不改善,上限 0.458 @ 6 FP/卷;缺的是模型召回)。全文报告 `REPORT.md`。
-- **入口核对**:`scripts/infer_knee.py` 在 MTR_010 上与折末验证逐体素一致(`infer_regression.txt`);DICOM 转出的世界帧体积经 `--frame world` 跑通,软骨亮度分数 3.895、病灶与 h5 帧逐条对应(`dicom_world_frame.md`);图 `~/figs/anatobind_knee/`。
-- 09-13 之前的证据链不变(G2 不过、H1 不过但框镜像、脑探针 q3 7.4%、查表天花板 0.958–0.968)。
+- 09-23 之前的证据链不变（膝 G2 不过、SKM-TEA 箱填检测门不过 0.254、脑探针 q3 7.4%、查表天花板 0.958–0.968）。
 
 ## 2. 待用户拍板
 
-- **第二臂选哪条**(`VERDICT.md` §4):① fastMRI+ 膝预训练 2.5D 检测器再迁 SKM-TEA(前提 Gate 0 + H1 重跑,约一周);② nnDetection 直训 SKM-TEA(2–3 天);③ nnU-Net 换目标继续挤(一天,上限不高);④ 接受现状转入脑侧计划 2。我的推荐:先做 ① 的前半段(Gate 0 + H1 重跑),再定。
-- 计划 2(脑掩膜三大类)与计划 3(fastMRI+ 小病灶)何时开写。
-- `derived/nnunet/results/Dataset902_SKMTEAlesion/` 里 5 × 217 个 npz 概率(约 60 GB)评估完是否删除(按规矩由用户手动删)。
-- 删已合并分支(由用户手动执行):`git branch -d build/aur-system && git push origin --delete build/aur-system`;上次交接列的四条远端分支与 `summary/2026-09-22-v2.5-feasibility-review` 仍未删。
-- 旧遗留(多次未答):Q9 删除授权(SKM-TEA 2.4G truncated 残留 + 820G 原 tar);fastMRI 其余 4850 卷是否跑 SynthSeg;Redivis token 事后删除;读片人姓名/裁定人/伦理。
+- **Gate 0.5 的分层怎么定**（三选一，2026-09-25 已列给用户）：① 照规则冻 t = 2 mm，接受困难组占 58%；② 不分困难/简单两组，按距离分四档（0 / 0–2 / 2–4 / >4 mm，占比 42 / 16 / 17 / 25%）作分析分层，标注按全集来，不做困难组富集抽样（推荐）；③ 只把 t = 0（框内已跨两个脑区，42%）当困难组。43 个病灶在 3 mm 层厚卷上，对它们 t = 3–4 mm 不再是面内准则。定了才写 Level R 协议（PR-B）。
+- 已定（用户 2026-09-25 确认）：**分层改按实测几何**（205/209/210 与 200 同分辨率），v2.6 §7.3 的加注生效，系列号分层只作对照。
+- **第二臂**：迁移判据不过，按预先登记的 D7 推荐 VERDICT §4 的 ②（nnDetection 直训 SKM-TEA，2–3 天）；也可选 ③/④。09-15 列的检测器配方嫌疑（focal loss 量级、25 epoch、3.46 M 参数、stride 2）没排除，只是不在本轮判据内。
+- 已定（用户 2026-09-25 确认）：**Gate 0 通过**——膝 89.4% 对 90% 的差距记录在案，不改数字；H1 重跑与 Gate 0.5 的结论据此成立。
+- 已定：npz 不删、已合并分支不删（09-24）。旧遗留仍挂：Q9 删除授权、4850 卷 SynthSeg、Redivis token、读片人姓名/裁定人/伦理、`summary/2026-09-22-v2.5-feasibility-review` 分支是否合回。
 
 ## 3. 下一步
 
-1. 用户定第二臂 → 另写实施计划(不改 spec 的验收口径)。
-2. 计划 2 脑掩膜三大类:先取 `synthseg_parc_2.0.h5`(只在 FreeSurfer 7.4.1 tarball 里,9.5 GB),SynthSeg robust + parc 重跑 PDGM/BMSR/ISLES;三个 nnU-Net(PDGM 四序列、BMSR 三序列、ISLES 只用 DWI+ADC),按患者留 20%;脑侧入口与一致率报告(NOT_EVIDENCE)。
-3. 计划 3 fastMRI+ 小病灶:Gate 0 翻转修复(`fastmri_knee.py` 加 `[nr − y − h, nr − y)`,旧 56 GB 导出只换坐标文件)+ 患者 ID 折断言 + H1 重跑,再做脑 FLAIR 小病灶检测。
-4. (b) 阶段(关系模块)按决定 N8 等 (a) 阶段两部位出数后再拷问。
+1. 用户定第二臂 → 另写 nnDetection 计划（安装、SKM-TEA 五折、同一评估口径 `detection_metrics`）。
+2. 用户定 Gate 0.5 分层 → Level R 协议与工具（v2.6 PR-B）；读片人仍待填名。
+3. 交接推送后看 GitHub Actions 首跑；本轮已补 `setup-python` 的 `cache-dependency-path` 并钉死四个科学计算包版本（原本第一个会红的地方）；再红了先看 `setup-python` 与 pip 安装那两步的日志。
+4. 计划 2（脑掩膜三大类）与计划 3 的其余部分（脑 FLAIR 小病灶检测）未动；计划 3 的 Gate 0 部分已由本轮完成。
 
 ## 4. 坑与别重做
 
-- **箱填 nnU-Net 对小病灶不行**:软骨 < 1.8 mL 2/69、半月板 < 0.4 mL 1/34;别再调阈值或解码(都试过,`decode_variants.py`)。
-- nnU-Net `--npz` 的 `probabilities` 是 (C, Z, Y, X)(SimpleITK 轴序),`load_nnunet_probabilities` 转到 (C, X, Y, Z) 并断言与标签图 ≥ 99% 一致;别绕开它。
-- 已训模型只认 SKM-TEA 导出帧 (I, P, R);外来 NIfTI 走 `--frame world`,导出/缓存文件走 `--frame h5`。SKM-TEA DICOM 两个回波共用一个 SeriesInstanceUID,dicom2nifti 须先按 EchoNumbers 拆开。
-- zsh 数组下标从 1 起数:`${GPUS[0]}` 为空,fold 0 首次没拿到卡。命令里写显式卡号。
-- nohup 的 stdout 缓冲让 `logs/nnunet902_fold*.log` 滞后几十轮;看 `results/fold_k/training_log_*.txt`。Monitor 脚本里 pgrep 会匹配自身命令行。
-- 训练同时最多 4 个 nnU-Net(每个 8 个数据加载进程,CPU ≤ 48 线程)。
-- 老坑不变:fastMRI+ 框 y 从 RSS 底部数起,Gate 0 前不引用 H1;脑侧 SynthSeg 查表不是真值;别在 SKM-TEA 上找"退化让绑定失效"。
+- **只用 `derived/fastmri_knee/leg2_gate0/`**；旧根 `leg2/` 的框是镜像的，加载器会拒载，别绕开 `load_lesions / load_folds`。旧 `leg2/detections/` 与主目录 `runs/detector_fold*` 是 09-15 的产物，只作历史。
+- fastMRI+ 脑的系列号不等于分辨率：按 `manifest`/头文件里的实测间距分层。
+- 2.5D 检测器的分数按族差很大（积液低），单一阈值的工作点只剩半月板/软骨；要比较别的检测器时用同一套 `anatobind/eval/detection_metrics.py` 口径。
+- 检出缓存用 `--score-min 0.01`，旧缓存是 0.05；这个阈值还会改变哪些逐层框被合并进 3D 病灶，所以 09-15 与 09-24 的阈值扫描不严格可比，结论不依赖这一点。
+- GPU 1–6 常被用户其他会话占用：`logs/train_chain_gate0.sh <gpu> <folds…>`（未跟踪）按折串行训练 + 缓存，靠 `.claimed` 标记避免两条链撞车；每卡只放一个训练。
+- `.github/workflows/tests.yml` 装 CPU torch 2.5.1 + `requirements-ci.txt`（`cache-dependency-path` 指到 `requirements-ci.txt`，四个科学计算包版本钉死）；测试不读 `/data2`；红了先看 `setup-python` 与 pip 安装那两步的日志。
+- 老坑不变：别在 SKM-TEA 上找"退化让绑定失效"；脑侧 SynthSeg 查表不是真值；nnU-Net npz 轴序 (C,Z,Y,X)。
 
 ## 5. 关键决定的为什么
 
-- 先能力后网络(Q1):膝上目标 1、3 早已有数,自研 mask 头留出 Dice 0.38 对 nnU-Net 0.86,从头训网络没有胜算;缺的只是病灶检测。
-- 箱填 nnU-Net 作第一臂(Q9):复用已跑通的 Dataset901 流程,一天出结果;它输了,输在召回,证据齐全(§1)。
-- 达标线只设在目标 2(Q12):目标 1、3 只报数;门是里程碑门不是科学主张(文献无 SKM-TEA 检测基线)。
-- 膝真值用 tissue_id、脑只报一致率(Q4):重叠率当真值会让查表按定义满分(v2.6 红线)。
-- 所在结构报集合值(N4):脑肿瘤跨脑叶时单一主结构说不清;膝上主结构就是答案。
+- 翻转函数放 `fastmri.py` 而非 v2.6 §17 说的 `fastmri_knee.py`（D1）：脑侧 Gate 0.5 也用，不让脑代码反向依赖膝模块。
+- 新根链接旧卷、不重导 56 GB（D2）；旧 manifest 不改写、靠缺版本列拒载（D3）：用户规矩不覆盖已有数据文件。
+- H1 重跑只换框不换任何训练参数（D6）：只改一个变量才能回答"塌陷是不是框的问题"——答案：框是一部分原因，最高分从 0.067 到 0.47（`effusion_by_threshold.txt` 末行），但不是全部。
+- 迁移判据取四个共享族、与计划 1 同口径（D7）：bone 族 SKM-TEA 没有，迁移用不上。
+- Gate 0.5 的宿主类合并左右、脑室/CSF 只作地标（D8）、`d_interface` 用类距离而非 26 邻域交界体素（D9）：5 mm 层厚下 t ≤ 4 才是面内准则。
+- Gate 0 审计门槛（膝 89.4%）没过仍判通过：门槛是从小样本定的，证据（系列全过、叠图、差距分布）指向映射正确；脑侧第一次审计误含非 FLAIR 序列，FLAIR-only 重跑后脑已过 90%，唯一没过的是膝；事实原样记录，可推翻。
+- Gate 0.5 的 t 不自动冻结（D10）：困难组过半时分层失去意义，v2.6 §4.5 自己写过这条警示。
+- CI 的分支推送推迟到交接（本轮裁定）：推送是仓库外的动作，交接时一并问一次。

@@ -8,22 +8,21 @@ torch = pytest.importorskip("torch")
 from anatobind.data_engine.fastmri_knee import VIEWS
 
 
-def _export(root, files, slices=9, size=32):
-    import csv
+def _export(root, files, slices=9, size=32, version=2):
+    from anatobind.data_engine.fastmri_knee import write_lesions, write_manifest
     rng = np.random.default_rng(0)
-    rows = []
+    lesions, manifest = [], []
     for i, name in enumerate(files):
         d = root / name
         d.mkdir(parents=True)
         for v in VIEWS:
             np.save(d / f"{v}.npy", rng.normal(size=(slices, size, size)).astype(np.float16))
         (d / "meta.json").write_text(json.dumps({"slices": slices, "size": size, "patient_id": f"p{i}"}))
-        rows.append({"lesion_id": i, "file": name, "family": "meniscus", "z0": 3, "z1": 5,
-                     "x0": 4, "y0": 6, "x1": 14, "y1": 18, "n_boxes": 3})
-    with open(root / "lesions.csv", "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0]))
-        w.writeheader()
-        w.writerows(rows)
+        lesions.append({"file": name, "family": "meniscus", "z0": 3, "z1": 5, "x0": 4, "y0": 6, "x1": 14, "y1": 18, "n_boxes": 3})
+        manifest.append({"file": name, "out_dir": str(d), "slices": slices, "n_lesions": 1, "status": "ok",
+                         "patient_id": f"p{i}", "n_rows": size, "n_cols": size, "transform_version": version})
+    write_lesions(root / "lesions.csv", lesions)
+    write_manifest(root / "manifest.csv", manifest)
     (root / "folds.json").write_text(json.dumps({"folds": {f: i % 5 for i, f in enumerate(files)}}))
 
 
@@ -56,3 +55,13 @@ def test_resume_continues_from_the_checkpoint(tmp_path):
     main(args + ["--steps", "4", "--resume"])
     rows = [json.loads(l) for l in open(out / "metrics.jsonl")]
     assert [r["step"] for r in rows] == [1, 2, 3, 4]
+
+
+def test_load_fold_refuses_an_export_written_before_gate_0(tmp_path):
+    from anatobind.data_engine.fastmri_knee import LegacyBoxConvention
+    from anatobind.train.train_detector import load_fold
+    root = tmp_path / "leg2"
+    root.mkdir()
+    _export(root, [f"file{i}" for i in range(5)], version=1)
+    with pytest.raises(LegacyBoxConvention):
+        load_fold(root, 0)

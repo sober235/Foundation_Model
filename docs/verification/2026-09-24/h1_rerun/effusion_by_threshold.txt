@@ -1,0 +1,5 @@
+0.01 {'cartilage': '489/1324 loc, 376 fam', 'effusion': '130/327 loc, 117 fam', 'ligament': '42/523 loc, 1 fam', 'bone': '112/615 loc, 29 fam', 'meniscus': '580/1227 loc, 235 fam'}
+0.05 {'cartilage': '487/1324 loc, 376 fam', 'effusion': '128/327 loc, 116 fam', 'ligament': '42/523 loc, 1 fam', 'bone': '103/615 loc, 22 fam', 'meniscus': '580/1227 loc, 235 fam'}
+0.1 {'cartilage': '444/1324 loc, 346 fam', 'effusion': '55/327 loc, 52 fam', 'ligament': '33/523 loc, 0 fam', 'bone': '47/615 loc, 0 fam', 'meniscus': '555/1227 loc, 223 fam'}
+0.18 {'cartilage': '159/1324 loc, 109 fam', 'effusion': '0/327 loc, 0 fam', 'ligament': '7/523 loc, 0 fam', 'bone': '17/615 loc, 0 fam', 'meniscus': '360/1227 loc, 200 fam'}
+predicted family counts at thr 0.18: {'cartilage': 693, 'meniscus': 1625} | max score on the clean view: 0.466

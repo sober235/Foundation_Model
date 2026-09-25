@@ -7,6 +7,7 @@ overlap, the nearest candidate in millimetres wins. An effusion has no host and 
 host is outside the ontology.
 """
 import numpy as np
+from scipy import ndimage
 
 CANDIDATES = {0: (5, 6), 1: (1, 2, 3, 4)}
 EFFUSION, LIGAMENT = 2, 3
@@ -85,3 +86,34 @@ def describe_host(index, box, cls):
         return {"host_label": None, "host_name": "", "side": "-", "host_fractions": fractions}
     return {"host_label": int(host), "host_name": HOST_NAMES[int(host)], "side": SIDE_OF_LABEL[int(host)],
             "host_fractions": fractions}
+
+
+# --- brain: category-free lookup over SynthSeg labels (v2.6 §4.5; the 2026-09-15 probe's rule) ------------------
+BRAIN_ALL = (2, 41, 3, 42, 4, 43, 5, 44, 7, 46, 8, 47, 10, 49, 11, 50, 12, 51, 13, 52, 14, 15, 16, 17, 53, 18, 54,
+             24, 26, 58, 28, 60)
+BRAIN_PARENCHYMA = tuple(l for l in BRAIN_ALL if l not in (4, 43, 5, 44, 14, 15, 24))
+
+
+class BrainLookup:
+    """argmax overlap over the candidate labels among the lesion's voxels; zero overlap -> the candidate nearest in
+    mm (EDT on the volume spacing). No class restriction: the brain CSV has no host-implying categories.
+    seg is a (col, row, slice) label map; rects are (col0, col1, row0, row1, slice) from geometry.member_rects."""
+
+    def __init__(self, seg, spacing, candidates=BRAIN_ALL):
+        self.seg = np.asarray(seg)
+        self.cand = np.array(sorted(candidates))
+        _, idx = ndimage.distance_transform_edt(~np.isin(self.seg, self.cand), sampling=spacing, return_indices=True)
+        self.nearest = self.seg[tuple(idx)]
+
+    def host(self, rects):
+        """(label, overlap fraction); (None, 0.0) when the lesion has no voxel on the grid."""
+        if not rects:
+            return None, 0.0
+        vals = np.concatenate([self.seg[c0:c1, r0:r1, s].ravel() for c0, c1, r0, r1, s in rects])
+        cv = vals[np.isin(vals, self.cand)]
+        if cv.size:
+            counts = np.bincount(cv, minlength=int(self.cand.max()) + 1)
+            return int(np.argmax(counts)), float(counts.max() / vals.size)
+        near = np.concatenate([self.nearest[c0:c1, r0:r1, s].ravel() for c0, c1, r0, r1, s in rects])
+        counts = np.bincount(near[near > 0], minlength=int(self.cand.max()) + 1)
+        return int(np.argmax(counts)), 0.0
