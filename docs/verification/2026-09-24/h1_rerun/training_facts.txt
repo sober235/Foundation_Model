@@ -1,0 +1,36 @@
+fold 0: {"step": 20000, "loss": 3.988016128540039, "heat": 2.910313844680786, "offset": 0.4549015760421753, "size": 0.6228008270263672, "grad_norm": 14.673797607421875, "lr": 0.0
+fold 1: {"step": 20000, "loss": 4.778977394104004, "heat": 3.4345898628234863, "offset": 0.6875240206718445, "size": 0.6568639278411865, "grad_norm": 14.733867645263672, "lr": 0.
+fold 2: {"step": 20000, "loss": 4.027317047119141, "heat": 2.983098268508911, "offset": 0.45015716552734375, "size": 0.5940616726875305, "grad_norm": 11.716435432434082, "lr": 0.
+fold 3: {"step": 20000, "loss": 4.154786109924316, "heat": 2.893512487411499, "offset": 0.453155517578125, "size": 0.8081178665161133, "grad_norm": 15.354567527770996, "lr": 0.0,
+fold 4: {"step": 20000, "loss": 4.0887675285339355, "heat": 2.912405490875244, "offset": 0.5767822265625, "size": 0.599579930305481, "grad_norm": 14.872300148010254, "lr": 0.0, "
+fold 0 steps 20000 s/step 0.179 loss last50 4.267 heat 3.094 offset 0.499 size 0.674
+fold 1 steps 20000 s/step 0.170 loss last50 4.197 heat 3.031 offset 0.506 size 0.660
+fold 2 steps 20000 s/step 0.168 loss last50 4.365 heat 3.202 offset 0.495 size 0.668
+fold 3 steps 20000 s/step 0.170 loss last50 4.291 heat 3.074 offset 0.507 size 0.710
+fold 4 steps 20000 s/step 0.169 loss last50 4.360 heat 3.200 offset 0.503 size 0.657
+pkl per fold: 1603 1708 1680 1589 1624  total 8204
+chain log:
+2026-09-24 16:20:09 fold 0 on GPU 0: train
+2026-09-24 17:20:07 fold 0 train rc=0
+2026-09-24 17:20:07 fold 0 on GPU 0: cache detections
+2026-09-24 17:47:46 fold 0 cache rc=0
+2026-09-24 17:47:46 fold 1 on GPU 0: train
+2026-09-24 18:44:41 fold 1 train rc=0
+2026-09-24 18:44:41 fold 1 on GPU 0: cache detections
+2026-09-24 19:12:54 fold 1 cache rc=0
+2026-09-24 19:12:54 fold 2 on GPU 0: train
+2026-09-24 20:09:04 fold 2 train rc=0
+2026-09-24 20:09:04 fold 2 on GPU 0: cache detections
+2026-09-24 20:37:36 fold 2 cache rc=0
+2026-09-24 20:37:36 fold 3 on GPU 0: train
+2026-09-24 21:34:29 fold 3 train rc=0
+2026-09-24 21:34:29 fold 3 on GPU 0: cache detections
+2026-09-24 22:00:28 fold 3 cache rc=0
+2026-09-24 22:00:28 fold 4 on GPU 0: train
+2026-09-24 22:57:03 fold 4 train rc=0
+2026-09-24 22:57:03 fold 4 on GPU 0: cache detections
+2026-09-24 23:24:24 fold 4 cache rc=0
+2026-09-24 23:24:24 chain on GPU 0 done
+config check (fold 0 vs legacy run):
+identical on ['steps', 'warmup', 'batch', 'lr', 'wd', 'seed', 'workers', 'model', 'grad_ckpt', 'tiny', 'parameters']
+export_root new: /data2/congcong/data/FM_data/derived/fastmri_knee/leg2_gate0 | legacy: /data2/congcong/data/FM_data/derived/fastmri_knee/leg2
