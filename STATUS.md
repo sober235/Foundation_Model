@@ -33,10 +33,10 @@
   t_frozen = 2 by rule, hard share 0.582 > 0.5 -> GATE05: DECIDE (t 未冻结)
   ```
   分层发现：v2.6 按系列号分的"低分辨率组"不准——205/209/210 与 200 同为 0.6875 mm，真正 0.86 mm 面内的是 202(部分)/203/206 共 90 个病灶，另有 43 个在 3 mm 层厚卷上；两种分层都已报告（决定 D11）。
-- **代码与测试**：`anatobind/eval/geometry.py`（新）、`anatobind/eval/lookup.py::BrainLookup`、`anatobind/eval/fastmri_knee_detection.py`（新）、四个新脚本（`relink_fastmri_knee_gate0 / audit_fastmri_plus_boxes / eval_fastmri_knee_detection / brain_frame`）、`cache_detections.py --score-min`；`.github/workflows/tests.yml` + `requirements-ci.txt`（未在 GitHub 上跑过）。
+- **代码与测试**：`anatobind/eval/geometry.py`（新）、`anatobind/eval/lookup.py::BrainLookup`、`anatobind/eval/fastmri_knee_detection.py`（新）、四个新脚本（`relink_fastmri_knee_gate0 / audit_fastmri_plus_boxes / eval_fastmri_knee_detection / brain_frame`）、`cache_detections.py --score-min`（默认模型改为 `runs/detector_gate0_fold*`，已有缓存不加 `--overwrite` 不覆盖）、`build_fastmri_knee.py` 的导出根守卫（有 manifest 或卷目录是链接就拒跑，防止顺着 `leg2_gate0` 的链接写进旧根）；`.github/workflows/tests.yml` + `requirements-ci.txt`（未在 GitHub 上跑过）。整体评审（09-25）的 6 条 Important 已全部修掉，复审确认。
   ```
   PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
-  397 passed
+  413 passed
   ```
 - 09-23 之前的证据链不变（膝 G2 不过、SKM-TEA 箱填检测门不过 0.254、脑探针 q3 7.4%、查表天花板 0.958–0.968）。
 
