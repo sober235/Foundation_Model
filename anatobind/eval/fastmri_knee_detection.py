@@ -77,7 +77,7 @@ def patient_coverage(scans, patient_of, thr, iou=0.1):
 
 
 def fp_per_normal_scan(scans, thr):
-    """Detections per scan on the volumes the radiologist left without any annotation (true negatives)."""
+    """Detections per scan on the volumes without any annotation row (their patient's other volume may be annotated)."""
     normals = [s for s in scans if s["normal"]]
     n_fp = sum(sum(1 for d in s["dets"] if d["score"] >= thr) for s in normals)
     return {"n_normal": len(normals), "fp_per_normal_scan": n_fp / len(normals) if normals else 0.0}

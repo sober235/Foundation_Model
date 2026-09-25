@@ -4,8 +4,8 @@
 
 ## 1. 结论
 
-1. **Gate 0（fastMRI+ 框上下翻转）已落地。** 转换只在 `anatobind/data_engine/fastmri.py::convert_box_csv_to_rss` 一处；新导出根 `derived/fastmri_knee/leg2_gate0/` 链接旧卷目录、只换坐标文件，4016 个病灶与旧文件逐条对上（只有 y 翻转），折划分与旧的完全一致，旧根一个字节没动且现在会被拒载。全量亮度审计：膝 236 卷转换后胜出 211 卷（89.4%），脑 188 卷 166 卷（88.3%），每个系列都 ≥ 75%（最低 201 系列 76.8%）。**预先登记的组织级 90% 门槛两边都没到（差 0.6 / 1.7 个百分点），脚本判 `GATE0_AUDIT: FAIL`；按系列门槛加叠图判 Gate 0 通过（决定见 §2.4，用户 2026-09-24 已知晓未反对）。**
-2. **膝 H1 重跑：迁移判据不过。** 用修好的框、与 09-15 完全相同的配置重训五折 2.5D 检测器：clean 视图、四个共享族、患者五折、每卷假阳 ≤ 2 的工作点上，大类正确灵敏度 **0.091**（定位 0.155，阈值 0.18，每卷假阳 1.53；198 卷正常膝 1.41）；阈值放到 0.01 也只有定位 0.366 / 大类 0.215（每卷假阳 65.7）。`TRANSFER_GATE: FAIL`。旧 H1 门（可靠性头前置门）同样 FAIL：任何阈值都不能把扫描级正样本率压进 [0.2, 0.5]。与 09-15 的对照：那次最高分 0.067、300 卷只检出 208 个；这次检测器确实学到了东西（分数到 0.9、大病灶半月板最大三分位 312/409 能定位），但绝对召回离"可用"很远。**按预先登记的 D7：不迁移，推荐 VERDICT §4 的 ②（nnDetection 直训 SKM-TEA）。**
+1. **Gate 0（fastMRI+ 框上下翻转）已落地。** 转换只在 `anatobind/data_engine/fastmri.py::convert_box_csv_to_rss` 一处；新导出根 `derived/fastmri_knee/leg2_gate0/` 链接旧卷目录、只换坐标文件，4016 个病灶与旧文件逐条对上（只有 y 翻转），折划分与旧的完全一致，旧根一个字节没动且现在会被拒载。全量亮度审计：膝 236 卷转换后胜出 211 卷（89.4%）。脑侧第一次审计误把 16 个 AXT1 + 7 个 AXT1POST 卷也算了进去（`audit_organ` 当时没有对比度过滤，而统计假设的高信号病灶只对 FLAIR 成立）；按 FLAIR 过滤重跑（§2.3）后脑 165 卷转换后胜出 158 卷（95.8%），每个系列都 ≥ 89.5%，过 90% 门槛。**组织级唯一没过 90% 门槛的是膝（211/236 = 89.4%，差 0.6 个百分点），脚本判 `GATE0_AUDIT: FAIL`；按系列门槛加叠图判 Gate 0 通过（决定见 §2.4，用户 2026-09-24 已知晓未反对，但这条裁定仍需用户明确确认）。原来误含 AXT1/AXT1POST 的那次脑侧审计留在 `gate0/` 作历史。**
+2. **膝 H1 重跑：迁移判据不过。** 用修好的框、与 09-15 完全相同的配置重训五折 2.5D 检测器：clean 视图、四个共享族、患者五折、每卷假阳 ≤ 2 的工作点上，大类正确灵敏度 **0.091**（定位 0.155，阈值 0.18，每卷假阳 1.53；198 卷未标注卷 1.41——其中 100 卷的患者另一侧已标注、87 卷的另一侧有半月板/软骨/韧带病灶，患者级正常只有 98 卷，见 `unannotated_volumes.txt`）；阈值放到 0.01 也只有定位 0.366 / 大类 0.215（每卷假阳 65.7）。`TRANSFER_GATE: FAIL`。旧 H1 门（可靠性头前置门）同样 FAIL：任何阈值都不能把扫描级正样本率压进 [0.2, 0.5]。与 09-15 的对照：那次最高分 0.067、300 卷只检出 208 个；这次检测器确实学到了东西（最高分从 0.067 到 0.47，`effusion_by_threshold.txt` 末行；大病灶半月板最大三分位 312/409 能定位），但绝对召回离"可用"很远。**按预先登记的 D7：不迁移，推荐 VERDICT §4 的 ②（nnDetection 直训 SKM-TEA）。**
 3. **Gate 0.5：1297 个脑小病灶几何盘点完成，t 没有冻结（`GATE05: DECIDE`）。** 距离第二近脑区 ≤ 2 mm 的病灶占 58.2%，≤ 0 mm（框内已跨两个脑区）占 42.0%，≤ 5 mm 占 88.7%。按 v2.6 规则 t 应取 2 mm，但困难组过半（决定 D10 的警示情形），留给用户定分层方式。
 
 ## 2. Gate 0
@@ -59,9 +59,34 @@ GATE0_AUDIT: FAIL (knee >= 90%, brain >= 90%, every series with >= 3 volumes >= 
 - http://localhost:8765/anatobind_gate0/knee_effusion_asis_vs_converted.png ；/home/congcongliu/figs/anatobind_gate0/knee_effusion_asis_vs_converted.png
 - http://localhost:8765/anatobind_gate0/brain_small_lesions_per_series.png ；/home/congcongliu/figs/anatobind_gate0/brain_small_lesions_per_series.png
 
-### 2.4 判门决定（预先登记的门槛没过，为什么仍判通过）
+**这次审计脑侧把 16 个 AXT1 + 7 个 AXT1POST 卷也算了进去。** `audit_organ` 当时没有按序列做对比度过滤，而 Nonspecific white matter lesion / Lacunar infarct 的高信号统计只对 FLAIR 成立（`scripts/brain_frame.py` 一直是按 `"AXFLAIR" in file` 过滤的，这次审计脚本没有跟上）。加了 `file_filter` 关键字后按 FLAIR 过滤重跑，输出到新目录，原来这次（误含 AXT1/AXT1POST）留在 `gate0/` 作历史：
 
-按 `audit.json` 逐卷看：膝 25 个"原样胜出"的卷里，转换后框的亮度比中位仍是 1.43（两种放法都落在亮的液体上），差距中位 0.14，而转换胜出的 211 卷差距中位 0.45；脑 22 个原样胜出的卷差距中位 0.057，其中 8 卷只有 1–2 个框。没有任何系列整体失败，而系列级失败才是"某系列标在别的网格上"的信号；两张图里转换后的框全在亮病灶上、原样的全在暗处。判定：组织级 90% 是按 09-15 探针 30/24 卷样本定的，定紧了；映射正确，Gate 0 通过。**这条门槛没达到的事实原样保留，不改数字、不改脚本。**
+```
+PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=4 nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/audit_fastmri_plus_boxes.py \
+    --out docs/verification/2026-09-24/gate0/flair_only --figs ~/figs/anatobind_gate0/flair_only
+```
+
+`gate0/flair_only/audit.md` 原样：
+
+```
+| organ | volumes | converted wins | as-is wins | median ratio as-is | median ratio converted |
+| knee  |   236   |      211       |     25     |       1.292        |         1.661          |
+| brain |   165   |      158       |      7     |       1.051        |         1.147          |
+brain per series (n, converted wins, RSS rows):
+  200: n=59, converted=58, rows=[320]      201: n=41, converted=38, rows=[320]
+  202: n=17, converted=17, rows=[256, 320] 203: n=19, converted=17, rows=[213, 234, 276]
+  205: n=1,  converted=1,  rows=[320]      206: n=4,  converted=4,  rows=[256]
+  209: n=11, converted=10, rows=[320]      210: n=13, converted=13, rows=[320]
+GATE0_AUDIT: FAIL (knee >= 90%, brain >= 90%, every series with >= 3 volumes >= 75%)
+```
+
+脑 158/165 = 95.8%，过 90% 门槛；每个系列都 ≥ 89.5%（最低 203：17/19）。`GATE0_AUDIT` 仍是 FAIL——因为 knee 211/236 = 89.4% 没过，组织级唯一没过 90% 的是膝。图（FLAIR-only 重跑，转换前后各一行）：
+
+- http://localhost:8765/anatobind_gate0/flair_only/brain_small_lesions_per_series.png ；/home/congcongliu/figs/anatobind_gate0/flair_only/brain_small_lesions_per_series.png
+
+### 2.4 判门决定（膝组织级门槛没过，为什么仍判通过）
+
+按 `audit.json` 逐卷看：膝 25 个"原样胜出"的卷里，转换后框的亮度比中位仍是 1.43（两种放法都落在亮的液体上），差距中位 0.14，而转换胜出的 211 卷差距中位 0.45。没有任何系列整体失败，而系列级失败才是"某系列标在别的网格上"的信号；图里转换后的框全在亮病灶上、原样的全在暗处。判定：组织级 90% 是按 09-15 探针 30/24 卷样本定的，定紧了；映射正确，Gate 0 通过。膝 211/236 = 89.4%，只差 0.6 个百分点。脑侧的同一条论证不再需要——FLAIR-only 重跑（§2.3）后脑 158/165 = 95.8%，已经过 90% 门槛。**这条门槛没达到的事实原样保留，不改数字、不改脚本；组织级唯一没过 90% 的是膝。**
 
 ## 3. 膝 H1 重跑
 
@@ -79,7 +104,7 @@ pkl per fold: 1603 1708 1680 1589 1624  total 8204
 config check (fold 0 vs legacy run): identical on [steps, warmup, batch, lr, wd, seed, workers, model, grad_ckpt, tiny, parameters]
 ```
 
-（09-15 那次五折末段 heat 4.22–4.32；这次 2.9–3.4。）
+（同一 last-50 窗口：09-15 那次五折末段 heat 4.120–4.264；这次 3.031–3.202，见 `training_facts.txt` 里"legacy runs (09-14/15), same last-50 window"一段。）
 
 ### 3.2 评估
 
@@ -178,15 +203,15 @@ GATE05: DECIDE
 ## 5. 未做与限制
 
 - 迁移判据只看四个共享族；bone 族（fastMRI+ 独有）不进判据，五族数字一并报告。
-- 检出缓存阈值 0.01 与 09-15 的 0.05 不同；`check_h1.py` 的阈值搜索从 0.05 起，两者可比。
+- 检出缓存阈值 0.01 与 09-15 的 0.05 不同；这个阈值还会改变哪些逐层框被合并进 3D 病灶，所以 09-15 与 09-24 的阈值扫描不严格可比。结论不依赖这一点。
 - 逐族阈值、损失归一化、训练更久、更大模型：都没做，也不在本轮登记的判据内。
 - `anatobind/eval/geometry.py` 只有距离变换与 d_interface/Δd；v2.6 §17 的 16 维几何留给 PR-C。
-- GitHub Actions 工作流已入库但尚未在 GitHub 上跑过（分支未推；交接推送后首次触发）。
+- GitHub Actions 工作流已入库但尚未在 GitHub 上跑过（分支未推；交接推送后首次触发）；本轮已补 `setup-python` 的 `cache-dependency-path` 并钉死四个科学计算包版本（本是第一个会红的地方），红了先看 `setup-python` 与 pip 安装那两步的日志。
 - 旧 `runs/detector_fold*`（主目录）与旧 `derived/fastmri_knee/leg2/detections/` 保留未删；新训练在工作树 `runs/detector_gate0_fold*`，新检出在 `leg2_gate0/detections/`。
-- 组织级 90% 审计门槛没达到（§2.4）；Gate 0.5 的 t 没有冻结（§4）。
+- 膝组织级 90% 审计门槛没达到（211/236 = 89.4%，差 0.6 个百分点，§2.4）；脑侧 FLAIR-only 重跑已过 90%（158/165 = 95.8%，§2.3）；Gate 0.5 的 t 没有冻结（§4）。
 
 ## 6. 下一步建议
 
 1. 第二臂改走 VERDICT §4 的 ②：nnDetection 直训 SKM-TEA（另写计划）。
 2. Gate 0.5 的分层由用户在三个选项里定，之后才写 Level R 协议（PR-B）。
-3. 交接推送后看 CI 首跑；红了就补 `requirements-ci.txt`。
+3. 交接推送后看 CI 首跑；红了先看 `setup-python` 与 pip 安装那两步的日志。

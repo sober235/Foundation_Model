@@ -1,0 +1,5 @@
+manifest volumes: 1172
+unannotated volumes (no row at all in knee.csv, study-level rows count as annotated): 198
+of those, the patient's OTHER volume is annotated: 100
+of those, the annotated sibling has a meniscus/cartilage/ligament lesion: 87
+patient-level normal (neither this volume nor its sibling is annotated): 98

@@ -2,7 +2,7 @@
 # scripts/brain_frame.py
 """Gate 0.5 (v2.6 §4.5): geometry of every fastMRI+ FLAIR small lesion (nonspecific white-matter lesion, lacunar
 infarct; >= 3 px; the leg 2 merge rule) on the clean SynthSeg parcellation, before any reader sees an image.
-Per lesion: the category-free lookup host (33 labels, with and without ventricles/CSF as candidates), the nearest
+Per lesion: the category-free lookup host (the 32 non-background aseg labels, with and without ventricles/CSF as candidates), the nearest
 host class, d1, d_interface (= d2) and Δd (anatobind.eval.geometry), in-plane extent, slice count, series and
 measured-geometry strata. Then the share of the hard group at t = 2/3/4/5 mm and the frozen t.
 
