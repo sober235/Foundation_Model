@@ -76,8 +76,11 @@ def audit_volume(rss, rows):
     return asis, conv
 
 
-def audit_organ(csv_path, root, labels, acquisition=None):
+def audit_organ(csv_path, root, labels, acquisition=None, file_filter=None):
+    """file_filter: predicate on the file stem; when given, rows whose file fails it are dropped before grouping."""
     rows = [r for r in read_fastmri_plus_rows(csv_path) if r["label"] in labels and r["width"] >= 3 and r["height"] >= 3]
+    if file_filter is not None:
+        rows = [r for r in rows if file_filter(r["file"])]
     by_file = defaultdict(list)
     for r in rows:
         by_file[r["file"]].append(r)
@@ -161,7 +164,7 @@ def main():
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     knee = audit_organ(KNEE_CSV, KNEE_ROOT, KNEE_LABELS, acquisition="CORPDFS_FBK")
-    brain = audit_organ(BRAIN_CSV, BRAIN_ROOT, BRAIN_LABELS)
+    brain = audit_organ(BRAIN_CSV, BRAIN_ROOT, BRAIN_LABELS, file_filter=lambda f: "AXFLAIR" in f)
     summary = {"knee": summarise(knee), "brain": summarise(brain)}
     summary["pass"] = decide(summary)
     (a.out / "audit.json").write_text(json.dumps({"summary": summary, "knee": knee, "brain": brain}, indent=1))
