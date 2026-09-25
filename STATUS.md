@@ -60,7 +60,7 @@
 - **只用 `derived/fastmri_knee/leg2_gate0/`**；旧根 `leg2/` 的框是镜像的，加载器会拒载，别绕开 `load_lesions / load_folds`。旧 `leg2/detections/` 与主目录 `runs/detector_fold*` 是 09-15 的产物，只作历史。
 - fastMRI+ 脑的系列号不等于分辨率：按 `manifest`/头文件里的实测间距分层。
 - 2.5D 检测器的分数按族差很大（积液低），单一阈值的工作点只剩半月板/软骨；要比较别的检测器时用同一套 `anatobind/eval/detection_metrics.py` 口径。
-- 检出缓存用 `--score-min 0.01`，旧缓存是 0.05；`check_h1.py` 的阈值从 0.05 起，可比。
+- 检出缓存用 `--score-min 0.01`，旧缓存是 0.05；这个阈值还会改变哪些逐层框被合并进 3D 病灶，所以 09-15 与 09-24 的阈值扫描不严格可比，结论不依赖这一点。
 - GPU 1–6 常被用户其他会话占用：`logs/train_chain_gate0.sh <gpu> <folds…>`（未跟踪）按折串行训练 + 缓存，靠 `.claimed` 标记避免两条链撞车；每卡只放一个训练。
 - `.github/workflows/tests.yml` 装 CPU torch 2.5.1 + `requirements-ci.txt`（`cache-dependency-path` 指到 `requirements-ci.txt`，四个科学计算包版本钉死）；测试不读 `/data2`；红了先看 `setup-python` 与 pip 安装那两步的日志。
 - 老坑不变：别在 SKM-TEA 上找"退化让绑定失效"；脑侧 SynthSeg 查表不是真值；nnU-Net npz 轴序 (C,Z,Y,X)。
