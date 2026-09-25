@@ -26,16 +26,30 @@ def job(args):
     return export_volume(path, lesions, Path(out_root) / name, seed)
 
 
+def refuse_existing_export(out, names):
+    """Refuse to export into a root that already has a manifest, or whose volume directories are symlinks
+    (the Gate 0 relink of leg2_gate0 into leg2/): export_volume would write through them into protected data."""
+    out = Path(out)
+    if (out / "manifest.csv").exists():
+        raise SystemExit(f"{out / 'manifest.csv'} already exists; refusing to export into it (use --out <fresh dir>).")
+    for n in names:
+        if (out / n).is_symlink():
+            raise SystemExit(f"{out / n} is a symlink; exporting would write through it into the linked root "
+                             f"(use --out <fresh dir>).")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", type=Path, default=EXPORT_ROOT)
     ap.add_argument("--limit", type=int, default=0, help="export only the first N volumes (smoke test)")
     a = ap.parse_args()
-    a.out.mkdir(parents=True, exist_ok=True)
 
     paths = volume_paths()
     names = sorted(paths)[:a.limit] if a.limit else sorted(paths)
+    refuse_existing_export(a.out, names)
+    a.out.mkdir(parents=True, exist_ok=True)
+
     geo = {n: volume_geometry(paths[n]) for n in names}
     kept, dropped = clean_boxes(read_annotations(ANNOTATIONS))
     kept = [r for r in kept if r["file"] in geo]                       # boxes of volumes that are not on disk cannot be exported
