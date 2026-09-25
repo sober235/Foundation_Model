@@ -34,3 +34,10 @@ chain log:
 config check (fold 0 vs legacy run):
 identical on ['steps', 'warmup', 'batch', 'lr', 'wd', 'seed', 'workers', 'model', 'grad_ckpt', 'tiny', 'parameters']
 export_root new: /data2/congcong/data/FM_data/derived/fastmri_knee/leg2_gate0 | legacy: /data2/congcong/data/FM_data/derived/fastmri_knee/leg2
+
+legacy runs (09-14/15), same last-50 window:
+fold 0 steps 20000 s/step 0.314 loss last50 5.710 heat 4.215 offset 0.493 size 1.002
+fold 1 steps 20000 s/step 0.184 loss last50 5.539 heat 4.120 offset 0.504 size 0.915
+fold 2 steps 20000 s/step 0.192 loss last50 5.735 heat 4.264 offset 0.498 size 0.973
+fold 3 steps 20000 s/step 0.196 loss last50 5.647 heat 4.165 offset 0.501 size 0.982
+fold 4 steps 20000 s/step 0.177 loss last50 5.729 heat 4.254 offset 0.499 size 0.976
