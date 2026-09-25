@@ -30,7 +30,7 @@
 - **脑侧关系真值只能来自 Level R 放射科医生人标**;SynthSeg + 重叠查表只是 C1/C2 伪参照(与 B0 同源,良性预处理就让它改答 2.8–6.0%),只用于训练、调试与分层,不定义任何"更准"的主张。
 - **fastMRI+ 的框 y 从 RSS 底部数起**（官方 README：转 DICOM 时上下翻转），框占行 `[nr − y − h, nr − y)`，转换只在 `anatobind/data_engine/fastmri.py::convert_box_csv_to_rss` 一处。**只认 RSS 帧导出（manifest `transform_version 2`）：膝用 `derived/fastmri_knee/leg2_gate0/`，旧根 `leg2/` 是镜像框，`load_manifest / load_lesions / load_folds` 会拒载，别绕开。** 脑侧读框走 `read_fastmri_plus_rows → rows_to_rss_frame → merge_boxes_3d`，`nr` 按卷从 `reconstruction_rss` 取（320/276/256/234/213 都有）。
 - **fastMRI+ 脑的系列号不等于分辨率**：205/209/210 与 200 同为 320×320 @ 0.6875 mm，0.86 mm 面内的是 202（部分）/203/206；分层按实测间距（`volume_geometry`），不按系列号。
-- **Gate 0.5 的几何量**（`anatobind/eval/geometry.py`）：宿主类按 v2.6 §3 合并左右，脑室/CSF 只作地标；`d_interface` = 病灶到第二近宿主类的距离，`Δd` = 第二近 − 第一近。困难组阈值 t **未冻结**（≤ 2 mm 已占 58%），定分层前别拿 t = 2 当定论。
+- **Gate 0.5 的几何量**（`anatobind/eval/geometry.py`）：宿主类按 v2.6 §3 合并左右，脑室/CSF 只作地标；`d_interface` = 病灶到第二近宿主类的距离，`Δd` = 第二近 − 第一近。困难组阈值 t **不冻结**：2026-09-25 拍板改为 d_interface 四档分层（0 / 0–2 / 2–4 / >4 mm）、全集标注，不做 H1 富集抽样（v2.6 §25 第 9 项）。
 - 关系基线矩阵固定为 B0 / Bprior / Bgeo+ / B1 / B2 / B3 / B4 / B5(v2.6 §10);Bgeo+ 与学习模型必须共用同一套 16 维扩展几何(§11)。`IndependentCandidateHead` 是 B1,不是候选竞争模型。B2 的图像小块与 B4 的病灶编码器输入完全相同(§10.1)。
 - **折按 h5 `patient_id` 划分**并断言不重叠(v2.6 §4.4);外层五折只用一次,所有选模型、调参在内层;外层测试折的 Level R 标签封存,开发者不看(§12.6–12.7)。
 - **困难组 H1 的定义与任何模型、任何宿主答案无关**:病灶表面到任意两块候选脑区交界面的距离 ≤ t,t 在 Gate 0.5 后、模型前冻结(§4.5、§7.3)。脑室与 CSF 只作地标,不作宿主(§3)。主终点是全部病灶的集合值正确性(§7.8)。
