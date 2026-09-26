@@ -44,6 +44,7 @@ def served(tmp_path):
     t.start()
     yield store, f"http://127.0.0.1:{srv.server_address[1]}"
     srv.shutdown()
+    srv.server_close()
 
 
 def get(base, path, token=None, raw=False):
@@ -89,10 +90,12 @@ def test_static_pages_and_enums_need_no_token(served):
 
 
 def test_invalid_or_missing_token_is_403_everywhere(served):
-    _, base = served
-    for path in ("/api/me", "/api/list", "/api/lesion/0", f"/api/volume/{CODE}.json", "/api/disagreements"):
-        assert get(base, path, BAD)[0] == 403 and get(base, path)[0] == 403
+    store, base = served
+    for path in ("/api/me", "/api/list", "/api/lesion/0", f"/api/volume/{CODE}.json", "/api/disagreements", "/api/adjudicate/1"):
+        assert get(base, path, BAD)[0] == 403 and get(base, path)[0] == 403, path
     assert post(base, "/api/label", BAD, {"lesion_id": 0, **WM})[0] == 403
+    assert post(base, "/api/adjudication", BAD, {"lesion_id": 1, **CX, "reason": "x"})[0] == 403
+    assert store.label_rows() == [] and store.adjudication_rows() == []
 
 
 def test_reader_sees_only_their_own_order_and_answers(served):
@@ -173,6 +176,10 @@ def test_adjudicator_sees_disagreements_anonymously_and_can_rule(served):
         store.submit_label("r1", lid, a)
         store.submit_label("r2", lid, b)
     assert get(base, "/api/disagreements", T1)[0] == 403
+    for tok in (T1, T2):                                               # lesion 1 is a real disagreement: 403 is the role check
+        assert get(base, "/api/adjudicate/1", tok)[0] == 403
+        assert post(base, "/api/adjudication", tok, {"lesion_id": 1, **CX, "reason": "x"})[0] == 403
+    assert store.adjudication_rows() == []
     status, dis, _ = get(base, "/api/disagreements", TA)
     assert status == 200 and dis == [{"lesion_id": 1, "done": False}, {"lesion_id": 2, "done": False}]
     assert get(base, "/api/me", TA)[1]["disagreements"] == 2
@@ -219,6 +226,7 @@ def test_adjudicator_routes_report_409_without_two_readers(tmp_path):
         assert get(base, "/api/disagreements", TA)[0] == 409 and get(base, "/api/me", TA)[0] == 409
     finally:
         srv.shutdown()
+        srv.server_close()
 
 
 def test_server_script_refuses_a_missing_database(tmp_path, monkeypatch):

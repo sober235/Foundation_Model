@@ -1,16 +1,15 @@
 # Level R 冒烟部署记录（2026-09-26）
 
-对应任务 brief `docs/superpowers/sdd/2026-09-26-level-r-annotation-tooling/task-12-brief.md` Step 3（真实导出）与 Step 4（冒烟部署）。冒烟库与正式库分离：
+对应实施计划 `docs/superpowers/plans/2026-09-26-level-r-annotation-tooling.md` Task 12 的 Step 3（真实导出）与 Step 4（冒烟部署）。冒烟库与正式库分离：
 冒烟库 `S=/data2/congcong/data/FM_data/derived/level_r_smoke`，只读复用真实导出 `D=/data2/congcong/data/FM_data/derived/level_r`
 的 `volumes/`。冒烟服务端口 8791，与正式服务的 8790 分离。
 
-**方法学说明（与执行环境有关，不改变命令语义）：**
-1. 本环境把 `sleep` 判为禁用命令；因此"起服务"与"确认启动行"拆成两次独立调用（先起服务，再 `cat server.log`），
-   与 brief 里 `sleep 2` 等价，只是不用 sleep。
+**方法学说明（不改变命令语义）：**
+1. 服务启动后先查看 server.log 再发请求。
 2. 部分核对命令拆成独立命令逐条执行（变量以字面值代入），数值不变；curl 检查一节里的 `$L`/`$V` 分别用字面值
    830 / b3e1f6f0 代入。除此之外命令与输出均为逐条真实执行的原样记录，未做拼接或删减。
 3. 读者/裁定的 token 只在 `add-reader` 输出里出现一次，已 `tee` 到 `$S/tokens.txt`（不在仓库里、不提交）。
-   本文档与任务报告里所有 token 一律替换成 `<token>`。
+   本文档里所有 token 一律替换成 `<token>`。
 
 ## Step 3 真实导出
 
@@ -37,7 +36,7 @@ $ python -c "import json; r=json.load(open('$D/lesions.json')); print(len(r), le
 1297 165
 ```
 
-与 brief 期望一致：`exported 1297 lesions from 165 volumes`；`volumes/` 330 个文件（165 卷 × 2：`.json` + `.u16`）；`1297 165`。
+与计划期望一致：`exported 1297 lesions from 165 volumes`；`volumes/` 330 个文件（165 卷 × 2：`.json` + `.u16`）；`1297 165`。
 `match_registry` 未抛错。
 
 ## 1. 建库
@@ -82,7 +81,7 @@ $ setsid nohup env PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/py
     --db $S/level_r.sqlite --data-root $D --port 8791 --pid-file $S/server.pid > $S/server.log 2>&1 &
 ```
 
-`server.log` 首行（确认启动，替代 `sleep 2`）：
+`server.log` 首行（确认启动）：
 
 ```
 Level R serving /data2/congcong/data/FM_data/derived/level_r on http://127.0.0.1:8791/ (db /data2/congcong/data/FM_data/derived/level_r_smoke/level_r.sqlite)
@@ -110,7 +109,7 @@ $ curl -s "http://127.0.0.1:8791/api/me?token=<token>"; echo
 {"reader_id": "smoke_r1", "role": "reader", "display": "冒烟读者 1", "done": 0, "total": 1297, "next": 830}
 ```
 
-`L` = 830（上面 `next` 字段，取代 brief 里 `curl ... | python -c "...['next']"`，见开头方法学说明第 2 条）。
+`L` = 830（上面 `next` 字段，取代计划里 `curl ... | python -c "...['next']"`，见开头方法学说明第 2 条）。
 
 ```
 $ curl -s "http://127.0.0.1:8791/api/lesion/830?token=<token>" | head -c 300; echo
@@ -137,7 +136,7 @@ $ curl -s -o /dev/null -w "bad token -> %{http_code}\n" "http://127.0.0.1:8791/a
 bad token -> 403
 ```
 
-全部与 brief 期望一致：`200 text/html`；enums JSON；`/api/me` 给出 `total 1297, done 0, next <id>`；
+全部与计划期望一致：`200 text/html`；enums JSON；`/api/me` 给出 `total 1297, done 0, next <id>`；
 病灶 JSON（`lesion` 子对象）6 个键；卷 JSON 形如 `shape [16, 320, 320]`；u16 字节数 = shape 乘积 × 2；坏 token → 403。
 
 ## 6. 医生访问方式（供用户）
