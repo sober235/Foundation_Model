@@ -7,9 +7,15 @@
 1. 导出图像与病灶：`nice -n 19 python scripts/level_r_export.py --out $D`（165 卷，约 473 MB；已存在 `lesions.json` 会拒跑）。
 2. 折表与 pilot 已入库：`data/level_r/folds.json`、`data/level_r/pilot_150.json`。重生成命令见两份脚本头部，脚本拒绝覆盖。
 3. 建库：`python scripts/level_r_admin.py init --db $D/level_r.sqlite --lesions $D/lesions.json`。只有 `init` 会新建库；其余子命令、服务和报告脚本只打开已存在的库，`--db` 写错会直接报错，不会留下一个空库。
-   `init` 对已有的库可以重跑：只补缺的表（病灶已在就跳过）。2026-09-26 加 `releases` 表之前建的库（例如冒烟库 `level_r_smoke`）要先重跑一次 `init`，否则服务和其余子命令会报 `lacks the Level R tables ['releases']` 拒绝打开。
+   `init` 对已有的库可以重跑：只补缺的表和缺的列（病灶已在就跳过，已有答案不动）。2026-09-26 加 `releases` 表之前建的库（例如冒烟库 `level_r_smoke`）要先重跑一次 `init`，否则服务和其余子命令会报 `lacks the Level R tables ['releases']` 拒绝打开。
 4. 读者：`python scripts/level_r_admin.py add-reader --db $D/level_r.sqlite --reader-id r1 --role reader --display "读者 1"`（r2 同理；裁定人 `--reader-id adj --role adjudicator`；第三位 `reader` 会被拒绝）。token 只打印一次，记到用户手里，不写进仓库。
 5. 顺序：`python scripts/level_r_admin.py order --db $D/level_r.sqlite --reader-id r1 --seed 1 --pilot data/level_r/pilot_150.json`，r2 用 `--seed 2`。
+
+## 升级代码
+顺序必须是：停服务（`kill $(cat $D/server.pid)`）→ 更新代码 → 对已有的库跑一次 `python scripts/level_r_admin.py init --db $D/level_r.sqlite --lesions $D/lesions.json` → 起服务（见下节）。
+原因：服务的 Python 代码在启动时载入，页面文件（`index.html`、`app.js`、`guide.html`）却是每次请求都从磁盘读。服务不停就更新代码，旧服务会立刻把新页面发给医生，新页面对旧接口直接显示"加载失败"。`init` 要在起服务之前跑，因为新代码拒绝打开没补列的库。
+
+2026-09-26 表单加了病灶类型、侧别（以屏幕左右为准）、脑叶三个字段，`labels` 与 `adjudications` 各加 `lesion_type`、`side`、`lobe` 三列；`init` 用 `ALTER TABLE … ADD COLUMN` 补上，之前存的答案这三列为空。没补列的库，服务、报告脚本和 `add-reader`、`order`、`export`、`release` 都会报 `lacks the Level R columns` 拒绝打开（`backup` 照常复制）。
 
 ## 起服务
 ```

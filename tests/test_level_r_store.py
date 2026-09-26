@@ -11,11 +11,36 @@ from anatobind.level_r.store import Store, needs_adjudication, token_hash
 T1, T2, TA = "0123456789abcdef", "fedcba9876543210", "aaaaaaaaaaaaaaaa"
 LESIONS = [{"lesion_id": i, "code": f"c{i:07d}", "volume_code": "v0000000", "z0": 1, "z1": 1, "boxes": {"1": [[2, 6, 3, 9]]}} for i in range(5)]
 WM = {"primary_host": "white_matter", "acceptable_hosts": ["white_matter"], "topography": "deep_white_matter", "adjacency": ["none"],
-      "ambiguity": "certain", "not_a_lesion": False, "local_quality": "good", "confidence": 5, "comment": ""}
+      "ambiguity": "certain", "not_a_lesion": False, "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal",
+      "local_quality": "good", "confidence": 5, "comment": ""}
 WM_CX = {**WM, "acceptable_hosts": ["white_matter", "cortex"], "ambiguity": "two_host"}
 CX = {**WM, "primary_host": "cortex", "acceptable_hosts": ["cortex"]}
 CX_TH = {**CX, "acceptable_hosts": ["cortex", "thalamus"]}
 NAL = {"not_a_lesion": True, "local_quality": "fair", "confidence": 3, "adjacency": []}
+NO_TYPE = {"lesion_type": None, "side": None, "lobe": None}
+# The schema as it stood before the lesion_type / side / lobe columns (a14b022), for the migration test.
+OLD_SCHEMA = """
+CREATE TABLE IF NOT EXISTS readers(
+    reader_id TEXT PRIMARY KEY, role TEXT NOT NULL CHECK(role IN ('reader', 'adjudicator')),
+    token_hash TEXT NOT NULL UNIQUE, display TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS lesions(
+    lesion_id INTEGER PRIMARY KEY, code TEXT NOT NULL, volume_code TEXT NOT NULL,
+    z0 INTEGER NOT NULL, z1 INTEGER NOT NULL, boxes_json TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS orders(
+    reader_id TEXT NOT NULL, position INTEGER NOT NULL, lesion_id INTEGER NOT NULL, is_pilot INTEGER NOT NULL,
+    PRIMARY KEY(reader_id, position));
+CREATE TABLE IF NOT EXISTS labels(
+    row_id INTEGER PRIMARY KEY, reader_id TEXT NOT NULL, lesion_id INTEGER NOT NULL,
+    primary_host TEXT, acceptable_json TEXT NOT NULL, topography TEXT, adjacency_json TEXT NOT NULL, ambiguity TEXT,
+    not_a_lesion INTEGER NOT NULL, local_quality TEXT, confidence INTEGER, comment TEXT NOT NULL,
+    time_seconds REAL, window_json TEXT, ts TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS adjudications(
+    row_id INTEGER PRIMARY KEY, adjudicator_id TEXT NOT NULL, lesion_id INTEGER NOT NULL,
+    primary_host TEXT, acceptable_json TEXT NOT NULL, topography TEXT, adjacency_json TEXT NOT NULL, ambiguity TEXT,
+    not_a_lesion INTEGER NOT NULL, reason TEXT NOT NULL, ts TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS releases(
+    row_id INTEGER PRIMARY KEY, reader_id TEXT NOT NULL, ts TEXT NOT NULL);
+"""
 
 
 def _store_at(path):
@@ -73,7 +98,10 @@ def test_labels_append_latest_wins_and_progress_moves(tmp_path):
     (latest,) = s.latest_labels("r1")
     assert latest["primary_host"] == "cortex" and latest["acceptable_hosts"] == ["cortex"] and latest["adjacency"] == ["none"]
     assert latest["not_a_lesion"] is False and latest["time_seconds"] == 12.0 and latest["ts"]
+    assert (latest["lesion_type"], latest["side"], latest["lobe"]) == ("nonspecific_wm_lesion", "image_left", "frontal")
     assert s.progress("r1") == {"done": 1, "total": 5, "next": 1, "held": False}
+    s.submit_label("r1", 4, NAL)                                       # a not_a_lesion answer stores no type, side or lobe
+    assert {k: s.label_rows("r1")[-1][k] for k in NO_TYPE} == NO_TYPE
 
 
 def test_progress_holds_at_the_end_of_the_pilot_until_the_reader_is_released(tmp_path):
@@ -135,6 +163,11 @@ def test_submit_accepts_well_formed_time_and_window(tmp_path):
     (WM, NAL, True), (NAL, NAL, False),                      # one says not a lesion; both do
     (WM_CX, CX_TH, True),                                    # union {wm, cortex, thalamus} > 2 even though... hosts differ too
     ({**WM_CX, "primary_host": "cortex"}, CX_TH, True),      # same primary host, union of three
+    (WM, {**WM, "lesion_type": "lacunar_infarct"}, True),    # same host, different lesion type
+    (WM, {**WM, "side": "image_right"}, True),               # same host, different screen side
+    (WM, {**WM, "side": "midline"}, True),
+    (WM, {**WM, "lobe": "parietal"}, False),                 # a different lobe alone is not sent to the adjudicator
+    ({**WM, "lobe": "not_applicable"}, {**WM_CX, "lobe": "insular"}, False),
 ])
 def test_needs_adjudication_covers_the_r9_cases(tmp_path, a, b, expected):
     from anatobind.level_r.schema import validate_label
@@ -151,17 +184,40 @@ def test_disagreements_and_final_labels_follow_r9(tmp_path):
     assert ids == [1, 2] and readers == ["r1", "r2"]
     final = {f["lesion_id"]: f for f in s.final_labels()}
     assert set(final) == {0, 1, 2, 3}
-    assert final[0] == {"lesion_id": 0, "status": "agreed", "primary_host": "white_matter", "acceptable_hosts": ["cortex", "white_matter"], "not_a_lesion": False}
-    assert final[3] == {"lesion_id": 3, "status": "agreed", "primary_host": None, "acceptable_hosts": [], "not_a_lesion": True}
-    assert final[1]["status"] == "pending" and final[2]["status"] == "pending"
+    assert final[0] == {"lesion_id": 0, "status": "agreed", "primary_host": "white_matter", "acceptable_hosts": ["cortex", "white_matter"], "not_a_lesion": False,
+                        "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal"}
+    assert final[3] == {"lesion_id": 3, "status": "agreed", "primary_host": None, "acceptable_hosts": [], "not_a_lesion": True, **NO_TYPE}
+    assert final[1] == {"lesion_id": 1, "status": "pending", "primary_host": None, "acceptable_hosts": [], "not_a_lesion": None, **NO_TYPE}
+    assert final[2]["status"] == "pending"
     with pytest.raises(InvalidLabel):
         s.submit_adjudication("adj", 1, {**CX, "reason": ""})
-    s.submit_adjudication("adj", 1, {"primary_host": "cortex", "acceptable_hosts": ["cortex"], "topography": "cortical",
-                                     "adjacency": [], "ambiguity": "certain", "reason": "皮层内信号"})
+    s.submit_adjudication("adj", 1, {"primary_host": "cortex", "acceptable_hosts": ["cortex"], "topography": "cortical", "adjacency": [],
+                                     "ambiguity": "certain", "lesion_type": "lacunar_infarct", "side": "image_right", "lobe": "temporal",
+                                     "reason": "皮层内信号"})
     final = {f["lesion_id"]: f for f in s.final_labels()}
-    assert final[1] == {"lesion_id": 1, "status": "adjudicated", "primary_host": "cortex", "acceptable_hosts": ["cortex"], "not_a_lesion": False}
+    assert final[1] == {"lesion_id": 1, "status": "adjudicated", "primary_host": "cortex", "acceptable_hosts": ["cortex"], "not_a_lesion": False,
+                        "lesion_type": "lacunar_infarct", "side": "image_right", "lobe": "temporal"}
     (adj,) = s.latest_adjudications()
     assert adj["adjudicator_id"] == "adj" and adj["reason"] == "皮层内信号" and adj["lesion_id"] == 1
+    assert (adj["lesion_type"], adj["side"], adj["lobe"]) == ("lacunar_infarct", "image_right", "temporal")
+
+
+def test_type_or_side_disagreements_go_to_the_adjudicator_and_the_lobe_is_kept_only_when_both_agree(tmp_path):
+    s = _store(tmp_path)
+    for lid, (a, b) in {0: (WM, WM_CX),                                # everything the same
+                        1: (WM, {**WM, "lobe": "parietal"}),           # lobes differ: still agreed, final lobe unknown
+                        2: (WM, {**WM, "lesion_type": "perivascular_space"}),
+                        3: (WM, {**WM, "side": "midline"})}.items():
+        s.submit_label("r1", lid, a)
+        s.submit_label("r2", lid, b)
+    assert s.disagreements()[0] == [2, 3]
+    final = {f["lesion_id"]: f for f in s.final_labels()}
+    assert [(final[i]["status"], final[i]["lesion_type"], final[i]["side"], final[i]["lobe"]) for i in range(4)] == [
+        ("agreed", "nonspecific_wm_lesion", "image_left", "frontal"), ("agreed", "nonspecific_wm_lesion", "image_left", None),
+        ("pending", None, None, None), ("pending", None, None, None)]
+    s.submit_adjudication("adj", 3, {**WM, "side": "midline", "lobe": "not_applicable", "reason": "跨中线"})
+    f3 = {f["lesion_id"]: f for f in s.final_labels()}[3]
+    assert (f3["status"], f3["lesion_type"], f3["side"], f3["lobe"]) == ("adjudicated", "nonspecific_wm_lesion", "midline", "not_applicable")
 
 
 def _ticking_clock(monkeypatch):
@@ -217,6 +273,42 @@ def test_a_database_from_before_the_releases_table_is_refused_until_init_adds_it
     Store(p)                                                     # what `level_r_admin.py init` does: add missing tables
     s = Store(p, create=False)
     assert [r["reader_id"] for r in s.readers()] == ["r1"] and s.is_released("r1") is False
+
+
+def _columns(path, table):
+    c = sqlite3.connect(str(path))
+    try:
+        return [r[1] for r in c.execute(f"PRAGMA table_info({table})")]
+    finally:
+        c.close()
+
+
+def test_a_database_from_before_the_lesion_type_side_and_lobe_columns_is_refused_until_init_adds_them(tmp_path):
+    p = tmp_path / "old.sqlite"
+    c = sqlite3.connect(str(p))
+    c.executescript(OLD_SCHEMA)
+    c.executemany("INSERT INTO readers VALUES (?, 'reader', ?, ?)", [("r1", token_hash(T1), "读者 1"), ("r2", token_hash(T2), "读者 2")])
+    c.execute("INSERT INTO lesions VALUES (0, 'c0000000', 'v0000000', 1, 1, '{}')")
+    c.execute("INSERT INTO labels(reader_id, lesion_id, primary_host, acceptable_json, topography, adjacency_json, ambiguity, not_a_lesion,"
+              " local_quality, confidence, comment, ts) VALUES ('r1', 0, 'white_matter', '[\"white_matter\"]', 'deep_white_matter', '[]',"
+              " 'certain', 0, 'good', 5, '', '2026-09-26T00:00:00+00:00')")
+    c.commit()
+    c.close()
+    with pytest.raises(sqlite3.OperationalError, match="level_r_admin.py init"):
+        Store(p, create=False)
+    assert "lesion_type" not in _columns(p, "labels")            # refusing leaves the file as it was
+    Store(p)                                                     # what `level_r_admin.py init` does: add the missing columns
+    Store(p)                                                     # and running it again is harmless
+    Store(tmp_path / "new.sqlite")
+    for table in ("labels", "adjudications"):
+        assert _columns(p, table)[-3:] == ["lesion_type", "side", "lobe"]
+        assert _columns(p, table) == _columns(tmp_path / "new.sqlite", table)      # same layout as a database made today
+    s = Store(p, create=False)
+    (old,) = s.label_rows("r1")
+    assert old["primary_host"] == "white_matter" and {k: old[k] for k in NO_TYPE} == NO_TYPE
+    s.submit_label("r2", 0, {**WM, "side": "image_right"})
+    s.submit_adjudication("adj", 0, {**WM, "reason": "迁移后可写"})
+    assert s.latest_labels("r2")[0]["side"] == "image_right" and s.adjudication_rows()[0]["lesion_type"] == "nonspecific_wm_lesion"
 
 
 def test_a_third_reader_is_refused(tmp_path):

@@ -7,6 +7,13 @@ TOPOGRAPHY = ("periventricular", "juxtacortical", "cortical", "deep_white_matter
 ADJACENCY = ("adjacent_to_cortex", "adjacent_to_ventricle", "crosses_boundary", "none")
 AMBIGUITY = ("certain", "two_host", "multi_structure", "insufficient_resolution")
 LOCAL_QUALITY = ("good", "fair", "poor")
+LESION_TYPES = ("nonspecific_wm_lesion", "lacunar_infarct", "perivascular_space", "other")
+# The side as seen on screen, not the patient's side: the left/right handedness of the RSS arrays is not established, so
+# readers answer what they see and the whole set is converted once later.
+SIDES = ("image_left", "image_right", "midline")
+# not_applicable: the lesion belongs to no lobe (corpus callosum, internal capsule, deep grey matter, infratentorial
+# structures and the like); corona radiata and centrum semiovale lesions take the lobe of the cortex above them.
+LOBES = ("frontal", "parietal", "temporal", "occipital", "insular", "not_applicable")
 MAX_ACCEPTABLE = 2
 NOT_A_LESION = "not_a_lesion"      # the class a not_a_lesion answer takes in agreement statistics
 MAX_COMMENT = 2000
@@ -27,6 +34,7 @@ def _choice(p, key, allowed, optional):
 
 def validate_label(p, require_quality=True):
     """Return the normalised answer or raise InvalidLabel. p: the JSON body of one submission.
+    lesion_type, side and lobe are required unless not_a_lesion, which carries none of them (like the host).
     require_quality=False (adjudications) drops local_quality and confidence."""
     out = {"not_a_lesion": bool(p.get("not_a_lesion", False))}
     acc = p.get("acceptable_hosts") or []
@@ -47,6 +55,13 @@ def validate_label(p, require_quality=True):
         if host not in acc:
             raise InvalidLabel("acceptable_hosts must contain primary_host")
     out["primary_host"], out["acceptable_hosts"] = host, list(acc)
+    for key, allowed in (("lesion_type", LESION_TYPES), ("side", SIDES), ("lobe", LOBES)):
+        if out["not_a_lesion"]:
+            if p.get(key) not in (None, ""):
+                raise InvalidLabel(f"a not_a_lesion answer carries no {key}")
+            out[key] = None
+        else:
+            out[key] = _choice(p, key, allowed, optional=False)
     out["topography"] = _choice(p, "topography", TOPOGRAPHY, optional=out["not_a_lesion"])
     out["ambiguity"] = _choice(p, "ambiguity", AMBIGUITY, optional=out["not_a_lesion"])
     adj = p.get("adjacency") or []
@@ -78,4 +93,5 @@ def validate_adjudication(p):
 
 def enums():
     return {"primary_hosts": list(PRIMARY_HOSTS), "topography": list(TOPOGRAPHY), "adjacency": list(ADJACENCY),
-            "ambiguity": list(AMBIGUITY), "local_quality": list(LOCAL_QUALITY), "max_acceptable": MAX_ACCEPTABLE}
+            "ambiguity": list(AMBIGUITY), "local_quality": list(LOCAL_QUALITY), "lesion_types": list(LESION_TYPES),
+            "sides": list(SIDES), "lobes": list(LOBES), "max_acceptable": MAX_ACCEPTABLE}

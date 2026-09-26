@@ -65,8 +65,15 @@ def render_markdown(s, title, command):
               _table(["class", f"n {ra} (A)", f"n {rb} (B)", "positive agreement"],
                      [[c, v["n_x"], v["n_y"], _f(v["positive_agreement"])] for c, v in s["positive_agreement"].items()]),
               "", f"## confusion (rows {ra} = reader A, columns {rb} = reader B)", "",
-              _table([""] + s["confusion"]["categories"], [[c] + row for c, row in zip(s["confusion"]["categories"], s["confusion"]["counts"])]),
-              "", "## strata", "", f"raw and set-valued agreement between {ra} and {rb} within each layer", ""]
+              _table([""] + s["confusion"]["categories"], [[c] + row for c, row in zip(s["confusion"]["categories"], s["confusion"]["counts"])]), ""]
+    for key, name in (("lesion_type_agreement", "lesion type"), ("side_agreement", "side")):      # confusion + per-class counts
+        f = s[key]
+        pa, cats = f["positive_agreement"], f["confusion"]["categories"]
+        lines += [f"## {name} agreement (rows {ra} = reader A, columns {rb} = reader B)", "", f"n {f['n']} · raw agreement {_f(f['raw'])}", "",
+                  _table([""] + cats + [f"n {ra} (A)", f"n {rb} (B)", "positive agreement"],
+                         [[c] + row + [pa[c]["n_x"], pa[c]["n_y"], _f(pa[c]["positive_agreement"])] for c, row in zip(cats, f["confusion"]["counts"])]),
+                  ""]
+    lines += ["## strata", "", f"raw and set-valued agreement between {ra} and {rb} within each layer", ""]
     for key in ("band", "stratum_geometry"):
         lines += [f"### {key}", "", _table([key, "n", "raw", "set agreement"],
                                           [[k, v["n"], _f(v["raw"]), _f(v["set_agreement"])] for k, v in s["strata"][key].items()]), ""]

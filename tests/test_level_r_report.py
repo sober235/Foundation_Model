@@ -13,9 +13,10 @@ def _load():
     return mod
 
 
-def _lab(host, acc=None, t=20.0):
+def _lab(host, acc=None, t=20.0, lesion_type="nonspecific_wm_lesion", side="image_left"):
     return {"primary_host": host, "acceptable_hosts": acc or [host], "topography": "deep_white_matter", "adjacency": ["none"],
-            "ambiguity": "certain", "not_a_lesion": False, "local_quality": "good", "confidence": 4, "comment": "", "time_seconds": t}
+            "ambiguity": "certain", "not_a_lesion": False, "lesion_type": lesion_type, "side": side, "lobe": "frontal",
+            "local_quality": "good", "confidence": 4, "comment": "", "time_seconds": t}
 
 
 def _registry():
@@ -32,7 +33,8 @@ def test_build_summary_and_render(tmp_path):
     s.load_lesions([{"lesion_id": i, "code": f"c{i}", "volume_code": "v", "z0": 0, "z1": 0, "boxes": {}} for i in range(6)])
     for i in range(6):
         s.submit_label("r1", i, _lab("white_matter", t=10.0 * (i + 1)))
-        s.submit_label("r2", i, _lab("white_matter" if i < 5 else "cortex"))
+        s.submit_label("r2", i, _lab("white_matter" if i < 5 else "cortex", lesion_type="lacunar_infarct" if i == 5 else "nonspecific_wm_lesion",
+                                     side="image_right" if i == 4 else "image_left"))
     s.submit_label("r1", 0, _lab("white_matter", t=25.0))                # a revisit: lesion 0 took r1 10 + 25 s
     summary = m.build_summary(s, _registry(), lesion_ids=[0, 1, 2, 3, 4, 5], n_boot=100, seed=0)
     assert summary["readers"] == ["r1", "r2"] and summary["n_pairs"] == 6 and summary["raw"] == 5 / 6 and summary["pilot_size"] == 6
@@ -44,6 +46,15 @@ def test_build_summary_and_render(tmp_path):
                   "0 mm band raw 95% patient-bootstrap CI"):
         assert piece in md, piece
     assert ("GATE_R7: PASS" in md) == summary["gate_r7"]["single_host_endpoint_allowed"] and "⚠️" not in md
+    assert summary["lesion_type_agreement"]["raw"] == 5 / 6 == summary["side_agreement"]["raw"]
+    heads = [md.index(h) for h in ("## confusion (rows r1", "## lesion type agreement", "## side agreement", "## strata")]
+    assert heads == sorted(heads)                                          # after the host tables, before the strata
+    for piece in ("## lesion type agreement (rows r1 = reader A, columns r2 = reader B)", "## side agreement (rows r1 = reader A, columns r2 = reader B)",
+                  "n 6 · raw agreement 0.833", "|  | lacunar_infarct | nonspecific_wm_lesion | n r1 (A) | n r2 (B) | positive agreement |",
+                  "| nonspecific_wm_lesion | 1 | 5 | 6 | 5 | 0.909 |", "| lacunar_infarct | 0 | 0 | 0 | 1 | 0.000 |",
+                  "|  | image_left | image_right | n r1 (A) | n r2 (B) | positive agreement |", "| image_left | 5 | 1 | 6 | 5 | 0.909 |",
+                  '"lesion_type_agreement"', '"side_agreement"'):
+        assert piece in md, piece
     sub = m.build_summary(s, _registry(), lesion_ids=[0, 1], n_boot=10, seed=0)
     assert sub["n_pairs"] == 2 and sub["raw"] == 1.0 and sub["time"]["reader_a"]["n"] == 2
 

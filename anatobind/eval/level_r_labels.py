@@ -24,7 +24,8 @@ class SealedAccessError(RuntimeError):
 
 def _parse(r):
     return {"lesion_id": int(r["lesion_id"]), "status": r["status"], "primary_host": r["primary_host"] or None,
-            "acceptable_hosts": json.loads(r["acceptable_hosts"] or "[]"), "not_a_lesion": r["not_a_lesion"] in ("True", "true", "1")}
+            "acceptable_hosts": json.loads(r["acceptable_hosts"] or "[]"), "not_a_lesion": r["not_a_lesion"] in ("True", "true", "1"),
+            "lesion_type": r["lesion_type"] or None, "side": r["side"] or None, "lobe": r["lobe"] or None}
 
 
 def _manifest(manifest_path):

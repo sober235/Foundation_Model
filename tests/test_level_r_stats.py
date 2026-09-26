@@ -1,17 +1,17 @@
 import pytest
 
 from anatobind.eval.level_r_stats import (
-    bootstrap_ci, cohen_kappa, confusion, gate_r7, gwet_ac1, pairs, positive_agreement, raw_agreement, set_agreement,
-    strata_report, summarise, time_summary,
+    bootstrap_ci, cohen_kappa, confusion, field_agreement, gate_r7, gwet_ac1, pairs, positive_agreement, raw_agreement,
+    set_agreement, strata_report, summarise, time_summary,
 )
 
 X = ["A", "A", "B", "B", "C"]
 Y = ["A", "B", "B", "B", "C"]
 
 
-def _lab(lid, host, acc=None, nal=False, t=None):
+def _lab(lid, host, acc=None, nal=False, t=None, lesion_type="nonspecific_wm_lesion", side="image_left"):
     return {"lesion_id": lid, "primary_host": None if nal else host, "acceptable_hosts": [] if nal else (acc or [host]),
-            "not_a_lesion": nal, "time_seconds": t}
+            "not_a_lesion": nal, "time_seconds": t, "lesion_type": None if nal else lesion_type, "side": None if nal else side}
 
 
 def test_hand_computed_three_class_table():
@@ -91,6 +91,41 @@ def test_gate_reports_the_band0_interval_without_changing_the_rule():
     assert gate_r7(0.81, 0.72, 0.55) == {"all_ci_low": 0.81, "pass_all": True, "band0_raw": 0.72, "band0_ci_low": 0.55, "pass_band0": True,
                                           "single_host_endpoint_allowed": True}
     assert gate_r7(0.79, 0.72, 0.9)["pass_all"] is False and gate_r7(0.85, 0.69, 0.9)["single_host_endpoint_allowed"] is False
+
+
+NWML, LAC, PVS = "nonspecific_wm_lesion", "lacunar_infarct", "perivascular_space"
+TA = [_lab(0, "white_matter"), _lab(1, "white_matter", side="image_right"), _lab(2, "cortex", lesion_type=LAC),
+      _lab(3, None, nal=True), _lab(4, "white_matter", lesion_type=PVS, side="midline")]
+TB = [_lab(0, "white_matter"), _lab(1, "white_matter", lesion_type=LAC, side="image_right"),
+      _lab(2, "cortex", lesion_type=LAC, side="image_right"), _lab(3, "white_matter"), _lab(4, None, nal=True)]
+
+
+def test_lesion_type_and_side_agreement_by_hand_with_not_a_lesion_as_its_own_class():
+    # lesion type  A: nwml nwml lac  NAL  pvs      side  A: L R L NAL M
+    #              B: nwml lac  lac  nwml NAL            B: L R R L   NAL
+    t = field_agreement(TA, TB, "lesion_type")
+    assert t["n"] == 5 and t["raw"] == pytest.approx(0.4)                                     # lesions 0 and 2
+    assert t["confusion"] == {"categories": [LAC, NWML, "not_a_lesion", PVS],
+                              "counts": [[1, 0, 0, 0], [1, 1, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]]}
+    pa = t["positive_agreement"]
+    assert pa[LAC] == {"n_x": 1, "n_y": 2, "positive_agreement": pytest.approx(2 / 3)}
+    assert pa[NWML]["positive_agreement"] == 0.5 and pa["not_a_lesion"]["positive_agreement"] == 0.0 and pa[PVS]["n_y"] == 0
+    s = field_agreement(TA, TB, "side")
+    assert s["n"] == 5 and s["raw"] == pytest.approx(0.4)                                     # lesions 0 and 1
+    assert s["confusion"]["categories"] == ["image_left", "image_right", "midline", "not_a_lesion"]
+    assert s["positive_agreement"]["image_right"]["positive_agreement"] == pytest.approx(2 / 3)
+    assert s["positive_agreement"]["image_left"]["positive_agreement"] == 0.5
+    sub = field_agreement(TA, TB, "side", lesion_ids=[0, 2, 7])
+    assert sub["n"] == 2 and sub["raw"] == 0.5
+
+
+def test_summarise_reports_lesion_type_and_side_agreement_over_the_same_pairs():
+    s = summarise(TA, TB, list(REG.values()), n_boot=50, seed=0)
+    assert s["lesion_type_agreement"] == field_agreement(TA, TB, "lesion_type")
+    assert s["side_agreement"] == field_agreement(TA, TB, "side")
+    sub = summarise(TA, TB, list(REG.values()), lesion_ids=[0, 2], n_boot=50)
+    assert sub["lesion_type_agreement"]["n"] == 2 and sub["lesion_type_agreement"]["raw"] == 1.0 and sub["side_agreement"]["raw"] == 0.5
+    assert set(s["gate_r7"]) == {"all_ci_low", "pass_all", "band0_raw", "band0_ci_low", "pass_band0", "single_host_endpoint_allowed"}
 
 
 def test_summarise_assembles_everything_and_restricts_to_a_lesion_subset():

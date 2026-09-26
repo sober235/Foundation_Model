@@ -77,6 +77,18 @@ def set_agreement(P):
     return sum(bool(p["sx"] & p["sy"]) for p in P) / len(P) if P else NAN
 
 
+def field_agreement(a, b, key, lesion_ids=None):
+    """Agreement on one categorical answer field (lesion_type or side) over the same pairs as the host statistics: n, raw,
+    positive agreement per class and the confusion table (rows reader a, columns reader b). A not_a_lesion answer
+    carries no value and takes the class not_a_lesion."""
+    A = {l["lesion_id"]: l for l in a}
+    B = {l["lesion_id"]: l for l in b}
+    ids = [p["lesion_id"] for p in pairs(a, b, lesion_ids)]
+    x = [A[i].get(key) or NOT_A_LESION for i in ids]
+    y = [B[i].get(key) or NOT_A_LESION for i in ids]
+    return {"n": len(ids), "raw": raw_agreement(x, y), "positive_agreement": positive_agreement(x, y), "confusion": confusion(x, y)}
+
+
 def bootstrap_ci(outcomes_by_patient, n_boot=2000, seed=0, alpha=0.05):
     """Percentile CI of the pooled mean, resampling patients with replacement (v2.6 §12.3: patients are the units)."""
     pats = sorted(outcomes_by_patient)
@@ -139,7 +151,8 @@ def gate_r7(raw_ci_low, raw_band0, band0_ci_low):
 
 def summarise(a, b, registry, lesion_ids=None, n_boot=2000, seed=0, a_rows=None, b_rows=None):
     """a, b: each reader's latest answers. a_rows, b_rows: their full label history for the reading-time block (falls
-    back to a, b). AC1 uses the fixed K = 8 classes of the form (7 hosts + not_a_lesion), not the classes observed."""
+    back to a, b). AC1 uses the fixed K = 8 classes of the form (7 hosts + not_a_lesion), not the classes observed.
+    lesion_type_agreement and side_agreement cover the same pairs; they do not enter the R7 gate."""
     reg = {r["lesion_id"]: r for r in registry}
     P = pairs(a, b, lesion_ids)
     x, y = [p["x"] for p in P], [p["y"] for p in P]
@@ -151,6 +164,8 @@ def summarise(a, b, registry, lesion_ids=None, n_boot=2000, seed=0, a_rows=None,
     return {"n_pairs": len(P), "n_patients": len(outcomes), "raw": raw_agreement(x, y), "raw_ci95": [lo, hi],
             "kappa": cohen_kappa(x, y), "ac1": gwet_ac1(x, y, categories=AC1_CATEGORIES), "ac1_categories": len(AC1_CATEGORIES),
             "positive_agreement": positive_agreement(x, y), "confusion": confusion(x, y), "set_agreement": set_agreement(P),
+            "lesion_type_agreement": field_agreement(a, b, "lesion_type", lesion_ids),
+            "side_agreement": field_agreement(a, b, "side", lesion_ids),
             "strata": strata, "gate_r7": gate_r7(lo, raw0, ci0),
             "time": {"reader_a": time_summary(a if a_rows is None else a_rows, lesion_ids),
                      "reader_b": time_summary(b if b_rows is None else b_rows, lesion_ids)}}

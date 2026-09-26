@@ -16,10 +16,10 @@ from anatobind.data_engine.fastmri_knee import assert_folds_by_patient, make_fol
 from anatobind.level_r.store import now_iso
 
 LABEL_COLUMNS = ("row_id", "reader_id", "lesion_id", "primary_host", "acceptable_hosts", "topography", "adjacency", "ambiguity",
-                 "not_a_lesion", "local_quality", "confidence", "comment", "time_seconds", "window", "ts")
+                 "not_a_lesion", "lesion_type", "side", "lobe", "local_quality", "confidence", "comment", "time_seconds", "window", "ts")
 ADJ_COLUMNS = ("row_id", "adjudicator_id", "lesion_id", "primary_host", "acceptable_hosts", "topography", "adjacency", "ambiguity",
-               "not_a_lesion", "reason", "ts")
-FINAL_COLUMNS = ("lesion_id", "status", "primary_host", "acceptable_hosts", "not_a_lesion")
+               "not_a_lesion", "lesion_type", "side", "lobe", "reason", "ts")
+FINAL_COLUMNS = ("lesion_id", "status", "primary_host", "acceptable_hosts", "not_a_lesion", "lesion_type", "side", "lobe")
 
 
 def make_patient_folds(patient_ids, k=5, seed=0):
