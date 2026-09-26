@@ -1,0 +1,30 @@
+/* anatobind/level_r/app/style.css */
+body { margin: 0; font: 15px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #111; color: #ddd; }
+header { padding: 8px 16px; background: #1c1c1c; border-bottom: 1px solid #333; }
+header .right { float: right; }
+header a { color: #8ab4f8; text-decoration: none; }
+#status { color: #ffb74d; min-height: 1.4em; }
+.hidden { display: none !important; }
+body.adjudicator .reader-only { display: none; }
+body:not(.adjudicator) .adj-only { display: none; }
+#sec-lesion { display: flex; gap: 24px; padding: 12px 16px; align-items: flex-start; flex-wrap: wrap; }
+.viewer { display: grid; grid-template-columns: auto 220px; gap: 12px; }
+#view { background: #000; border: 1px solid #444; cursor: crosshair; max-width: 70vh; max-height: 70vh; grid-row: 1 / span 2; }
+.controls { grid-column: 1; }
+.controls input[type=range] { width: 260px; vertical-align: middle; }
+.controls button, form button { margin: 0 2px; padding: 4px 10px; background: #333; color: #eee; border: 1px solid #555; border-radius: 4px; cursor: pointer; }
+.hint { color: #888; font-size: 13px; }
+.thumbs { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #aaa; }
+.thumbs canvas { background: #000; border: 1px solid #444; display: block; }
+form { min-width: 340px; max-width: 460px; display: flex; flex-direction: column; gap: 8px; }
+form label { display: flex; flex-direction: column; gap: 2px; }
+form label.row { flex-direction: row; align-items: center; gap: 6px; }
+form select, form textarea { background: #222; color: #eee; border: 1px solid #555; padding: 4px; }
+fieldset { border: 1px solid #444; padding: 6px 10px; }
+fieldset label { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; margin-right: 12px; }
+#submit { padding: 8px; font-size: 16px; background: #2e7d32; }
+#readers table { border-collapse: collapse; margin-bottom: 8px; }
+#readers td, #readers th { border: 1px solid #444; padding: 2px 8px; }
+#list { list-style: none; padding: 12px 16px; columns: 3; }
+#list li.done a { color: #7cb342; }
+#list a { color: #8ab4f8; text-decoration: none; }
