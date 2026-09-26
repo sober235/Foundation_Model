@@ -120,6 +120,13 @@ def test_guide_defines_lesion_type_screen_side_and_lobe():
         assert phrase in g, phrase
 
 
+def test_guide_settles_two_lobe_lesions_non_lobar_white_matter_and_the_scope_of_confidence():
+    g = _read("guide.html")
+    assert "占多的那个脑叶" in g          # a lesion spanning two lobes takes the lobe holding more of it
+    assert "胼胝体" in g                  # corpus callosum and other non-lobar white matter: 不适用, structure named in the comment
+    assert "最没把握" in g                # confidence covers host, lesion type and side: the least certain of the three
+
+
 def test_app_stops_at_the_end_of_the_pilot_and_the_guide_says_so():
     js = _read("app.js")
     assert "me.held" in js and "pilot 已完成，请等待通知再继续" in js
