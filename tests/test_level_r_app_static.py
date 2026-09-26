@@ -47,9 +47,23 @@ def test_app_uses_the_routes_the_server_serves_and_reads_the_token_from_the_url(
 
 
 def test_reader_facing_sources_never_mention_what_readers_must_not_see():
-    text = _read("index.html") + _read("app.js") + _read("style.css")
-    for word in ("SynthSeg", "synthseg", "patient", "series", "d_interface", "stratum", "Nonspecific", "Lacunar", "fastMRI+"):
+    """The guide is reader-facing too; it may say 公开数据集 but not the field strength (22 of the 165 volumes are 1.5 T),
+    series, patient, SynthSeg, the fastMRI+ label strings (English or Chinese) or fastMRI+."""
+    text = _read("index.html") + _read("app.js") + _read("style.css") + _read("guide.html")
+    for word in ("SynthSeg", "synthseg", "patient", "series", "d_interface", "stratum", "Nonspecific", "Lacunar", "非特异", "腔隙",
+                 "fastMRI+", "3T", "3 T", "1.5T", "1.5 T", "Tesla", "特斯拉"):
         assert word not in text, word
+
+
+def test_adjudicator_gets_no_comment_box_since_adjudications_store_none():
+    assert '<label class="reader-only">备注 <textarea id="comment"' in _read("index.html")
+
+
+def test_zoom_centre_is_fixed_per_lesion_thumbnails_keep_the_aspect_ratio_and_volume_errors_surface():
+    js = _read("app.js")
+    assert "state.center = lesionCenter(" in js and "[cy, cx] = state.center" in js
+    assert "Math.round(200 * R / C)" in js
+    assert "if (!r.ok) throw" in js
 
 
 def test_guide_defines_primary_host_operationally():

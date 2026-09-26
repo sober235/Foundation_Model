@@ -10,7 +10,7 @@ const ZH = {"white_matter": "白质", "cortex": "皮层", "thalamus": "丘脑", 
 const FIELD_ZH = {"primary_host": "主宿主", "acceptable_hosts": "可接受集合", "topography": "拓扑位置", "adjacency": "邻接",
   "ambiguity": "不确定性", "not_a_lesion": "不是病灶", "comment": "备注"};
 
-const state = {me: null, enums: null, mode: "reader", lesion: null, vol: null, z: 0, zoom: 2, win: null, opened: 0};
+const state = {me: null, enums: null, mode: "reader", lesion: null, vol: null, z: 0, zoom: 2, win: null, opened: 0, center: null};
 const volCache = new Map();
 const $ = (id) => document.getElementById(id);
 
@@ -30,8 +30,9 @@ async function apiJSON(path, opts) {
 async function loadVolume(code) {
   if (volCache.has(code)) return volCache.get(code);
   const meta = await apiJSON(`/api/volume/${code}.json`);
-  const buf = await (await api(`/api/volume/${code}.u16`)).arrayBuffer();
-  const v = {meta, data: new Uint16Array(buf)};
+  const r = await api(`/api/volume/${code}.u16`);
+  if (!r.ok) throw new Error(`图像加载失败（${r.status}）`);
+  const v = {meta, data: new Uint16Array(await r.arrayBuffer())};
   volCache.set(code, v);
   return v;
 }
@@ -47,8 +48,9 @@ function sliceImage(v, z, lo, hi) {
   return img;
 }
 function boxesOn(z) { return state.lesion.boxes[String(z)] || []; }
-function lesionCenter() {
-  const bs = boxesOn(state.z).length ? boxesOn(state.z) : Object.values(state.lesion.boxes).flat();
+function lesionCenter(boxes, R, C) {          // mean of the box centres over all slices: one zoom centre per lesion
+  const bs = Object.values(boxes).flat();
+  if (!bs.length) return [R / 2, C / 2];
   let r = 0, c = 0;
   for (const [r0, r1, c0, c1] of bs) { r += (r0 + r1) / 2; c += (c0 + c1) / 2; }
   return [r / bs.length, c / bs.length];
@@ -60,7 +62,7 @@ function draw() {
   off.getContext("2d").putImageData(sliceImage(v, z, lo, hi), 0, 0);
   const cv = $("view"), ctx = cv.getContext("2d");
   ctx.imageSmoothingEnabled = false;
-  const k = state.zoom, sw = C / k, sh = R / k, [cy, cx] = lesionCenter();
+  const k = state.zoom, sw = C / k, sh = R / k, [cy, cx] = state.center;
   const ox = k === 1 ? 0 : Math.min(Math.max(0, cx - sw / 2), C - sw), oy = k === 1 ? 0 : Math.min(Math.max(0, cy - sh / 2), R - sh);
   ctx.clearRect(0, 0, cv.width, cv.height);
   ctx.drawImage(off, ox, oy, sw, sh, 0, 0, cv.width, cv.height);
@@ -192,6 +194,8 @@ async function openLesion(lid) {
   state.zoom = 2; state.opened = Date.now();
   const [S, R, C] = state.vol.meta.shape, cv = $("view");
   cv.width = C * 2; cv.height = R * 2; $("zslider").max = S - 1;
+  for (const id of ["prev", "next"]) { $(id).width = 200; $(id).height = Math.round(200 * R / C); }
+  state.center = lesionCenter(j.lesion.boxes, R, C);
   $("lcode").textContent = `病灶 ${j.lesion.code}`;
   resetForm();
   if (j.answer) fillForm(j.answer);
