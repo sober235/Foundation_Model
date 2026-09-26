@@ -1,0 +1,122 @@
+import sqlite3
+from pathlib import Path
+
+import pytest
+
+import anatobind.level_r.store as store_module
+from anatobind.level_r.schema import InvalidLabel
+from anatobind.level_r.store import Store, needs_adjudication, token_hash
+
+T1, T2, TA = "0123456789abcdef", "fedcba9876543210", "aaaaaaaaaaaaaaaa"
+LESIONS = [{"lesion_id": i, "code": f"c{i:07d}", "volume_code": "v0000000", "z0": 1, "z1": 1, "boxes": {"1": [[2, 6, 3, 9]]}} for i in range(5)]
+WM = {"primary_host": "white_matter", "acceptable_hosts": ["white_matter"], "topography": "deep_white_matter", "adjacency": ["none"],
+      "ambiguity": "certain", "not_a_lesion": False, "local_quality": "good", "confidence": 5, "comment": ""}
+WM_CX = {**WM, "acceptable_hosts": ["white_matter", "cortex"], "ambiguity": "two_host"}
+CX = {**WM, "primary_host": "cortex", "acceptable_hosts": ["cortex"]}
+CX_TH = {**CX, "acceptable_hosts": ["cortex", "thalamus"]}
+NAL = {"not_a_lesion": True, "local_quality": "fair", "confidence": 3, "adjacency": []}
+
+
+def _store(tmp_path):
+    s = Store(tmp_path / "level_r.sqlite")
+    s.add_reader("r1", "reader", T1, "读者 1")
+    s.add_reader("r2", "reader", T2, "读者 2")
+    s.add_reader("adj", "adjudicator", TA, "裁定")
+    s.load_lesions(LESIONS)
+    return s
+
+
+def test_store_source_never_modifies_or_removes_rows():
+    src = Path(store_module.__file__).read_text().upper()
+    assert "UPDATE" not in src and "DELETE" not in src
+
+
+def test_tokens_are_stored_hashed_and_looked_up(tmp_path):
+    s = _store(tmp_path)
+    assert s.reader_for_token(T1) == {"reader_id": "r1", "role": "reader", "display": "读者 1"}
+    assert s.reader_for_token("0000000000000000") is None
+    raw = sqlite3.connect(str(tmp_path / "level_r.sqlite")).execute("SELECT token_hash FROM readers WHERE reader_id='r1'").fetchone()[0]
+    assert raw == token_hash(T1) and raw != T1 and len(raw) == 64
+    assert [r["reader_id"] for r in s.readers()] == ["adj", "r1", "r2"]
+
+
+def test_lesions_load_once_and_keep_boxes(tmp_path):
+    s = _store(tmp_path)
+    s.load_lesions(LESIONS)                                  # second load is a no-op
+    assert s.lesion_ids() == [0, 1, 2, 3, 4]
+    assert s.lesion(3)["boxes"] == {"1": [[2, 6, 3, 9]]} and s.lesion(3)["code"] == "c0000003" and s.lesion(9) is None
+
+
+def test_order_is_set_once_and_marks_pilot(tmp_path):
+    s = _store(tmp_path)
+    s.set_order("r1", [3, 1, 4, 0, 2], pilot_ids={3, 1})
+    assert [(o["position"], o["lesion_id"], o["is_pilot"]) for o in s.order("r1")] == [(0, 3, 1), (1, 1, 1), (2, 4, 0), (3, 0, 0), (4, 2, 0)]
+    with pytest.raises(ValueError):
+        s.set_order("r1", [0, 1, 2, 3, 4], set())
+    assert s.order("r2") == []
+
+
+def test_labels_append_latest_wins_and_progress_moves(tmp_path):
+    s = _store(tmp_path)
+    s.set_order("r1", [3, 1, 4, 0, 2], {3, 1})
+    assert s.progress("r1") == {"done": 0, "total": 5, "next": 3}
+    r1 = s.submit_label("r1", 3, {**WM, "time_seconds": 41.5, "window": [100, 900]})
+    r2 = s.submit_label("r1", 3, {**CX, "time_seconds": 12.0})
+    assert r2 > r1
+    rows = s.label_rows("r1")
+    assert [r["primary_host"] for r in rows] == ["white_matter", "cortex"] and rows[0]["window"] == [100, 900] and rows[1]["window"] is None
+    (latest,) = s.latest_labels("r1")
+    assert latest["primary_host"] == "cortex" and latest["acceptable_hosts"] == ["cortex"] and latest["adjacency"] == ["none"]
+    assert latest["not_a_lesion"] is False and latest["time_seconds"] == 12.0 and latest["ts"]
+    assert s.progress("r1") == {"done": 1, "total": 5, "next": 1}
+
+
+def test_submit_rejects_invalid_or_unknown_and_stores_nothing(tmp_path):
+    s = _store(tmp_path)
+    with pytest.raises(InvalidLabel):
+        s.submit_label("r1", 0, {**WM, "confidence": 9})
+    with pytest.raises(KeyError):
+        s.submit_label("r1", 99, WM)
+    assert s.label_rows() == []
+
+
+@pytest.mark.parametrize("a, b, expected", [
+    (WM, WM, False), (WM, WM_CX, False),                     # same host, union {wm, cortex} <= 2
+    (WM, CX, True),                                          # different primary host
+    (WM, NAL, True), (NAL, NAL, False),                      # one says not a lesion; both do
+    (WM_CX, CX_TH, True),                                    # union {wm, cortex, thalamus} > 2 even though... hosts differ too
+    ({**WM_CX, "primary_host": "cortex"}, CX_TH, True),      # same primary host, union of three
+])
+def test_needs_adjudication_covers_the_r9_cases(tmp_path, a, b, expected):
+    from anatobind.level_r.schema import validate_label
+    assert needs_adjudication(validate_label(a), validate_label(b)) is expected
+
+
+def test_disagreements_and_final_labels_follow_r9(tmp_path):
+    s = _store(tmp_path)
+    for lid, (a, b) in {0: (WM, WM_CX), 1: (WM, CX), 2: (NAL, WM), 3: (NAL, NAL)}.items():
+        s.submit_label("r1", lid, a)
+        s.submit_label("r2", lid, b)
+    s.submit_label("r1", 4, WM)                              # r2 has not read lesion 4 yet
+    ids, readers = s.disagreements()
+    assert ids == [1, 2] and readers == ["r1", "r2"]
+    final = {f["lesion_id"]: f for f in s.final_labels()}
+    assert set(final) == {0, 1, 2, 3}
+    assert final[0] == {"lesion_id": 0, "status": "agreed", "primary_host": "white_matter", "acceptable_hosts": ["cortex", "white_matter"], "not_a_lesion": False}
+    assert final[3] == {"lesion_id": 3, "status": "agreed", "primary_host": None, "acceptable_hosts": [], "not_a_lesion": True}
+    assert final[1]["status"] == "pending" and final[2]["status"] == "pending"
+    with pytest.raises(InvalidLabel):
+        s.submit_adjudication("adj", 1, {**CX, "reason": ""})
+    s.submit_adjudication("adj", 1, {"primary_host": "cortex", "acceptable_hosts": ["cortex"], "topography": "cortical",
+                                     "adjacency": [], "ambiguity": "certain", "reason": "皮层内信号"})
+    final = {f["lesion_id"]: f for f in s.final_labels()}
+    assert final[1] == {"lesion_id": 1, "status": "adjudicated", "primary_host": "cortex", "acceptable_hosts": ["cortex"], "not_a_lesion": False}
+    (adj,) = s.latest_adjudications()
+    assert adj["adjudicator_id"] == "adj" and adj["reason"] == "皮层内信号" and adj["lesion_id"] == 1
+
+
+def test_disagreements_need_exactly_two_readers(tmp_path):
+    s = Store(tmp_path / "x.sqlite")
+    s.add_reader("r1", "reader", T1, "读者 1")
+    with pytest.raises(ValueError):
+        s.disagreements()
