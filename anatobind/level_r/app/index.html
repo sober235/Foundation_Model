@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level R 读片</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <span id="who">…</span> · <span id="progress">…</span> · <span id="lcode"></span>
+  <span class="right"><a href="#" id="btn-list">列表</a> · <a href="#" id="btn-next">下一个</a> · <a href="guide.html" target="_blank">读片说明</a></span>
+  <div id="status"></div>
+</header>
+
+<section id="sec-list" class="hidden">
+  <ul id="list"></ul>
+</section>
+
+<section id="sec-lesion" class="hidden">
+  <div class="viewer">
+    <canvas id="view" width="640" height="640"></canvas>
+    <canvas id="off" class="hidden"></canvas>
+    <div class="controls">
+      <span id="zlabel"></span>
+      <input type="range" id="zslider" min="0" max="15" value="0">
+      <button type="button" id="zoom1">1×</button><button type="button" id="zoom2">2×</button><button type="button" id="zoom4">4×</button>
+      <span id="wlabel"></span> <button type="button" id="wreset">复位窗</button>
+      <div class="hint">↑↓ 或 ←→ 翻层；在图上拖动：横向改窗宽、纵向改窗位；绿框是待判的病灶</div>
+    </div>
+    <div class="thumbs">
+      <div>上一层<br><canvas id="prev" width="200" height="200"></canvas></div>
+      <div>下一层<br><canvas id="next" width="200" height="200"></canvas></div>
+    </div>
+  </div>
+
+  <form id="form" onsubmit="return false">
+    <div id="readers" class="adj-only"></div>
+    <label class="row"><input type="checkbox" id="not_a_lesion"> 不是病灶（框内没有病灶）</label>
+    <label>主宿主结构 <select id="primary_host"></select></label>
+    <fieldset><legend>可接受的宿主（最多 2 个，必须包含主宿主）</legend><div id="acceptable_hosts"></div></fieldset>
+    <label>拓扑位置 <select id="topography"></select></label>
+    <fieldset><legend>邻接（可多选）</legend><div id="adjacency"></div></fieldset>
+    <label>不确定性 <select id="ambiguity"></select></label>
+    <label class="reader-only">局部图像质量（病灶附近能不能看清） <select id="local_quality"></select></label>
+    <fieldset class="reader-only"><legend>信心（1 低 – 5 高）</legend><div id="confidence"></div></fieldset>
+    <label class="reader-only">备注 <textarea id="comment" rows="2"></textarea></label>
+    <label class="adj-only">裁定理由（必填） <textarea id="reason" rows="2"></textarea></label>
+    <button type="button" id="submit">提交并下一个</button>
+  </form>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>
