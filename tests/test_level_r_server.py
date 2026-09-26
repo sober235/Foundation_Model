@@ -12,8 +12,10 @@ import numpy as np
 import pytest
 
 import anatobind.level_r.store as store_module
+from anatobind.level_r.blind import assert_blind
 from anatobind.level_r.export import write_volume
-from anatobind.level_r.server import make_server
+from anatobind.level_r.schema import LESION_TYPES, LOBES, SIDES, enums
+from anatobind.level_r.server import ANSWER_KEYS, make_server
 from anatobind.level_r.store import Store
 
 T1, T2, TA, BAD = "0123456789abcdef", "fedcba9876543210", "aaaaaaaaaaaaaaaa", "ffffffffffffffff"
@@ -88,6 +90,7 @@ def test_static_pages_and_enums_need_no_token(served):
     assert get(base, "/app.js", raw=True)[2]["Content-Type"].startswith(("text/javascript", "application/javascript"))
     status, en, _ = get(base, "/api/enums")
     assert status == 200 and en["max_acceptable"] == 2 and "white_matter" in en["primary_hosts"]
+    assert (en["lesion_types"], en["sides"], en["lobes"]) == (list(LESION_TYPES), list(SIDES), list(LOBES))
 
 
 def test_invalid_or_missing_token_is_403_everywhere(served):
@@ -134,6 +137,29 @@ def test_label_submission_validates_appends_and_moves_progress(served):
     assert get(base, "/api/me", T1)[1]["done"] == 1
     assert get(base, "/api/lesion/2", T1)[1]["answer"]["primary_host"] == "cortex"
     assert post(base, "/api/label", TA, {"lesion_id": 2, **WM})[0] == 403    # adjudicator cannot label
+
+
+def test_answers_carry_lesion_type_side_and_lobe_back_to_the_page(served):
+    store, base = served
+    assert post(base, "/api/label", T1, {"lesion_id": 2, **WM, "side": None})[0] == 400              # required unless 不是病灶
+    assert post(base, "/api/label", T1, {"lesion_id": 2, **WM, "side": "midline", "lobe": "not_applicable"})[0] == 200
+    ans = get(base, "/api/lesion/2", T1)[1]["answer"]
+    assert (ans["lesion_type"], ans["side"], ans["lobe"]) == ("nonspecific_wm_lesion", "midline", "not_applicable")
+    store.submit_label("r2", 2, {**WM, "lesion_type": "lacunar_infarct", "side": "midline"})         # same host, other type
+    assert get(base, "/api/disagreements", TA)[1] == [{"lesion_id": 2, "done": False}]
+    view = get(base, "/api/adjudicate/2", TA)[1]
+    assert [(v["lesion_type"], v["side"], v["lobe"]) for v in view["readers"]] == [
+        ("nonspecific_wm_lesion", "midline", "not_applicable"), ("lacunar_infarct", "midline", "frontal")]
+    ruling = {"lesion_id": 2, **WM, "lesion_type": "lacunar_infarct", "side": "midline", "lobe": "not_applicable", "reason": "中心低信号"}
+    assert post(base, "/api/adjudication", TA, ruling)[0] == 200
+    ans = get(base, "/api/adjudicate/2", TA)[1]["answer"]
+    assert (ans["lesion_type"], ans["side"], ans["lobe"]) == ("lacunar_infarct", "midline", "not_applicable")
+
+
+def test_answer_keys_and_enums_pass_the_blinding_check():
+    assert {"lesion_type", "side", "lobe"} <= set(ANSWER_KEYS)
+    assert_blind({k: None for k in ANSWER_KEYS})
+    assert_blind(enums())
 
 
 def test_label_submission_validates_time_and_window(served):

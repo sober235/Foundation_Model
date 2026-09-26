@@ -14,8 +14,8 @@ from anatobind.level_r.schema import InvalidLabel, enums
 
 APP_DIR = Path(__file__).resolve().parent / "app"
 STATIC = {"/": "index.html", "/index.html": "index.html", "/app.js": "app.js", "/style.css": "style.css", "/guide.html": "guide.html"}
-ANSWER_KEYS = ("primary_host", "acceptable_hosts", "topography", "adjacency", "ambiguity", "not_a_lesion", "local_quality",
-               "confidence", "comment", "reason", "ts")
+ANSWER_KEYS = ("primary_host", "acceptable_hosts", "topography", "adjacency", "ambiguity", "not_a_lesion", "lesion_type", "side",
+               "lobe", "local_quality", "confidence", "comment", "reason", "ts")
 TOKEN_RE = re.compile(r"[0-9a-f]{16}")
 mimetypes.add_type("text/javascript", ".js")
 

@@ -2,13 +2,16 @@
 "use strict";
 
 const TOKEN = new URLSearchParams(location.search).get("token") || "";
-const ZH = {"white_matter": "白质", "cortex": "皮层", "thalamus": "丘脑", "basal_ganglia": "基底节", "brainstem": "脑干", "cerebellum": "小脑", "other": "其他（含脑室内）",
+const ZH = {"white_matter": "白质", "cortex": "皮层", "thalamus": "丘脑", "basal_ganglia": "基底节", "brainstem": "脑干", "cerebellum": "小脑", "other": "其他",
   "periventricular": "脑室旁", "juxtacortical": "近皮层", "cortical": "皮层内", "deep_white_matter": "深部白质", "infratentorial": "幕下",
   "adjacent_to_cortex": "邻近皮层", "adjacent_to_ventricle": "邻近脑室", "crosses_boundary": "跨越边界", "none": "无",
   "certain": "确定", "two_host": "两个宿主难分", "multi_structure": "多结构", "insufficient_resolution": "分辨率不足",
-  "good": "好", "fair": "一般", "poor": "差", "not_a_lesion": "不是病灶"};
-const FIELD_ZH = {"primary_host": "主宿主", "acceptable_hosts": "可接受集合", "topography": "拓扑位置", "adjacency": "邻接",
-  "ambiguity": "不确定性", "not_a_lesion": "不是病灶", "comment": "备注"};
+  "good": "好", "fair": "一般", "poor": "差", "not_a_lesion": "不是病灶",
+  "nonspecific_wm_lesion": "非特异性白质病灶", "lacunar_infarct": "腔隙性梗死", "perivascular_space": "血管周围间隙",
+  "image_left": "图像左侧", "image_right": "图像右侧", "midline": "中线",
+  "frontal": "额叶", "parietal": "顶叶", "temporal": "颞叶", "occipital": "枕叶", "insular": "岛叶", "not_applicable": "不适用（深部灰质/幕下）"};
+const FIELD_ZH = {"lesion_type": "病灶类型", "side": "侧别", "lobe": "脑叶", "primary_host": "主宿主", "acceptable_hosts": "可接受集合",
+  "topography": "拓扑位置", "adjacency": "邻接", "ambiguity": "不确定性", "not_a_lesion": "不是病灶", "comment": "备注"};
 
 const state = {me: null, enums: null, mode: "reader", lesion: null, vol: null, z: 0, zoom: 2, win: null, opened: 0, center: null};
 const volCache = new Map();
@@ -116,13 +119,14 @@ function radios(id, vals) { $(id).innerHTML = vals.map(v => `<label><input type=
 function checked(name) { return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value); }
 function setChecked(name, vals) { document.querySelectorAll(`input[name="${name}"]`).forEach(i => { i.checked = vals.includes(i.value); }); }
 function buildForm(en) {
+  fill("lesion_type", en.lesion_types); fill("side", en.sides); fill("lobe", en.lobes);
   fill("primary_host", en.primary_hosts); checkboxes("acceptable_hosts", en.primary_hosts);
   fill("topography", en.topography); checkboxes("adjacency", en.adjacency); fill("ambiguity", en.ambiguity);
   fill("local_quality", en.local_quality); radios("confidence", [1, 2, 3, 4, 5]);
 }
 function toggleNal() {
   const nal = $("not_a_lesion").checked;
-  for (const id of ["primary_host", "topography", "ambiguity"]) $(id).disabled = nal;
+  for (const id of ["lesion_type", "side", "lobe", "primary_host", "topography", "ambiguity"]) $(id).disabled = nal;
   document.querySelectorAll('input[name="acceptable_hosts"]').forEach(i => { i.disabled = nal; });
 }
 $("not_a_lesion").onchange = toggleNal;
@@ -133,6 +137,7 @@ $("primary_host").onchange = () => {
 function resetForm() { $("form").reset(); toggleNal(); $("readers").innerHTML = ""; }
 function fillForm(a) {
   $("not_a_lesion").checked = !!a.not_a_lesion; toggleNal();
+  $("lesion_type").value = a.lesion_type || ""; $("side").value = a.side || ""; $("lobe").value = a.lobe || "";
   $("primary_host").value = a.primary_host || ""; setChecked("acceptable_hosts", a.acceptable_hosts || []);
   $("topography").value = a.topography || ""; setChecked("adjacency", a.adjacency || []); $("ambiguity").value = a.ambiguity || "";
   $("local_quality").value = a.local_quality || ""; setChecked("confidence", a.confidence != null ? [String(a.confidence)] : []);
@@ -141,6 +146,8 @@ function fillForm(a) {
 function readForm() {
   const nal = $("not_a_lesion").checked, adj = state.mode === "adjudicator";
   const p = {lesion_id: state.lesion.lesion_id, not_a_lesion: nal,
+    lesion_type: nal ? null : ($("lesion_type").value || null), side: nal ? null : ($("side").value || null),
+    lobe: nal ? null : ($("lobe").value || null),
     primary_host: nal ? null : ($("primary_host").value || null), acceptable_hosts: nal ? [] : checked("acceptable_hosts"),
     topography: nal ? null : ($("topography").value || null), adjacency: checked("adjacency"), ambiguity: nal ? null : ($("ambiguity").value || null),
     comment: $("comment").value, time_seconds: (Date.now() - state.opened) / 1000, window: state.win};
@@ -152,6 +159,9 @@ function readForm() {
 function validate(p, adj) {
   const M = state.enums.max_acceptable;
   if (!p.not_a_lesion) {
+    if (!p.lesion_type) return "请选择病灶类型";
+    if (!p.side) return "请选择侧别";
+    if (!p.lobe) return "请选择脑叶";
     if (!p.primary_host) return "请选择主宿主结构";
     if (!p.acceptable_hosts.includes(p.primary_host)) return "可接受集合必须包含主宿主";
     if (!p.topography) return "请选择拓扑位置";
@@ -170,7 +180,7 @@ function fmt(v) {
   return ZH[v] || v;
 }
 function showReaders(views) {
-  const keys = ["primary_host", "acceptable_hosts", "topography", "adjacency", "ambiguity", "not_a_lesion", "comment"];
+  const keys = ["lesion_type", "side", "lobe", "primary_host", "acceptable_hosts", "topography", "adjacency", "ambiguity", "not_a_lesion", "comment"];
   $("readers").innerHTML = "<table><tr><th></th><th>读者 1</th><th>读者 2</th></tr>" +
     keys.map(k => `<tr><td>${FIELD_ZH[k]}</td>${views.map(v => `<td>${esc(fmt(v[k]))}</td>`).join("")}</tr>`).join("") + "</table>";
 }

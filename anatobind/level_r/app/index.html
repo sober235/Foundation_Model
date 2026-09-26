@@ -37,7 +37,10 @@
   <form id="form" onsubmit="return false">
     <div id="readers" class="adj-only"></div>
     <label class="row"><input type="checkbox" id="not_a_lesion"> 不是病灶（框内没有病灶）</label>
-    <label>主宿主结构 <select id="primary_host"></select></label>
+    <label>病灶类型 <select id="lesion_type"></select></label>
+    <label>侧别（以屏幕左右为准） <select id="side"></select></label>
+    <label>脑叶 <select id="lobe"></select></label>
+    <label>主宿主结构（脑室内病灶选"其他"） <select id="primary_host"></select></label>
     <fieldset><legend>可接受的宿主（最多 2 个，必须包含主宿主）</legend><div id="acceptable_hosts"></div></fieldset>
     <label>拓扑位置 <select id="topography"></select></label>
     <fieldset><legend>邻接（可多选）</legend><div id="adjacency"></div></fieldset>
