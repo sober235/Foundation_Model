@@ -58,13 +58,14 @@ def test_export_csvs_writes_history_adjudications_and_final_status(tmp_path):
     s = _filled_store(tmp_path)
     files = export_csvs(s, tmp_path / "export")
     assert sorted(p.name for p in files) == ["adjudications.csv", "final_labels.csv", "labels_r1.csv", "labels_r2.csv"]
-    r1 = list(csv.DictReader(open(tmp_path / "export/labels_r1.csv", newline="")))
+    r1 = list(csv.DictReader(open(tmp_path / "export/labels_r1.csv", newline="", encoding="utf-8")))
     assert len(r1) == 5 and r1[0]["comment"] == "a,b" and json.loads(r1[0]["acceptable_hosts"]) == ["white_matter"] and r1[0]["window"] == "[1, 2]"
-    final = {int(r["lesion_id"]): r for r in csv.DictReader(open(tmp_path / "export/final_labels.csv", newline=""))}
+    final = {int(r["lesion_id"]): r for r in csv.DictReader(open(tmp_path / "export/final_labels.csv", newline="", encoding="utf-8"))}
     assert final[0]["status"] == "pending" and final[1]["status"] == "adjudicated" and final[2]["status"] == "agreed" and final[3]["status"] == "pending"
     assert list(final[2]) == list(FINAL_COLUMNS) and final[2]["primary_host"] == "cortex"
-    adj = list(csv.DictReader(open(tmp_path / "export/adjudications.csv", newline="")))
+    adj = list(csv.DictReader(open(tmp_path / "export/adjudications.csv", newline="", encoding="utf-8")))
     assert len(adj) == 1 and adj[0]["reason"] == "皮层"
+    assert "皮层".encode("utf-8") in (tmp_path / "export/adjudications.csv").read_bytes()
 
 
 def test_export_without_two_readers_still_writes_reader_files(tmp_path):
@@ -72,11 +73,11 @@ def test_export_without_two_readers_still_writes_reader_files(tmp_path):
     s.add_reader("r1", "reader", "0123456789abcdef", "读者 1")
     files = export_csvs(s, tmp_path / "export")
     assert sorted(p.name for p in files) == ["adjudications.csv", "final_labels.csv", "labels_r1.csv"]
-    assert open(tmp_path / "export/final_labels.csv").read().strip() == ",".join(FINAL_COLUMNS)
+    assert open(tmp_path / "export/final_labels.csv", encoding="utf-8").read().strip() == ",".join(FINAL_COLUMNS)
 
 
 def _final_csv(path, rows):
-    with open(path, "w", newline="") as fh:
+    with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=FINAL_COLUMNS)
         w.writeheader()
         w.writerows(rows)
@@ -92,7 +93,7 @@ def test_seal_splits_by_fold_writes_sha256_and_is_one_shot(tmp_path):
     for k in range(5):
         p = tmp_path / "sealed" / f"labels_fold{k}.csv"
         assert man[f"fold{k}"]["sha256"] == sha256_file(p) and man[f"fold{k}"]["path"] == str(p)
-        assert [int(r["lesion_id"]) for r in csv.DictReader(open(p, newline=""))] == [k, k + 5]
+        assert [int(r["lesion_id"]) for r in csv.DictReader(open(p, newline="", encoding="utf-8"))] == [k, k + 5]
     assert json.loads((tmp_path / "manifest.json").read_text()) == man
     with pytest.raises(FileExistsError):
         seal(final, lesion_fold, tmp_path / "sealed", tmp_path / "manifest2.json")

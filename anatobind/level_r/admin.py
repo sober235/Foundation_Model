@@ -41,7 +41,7 @@ def sha256_file(path):
 
 
 def _write_csv(path, columns, rows):
-    with open(path, "w", newline="") as fh:
+    with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=columns, extrasaction="ignore")
         w.writeheader()
         for r in rows:
@@ -68,7 +68,7 @@ def export_csvs(store, out_dir):
 
 def seal(final_labels_csv, lesion_fold, out_dir, manifest_path, now=None):
     """Split final_labels.csv by outer fold into out_dir/labels_fold{k}.csv and write the sha256 manifest. One shot."""
-    with open(final_labels_csv, newline="") as fh:
+    with open(final_labels_csv, newline="", encoding="utf-8") as fh:
         rows = list(csv.DictReader(fh))
     pending = [r for r in rows if r["status"] == "pending"]
     if pending:
