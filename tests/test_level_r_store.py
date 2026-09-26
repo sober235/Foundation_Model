@@ -1,3 +1,4 @@
+import itertools
 import sqlite3
 from pathlib import Path
 
@@ -139,6 +140,40 @@ def test_disagreements_and_final_labels_follow_r9(tmp_path):
     assert final[1] == {"lesion_id": 1, "status": "adjudicated", "primary_host": "cortex", "acceptable_hosts": ["cortex"], "not_a_lesion": False}
     (adj,) = s.latest_adjudications()
     assert adj["adjudicator_id"] == "adj" and adj["reason"] == "皮层内信号" and adj["lesion_id"] == 1
+
+
+def _ticking_clock(monkeypatch):
+    """now_iso has second resolution; give every stored row its own second so the order of events is unambiguous."""
+    ticks = itertools.count()
+    monkeypatch.setattr(store_module, "now_iso", lambda: f"2026-10-01T00:{(t := next(ticks)) // 60:02d}:{t % 60:02d}+00:00")
+
+
+def _status(s, lid):
+    return {f["lesion_id"]: f for f in s.final_labels()}[lid]["status"]
+
+
+def test_an_adjudication_goes_stale_when_a_reader_revises_after_it(tmp_path, monkeypatch):
+    _ticking_clock(monkeypatch)
+    s = _store(tmp_path)
+    s.submit_label("r1", 1, WM)
+    s.submit_label("r2", 1, CX)
+    s.submit_adjudication("adj", 1, {**CX, "reason": "皮层"})
+    assert _status(s, 1) == "adjudicated" and s.adjudicated_lesion_ids() == {1}
+    s.submit_label("r2", 1, CX_TH)                             # revised after the ruling, still a disagreement
+    assert _status(s, 1) == "pending" and s.adjudicated_lesion_ids() == set() and s.disagreements()[0] == [1]
+    s.submit_adjudication("adj", 1, {**CX, "reason": "仍是皮层"})
+    assert _status(s, 1) == "adjudicated" and s.adjudicated_lesion_ids() == {1}
+    assert {f["lesion_id"]: f for f in s.final_labels()}[1]["primary_host"] == "cortex"
+
+
+def test_an_adjudication_in_the_same_second_as_a_revision_still_counts(tmp_path, monkeypatch):
+    monkeypatch.setattr(store_module, "now_iso", lambda: "2026-10-01T00:00:00+00:00")
+    s = _store(tmp_path)
+    s.submit_label("r1", 1, WM)
+    s.submit_label("r2", 1, CX)
+    s.submit_adjudication("adj", 1, {**CX, "reason": "皮层"})
+    s.submit_label("r2", 1, CX_TH)
+    assert _status(s, 1) == "adjudicated" and s.adjudicated_lesion_ids() == {1}
 
 
 def test_disagreements_need_exactly_two_readers(tmp_path):

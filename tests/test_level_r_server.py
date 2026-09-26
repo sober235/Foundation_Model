@@ -1,5 +1,6 @@
 import http.client
 import importlib.util
+import itertools
 import json
 import sqlite3
 import threading
@@ -10,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import anatobind.level_r.store as store_module
 from anatobind.level_r.export import write_volume
 from anatobind.level_r.server import make_server
 from anatobind.level_r.store import Store
@@ -162,6 +164,22 @@ def test_adjudicator_sees_disagreements_anonymously_and_can_rule(served):
     assert get(base, "/api/disagreements", TA)[1][0] == {"lesion_id": 1, "done": True}
     assert get(base, "/api/adjudicate/1", TA)[1]["answer"]["reason"] == "皮层内"
     assert get(base, "/api/lesion/1", TA)[0] == 200                     # adjudicator may view any lesion
+
+
+def test_disagreement_is_open_again_when_a_reader_revises_after_the_ruling(served, monkeypatch):
+    store, base = served
+    ticks = itertools.count()                                          # one second per stored row, see test_level_r_store
+    monkeypatch.setattr(store_module, "now_iso", lambda: f"2026-10-01T00:00:{next(ticks):02d}+00:00")
+    store.submit_label("r1", 1, WM)
+    store.submit_label("r2", 1, CX)
+    ruling = {"lesion_id": 1, "primary_host": "cortex", "acceptable_hosts": ["cortex"], "topography": "cortical", "adjacency": [],
+              "ambiguity": "certain", "reason": "皮层内"}
+    assert post(base, "/api/adjudication", TA, ruling)[0] == 200
+    assert get(base, "/api/disagreements", TA)[1] == [{"lesion_id": 1, "done": True}]
+    store.submit_label("r1", 1, {**WM, "comment": "又看了一遍"})
+    assert get(base, "/api/disagreements", TA)[1] == [{"lesion_id": 1, "done": False}]
+    assert post(base, "/api/adjudication", TA, ruling)[0] == 200
+    assert get(base, "/api/disagreements", TA)[1] == [{"lesion_id": 1, "done": True}]
 
 
 def test_adjudicator_routes_report_409_without_two_readers(tmp_path):

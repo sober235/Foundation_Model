@@ -102,7 +102,7 @@ def make_handler(store, data_root, app_dir=APP_DIR):
                 if role != "adjudicator":
                     return self._send(403, {"error": "adjudicator only"})
                 ids, _ = store.disagreements()
-                done = {a["lesion_id"] for a in store.latest_adjudications()}
+                done = store.adjudicated_lesion_ids()
                 return self._send(200, [{"lesion_id": i, "done": i in done} for i in ids])
             m = re.fullmatch(r"/api/adjudicate/(\d+)", p)
             if m:

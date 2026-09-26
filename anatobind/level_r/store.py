@@ -223,11 +223,24 @@ class Store:
         a, b = ({l["lesion_id"]: l for l in self.latest_labels(r)} for r in readers)
         return sorted(lid for lid in set(a) & set(b) if needs_adjudication(a[lid], b[lid])), readers
 
-    def final_labels(self):
-        """R9: agreed -> union of the acceptable sets; disagreement -> the last adjudication, else pending."""
+    def _current_adjudications(self, a, b):
+        """The latest adjudication per lesion, kept only while its ts is >= both readers' latest answer ts: a reader who
+        revises after the ruling sends the lesion back to the adjudicator. now_iso() strings (UTC, whole seconds) compare
+        lexicographically, so an answer in the same second as the ruling leaves the ruling current."""
+        return {z["lesion_id"]: z for z in self.latest_adjudications()
+                if all(z["ts"] >= side[z["lesion_id"]]["ts"] for side in (a, b) if z["lesion_id"] in side)}
+
+    def adjudicated_lesion_ids(self):
         readers = self._reader_ids()
         a, b = ({l["lesion_id"]: l for l in self.latest_labels(r)} for r in readers)
-        adj = {x["lesion_id"]: x for x in self.latest_adjudications()}
+        return set(self._current_adjudications(a, b))
+
+    def final_labels(self):
+        """R9: agreed -> union of the acceptable sets; disagreement -> the last adjudication while it is current, else
+        pending."""
+        readers = self._reader_ids()
+        a, b = ({l["lesion_id"]: l for l in self.latest_labels(r)} for r in readers)
+        adj = self._current_adjudications(a, b)
         out = []
         for lid in sorted(set(a) & set(b)):
             x, y = a[lid], b[lid]
