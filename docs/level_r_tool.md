@@ -7,6 +7,7 @@
 1. 导出图像与病灶：`nice -n 19 python scripts/level_r_export.py --out $D`（165 卷，约 473 MB；已存在 `lesions.json` 会拒跑）。
 2. 折表与 pilot 已入库：`data/level_r/folds.json`、`data/level_r/pilot_150.json`。重生成命令见两份脚本头部，脚本拒绝覆盖。
 3. 建库：`python scripts/level_r_admin.py init --db $D/level_r.sqlite --lesions $D/lesions.json`。只有 `init` 会新建库；其余子命令、服务和报告脚本只打开已存在的库，`--db` 写错会直接报错，不会留下一个空库。
+   `init` 对已有的库可以重跑：只补缺的表（病灶已在就跳过）。2026-09-26 加 `releases` 表之前建的库（例如冒烟库 `level_r_smoke`）要先重跑一次 `init`，否则服务和其余子命令会报 `lacks the Level R tables ['releases']` 拒绝打开。
 4. 读者：`python scripts/level_r_admin.py add-reader --db $D/level_r.sqlite --reader-id r1 --role reader --display "读者 1"`（r2 同理；裁定人 `--reader-id adj --role adjudicator`；第三位 `reader` 会被拒绝）。token 只打印一次，记到用户手里，不写进仓库。
 5. 顺序：`python scripts/level_r_admin.py order --db $D/level_r.sqlite --reader-id r1 --seed 1 --pilot data/level_r/pilot_150.json`，r2 用 `--seed 2`。
 
@@ -22,8 +23,11 @@ setsid nohup env PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/pyth
 - 备份：`python scripts/level_r_admin.py backup --db $D/level_r.sqlite --out $D/backup`（带时间戳，不覆盖）
 
 ## pilot 报告
+读者读完自己顺序里的 pilot 病灶后，工具停在列表页并提示"pilot 已完成，请等待通知再继续"，不再给下一例。两位都读完后：
 `python scripts/level_r_report.py --db $D/level_r.sqlite --pilot data/level_r/pilot_150.json --out docs/verification/$(date +%F)/level_r_pilot.md`
 门（spec R7）：全体 raw 的 95% 区间下限 ≥ 0.80 且 0 mm 档 raw ≥ 0.70。门没过先回 v2.6 §3 本体与表单再议，不硬推。
+决定继续读全集时逐位放行（只追加一行记录，读者刷新页面即可在同一链接里继续）：
+`python scripts/level_r_admin.py release --db $D/level_r.sqlite --reader-id r1`（r2 同理）。
 
 ## 封存（全集读完、裁定完之后，一次）
 先跑一次导出，`--final` 指向这次导出目录里的文件：

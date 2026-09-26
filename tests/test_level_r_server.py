@@ -96,7 +96,7 @@ def test_invalid_or_missing_token_is_403_everywhere(served):
 def test_reader_sees_only_their_own_order_and_answers(served):
     store, base = served
     status, me, _ = get(base, "/api/me", T1)
-    assert status == 200 and me == {"reader_id": "r1", "role": "reader", "display": "读者 1", "done": 0, "total": 3, "next": 2}
+    assert status == 200 and me == {"reader_id": "r1", "role": "reader", "display": "读者 1", "done": 0, "total": 3, "next": 2, "held": False}
     status, lst, _ = get(base, "/api/list", T1)
     assert [(o["position"], o["lesion_id"], o["is_pilot"], o["done"]) for o in lst] == [(0, 2, 1, False), (1, 0, 0, False), (2, 1, 0, False)]
     assert get(base, "/api/lesion/3", T1)[0] == 403                     # not in r1's list
@@ -125,9 +125,20 @@ def test_label_submission_validates_appends_and_moves_progress(served):
     assert status == 200 and out["row_id"] >= 1
     status, out2 = post(base, "/api/label", T1, {"lesion_id": 2, **CX})
     assert out2["row_id"] > out["row_id"] and len(store.label_rows("r1")) == 2
-    assert get(base, "/api/me", T1)[1]["done"] == 1 and get(base, "/api/me", T1)[1]["next"] == 0
+    assert get(base, "/api/me", T1)[1]["done"] == 1
     assert get(base, "/api/lesion/2", T1)[1]["answer"]["primary_host"] == "cortex"
     assert post(base, "/api/label", TA, {"lesion_id": 2, **WM})[0] == 403    # adjudicator cannot label
+
+
+def test_me_holds_a_reader_after_the_pilot_until_release(served):
+    store, base = served
+    assert post(base, "/api/label", T1, {"lesion_id": 2, **WM})[0] == 200    # lesion 2 is r1's whole pilot
+    me = get(base, "/api/me", T1)[1]
+    assert (me["done"], me["next"], me["held"]) == (1, None, True)
+    assert get(base, "/api/me", T2)[1]["held"] is False                      # r2 has no pilot lesions
+    store.release("r1")
+    me = get(base, "/api/me", T1)[1]
+    assert (me["done"], me["next"], me["held"]) == (1, 0, False)
 
 
 def test_adjudicator_sees_disagreements_anonymously_and_can_rule(served):

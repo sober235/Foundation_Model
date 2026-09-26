@@ -63,7 +63,7 @@ def test_order_is_set_once_and_marks_pilot(tmp_path):
 def test_labels_append_latest_wins_and_progress_moves(tmp_path):
     s = _store(tmp_path)
     s.set_order("r1", [3, 1, 4, 0, 2], {3, 1})
-    assert s.progress("r1") == {"done": 0, "total": 5, "next": 3}
+    assert s.progress("r1") == {"done": 0, "total": 5, "next": 3, "held": False}
     r1 = s.submit_label("r1", 3, {**WM, "time_seconds": 41.5, "window": [100, 900]})
     r2 = s.submit_label("r1", 3, {**CX, "time_seconds": 12.0})
     assert r2 > r1
@@ -72,7 +72,29 @@ def test_labels_append_latest_wins_and_progress_moves(tmp_path):
     (latest,) = s.latest_labels("r1")
     assert latest["primary_host"] == "cortex" and latest["acceptable_hosts"] == ["cortex"] and latest["adjacency"] == ["none"]
     assert latest["not_a_lesion"] is False and latest["time_seconds"] == 12.0 and latest["ts"]
-    assert s.progress("r1") == {"done": 1, "total": 5, "next": 1}
+    assert s.progress("r1") == {"done": 1, "total": 5, "next": 1, "held": False}
+
+
+def test_progress_holds_at_the_end_of_the_pilot_until_the_reader_is_released(tmp_path):
+    s = _store(tmp_path)
+    s.set_order("r1", [3, 1, 4, 0, 2], {3, 1})
+    s.set_order("r2", [0, 1, 2, 3, 4], set())
+    s.submit_label("r1", 1, WM)                                        # pilot answered out of order: still inside the pilot
+    assert s.progress("r1") == {"done": 1, "total": 5, "next": 3, "held": False}
+    s.submit_label("r1", 3, WM)
+    assert s.progress("r1") == {"done": 2, "total": 5, "next": None, "held": True} and s.is_released("r1") is False
+    s.release("r1")
+    assert s.is_released("r1") is True and s.is_released("r2") is False
+    assert s.progress("r1") == {"done": 2, "total": 5, "next": 4, "held": False}
+    for lid in range(5):                                               # an order without pilot lesions never holds
+        assert s.progress("r2")["held"] is False
+        s.submit_label("r2", lid, WM)
+    assert s.progress("r2") == {"done": 5, "total": 5, "next": None, "held": False}
+    for who in ("nobody", "adj"):                                      # only an existing reader can be released
+        with pytest.raises(ValueError):
+            s.release(who)
+    rows = sqlite3.connect(str(tmp_path / "level_r.sqlite")).execute("SELECT reader_id, ts FROM releases").fetchall()
+    assert len(rows) == 1 and rows[0][0] == "r1" and rows[0][1]
 
 
 def test_submit_rejects_invalid_or_unknown_and_stores_nothing(tmp_path):
@@ -124,6 +146,20 @@ def test_disagreements_need_exactly_two_readers(tmp_path):
     s.add_reader("r1", "reader", T1, "读者 1")
     with pytest.raises(ValueError):
         s.disagreements()
+
+
+def test_a_database_from_before_the_releases_table_is_refused_until_init_adds_it(tmp_path):
+    p = tmp_path / "old.sqlite"
+    c = sqlite3.connect(str(p))
+    c.executescript(store_module.SCHEMA.split("CREATE TABLE IF NOT EXISTS releases")[0])
+    c.execute("INSERT INTO readers VALUES ('r1', 'reader', 'h', '读者 1')")
+    c.commit()
+    c.close()
+    with pytest.raises(sqlite3.OperationalError, match="releases"):
+        Store(p, create=False)
+    Store(p)                                                     # what `level_r_admin.py init` does: add missing tables
+    s = Store(p, create=False)
+    assert [r["reader_id"] for r in s.readers()] == ["r1"] and s.is_released("r1") is False
 
 
 def test_a_third_reader_is_refused(tmp_path):

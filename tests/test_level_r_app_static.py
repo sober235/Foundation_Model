@@ -58,6 +58,13 @@ def test_guide_defines_primary_host_operationally():
         assert phrase in g, phrase
 
 
+def test_app_stops_at_the_end_of_the_pilot_and_the_guide_says_so():
+    js = _read("app.js")
+    assert "me.held" in js and "pilot 已完成，请等待通知再继续" in js
+    g = _read("guide.html")
+    assert "等我们通知" in g and "之后在同一链接里继续读完全部" not in g
+
+
 def test_app_escapes_server_strings_and_keeps_arrow_keys_inside_form_controls():
     js = _read("app.js")
     assert "function esc(" in js

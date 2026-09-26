@@ -164,6 +164,7 @@ def _admin_script():
     ["order", "--reader-id", "r1", "--seed", "1"],
     ["export", "--out", "EXPORT"],
     ["backup", "--out", "BACKUP"],
+    ["release", "--reader-id", "r1"],
 ])
 def test_admin_subcommands_other_than_init_refuse_a_missing_database(tmp_path, monkeypatch, argv):
     db = tmp_path / "typo.sqlite"
@@ -172,6 +173,13 @@ def test_admin_subcommands_other_than_init_refuse_a_missing_database(tmp_path, m
     with pytest.raises(sqlite3.OperationalError):
         _admin_script().main()
     assert sorted(p.name for p in tmp_path.iterdir()) == []
+
+
+def test_release_command_lets_a_reader_continue_past_the_pilot(tmp_path, monkeypatch, capsys):
+    s = _filled_store(tmp_path)
+    monkeypatch.setattr("sys.argv", ["level_r_admin.py", "release", "--db", str(tmp_path / "db.sqlite"), "--reader-id", "r2"])
+    _admin_script().main()
+    assert s.is_released("r2") and not s.is_released("r1") and "r2" in capsys.readouterr().out
 
 
 def test_seal_command_takes_the_fold_count_from_folds_json(tmp_path, monkeypatch):

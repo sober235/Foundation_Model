@@ -1,5 +1,5 @@
-"""SQLite store for Level R (spec §7). labels and adjudications are append-only: a reader who changes an answer adds
-a row, and statistics take the last row per (reader, lesion). No statement in this module ever modifies or removes a
+"""SQLite store for Level R (spec §7). labels, adjudications and pilot releases are append-only: a reader who changes an
+answer adds a row, and statistics take the last row per (reader, lesion). No statement in this module ever modifies or removes a
 row, and the test suite greps this file to keep it that way."""
 import hashlib
 import json
@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS adjudications(
     row_id INTEGER PRIMARY KEY, adjudicator_id TEXT NOT NULL, lesion_id INTEGER NOT NULL,
     primary_host TEXT, acceptable_json TEXT NOT NULL, topography TEXT, adjacency_json TEXT NOT NULL, ambiguity TEXT,
     not_a_lesion INTEGER NOT NULL, reason TEXT NOT NULL, ts TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS releases(
+    row_id INTEGER PRIMARY KEY, reader_id TEXT NOT NULL, ts TEXT NOT NULL);
 """
 TABLES = tuple(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)\(", SCHEMA))
 LABEL_COLUMNS = ("reader_id", "lesion_id", "primary_host", "acceptable_json", "topography", "adjacency_json", "ambiguity",
@@ -173,10 +175,26 @@ class Store:
         return list(last.values())
 
     def progress(self, reader_id):
+        """held: the reader has answered every pilot lesion of their order and has not been released (spec §9: both
+        readers finish the pilot, the report runs, only then does reading continue); next is None while held."""
         done = {r["lesion_id"] for r in self.latest_labels(reader_id)}
         order = self.order(reader_id)
+        pilot = [o["lesion_id"] for o in order if o["is_pilot"]]
+        held = bool(pilot) and all(l in done for l in pilot) and not self.is_released(reader_id)
         return {"done": sum(o["lesion_id"] in done for o in order), "total": len(order),
-                "next": next((o["lesion_id"] for o in order if o["lesion_id"] not in done), None)}
+                "next": None if held else next((o["lesion_id"] for o in order if o["lesion_id"] not in done), None),
+                "held": held}
+
+    # pilot release (append-only) ---------------------------------------------------------------------------------
+    def release(self, reader_id):
+        with self._lock, self._conn() as c:
+            if c.execute("SELECT 1 FROM readers WHERE reader_id = ? AND role = 'reader'", (reader_id,)).fetchone() is None:
+                raise ValueError(f"{reader_id!r} is not a reader")
+            c.execute("INSERT INTO releases(reader_id, ts) VALUES (?, ?)", (reader_id, now_iso()))
+
+    def is_released(self, reader_id):
+        with self._conn() as c:
+            return c.execute("SELECT 1 FROM releases WHERE reader_id = ? LIMIT 1", (reader_id,)).fetchone() is not None
 
     # adjudication ------------------------------------------------------------------------------------------------
     def submit_adjudication(self, adjudicator_id, lesion_id, payload):

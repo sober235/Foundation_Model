@@ -212,6 +212,11 @@ async function openNext() {
     const rows = await apiJSON("/api/disagreements"), n = rows.find(r => !r.done);
     return n ? openLesion(n.lesion_id) : showList();
   }
+  if (me.held && me.next == null) {            // end of the pilot: wait for the team's release before reading on
+    await showList();
+    $("status").textContent = "pilot 已完成，请等待通知再继续";
+    return;
+  }
   return me.next != null ? openLesion(me.next) : showList();
 }
 $("btn-list").onclick = (e) => { e.preventDefault(); showList(); };

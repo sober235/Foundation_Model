@@ -8,6 +8,7 @@ database, every other subcommand refuses a --db path that does not exist:
   order       give one reader their randomised order (pilot first)
   export      <out>/<timestamp>/labels_<reader>.csv / adjudications.csv / final_labels.csv (needs both readers)
   seal        final_labels.csv -> sealed/labels_fold{k}.csv + data/level_r/sealed_manifest.json
+  release     let a reader continue past the pilot (readers are held there until the pilot report is in)
   backup      timestamped copy of the live database
 
   D=/data2/congcong/data/FM_data/derived/level_r
@@ -17,6 +18,7 @@ database, every other subcommand refuses a --db path that does not exist:
   python scripts/level_r_admin.py order --db $D/level_r.sqlite --reader-id r1 --seed 1 --pilot data/level_r/pilot_150.json
   python scripts/level_r_admin.py export --db $D/level_r.sqlite --out $D/export
   python scripts/level_r_admin.py seal --final $D/export/<timestamp>/final_labels.csv --folds data/level_r/folds.json --out $D/sealed
+  python scripts/level_r_admin.py release --db $D/level_r.sqlite --reader-id r1
   python scripts/level_r_admin.py backup --db $D/level_r.sqlite --out $D/backup
 """
 import argparse
@@ -83,6 +85,11 @@ def cmd_seal(a):
     print(f"manifest -> {a.manifest}")
 
 
+def cmd_release(a):
+    Store(a.db, create=False).release(a.reader_id)
+    print(f"{a.reader_id} released: reading continues past the pilot")
+
+
 def cmd_backup(a):
     print(backup_db(a.db, a.out))
 
@@ -101,6 +108,7 @@ def main():
     p = sub.add_parser("seal"); p.add_argument("--final", type=Path, required=True); p.add_argument("--folds", type=Path, required=True)
     p.add_argument("--registry", type=Path, default=REGISTRY); p.add_argument("--out", type=Path, required=True)
     p.add_argument("--manifest", type=Path, default=MANIFEST); p.set_defaults(fn=cmd_seal)
+    p = sub.add_parser("release"); p.add_argument("--db", type=Path, required=True); p.add_argument("--reader-id", required=True); p.set_defaults(fn=cmd_release)
     p = sub.add_parser("backup"); p.add_argument("--db", type=Path, required=True); p.add_argument("--out", type=Path, required=True); p.set_defaults(fn=cmd_backup)
     a = ap.parse_args()
     a.fn(a)
