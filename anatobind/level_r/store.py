@@ -9,7 +9,7 @@ import threading
 from datetime import datetime, timezone
 from urllib.parse import quote
 
-from anatobind.level_r.schema import MAX_ACCEPTABLE, validate_adjudication, validate_label
+from anatobind.level_r.schema import MAX_ACCEPTABLE, InvalidLabel, validate_adjudication, validate_label
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS readers(
@@ -46,6 +46,12 @@ def token_hash(token):
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def _finite_number(v):
+    """A JSON number sqlite and json.dumps keep as it is: not a bool, not NaN or +-Infinity (both comparisons fail), not
+    an integer too large for a sqlite INTEGER."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and -1e15 < v < 1e15
 
 
 def needs_adjudication(a, b):
@@ -152,11 +158,14 @@ class Store:
     # labels ------------------------------------------------------------------------------------------------------
     def submit_label(self, reader_id, lesion_id, payload):
         lab = validate_label(payload)
-        window = payload.get("window")
+        t, window = payload.get("time_seconds"), payload.get("window")
+        if t is not None and not (_finite_number(t) and t >= 0):
+            raise InvalidLabel(f"time_seconds {t!r} must be a finite number >= 0")
+        if window is not None and not (isinstance(window, list) and len(window) == 2 and all(_finite_number(v) for v in window)):
+            raise InvalidLabel(f"window {window!r} must be a list of two numbers")
         row = (reader_id, int(lesion_id), lab["primary_host"], json.dumps(lab["acceptable_hosts"]), lab["topography"],
                json.dumps(lab["adjacency"]), lab["ambiguity"], int(lab["not_a_lesion"]), lab["local_quality"],
-               lab["confidence"], lab["comment"], payload.get("time_seconds"),
-               json.dumps(window) if window is not None else None, now_iso())
+               lab["confidence"], lab["comment"], t, json.dumps(window) if window is not None else None, now_iso())
         with self._lock, self._conn() as c:
             if c.execute("SELECT 1 FROM lesions WHERE lesion_id = ?", (int(lesion_id),)).fetchone() is None:
                 raise KeyError(lesion_id)

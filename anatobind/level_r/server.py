@@ -4,6 +4,7 @@ only ever sees their own order and answers. Every JSON body passes assert_blind 
 import json
 import mimetypes
 import re
+import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
@@ -54,6 +55,24 @@ def make_handler(store, data_root, app_dir=APP_DIR):
             return caller["role"] == "adjudicator" or any(o["lesion_id"] == lesion_id for o in store.order(caller["reader_id"]))
 
         def do_GET(self):
+            self._guarded(self._do_get)
+
+        def do_POST(self):
+            self._guarded(self._do_post)
+
+        def _guarded(self, handler):
+            """Anything the routes do not map to 400/403/404/409 answers 500 with a fixed body; the traceback goes to
+            stderr (the server log), never to the browser."""
+            try:
+                handler()
+            except Exception:
+                traceback.print_exc()
+                try:
+                    self._send(500, {"error": "internal error"})
+                except Exception:                   # the connection itself is gone
+                    pass
+
+        def _do_get(self):
             u = urlparse(self.path)
             q, p = parse_qs(u.query), u.path
             if p in STATIC:
@@ -118,7 +137,7 @@ def make_handler(store, data_root, app_dir=APP_DIR):
                                         "answer": answer_view(mine[0]) if mine else None})
             return self._send(404, {"error": "no such route"})
 
-        def do_POST(self):
+        def _do_post(self):
             u = urlparse(self.path)
             caller = self._caller(parse_qs(u.query))
             if caller is None:

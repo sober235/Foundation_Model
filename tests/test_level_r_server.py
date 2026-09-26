@@ -132,6 +132,30 @@ def test_label_submission_validates_appends_and_moves_progress(served):
     assert post(base, "/api/label", TA, {"lesion_id": 2, **WM})[0] == 403    # adjudicator cannot label
 
 
+def test_label_submission_validates_time_and_window(served):
+    store, base = served
+    for bad in ({"time_seconds": {}}, {"time_seconds": "abc"}, {"window": "x"}):
+        status, out = post(base, "/api/label", T1, {"lesion_id": 2, **WM, **bad})
+        assert status == 400 and "error" in out, bad
+    assert store.label_rows() == []
+    assert post(base, "/api/label", T1, {"lesion_id": 2, **WM})[0] == 200
+
+
+def test_unexpected_errors_are_a_bare_500_and_the_traceback_goes_to_stderr(served, monkeypatch, capsys):
+    store, base = served
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("secret detail")
+    monkeypatch.setattr(store, "progress", boom)
+    monkeypatch.setattr(store, "submit_label", boom)
+    status, body, _ = get(base, "/api/me", T1)
+    assert (status, body) == (500, {"error": "internal error"})
+    assert post(base, "/api/label", T1, {"lesion_id": 2, **WM}) == (500, {"error": "internal error"})
+    assert get(base, "/api/me", BAD)[0] == 403 and get(base, "/api/lesion/99", TA)[0] == 404      # mapped errors unchanged
+    err = capsys.readouterr().err
+    assert err.count("RuntimeError: secret detail") == 2
+
+
 def test_me_holds_a_reader_after_the_pilot_until_release(served):
     store, base = served
     assert post(base, "/api/label", T1, {"lesion_id": 2, **WM})[0] == 200    # lesion 2 is r1's whole pilot

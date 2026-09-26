@@ -1,4 +1,5 @@
 import csv
+import sys
 
 import pytest
 
@@ -77,7 +78,8 @@ def test_test_fold_needs_the_explicit_flag_and_logs_every_access(sealed):
     assert not (d / "access_log.txt").exists()
     rows = load_test_labels(2, unblind=True, sealed_dir=d, manifest_path=m)
     assert [r["lesion_id"] for r in rows] == [2, 7]
-    log = (d / "access_log.txt").read_text().strip().splitlines()
-    assert len(log) == 1 and "\tfold2\t" in log[0] and log[0].endswith("test_level_r_labels.py")
+    log = (d / "access_log.txt").read_text(encoding="utf-8").strip().splitlines()
+    ts, fold, caller, entry = log[0].split("\t")                                # time, fold, calling file, entry script
+    assert len(log) == 1 and ts and fold == "fold2" and caller.endswith("test_level_r_labels.py") and entry == sys.argv[0]
     load_test_labels(2, unblind=True, sealed_dir=d, manifest_path=m, log_path=d / "other.log")
     assert (d / "other.log").read_text().count("\n") == 1

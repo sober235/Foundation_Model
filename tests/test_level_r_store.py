@@ -107,6 +107,28 @@ def test_submit_rejects_invalid_or_unknown_and_stores_nothing(tmp_path):
     assert s.label_rows() == []
 
 
+@pytest.mark.parametrize("extra", [
+    {"time_seconds": -1}, {"time_seconds": float("nan")}, {"time_seconds": float("inf")}, {"time_seconds": True},
+    {"time_seconds": "abc"}, {"time_seconds": {}}, {"time_seconds": [3]}, {"time_seconds": 10 ** 400},
+    {"window": "x"}, {"window": [1]}, {"window": [1, 2, 3]}, {"window": [1, "a"]}, {"window": [True, 2]},
+    {"window": [float("nan"), 1]}, {"window": {"lo": 1, "hi": 2}},
+])
+def test_submit_rejects_malformed_time_or_window_and_stores_nothing(tmp_path, extra):
+    s = _store(tmp_path)
+    with pytest.raises(InvalidLabel):
+        s.submit_label("r1", 0, {**WM, **extra})
+    assert s.label_rows() == []
+
+
+def test_submit_accepts_well_formed_time_and_window(tmp_path):
+    s = _store(tmp_path)
+    for extra in ({}, {"time_seconds": None, "window": None}, {"time_seconds": 0}, {"time_seconds": 12.5, "window": [-40, 900]},
+                  {"time_seconds": 3, "window": [1.5, 2.5]}):
+        s.submit_label("r1", 0, {**WM, **extra})
+    assert [(r["time_seconds"], r["window"]) for r in s.label_rows("r1")] == [
+        (None, None), (None, None), (0, None), (12.5, [-40, 900]), (3, [1.5, 2.5])]
+
+
 @pytest.mark.parametrize("a, b, expected", [
     (WM, WM, False), (WM, WM_CX, False),                     # same host, union {wm, cortex} <= 2
     (WM, CX, True),                                          # different primary host

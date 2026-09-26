@@ -4,6 +4,7 @@ server, so neither can drift without the other noticing."""
 import csv
 import inspect
 import json
+import sys
 from pathlib import Path
 
 from anatobind.level_r.admin import sha256_file
@@ -64,6 +65,6 @@ def load_test_labels(k, unblind=False, sealed_dir=SEALED_DIR, manifest_path=MANI
     _check_fold(k, _manifest(manifest_path))
     caller = inspect.stack()[1].filename
     log = Path(log_path) if log_path else Path(sealed_dir) / "access_log.txt"
-    with open(log, "a", encoding="utf-8") as fh:
-        fh.write(f"{now_iso()}\tfold{k}\t{caller}\n")
+    with open(log, "a", encoding="utf-8") as fh:                    # time, fold, calling file, entry script of the process
+        fh.write(f"{now_iso()}\tfold{k}\t{caller}\t{sys.argv[0]}\n")
     return load_fold(k, sealed_dir, manifest_path)
