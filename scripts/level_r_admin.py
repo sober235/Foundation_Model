@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-"""Level R administration (spec §3, §7, §10). Subcommands, all one-shot and none overwriting:
+"""Level R administration (spec §3, §7, §10). Subcommands, all one-shot and none overwriting; only init creates a
+database, every other subcommand refuses a --db path that does not exist:
 
   folds       registry -> data/level_r/folds.json (165 patients, seed 0, five folds)
   init        create the sqlite database and load lesions.json into it
-  add-reader  create a reader or adjudicator; the token is printed exactly once
+  add-reader  create a reader or adjudicator (at most two readers); the token is printed exactly once
   order       give one reader their randomised order (pilot first)
-  export      labels_<reader>.csv / adjudications.csv / final_labels.csv
+  export      <out>/<timestamp>/labels_<reader>.csv / adjudications.csv / final_labels.csv (needs both readers)
   seal        final_labels.csv -> sealed/labels_fold{k}.csv + data/level_r/sealed_manifest.json
   backup      timestamped copy of the live database
 
@@ -15,7 +16,7 @@
   python scripts/level_r_admin.py add-reader --db $D/level_r.sqlite --reader-id r1 --role reader --display "读者 1"
   python scripts/level_r_admin.py order --db $D/level_r.sqlite --reader-id r1 --seed 1 --pilot data/level_r/pilot_150.json
   python scripts/level_r_admin.py export --db $D/level_r.sqlite --out $D/export
-  python scripts/level_r_admin.py seal --final $D/export/final_labels.csv --folds data/level_r/folds.json --out $D/sealed
+  python scripts/level_r_admin.py seal --final $D/export/<timestamp>/final_labels.csv --folds data/level_r/folds.json --out $D/sealed
   python scripts/level_r_admin.py backup --db $D/level_r.sqlite --out $D/backup
 """
 import argparse
@@ -55,12 +56,12 @@ def cmd_init(a):
 
 def cmd_add_reader(a):
     token = secrets.token_hex(8)
-    Store(a.db).add_reader(a.reader_id, a.role, token, a.display)
+    Store(a.db, create=False).add_reader(a.reader_id, a.role, token, a.display)
     print(f"reader {a.reader_id} ({a.role}, {a.display}) created. Link (shown once, not stored):\n  /?token={token}")
 
 
 def cmd_order(a):
-    store = Store(a.db)
+    store = Store(a.db, create=False)
     pilot = set(json.loads(a.pilot.read_text())["lesion_ids"]) if a.pilot else set()
     order = make_order(store.lesion_ids(), pilot, a.seed)
     store.set_order(a.reader_id, order, pilot)
@@ -68,7 +69,7 @@ def cmd_order(a):
 
 
 def cmd_export(a):
-    for p in export_csvs(Store(a.db), a.out):
+    for p in export_csvs(Store(a.db, create=False), a.out):
         print(p)
 
 

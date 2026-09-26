@@ -74,7 +74,7 @@ def main():
     if a.out.exists():
         sys.exit(f"{a.out} exists; reports are never overwritten")
     ids = json.loads(a.pilot.read_text(encoding="utf-8"))["lesion_ids"] if a.pilot else None
-    s = build_summary(Store(a.db), load_registry(a.registry), ids, a.n_boot, a.seed)
+    s = build_summary(Store(a.db, create=False), load_registry(a.registry), ids, a.n_boot, a.seed)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(render_markdown(s, a.title, " ".join(sys.argv)), encoding="utf-8")
     print(f"pairs {s['n_pairs']} raw {s['raw']:.3f} CI {s['raw_ci95']} GATE_R7 {'PASS' if s['gate_r7']['single_host_endpoint_allowed'] else 'FAIL'} -> {a.out}")

@@ -1,8 +1,11 @@
 import http.client
+import importlib.util
 import json
+import sqlite3
 import threading
 import urllib.error
 import urllib.request
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -163,6 +166,18 @@ def test_adjudicator_routes_report_409_without_two_readers(tmp_path):
         assert get(base, "/api/disagreements", TA)[0] == 409 and get(base, "/api/me", TA)[0] == 409
     finally:
         srv.shutdown()
+
+
+def test_server_script_refuses_a_missing_database(tmp_path, monkeypatch):
+    path = Path(__file__).resolve().parents[1] / "scripts/level_r_server.py"
+    spec = importlib.util.spec_from_file_location("level_r_server_script", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    (tmp_path / "data" / "volumes").mkdir(parents=True)
+    monkeypatch.setattr("sys.argv", ["level_r_server.py", "--db", str(tmp_path / "typo.sqlite"), "--data-root", str(tmp_path / "data"), "--port", "0"])
+    with pytest.raises(sqlite3.OperationalError):
+        mod.main()
+    assert not (tmp_path / "typo.sqlite").exists()
 
 
 def test_bad_content_length_header_is_400_not_a_dropped_connection(served):

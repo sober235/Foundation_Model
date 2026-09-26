@@ -1,6 +1,7 @@
 import csv
 import importlib.util
 import json
+import sqlite3
 from collections import Counter
 from pathlib import Path
 
@@ -56,26 +57,44 @@ def _filled_store(tmp_path):
     return s
 
 
+NOW = "2026-10-01T08:00:00+00:00"
+STAMP = "2026-10-01T08-00-00"
+
+
 def test_export_csvs_writes_history_adjudications_and_final_status(tmp_path):
     s = _filled_store(tmp_path)
-    files = export_csvs(s, tmp_path / "export")
+    files = export_csvs(s, tmp_path / "export", now=NOW)
+    out = tmp_path / "export" / STAMP                                  # a fresh timestamped directory per export
     assert sorted(p.name for p in files) == ["adjudications.csv", "final_labels.csv", "labels_r1.csv", "labels_r2.csv"]
-    r1 = list(csv.DictReader(open(tmp_path / "export/labels_r1.csv", newline="", encoding="utf-8")))
+    assert all(p.parent == out for p in files)
+    r1 = list(csv.DictReader(open(out / "labels_r1.csv", newline="", encoding="utf-8")))
     assert len(r1) == 5 and r1[0]["comment"] == "a,b" and json.loads(r1[0]["acceptable_hosts"]) == ["white_matter"] and r1[0]["window"] == "[1, 2]"
-    final = {int(r["lesion_id"]): r for r in csv.DictReader(open(tmp_path / "export/final_labels.csv", newline="", encoding="utf-8"))}
+    final = {int(r["lesion_id"]): r for r in csv.DictReader(open(out / "final_labels.csv", newline="", encoding="utf-8"))}
     assert final[0]["status"] == "pending" and final[1]["status"] == "adjudicated" and final[2]["status"] == "agreed" and final[3]["status"] == "pending"
     assert list(final[2]) == list(FINAL_COLUMNS) and final[2]["primary_host"] == "cortex"
-    adj = list(csv.DictReader(open(tmp_path / "export/adjudications.csv", newline="", encoding="utf-8")))
+    adj = list(csv.DictReader(open(out / "adjudications.csv", newline="", encoding="utf-8")))
     assert len(adj) == 1 and adj[0]["reason"] == "皮层"
-    assert "皮层".encode("utf-8") in (tmp_path / "export/adjudications.csv").read_bytes()
+    assert "皮层".encode("utf-8") in (out / "adjudications.csv").read_bytes()
 
 
-def test_export_without_two_readers_still_writes_reader_files(tmp_path):
+def test_export_refuses_an_existing_stamp_and_never_touches_earlier_exports(tmp_path):
+    s = _filled_store(tmp_path)
+    export_csvs(s, tmp_path / "export", now=NOW)
+    before = (tmp_path / "export" / STAMP / "labels_r1.csv").read_bytes()
+    s.submit_label("r1", 2, WM)
+    with pytest.raises(FileExistsError):
+        export_csvs(s, tmp_path / "export", now=NOW)
+    assert (tmp_path / "export" / STAMP / "labels_r1.csv").read_bytes() == before
+    later = export_csvs(s, tmp_path / "export", now="2026-10-01T09:30:00+00:00")
+    assert later[0].parent.name == "2026-10-01T09-30-00" and len(list(csv.DictReader(open(later[0], newline="", encoding="utf-8")))) == 6
+
+
+def test_export_without_two_readers_raises_and_writes_nothing(tmp_path):
     s = Store(tmp_path / "db.sqlite")
     s.add_reader("r1", "reader", "0123456789abcdef", "读者 1")
-    files = export_csvs(s, tmp_path / "export")
-    assert sorted(p.name for p in files) == ["adjudications.csv", "final_labels.csv", "labels_r1.csv"]
-    assert open(tmp_path / "export/final_labels.csv", encoding="utf-8").read().strip() == ",".join(FINAL_COLUMNS)
+    with pytest.raises(ValueError):
+        export_csvs(s, tmp_path / "export", now=NOW)
+    assert not (tmp_path / "export").exists()
 
 
 def _final_csv(path, rows):
@@ -140,6 +159,21 @@ def _admin_script():
     return mod
 
 
+@pytest.mark.parametrize("argv", [
+    ["add-reader", "--reader-id", "r1", "--role", "reader", "--display", "读者 1"],
+    ["order", "--reader-id", "r1", "--seed", "1"],
+    ["export", "--out", "EXPORT"],
+    ["backup", "--out", "BACKUP"],
+])
+def test_admin_subcommands_other_than_init_refuse_a_missing_database(tmp_path, monkeypatch, argv):
+    db = tmp_path / "typo.sqlite"
+    argv = [str(tmp_path / a) if a in ("EXPORT", "BACKUP") else a for a in argv]
+    monkeypatch.setattr("sys.argv", ["level_r_admin.py", argv[0], "--db", str(db), *argv[1:]])
+    with pytest.raises(sqlite3.OperationalError):
+        _admin_script().main()
+    assert sorted(p.name for p in tmp_path.iterdir()) == []
+
+
 def test_seal_command_takes_the_fold_count_from_folds_json(tmp_path, monkeypatch):
     from test_level_r_registry import _row, write_registry     # tests/ is on sys.path under pytest
     reg = write_registry(tmp_path / "reg.csv", [_row(0, patient="P1"), _row(1, patient="P2")])
@@ -159,3 +193,9 @@ def test_backup_copies_the_live_database_and_never_overwrites(tmp_path):
     assert p.name == "level_r_2026-10-01T08-00-00.sqlite" and Store(p).label_rows() == s.label_rows()
     with pytest.raises(FileExistsError):
         backup_db(tmp_path / "db.sqlite", tmp_path / "backup", now="2026-10-01T08:00:00+00:00")
+
+
+def test_backup_of_a_missing_database_raises_and_creates_nothing(tmp_path):
+    with pytest.raises(sqlite3.OperationalError):
+        backup_db(tmp_path / "typo.sqlite", tmp_path / "backup", now="2026-10-01T08:00:00+00:00")
+    assert not (tmp_path / "typo.sqlite").exists() and not (tmp_path / "backup").exists()

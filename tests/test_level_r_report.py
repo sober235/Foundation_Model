@@ -70,3 +70,14 @@ def test_main_writes_the_report_and_refuses_to_overwrite(tmp_path, monkeypatch, 
     import pytest
     with pytest.raises(SystemExit):
         m.main()
+
+
+def test_main_refuses_a_missing_database(tmp_path, monkeypatch):
+    import sqlite3
+
+    import pytest
+    m = _load()
+    monkeypatch.setattr("sys.argv", ["level_r_report.py", "--db", str(tmp_path / "typo.sqlite"), "--out", str(tmp_path / "report.md")])
+    with pytest.raises(sqlite3.OperationalError):
+        m.main()
+    assert list(tmp_path.iterdir()) == []

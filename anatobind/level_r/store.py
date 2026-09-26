@@ -3,9 +3,11 @@ a row, and statistics take the last row per (reader, lesion). No statement in th
 row, and the test suite greps this file to keep it that way."""
 import hashlib
 import json
+import re
 import sqlite3
 import threading
 from datetime import datetime, timezone
+from urllib.parse import quote
 
 from anatobind.level_r.schema import MAX_ACCEPTABLE, validate_adjudication, validate_label
 
@@ -29,6 +31,7 @@ CREATE TABLE IF NOT EXISTS adjudications(
     primary_host TEXT, acceptable_json TEXT NOT NULL, topography TEXT, adjacency_json TEXT NOT NULL, ambiguity TEXT,
     not_a_lesion INTEGER NOT NULL, reason TEXT NOT NULL, ts TEXT NOT NULL);
 """
+TABLES = tuple(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)\(", SCHEMA))
 LABEL_COLUMNS = ("reader_id", "lesion_id", "primary_host", "acceptable_json", "topography", "adjacency_json", "ambiguity",
                  "not_a_lesion", "local_quality", "confidence", "comment", "time_seconds", "window_json", "ts")
 ADJ_COLUMNS = ("adjudicator_id", "lesion_id", "primary_host", "acceptable_json", "topography", "adjacency_json", "ambiguity",
@@ -66,20 +69,35 @@ def _parse(row):
 
 
 class Store:
-    def __init__(self, path):
-        self.path = str(path)
+    def __init__(self, path, create=True):
+        """create=True (init, tests) creates the file and any missing table. create=False (every other entry point)
+        opens an existing Level R database read-write and raises sqlite3.OperationalError when the file is missing or
+        lacks a table, so a mistyped path never leaves an empty database behind."""
+        self.path, self.create = str(path), create
         self._lock = threading.Lock()
         with self._conn() as c:
-            c.executescript(SCHEMA)
+            if create:
+                c.executescript(SCHEMA)
+            have = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        missing = [t for t in TABLES if t not in have]
+        if missing:
+            raise sqlite3.OperationalError(f"{self.path} lacks the Level R tables {missing}; "
+                                           "scripts/level_r_admin.py init adds missing tables to an existing database")
 
     def _conn(self):
-        c = sqlite3.connect(self.path, timeout=30)
+        if self.create:
+            c = sqlite3.connect(self.path, timeout=30)
+        else:
+            c = sqlite3.connect(f"file:{quote(self.path)}?mode=rw", uri=True, timeout=30)
         c.row_factory = sqlite3.Row
         return c
 
     # readers -----------------------------------------------------------------------------------------------------
     def add_reader(self, reader_id, role, token, display):
         with self._lock, self._conn() as c:
+            n = c.execute("SELECT COUNT(*) FROM readers WHERE role = 'reader'").fetchone()[0]
+            if role == "reader" and n >= 2:
+                raise ValueError(f"Level R has exactly two readers and already has {n}; a third reader is refused")
             c.execute("INSERT INTO readers VALUES (?, ?, ?, ?)", (reader_id, role, token_hash(token), display))
 
     def reader_for_token(self, token):

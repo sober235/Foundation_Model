@@ -17,13 +17,17 @@ CX_TH = {**CX, "acceptable_hosts": ["cortex", "thalamus"]}
 NAL = {"not_a_lesion": True, "local_quality": "fair", "confidence": 3, "adjacency": []}
 
 
-def _store(tmp_path):
-    s = Store(tmp_path / "level_r.sqlite")
+def _store_at(path):
+    s = Store(path)
     s.add_reader("r1", "reader", T1, "读者 1")
     s.add_reader("r2", "reader", T2, "读者 2")
     s.add_reader("adj", "adjudicator", TA, "裁定")
     s.load_lesions(LESIONS)
     return s
+
+
+def _store(tmp_path):
+    return _store_at(tmp_path / "level_r.sqlite")
 
 
 def test_store_source_never_modifies_or_removes_rows():
@@ -120,3 +124,28 @@ def test_disagreements_need_exactly_two_readers(tmp_path):
     s.add_reader("r1", "reader", T1, "读者 1")
     with pytest.raises(ValueError):
         s.disagreements()
+
+
+def test_a_third_reader_is_refused(tmp_path):
+    s = _store(tmp_path)
+    with pytest.raises(ValueError):
+        s.add_reader("r3", "reader", "1111111111111111", "读者 3")
+    assert [r["reader_id"] for r in s.readers()] == ["adj", "r1", "r2"] and s.reader_for_token("1111111111111111") is None
+
+
+def test_opening_without_create_needs_an_existing_level_r_database(tmp_path):
+    missing = tmp_path / "typo.sqlite"
+    with pytest.raises(sqlite3.OperationalError):
+        Store(missing, create=False)
+    assert not missing.exists()                                  # a mistyped path never leaves an empty database behind
+    other = tmp_path / "other.sqlite"
+    sqlite3.connect(str(other)).execute("CREATE TABLE t(x)")
+    with pytest.raises(sqlite3.OperationalError, match="lacks the Level R tables"):
+        Store(other, create=False)
+    odd = tmp_path / "a b#c?d" / "level_r.sqlite"                # URI-special characters in the path
+    odd.parent.mkdir()
+    _store_at(odd)
+    s = Store(odd, create=False)
+    assert [r["reader_id"] for r in s.readers()] == ["adj", "r1", "r2"] and s.lesion_ids() == [0, 1, 2, 3, 4]
+    s.submit_label("r1", 0, WM)
+    assert len(Store(odd, create=False).label_rows("r1")) == 1

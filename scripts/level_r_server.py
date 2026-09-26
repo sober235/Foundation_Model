@@ -25,7 +25,7 @@ def main():
     a = ap.parse_args()
     if not (a.data_root / "volumes").is_dir():
         sys.exit(f"{a.data_root}/volumes is missing; run scripts/level_r_export.py first")
-    srv = make_server(Store(a.db), a.data_root, a.bind, a.port)
+    srv = make_server(Store(a.db, create=False), a.data_root, a.bind, a.port)
     if a.pid_file:
         a.pid_file.write_text(str(os.getpid()))
     print(f"Level R serving {a.data_root} on http://{a.bind}:{srv.server_address[1]}/ (db {a.db})", flush=True)

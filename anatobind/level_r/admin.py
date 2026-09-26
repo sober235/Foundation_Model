@@ -1,11 +1,14 @@
 """Admin operations behind scripts/level_r_admin.py: patient folds (v2.6 §4.4 / §12.6), per-reader orders, CSV export,
-one-shot sealing with a sha256 manifest (v2.6 §12.7) and online sqlite backups. Nothing here ever overwrites a file."""
+one-shot sealing with a sha256 manifest (v2.6 §12.7) and online sqlite backups. File policy: every export goes into a new
+out_dir/<timestamp>/ directory, sealing and backups are one-shot, and each of them raises FileExistsError rather than
+write over an existing directory or file."""
 import csv
 import hashlib
 import json
 import sqlite3
 from collections import Counter
 from pathlib import Path
+from urllib.parse import quote
 
 import numpy as np
 
@@ -49,9 +52,16 @@ def _write_csv(path, columns, rows):
             w.writerow({k: (json.dumps(v) if isinstance(v, (list, dict)) else v) for k, v in r.items()})
 
 
-def export_csvs(store, out_dir):
-    out_dir = Path(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
+def _stamp(now):
+    return (now or now_iso()).split("+")[0].replace(":", "-")         # 2026-10-01T08-00-00
+
+
+def export_csvs(store, out_dir, now=None):
+    """labels_<reader>.csv (full history), adjudications.csv and final_labels.csv in a new out_dir/<timestamp>/.
+    Raises ValueError unless the store has exactly two readers, FileExistsError if that timestamp directory exists."""
+    final = store.final_labels()
+    out_dir = Path(out_dir) / _stamp(now)
+    out_dir.mkdir(parents=True)
     written = []
     for r in store.readers():
         if r["role"] == "reader":
@@ -59,10 +69,6 @@ def export_csvs(store, out_dir):
             _write_csv(p, LABEL_COLUMNS, store.label_rows(r["reader_id"]))
             written.append(p)
     _write_csv(out_dir / "adjudications.csv", ADJ_COLUMNS, store.adjudication_rows())
-    try:
-        final = store.final_labels()
-    except ValueError:                       # fewer than two readers yet
-        final = []
     _write_csv(out_dir / "final_labels.csv", FINAL_COLUMNS, final)
     return written + [out_dir / "adjudications.csv", out_dir / "final_labels.csv"]
 
@@ -103,14 +109,15 @@ def seal(final_labels_csv, lesion_fold, out_dir, manifest_path, k, now=None):
 
 
 def backup_db(db_path, out_dir, now=None):
-    """Consistent copy of the live sqlite file (sqlite backup API, safe while the server runs)."""
+    """Consistent copy of the live sqlite file (sqlite backup API, safe while the server runs). The source is opened
+    read-only, so a mistyped path raises sqlite3.OperationalError instead of backing up a new empty database."""
+    src = sqlite3.connect(f"file:{quote(str(db_path))}?mode=ro", uri=True)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    stamp = (now or now_iso()).split("+")[0].replace(":", "-")        # 2026-10-01T08-00-00
-    dst = out_dir / f"level_r_{stamp}.sqlite"
+    dst = out_dir / f"level_r_{_stamp(now)}.sqlite"
     if dst.exists():
         raise FileExistsError(f"{dst} exists")
-    src, dest = sqlite3.connect(str(db_path)), sqlite3.connect(str(dst))
+    dest = sqlite3.connect(str(dst))
     with dest:
         src.backup(dest)
     src.close()
