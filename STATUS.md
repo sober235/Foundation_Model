@@ -30,6 +30,9 @@
 
 - **整支评审**：opus 评审结论 "With fixes"；所有修复已落地并复审：C1 封存加载器拒绝非整数/未知折号；`seal` 要求完整无重复的 1297 条集合，折数取自 `folds.json`；导出改写到带时间戳的 `export/<时间戳>/` 目录；除 `init` 外的子命令一律只读写打开已有库（库名拼错报错，不留一个空库）；第三位读者被拒绝；pilot 结束后读者被扣住，直到 `level_r_admin.py release`；一条裁定只在比两位读者当时最新答案都新时才计入最终标签；AC1 固定用 K = 8 类；用时统计按 pilot 范围、跨改答复访求和；0 mm 档的 raw 一致率带 bootstrap 区间；`time_seconds`/窗宽窗位做校验（400）；未预期的错误统一返回 500 JSON；裁定人页面不再显示备注框；每个病灶的放大中心点固定；缩略图保持长宽比；读片说明不再写"3T"（165 卷里有 22 卷是 1.5T）。
 
+- **09-24/25（上一轮）**：Gate 0 落地（fastMRI+ 框翻转修进数据引擎，膝侧系列级审计 89.4%，按系列门槛加叠图判通过）；膝 H1 用修好的框重跑五折，迁移判据不过（大类正确灵敏度 0.091 @ 1.53 FP/卷，门 ≥ 0.5）；Gate 0.5 盘点完成（1297 个小病灶，165 名患者，几何分层）。详见 `docs/verification/2026-09-24/REPORT.md`。
+- 09-23 之前的证据链不变（膝 G2 不过、SKM-TEA 箱填检测门不过 0.254、脑探针 q3 7.4%、查表天花板 0.958–0.968）。
+
 ## 2. 待用户拍板
 
 - **(a) R7 门判 pilot 还是判全集**：规格 §9 把它当 pilot 的过关门；v2.6 §7.2/§7.7 说 pilot 只用来估参数，门应该在读完全集后判。150 例 / 82 患者的样本量下，CI 下限 ≥ 0.80 这一层需要点估计到约 0.86 才稳。建议：pilot 的门线只作参考，continue/revise 的决定看 raw 一致率与用时；R7 正式判定放到读完全集之后；随后统一改 `pilot.py` 的 docstring、运维文档与读片说明。
@@ -39,6 +42,8 @@
 - **(e)** 读者姓名、token 发放、裁定人、伦理备案（v2.6 §18）；服务对外方式 A 端口转发 / B `--bind 0.0.0.0`。
 - **(f)** 本分支要不要 push、要不要合回 main、要不要打 tag `handoff/2026-09-26-level-r-tooling`。
 - **(g)** nnDetection 第二臂何时起（GPU 是否有空）。
+- 已定（上一轮，2026-09-25）：Gate 0 通过（膝 89.4% 差 0.6 个百分点，记录在案）；Gate 0.5 判 GO，t 不冻结，d_interface 四档分层、全集 1297 标注（v2.6 §25 第 9 项）；分层按实测几何；第二臂已定为 nnDetection 直训 SKM-TEA（VERDICT §4 ②），在 GPU 空时并行，计划另写；npz 不删、已合并分支不删。
+- 旧遗留仍挂：Q9 删除授权（2.4G truncated 残留 + 820G 原 tar）、其余 4850 卷未标注脑的 SynthSeg、Redivis token、`summary/2026-09-22-v2.5-feasibility-review` 与 `review-core-target-a-u-r-2026-09-22` 两条远端分支是否合回或删除、`plan/level-r-tooling-2026-09-25` 合回 main 的时机。
 
 ## 3. 下一步
 
@@ -47,6 +52,7 @@
 3. 定 §2 (a)–(d) 四个决定。
 4. 按 `docs/level_r_tool.md` 正式部署：`$D/level_r.sqlite` 上 `init` → `add-reader` ×3 → `order --pilot` → 8790 起服务 → pilot 150 → `level_r_report.py` → continue/revise 决定 → 两位读者 `release` → 读全集 → 裁定 → `seal`。
 5. PR-C 关系基线可以在 pilot 期间并行开工。
+6. nnDetection 第二臂计划另写（GPU 空时并行）。
 
 ## 4. 坑与别重做
 
