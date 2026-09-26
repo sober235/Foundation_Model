@@ -187,15 +187,17 @@ async function refreshMe() {
 }
 async function openLesion(lid) {
   const j = await apiJSON(state.mode === "adjudicator" ? `/api/adjudicate/${lid}` : `/api/lesion/${lid}`);
+  const vol = await loadVolume(j.lesion.volume_code);
+  const [S, R, C] = vol.meta.shape;
   state.lesion = j.lesion;
-  state.vol = await loadVolume(j.lesion.volume_code);
-  state.win = [...state.vol.meta.window];
+  state.vol = vol;
+  state.win = [...vol.meta.window];
   state.z = Math.floor((j.lesion.z0 + j.lesion.z1) / 2);
   state.zoom = 2; state.opened = Date.now();
-  const [S, R, C] = state.vol.meta.shape, cv = $("view");
+  state.center = lesionCenter(j.lesion.boxes, R, C);
+  const cv = $("view");
   cv.width = C * 2; cv.height = R * 2; $("zslider").max = S - 1;
   for (const id of ["prev", "next"]) { $(id).width = 200; $(id).height = Math.round(200 * R / C); }
-  state.center = lesionCenter(j.lesion.boxes, R, C);
   $("lcode").textContent = `病灶 ${j.lesion.code}`;
   resetForm();
   if (j.answer) fillForm(j.answer);
@@ -207,21 +209,26 @@ async function showList() {
   const rows = await apiJSON(state.mode === "adjudicator" ? "/api/disagreements" : "/api/list");
   $("list").innerHTML = rows.map(r => `<li class="${r.done ? "done" : ""}"><a href="#" data-lid="${esc(r.lesion_id)}">` +
     (state.mode === "adjudicator" ? `病灶 #${esc(r.lesion_id)}` : `第 ${esc(r.position + 1)} 例${r.is_pilot ? "（pilot）" : ""}`) + (r.done ? " ✓" : "") + "</a></li>").join("");
-  $("list").querySelectorAll("a").forEach(a => { a.onclick = (e) => { e.preventDefault(); openLesion(+a.dataset.lid); }; });
+  $("list").querySelectorAll("a").forEach(a => { a.onclick = async (e) => {
+    e.preventDefault();
+    try { await openLesion(+a.dataset.lid); } catch (err) { $("status").textContent = "加载失败：" + err.message; }
+  }; });
   show("list");
 }
 async function openNext() {
-  const me = await refreshMe();
-  if (state.mode === "adjudicator") {
-    const rows = await apiJSON("/api/disagreements"), n = rows.find(r => !r.done);
-    return n ? openLesion(n.lesion_id) : showList();
-  }
-  if (me.held && me.next == null) {            // end of the pilot: wait for the team's release before reading on
-    await showList();
-    $("status").textContent = "pilot 已完成，请等待通知再继续";
-    return;
-  }
-  return me.next != null ? openLesion(me.next) : showList();
+  try {
+    const me = await refreshMe();
+    if (state.mode === "adjudicator") {
+      const rows = await apiJSON("/api/disagreements"), n = rows.find(r => !r.done);
+      return n ? await openLesion(n.lesion_id) : await showList();
+    }
+    if (me.held && me.next == null) {            // end of the pilot: wait for the team's release before reading on
+      await showList();
+      $("status").textContent = "pilot 已完成，请等待通知再继续";
+      return;
+    }
+    return me.next != null ? await openLesion(me.next) : await showList();
+  } catch (e) { $("status").textContent = "加载失败：" + e.message; }
 }
 $("btn-list").onclick = (e) => { e.preventDefault(); showList(); };
 $("btn-next").onclick = (e) => { e.preventDefault(); openNext(); };

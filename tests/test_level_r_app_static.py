@@ -85,3 +85,9 @@ def test_app_escapes_server_strings_and_keeps_arrow_keys_inside_form_controls():
     assert "esc(fmt(" in js
     assert '["TEXTAREA", "SELECT", "INPUT", "BUTTON"]' in js
     assert "已保存，但加载下一例失败" in js
+
+
+def test_open_lesion_assigns_state_only_after_the_volume_loaded():
+    js = _read("app.js")
+    src = js[js.index("async function openLesion"):]
+    assert src.index("await loadVolume(") < src.index("state.lesion =")

@@ -35,10 +35,10 @@
 
 ## 2. 待用户拍板
 
-- **(a) R7 门判 pilot 还是判全集**：规格 §9 把它当 pilot 的过关门；v2.6 §7.2/§7.7 说 pilot 只用来估参数，门应该在读完全集后判。150 例 / 82 患者的样本量下，CI 下限 ≥ 0.80 这一层需要点估计到约 0.86 才稳。建议：pilot 的门线只作参考，continue/revise 的决定看 raw 一致率与用时；R7 正式判定放到读完全集之后；随后统一改 `pilot.py` 的 docstring、运维文档与读片说明。
-- **(b) 匿名码**：`volume_code = sha256(stem)[:8]` 不带密钥；有心的读者拿公开的 fastMRI 文件列表逐个哈希，就能反推出 stem 进而对上标签。建议：对配合的读者可以接受；如果要堵上，换成服务器端密钥的 HMAC，并在发 token 前重新导出到新目录（码已经烧进当前导出的文件里了）。
-- **(c) 邻接是否必填**：`adjacency: []` 会被接受，和"选了'无'"无法区分，尽管读片说明写着要选"无"。建议：非 `not_a_lesion` 的答案要求邻接至少选一项；这条校验要在 pilot 开始前定，读到一半改校验会把数据切成两截。
-- **(d) pilot 结束的硬停**：目前是软停——"下一个"按钮不再给新病灶，但被扣住的读者仍能从列表点开正式集的病灶并提交。建议：服务端对被扣读者的非 pilot 提交直接拒绝（409）；如果要在发 token 前补上，是个小工作量。
+- **(a) R7 门**：已定（用户 2026-09-26 拍板：不考虑安全问题，一切以实现目标为准）：pilot 上的 GATE_R7 行只作指示，门在全集上判（v2.6 §7.2/§7.7）；pilot 后是否继续看 raw 一致率与读片用时；`scripts/level_r_report.py` 输出不改，解读按此。
+- **(b) 匿名码**：已定（用户 2026-09-26 拍板：不考虑安全问题，一切以实现目标为准）：保持 sha256 前 8 位，不换 HMAC。
+- **(c) 邻接**：已定（用户 2026-09-26 拍板：不考虑安全问题，一切以实现目标为准）：不强制；空选记为"未答"，"无"是明确回答，统计时分开。
+- **(d) pilot 停顿**：已定（用户 2026-09-26 拍板：不考虑安全问题，一切以实现目标为准）：软停即可（"下一个"停下、列表仍可点），不做服务端硬停。
 - **(e)** 读者姓名、token 发放、裁定人、伦理备案（v2.6 §18）；服务对外方式 A 端口转发 / B `--bind 0.0.0.0`。
 - **(f)** 本分支要不要 push、要不要合回 main、要不要打 tag `handoff/2026-09-26-level-r-tooling`。
 - **(g)** nnDetection 第二臂何时起（GPU 是否有空）。
@@ -48,7 +48,7 @@
 ## 3. 下一步
 
 1. 用户在 8791 上做浏览器验收（`docs/verification/2026-09-26/level_r_smoke.md` §7 的八步仍是 USER_REPORTED）。
-2. 发 token 前先修一个时序 bug：`openLesion` 在 `loadVolume` resolve 之前就把 `state.lesion` 设成了新病灶；走"下一个"或从列表切换时如果卷加载失败，页面还留着旧图但 `state.lesion` 已经指向新病灶，此时提交会记错病灶——要改成加载成功之后再赋值。
+2. `openLesion` 时序 bug 已在本次提交修复：`state.lesion`/`state.vol` 等字段只在 `loadVolume` resolve 之后才赋值，见新增测试 `test_open_lesion_assigns_state_only_after_the_volume_loaded`（`tests/test_level_r_app_static.py`）。
 3. 定 §2 (a)–(d) 四个决定。
 4. 按 `docs/level_r_tool.md` 正式部署：`$D/level_r.sqlite` 上 `init` → `add-reader` ×3 → `order --pilot` → 8790 起服务 → pilot 150 → `level_r_report.py` → continue/revise 决定 → 两位读者 `release` → 读全集 → 裁定 → `seal`。
 5. PR-C 关系基线可以在 pilot 期间并行开工。
