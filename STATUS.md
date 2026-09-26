@@ -57,8 +57,8 @@
 
 ## 3. 下一步
 
-1. 合并 A1/A2 后：停冒烟服务 → init → 重启（控制方已按此顺序做过一次，PID 2152185 在 8791）。
-2. 冒烟库迁移（`init` 一次）与冒烟服务重启由控制方在合并后做。浏览器验收要点加三个新字段：`docs/verification/2026-09-26/level_r_smoke.md` §7 第 9–10 行（勾选"不是病灶"后三个下拉变灰；两位读者只在病灶类型上不一致时该病灶进裁定列表），都还是 USER_REPORTED。
+1. 停冒烟服务 → init → 重启：控制方已按此顺序做过一次（PID 2152185，8791）；以后每次升级都按同一顺序。
+2. 浏览器验收要点加三个新字段：`docs/verification/2026-09-26/level_r_smoke.md` §7 第 9–10 行（勾选"不是病灶"后三个下拉变灰；两位读者只在病灶类型上不一致时该病灶进裁定列表），都还是 USER_REPORTED。
 3. 用户在 8791 上做浏览器验收（`docs/verification/2026-09-26/level_r_smoke.md` §7 的八步仍是 USER_REPORTED）。
 4. `openLesion` 时序 bug 已在本次提交修复：`state.lesion`/`state.vol` 等字段只在 `loadVolume` resolve 之后才赋值，见新增测试 `test_open_lesion_assigns_state_only_after_the_volume_loaded`（`tests/test_level_r_app_static.py`）。
 5. 定 §2 (a)–(d) 四个决定。
