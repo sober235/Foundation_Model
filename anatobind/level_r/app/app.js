@@ -88,7 +88,7 @@ function setZ(z) { const S = state.vol.meta.shape[0]; state.z = Math.min(Math.ma
 
 // ---- viewer controls ---------------------------------------------------------------------------------------------
 window.addEventListener("keydown", (e) => {
-  if (!state.vol || e.target.tagName === "TEXTAREA") return;
+  if (!state.vol || ["TEXTAREA", "SELECT", "INPUT", "BUTTON"].includes(e.target.tagName)) return;
   if (e.key === "ArrowUp" || e.key === "ArrowRight") { e.preventDefault(); setZ(state.z + 1); }
   else if (e.key === "ArrowDown" || e.key === "ArrowLeft") { e.preventDefault(); setZ(state.z - 1); }
 });
@@ -107,8 +107,9 @@ window.addEventListener("mousemove", (e) => {
 window.addEventListener("mouseup", () => { drag = null; });
 
 // ---- form -------------------------------------------------------------------------------------------------------
-function fill(id, keys) { $(id).innerHTML = '<option value="">请选择</option>' + keys.map(k => `<option value="${k}">${ZH[k] || k}</option>`).join(""); }
-function checkboxes(id, keys) { $(id).innerHTML = keys.map(k => `<label><input type="checkbox" name="${id}" value="${k}"> ${ZH[k] || k}</label>`).join(""); }
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+function fill(id, keys) { $(id).innerHTML = '<option value="">请选择</option>' + keys.map(k => `<option value="${esc(k)}">${esc(ZH[k] || k)}</option>`).join(""); }
+function checkboxes(id, keys) { $(id).innerHTML = keys.map(k => `<label><input type="checkbox" name="${id}" value="${esc(k)}"> ${esc(ZH[k] || k)}</label>`).join(""); }
 function radios(id, vals) { $(id).innerHTML = vals.map(v => `<label><input type="radio" name="${id}" value="${v}"> ${v}</label>`).join(""); }
 function checked(name) { return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i => i.value); }
 function setChecked(name, vals) { document.querySelectorAll(`input[name="${name}"]`).forEach(i => { i.checked = vals.includes(i.value); }); }
@@ -169,7 +170,7 @@ function fmt(v) {
 function showReaders(views) {
   const keys = ["primary_host", "acceptable_hosts", "topography", "adjacency", "ambiguity", "not_a_lesion", "comment"];
   $("readers").innerHTML = "<table><tr><th></th><th>读者 1</th><th>读者 2</th></tr>" +
-    keys.map(k => `<tr><td>${FIELD_ZH[k]}</td>${views.map(v => `<td>${fmt(v[k])}</td>`).join("")}</tr>`).join("") + "</table>";
+    keys.map(k => `<tr><td>${FIELD_ZH[k]}</td>${views.map(v => `<td>${esc(fmt(v[k]))}</td>`).join("")}</tr>`).join("") + "</table>";
 }
 
 // ---- navigation -------------------------------------------------------------------------------------------------
@@ -200,8 +201,8 @@ async function openLesion(lid) {
 }
 async function showList() {
   const rows = await apiJSON(state.mode === "adjudicator" ? "/api/disagreements" : "/api/list");
-  $("list").innerHTML = rows.map(r => `<li class="${r.done ? "done" : ""}"><a href="#" data-lid="${r.lesion_id}">` +
-    (state.mode === "adjudicator" ? `病灶 #${r.lesion_id}` : `第 ${r.position + 1} 例${r.is_pilot ? "（pilot）" : ""}`) + (r.done ? " ✓" : "") + "</a></li>").join("");
+  $("list").innerHTML = rows.map(r => `<li class="${r.done ? "done" : ""}"><a href="#" data-lid="${esc(r.lesion_id)}">` +
+    (state.mode === "adjudicator" ? `病灶 #${esc(r.lesion_id)}` : `第 ${esc(r.position + 1)} 例${r.is_pilot ? "（pilot）" : ""}`) + (r.done ? " ✓" : "") + "</a></li>").join("");
   $("list").querySelectorAll("a").forEach(a => { a.onclick = (e) => { e.preventDefault(); openLesion(+a.dataset.lid); }; });
   show("list");
 }
@@ -221,8 +222,8 @@ $("submit").onclick = async () => {
     await apiJSON(state.mode === "adjudicator" ? "/api/adjudication" : "/api/label",
       {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(p)});
     $("status").textContent = "已保存";
-    await openNext();
-  } catch (e) { $("status").textContent = "未保存：" + e.message; }
+  } catch (e) { $("status").textContent = "未保存：" + e.message; return; }
+  try { await openNext(); } catch (e) { $("status").textContent = "已保存，但加载下一例失败：" + e.message; }
 };
 
 async function main() {

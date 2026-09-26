@@ -56,3 +56,11 @@ def test_guide_defines_primary_host_operationally():
     g = _read("guide.html")
     for phrase in ("最主要、最合理的解剖宿主组织", "不是框内重叠最大的结构", "可接受", "近皮层", "不是病灶"):
         assert phrase in g, phrase
+
+
+def test_app_escapes_server_strings_and_keeps_arrow_keys_inside_form_controls():
+    js = _read("app.js")
+    assert "function esc(" in js
+    assert "esc(fmt(" in js
+    assert '["TEXTAREA", "SELECT", "INPUT", "BUTTON"]' in js
+    assert "已保存，但加载下一例失败" in js
