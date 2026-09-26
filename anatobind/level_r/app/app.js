@@ -216,22 +216,23 @@ async function showList() {
   show("list");
 }
 async function openNext() {
-  try {
-    const me = await refreshMe();
-    if (state.mode === "adjudicator") {
-      const rows = await apiJSON("/api/disagreements"), n = rows.find(r => !r.done);
-      return n ? await openLesion(n.lesion_id) : await showList();
-    }
-    if (me.held && me.next == null) {            // end of the pilot: wait for the team's release before reading on
-      await showList();
-      $("status").textContent = "pilot 已完成，请等待通知再继续";
-      return;
-    }
-    return me.next != null ? await openLesion(me.next) : await showList();
-  } catch (e) { $("status").textContent = "加载失败：" + e.message; }
+  const me = await refreshMe();
+  if (state.mode === "adjudicator") {
+    const rows = await apiJSON("/api/disagreements"), n = rows.find(r => !r.done);
+    return n ? await openLesion(n.lesion_id) : await showList();
+  }
+  if (me.held && me.next == null) {            // end of the pilot: wait for the team's release before reading on
+    await showList();
+    $("status").textContent = "pilot 已完成，请等待通知再继续";
+    return;
+  }
+  return me.next != null ? await openLesion(me.next) : await showList();
 }
 $("btn-list").onclick = (e) => { e.preventDefault(); showList(); };
-$("btn-next").onclick = (e) => { e.preventDefault(); openNext(); };
+$("btn-next").onclick = async (e) => {
+  e.preventDefault();
+  try { await openNext(); } catch (err) { $("status").textContent = "加载失败：" + err.message; }
+};
 $("submit").onclick = async () => {
   try {
     const p = readForm();
@@ -245,6 +246,6 @@ $("submit").onclick = async () => {
 async function main() {
   state.enums = await apiJSON("/api/enums");
   buildForm(state.enums);
-  await openNext();
+  try { await openNext(); } catch (e) { $("status").textContent = "加载失败：" + e.message; }
 }
 main().catch(e => { $("status").textContent = "加载失败：" + e.message; });
