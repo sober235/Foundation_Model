@@ -1,0 +1,131 @@
+"""Reader agreement for Level R (spec §8; v2.6 §7.5, §7.7). Inputs are the latest answers of the two readers (Store
+.latest_labels) and the registry rows; nothing here reads the database or the sealed folds directly."""
+import math
+from collections import Counter, defaultdict
+
+import numpy as np
+
+from anatobind.level_r.registry import BANDS, is_3mm
+from anatobind.level_r.schema import NOT_A_LESION
+
+N_FULL = 1297
+NAN = float("nan")
+
+
+def host_of(label):
+    return NOT_A_LESION if label["not_a_lesion"] else label["primary_host"]
+
+
+def set_of(label):
+    return {NOT_A_LESION} if label["not_a_lesion"] else set(label["acceptable_hosts"])
+
+
+def pairs(a, b, lesion_ids=None):
+    A = {l["lesion_id"]: l for l in a}
+    B = {l["lesion_id"]: l for l in b}
+    ids = set(A) & set(B)
+    if lesion_ids is not None:
+        ids &= set(lesion_ids)
+    return [{"lesion_id": i, "x": host_of(A[i]), "y": host_of(B[i]), "sx": set_of(A[i]), "sy": set_of(B[i])} for i in sorted(ids)]
+
+
+def raw_agreement(x, y):
+    return sum(p == q for p, q in zip(x, y)) / len(x) if x else NAN
+
+
+def cohen_kappa(x, y):
+    n = len(x)
+    if not n:
+        return NAN
+    cx, cy = Counter(x), Counter(y)
+    pe = sum(cx[c] * cy[c] for c in set(cx) | set(cy)) / n ** 2
+    po = raw_agreement(x, y)
+    return (po - pe) / (1 - pe) if pe < 1 else NAN
+
+
+def gwet_ac1(x, y, categories=None):
+    n = len(x)
+    if not n:
+        return NAN
+    cats = list(categories) if categories else sorted(set(x) | set(y))
+    cx, cy = Counter(x), Counter(y)
+    pi = {c: (cx[c] + cy[c]) / (2 * n) for c in cats}
+    pe = sum(p * (1 - p) for p in pi.values()) / (len(cats) - 1) if len(cats) > 1 else 0.0
+    po = raw_agreement(x, y)
+    return (po - pe) / (1 - pe) if pe < 1 else NAN
+
+
+def positive_agreement(x, y):
+    out = {}
+    cx, cy = Counter(x), Counter(y)
+    for c in sorted(set(x) | set(y)):
+        agree = sum(p == q == c for p, q in zip(x, y))
+        denom = cx[c] + cy[c]
+        out[c] = {"n_x": cx[c], "n_y": cy[c], "positive_agreement": 2 * agree / denom if denom else NAN}
+    return out
+
+
+def confusion(x, y):
+    cats = sorted(set(x) | set(y))
+    return {"categories": cats, "counts": [[sum(p == a and q == b for p, q in zip(x, y)) for b in cats] for a in cats]}
+
+
+def set_agreement(P):
+    return sum(bool(p["sx"] & p["sy"]) for p in P) / len(P) if P else NAN
+
+
+def bootstrap_ci(outcomes_by_patient, n_boot=2000, seed=0, alpha=0.05):
+    """Percentile CI of the pooled mean, resampling patients with replacement (v2.6 §12.3: patients are the units)."""
+    pats = sorted(outcomes_by_patient)
+    arrs = [np.asarray(outcomes_by_patient[p], float) for p in pats]
+    rng = np.random.default_rng(seed)
+    stats = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, len(pats), len(pats))
+        stats.append(float(np.concatenate([arrs[i] for i in idx]).mean()))
+    return float(np.percentile(stats, 100 * alpha / 2)), float(np.percentile(stats, 100 * (1 - alpha / 2)))
+
+
+def _layer(P):
+    return {"n": len(P), "raw": raw_agreement([p["x"] for p in P], [p["y"] for p in P]), "set_agreement": set_agreement(P)}
+
+
+def strata_report(P, reg_by_id):
+    out = {"band": {}, "stratum_geometry": {}}
+    for key in out:
+        for value in sorted({reg_by_id[p["lesion_id"]][key] for p in P}, key=lambda v: (BANDS.index(v) if v in BANDS else 99, v)):
+            out[key][value] = _layer([p for p in P if reg_by_id[p["lesion_id"]][key] == value])
+    out["slice_3mm"] = _layer([p for p in P if is_3mm(reg_by_id[p["lesion_id"]]["stratum_geometry"])])
+    return out
+
+
+def time_summary(labels):
+    t = np.array([l["time_seconds"] for l in labels if l.get("time_seconds") is not None], float)
+    if not t.size:
+        return {"n": 0, "median_s": None, "q1_s": None, "q3_s": None, "hours_for_1297": None}
+    med = float(np.median(t))
+    return {"n": int(t.size), "median_s": med, "q1_s": float(np.percentile(t, 25)), "q3_s": float(np.percentile(t, 75)),
+            "hours_for_1297": med * N_FULL / 3600}
+
+
+def gate_r7(raw_ci_low, raw_band0):
+    pass_all = bool(raw_ci_low >= 0.80)
+    pass_band0 = bool(raw_band0 >= 0.70)
+    return {"all_ci_low": raw_ci_low, "pass_all": pass_all, "band0_raw": raw_band0, "pass_band0": pass_band0,
+            "single_host_endpoint_allowed": pass_all and pass_band0}
+
+
+def summarise(a, b, registry, lesion_ids=None, n_boot=2000, seed=0):
+    reg = {r["lesion_id"]: r for r in registry}
+    P = pairs(a, b, lesion_ids)
+    x, y = [p["x"] for p in P], [p["y"] for p in P]
+    outcomes = defaultdict(list)
+    for p in P:
+        outcomes[reg[p["lesion_id"]]["patient_id"]].append(float(p["x"] == p["y"]))
+    lo, hi = bootstrap_ci(outcomes, n_boot, seed) if P else (NAN, NAN)
+    band0 = [p for p in P if reg[p["lesion_id"]]["band"] == "0"]
+    raw0 = raw_agreement([p["x"] for p in band0], [p["y"] for p in band0])
+    return {"n_pairs": len(P), "n_patients": len(outcomes), "raw": raw_agreement(x, y), "raw_ci95": [lo, hi],
+            "kappa": cohen_kappa(x, y), "ac1": gwet_ac1(x, y), "positive_agreement": positive_agreement(x, y),
+            "confusion": confusion(x, y), "set_agreement": set_agreement(P), "strata": strata_report(P, reg),
+            "gate_r7": gate_r7(lo, raw0), "time": {"reader_a": time_summary(a), "reader_b": time_summary(b)}}
