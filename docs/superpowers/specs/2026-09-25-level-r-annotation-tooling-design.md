@@ -151,3 +151,15 @@ adjudications(row_id INTEGER PK, adjudicator_id, lesion_id, primary_host, accept
 - pilot 结束后读者在服务端被标记为"扣住"，需 `level_r_admin.py release --reader-id <id>` 显式放行才能继续读全集（§9 只写了前端"停在列表页"）。
 - 一条裁定只在它比两位读者当时的最新答案都新时才计入最终标签；读者裁定后再改答案会让该裁定失效，需要重新裁定。
 - Gwet AC1（§8）固定用 K = 8 类（7 个主结构 + `not_a_lesion`），不是数据里实际出现的类别数。
+
+## 14. 实施修订（2026-09-26，核心目标对齐）
+
+用户重申三个核心目标（精准解剖位置、精准病灶名字、解耦的"某组织上存在某病灶"陈述）后，follow-up A1 在读片表单里加了三个字段：
+
+- `lesion_type`：`nonspecific_wm_lesion` / `lacunar_infarct` / `perivascular_space` / `other`。
+- `side`：`image_left` / `image_right` / `midline`——记的是屏幕左右（读者看到的那一侧），不是患者左右；RSS 数组的左右手性还没定，全体数据将来统一做一次换算。
+- `lobe`：`frontal` / `parietal` / `temporal` / `occipital` / `insular` / `not_applicable`，必填。
+
+三者与 `primary_host`/`acceptable_hosts` 同一条规矩：`not_a_lesion` 为真时全部记 None；为假时必填。裁定触发条件从"主结构不同"扩大为 `primary_host`、`lesion_type`、`side` 三者任一不一致；`lobe` 不一致不触发裁定，最终标签里的 `lobe` 只在两位读者一致时保留，否则记 None。`final_labels()`、CSV 导出（`labels_<reader>.csv`/`adjudications.csv`/`final_labels.csv`）、封存折文件与 §8 的报告都带上这三个字段；读片说明相应定义三者含义与脑叶兜底规则（跨叶取体积占多的脑叶，判不出取病灶中心所在的脑叶；胼胝体、内囊等不属于任何脑叶的白质，以及深部灰质、脑干、小脑，都选"不适用"；放射冠、半卵圆中心的病灶归其上方皮层所属的脑叶）。已建的库要跑一次 `level_r_admin.py init` 做列迁移（`ALTER TABLE ... ADD COLUMN`），旧行的三个新列读作 None；迁移前，除 `backup` 外的子命令拒绝打开旧库。
+
+为什么：用户三个核心目标里，"病灶名字"此前全链路未采集、绑定也只到粗粒度宿主，这三个字段把病灶类型、侧别与脑叶都变成读片人给出的真值，让关系陈述能达到"<侧别><脑叶><宿主>上存在<病灶类型>"的目标形态。
