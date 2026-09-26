@@ -1,4 +1,4 @@
-# STATUS：2026-09-26（Level R 读片工具已实现、整支评审、冒烟通过；等浏览器验收与用户拍板；未 push、未合 main、未打 tag；上一交接点 tag `handoff/2026-09-25-gate0-h1-gate05`）
+# STATUS：2026-09-26（Level R 读片工具已实现、整支评审、冒烟通过；等浏览器验收与用户拍板；已合入 main（91526e0，tag `handoff/2026-09-26-level-r-tooling`，本地未 push）；follow-up A1/A2（`649e7f0`..`dfc3d6c`，含本次 STATUS 修正）在分支上，待控制方合入 main 并打第二个 tag，同样未 push；上一交接点 tag `handoff/2026-09-25-gate0-h1-gate05`）
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 
@@ -49,7 +49,7 @@
 - **(c) 邻接**：已定（用户 2026-09-26 拍板：不考虑安全问题，一切以实现目标为准）：不强制；空选记为"未答"，"无"是明确回答，统计时分开。
 - **(d) pilot 停顿**：已定（用户 2026-09-26 拍板：不考虑安全问题，一切以实现目标为准）：软停即可（"下一个"停下、列表仍可点），不做服务端硬停。
 - **(e)** 读者姓名、token 发放、裁定人、伦理备案（v2.6 §18）；服务对外方式 A 端口转发 / B `--bind 0.0.0.0`。
-- **(f)** 本分支要不要 push、要不要合回 main、要不要打 tag `handoff/2026-09-26-level-r-tooling`。
+- **(f)** 本分支要不要 push——目前完全本地：R1–R10 已合入 main（91526e0，tag `handoff/2026-09-26-level-r-tooling`）；follow-up A1/A2（`649e7f0`..`dfc3d6c` 及本次修正）待控制方合入 main 并打第二个 tag；两次合并与两个 tag 都还没 push。
 - **(g)** nnDetection 第二臂何时起（GPU 是否有空）。
 - 已定（上一轮，2026-09-25）：Gate 0 通过（膝 89.4% 差 0.6 个百分点，记录在案）；Gate 0.5 判 GO，t 不冻结，d_interface 四档分层、全集 1297 标注（v2.6 §25 第 9 项）；分层按实测几何；第二臂已定为 nnDetection 直训 SKM-TEA（VERDICT §4 ②），在 GPU 空时并行，计划另写；npz 不删、已合并分支不删。
 - 已定（用户 2026-09-26）：按 A/B/C 建议执行——A：现在做，Level R 表单加病灶类型/侧别/脑叶（已完成，见 §1 A1）；B：留后，命名自动化脑侧走计划 2（3D 掩膜 + 类型），膝侧走 nnDetection；C：兜底，若 A 未做成则论文口径收窄为"给定病灶实例的粗宿主绑定"（目前不需要）。
@@ -57,14 +57,15 @@
 
 ## 3. 下一步
 
-1. 冒烟库迁移（`init` 一次）与冒烟服务重启由控制方在合并后做。浏览器验收要点加三个新字段：`docs/verification/2026-09-26/level_r_smoke.md` §7 第 9–10 行（勾选"不是病灶"后三个下拉变灰；两位读者只在病灶类型上不一致时该病灶进裁定列表），都还是 USER_REPORTED。
-2. 用户在 8791 上做浏览器验收（`docs/verification/2026-09-26/level_r_smoke.md` §7 的八步仍是 USER_REPORTED）。
-3. `openLesion` 时序 bug 已在本次提交修复：`state.lesion`/`state.vol` 等字段只在 `loadVolume` resolve 之后才赋值，见新增测试 `test_open_lesion_assigns_state_only_after_the_volume_loaded`（`tests/test_level_r_app_static.py`）。
-4. 定 §2 (a)–(d) 四个决定。
-5. 按 `docs/level_r_tool.md` 正式部署：`$D/level_r.sqlite` 上 `init` → `add-reader` ×3 → `order --pilot` → 8790 起服务 → pilot 150 → `level_r_report.py` → continue/revise 决定 → 两位读者 `release` → 读全集 → 裁定 → `seal`。
-6. PR-C 关系基线可以在 pilot 期间并行开工。
-7. nnDetection 第二臂计划另写（GPU 空时并行）。
-8. B：nnDetection 计划另写（同上一条）；脑侧命名数据走计划 2（3D 掩膜 + 类型，待写）。
+1. 合并 A1/A2 后：停冒烟服务 → init → 重启（控制方已按此顺序做过一次，PID 2152185 在 8791）。
+2. 冒烟库迁移（`init` 一次）与冒烟服务重启由控制方在合并后做。浏览器验收要点加三个新字段：`docs/verification/2026-09-26/level_r_smoke.md` §7 第 9–10 行（勾选"不是病灶"后三个下拉变灰；两位读者只在病灶类型上不一致时该病灶进裁定列表），都还是 USER_REPORTED。
+3. 用户在 8791 上做浏览器验收（`docs/verification/2026-09-26/level_r_smoke.md` §7 的八步仍是 USER_REPORTED）。
+4. `openLesion` 时序 bug 已在本次提交修复：`state.lesion`/`state.vol` 等字段只在 `loadVolume` resolve 之后才赋值，见新增测试 `test_open_lesion_assigns_state_only_after_the_volume_loaded`（`tests/test_level_r_app_static.py`）。
+5. 定 §2 (a)–(d) 四个决定。
+6. 按 `docs/level_r_tool.md` 正式部署：`$D/level_r.sqlite` 上 `init` → `add-reader` ×3 → `order --pilot` → 8790 起服务 → pilot 150 → `level_r_report.py` → continue/revise 决定 → 两位读者 `release` → 读全集 → 裁定 → `seal`。
+7. PR-C 关系基线可以在 pilot 期间并行开工。
+8. nnDetection 第二臂计划另写（GPU 空时并行）。
+9. B：nnDetection 计划另写（同上一条）；脑侧命名数据走计划 2（3D 掩膜 + 类型，待写）。
 
 ## 4. 坑与别重做
 
