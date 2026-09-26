@@ -167,5 +167,7 @@ http://127.0.0.1:8791/?token=<token>
 | 6 | 回列表改一次 | USER_REPORTED |
 | 7 | 用冒烟读者 2 再提交一例让它与读者 1 分歧 | USER_REPORTED |
 | 8 | 用裁定 token 看到分歧并裁定 | USER_REPORTED |
+| 9 | 勾选"不是病灶"后病灶类型/侧别/脑叶三个下拉变灰 | USER_REPORTED |
+| 10 | 两位读者只在病灶类型上不一致时该病灶出现在裁定列表 | USER_REPORTED |
 
 这一步不阻塞后续任务；服务不停，等用户看完再 `kill $(cat /data2/congcong/data/FM_data/derived/level_r_smoke/server.pid)`。

@@ -51,6 +51,7 @@ def test_zh_labels_cover_every_enum_key_and_are_json():
     assert NOT_A_LESION in zh
     assert zh["other"] == "其他"                     # shared by host and lesion type; the host select says 脑室内 goes there
     assert zh["image_left"] == "图像左侧" and zh["image_right"] == "图像右侧" and zh["lacunar_infarct"] == "腔隙性梗死"
+    assert "胼胝体" in zh["not_applicable"]           # 不适用 covers everything that belongs to no lobe, not only deep grey / infratentorial
 
 
 def test_lesion_type_side_and_lobe_selects_sit_between_not_a_lesion_and_the_host():
@@ -60,6 +61,7 @@ def test_lesion_type_side_and_lobe_selects_sit_between_not_a_lesion_and_the_host
     for label in ('病灶类型 <select id="lesion_type">', '侧别（以屏幕左右为准） <select id="side">', '脑叶 <select id="lobe">',
                   '主宿主结构（脑室内病灶选"其他"） <select id="primary_host">'):
         assert label in idx, label
+    assert "血管周围间隙不算" in idx                  # the checkbox itself says a perivascular space is a lesion type, not 不是病灶
 
 
 def test_app_fills_disables_sends_checks_and_restores_lesion_type_side_and_lobe():
@@ -123,6 +125,8 @@ def test_guide_defines_lesion_type_screen_side_and_lobe():
 def test_guide_settles_two_lobe_lesions_non_lobar_white_matter_and_the_scope_of_confidence():
     g = _read("guide.html")
     assert "占多的那个脑叶" in g          # a lesion spanning two lobes takes the lobe holding more of it
+    assert "病灶中心所在的脑叶" in g      # and when that cannot be judged, the lobe holding the lesion's centre
+    assert "半卵圆中心" in g              # corona radiata / centrum semiovale take the lobe of the cortex above them
     assert "胼胝体" in g                  # corpus callosum and other non-lobar white matter: 不适用, structure named in the comment
     assert "最没把握" in g                # confidence covers host, lesion type and side: the least certain of the three
 

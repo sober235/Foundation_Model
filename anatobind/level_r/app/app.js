@@ -9,7 +9,7 @@ const ZH = {"white_matter": "白质", "cortex": "皮层", "thalamus": "丘脑", 
   "good": "好", "fair": "一般", "poor": "差", "not_a_lesion": "不是病灶",
   "nonspecific_wm_lesion": "非特异性白质病灶", "lacunar_infarct": "腔隙性梗死", "perivascular_space": "血管周围间隙",
   "image_left": "图像左侧", "image_right": "图像右侧", "midline": "中线",
-  "frontal": "额叶", "parietal": "顶叶", "temporal": "颞叶", "occipital": "枕叶", "insular": "岛叶", "not_applicable": "不适用（深部灰质/幕下）"};
+  "frontal": "额叶", "parietal": "顶叶", "temporal": "颞叶", "occipital": "枕叶", "insular": "岛叶", "not_applicable": "不适用（不属于任何脑叶：胼胝体、深部灰质、幕下等）"};
 const FIELD_ZH = {"lesion_type": "病灶类型", "side": "侧别", "lobe": "脑叶", "primary_host": "主宿主", "acceptable_hosts": "可接受集合",
   "topography": "拓扑位置", "adjacency": "邻接", "ambiguity": "不确定性", "not_a_lesion": "不是病灶", "comment": "备注"};
 

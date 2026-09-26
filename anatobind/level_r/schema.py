@@ -11,7 +11,8 @@ LESION_TYPES = ("nonspecific_wm_lesion", "lacunar_infarct", "perivascular_space"
 # The side as seen on screen, not the patient's side: the left/right handedness of the RSS arrays is not established, so
 # readers answer what they see and the whole set is converted once later.
 SIDES = ("image_left", "image_right", "midline")
-# not_applicable: deep grey matter, brainstem, cerebellum.
+# not_applicable: the lesion belongs to no lobe (corpus callosum, internal capsule, deep grey matter, infratentorial
+# structures and the like); corona radiata and centrum semiovale lesions take the lobe of the cortex above them.
 LOBES = ("frontal", "parietal", "temporal", "occipital", "insular", "not_applicable")
 MAX_ACCEPTABLE = 2
 NOT_A_LESION = "not_a_lesion"      # the class a not_a_lesion answer takes in agreement statistics
