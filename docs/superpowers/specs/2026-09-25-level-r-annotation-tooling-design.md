@@ -137,3 +137,17 @@ adjudications(row_id INTEGER PK, adjudicator_id, lesion_id, primary_host, accept
 ## 12. 明确不做
 
 模型预测进工具；任何 B 基线；3D Slicer 模块；离线包；分割/掩膜标注（只标关系字段）；多语言界面（中文）；账号系统（token 即身份）。
+
+## 13. 实施修订（2026-09-26）
+
+实施（分支 `plan/level-r-tooling-2026-09-25`）与本规格的三处偏移，以实现为准：
+
+- **导出目录**（§7）：`level_r_admin.py export` 写到 `derived/level_r/export/<时间戳>/`，不是固定文件名；同一时间戳已存在就拒跑，旧导出不动（用户规矩：不覆盖已有数据文件）。`seal` 的 `--final` 指向某次导出目录里的 `final_labels.csv`。
+- **访问日志**（§7）：`access_log.txt` 每行四个字段——时间、折号、调用方文件、入口脚本，不是三个字段。
+- **用时统计**（§8）：按病灶把同一读者的全部提交（含改答复访）的 `time_seconds` 相加，不是只取最后一次。
+
+实施中新增、规格未写明的规则：
+
+- pilot 结束后读者在服务端被标记为"扣住"，需 `level_r_admin.py release --reader-id <id>` 显式放行才能继续读全集（§9 只写了前端"停在列表页"）。
+- 一条裁定只在它比两位读者当时的最新答案都新时才计入最终标签；读者裁定后再改答案会让该裁定失效，需要重新裁定。
+- Gwet AC1（§8）固定用 K = 8 类（7 个主结构 + `not_a_lesion`），不是数据里实际出现的类别数。

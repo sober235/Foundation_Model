@@ -1,5 +1,7 @@
 """Reader agreement for Level R (spec §8; v2.6 §7.5, §7.7). Inputs are the latest answers of the two readers (Store
-.latest_labels) and the registry rows; nothing here reads the database or the sealed folds directly."""
+.latest_labels) and the registry rows; nothing here reads the database or the sealed folds directly. The reading-time
+summary takes the full label history instead (Store.label_rows), so a revisit adds its time rather than replacing the
+first read."""
 import math
 from collections import Counter, defaultdict
 
