@@ -15,7 +15,7 @@ def sealed(tmp_path):
         w = csv.DictWriter(fh, fieldnames=FINAL_COLUMNS)
         w.writeheader()
         w.writerows(rows)
-    seal(final, {i: i % 5 for i in range(10)}, tmp_path / "sealed", tmp_path / "manifest.json", now="2026-10-01T00:00:00+00:00")
+    seal(final, {i: i % 5 for i in range(10)}, tmp_path / "sealed", tmp_path / "manifest.json", k=5, now="2026-10-01T00:00:00+00:00")
     return tmp_path / "sealed", tmp_path / "manifest.json"
 
 

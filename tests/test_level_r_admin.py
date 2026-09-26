@@ -1,6 +1,8 @@
 import csv
+import importlib.util
 import json
 from collections import Counter
+from pathlib import Path
 
 import pytest
 
@@ -84,11 +86,14 @@ def _final_csv(path, rows):
     return path
 
 
+def _agreed(ids):
+    return [{"lesion_id": i, "status": "agreed", "primary_host": "white_matter", "acceptable_hosts": '["white_matter"]', "not_a_lesion": False} for i in ids]
+
+
 def test_seal_splits_by_fold_writes_sha256_and_is_one_shot(tmp_path):
-    rows = [{"lesion_id": i, "status": "agreed", "primary_host": "white_matter", "acceptable_hosts": '["white_matter"]', "not_a_lesion": False} for i in range(10)]
-    final = _final_csv(tmp_path / "final.csv", rows)
+    final = _final_csv(tmp_path / "final.csv", _agreed(range(10)))
     lesion_fold = {i: i % 5 for i in range(10)}
-    man = seal(final, lesion_fold, tmp_path / "sealed", tmp_path / "manifest.json", now="2026-10-01T00:00:00+00:00")
+    man = seal(final, lesion_fold, tmp_path / "sealed", tmp_path / "manifest.json", k=5, now="2026-10-01T00:00:00+00:00")
     assert set(man) == {f"fold{k}" for k in range(5)} and all(m["rows"] == 2 and m["sealed_at"] == "2026-10-01T00:00:00+00:00" for m in man.values())
     for k in range(5):
         p = tmp_path / "sealed" / f"labels_fold{k}.csv"
@@ -96,15 +101,56 @@ def test_seal_splits_by_fold_writes_sha256_and_is_one_shot(tmp_path):
         assert [int(r["lesion_id"]) for r in csv.DictReader(open(p, newline="", encoding="utf-8"))] == [k, k + 5]
     assert json.loads((tmp_path / "manifest.json").read_text()) == man
     with pytest.raises(FileExistsError):
-        seal(final, lesion_fold, tmp_path / "sealed", tmp_path / "manifest2.json")
+        seal(final, lesion_fold, tmp_path / "sealed", tmp_path / "manifest2.json", k=5)
     with pytest.raises(FileExistsError):
-        seal(final, lesion_fold, tmp_path / "sealed2", tmp_path / "manifest.json")
+        seal(final, lesion_fold, tmp_path / "sealed2", tmp_path / "manifest.json", k=5)
+
+
+def test_seal_writes_every_fold_of_the_table_even_an_empty_one(tmp_path):
+    final = _final_csv(tmp_path / "final.csv", _agreed(range(8)))
+    man = seal(final, {i: i % 4 for i in range(8)}, tmp_path / "sealed", tmp_path / "manifest.json", k=5)
+    assert [man[f"fold{f}"]["rows"] for f in range(5)] == [2, 2, 2, 2, 0]              # k = 5 from the table, not max fold + 1
+    assert (tmp_path / "sealed" / "labels_fold4.csv").read_text(encoding="utf-8").strip() == ",".join(FINAL_COLUMNS)
 
 
 def test_seal_refuses_pending_rows(tmp_path):
     final = _final_csv(tmp_path / "final.csv", [{"lesion_id": 0, "status": "pending", "primary_host": "", "acceptable_hosts": "[]", "not_a_lesion": ""}])
     with pytest.raises(ValueError):
-        seal(final, {0: 0}, tmp_path / "sealed", tmp_path / "manifest.json")
+        seal(final, {0: 0}, tmp_path / "sealed", tmp_path / "manifest.json", k=1)
+
+
+@pytest.mark.parametrize("ids, message", [
+    (range(8), "2 missing, 0 extra, 0 duplicated"),                    # partial: lesions 8 and 9 absent
+    ([], "10 missing, 0 extra, 0 duplicated"),                         # empty: header only
+    (list(range(10)) + [3], "0 missing, 0 extra, 1 duplicated"),       # lesion 3 twice
+    (range(11), "0 missing, 1 extra, 0 duplicated"),                   # lesion 10 is not in the fold table
+])
+def test_seal_refuses_anything_but_each_lesion_exactly_once_and_writes_nothing(tmp_path, ids, message):
+    final = _final_csv(tmp_path / "final.csv", _agreed(ids))
+    with pytest.raises(ValueError, match=message):
+        seal(final, {i: i % 5 for i in range(10)}, tmp_path / "sealed", tmp_path / "manifest.json", k=5)
+    assert not (tmp_path / "sealed").exists() and not (tmp_path / "manifest.json").exists()
+
+
+def _admin_script():
+    path = Path(__file__).resolve().parents[1] / "scripts/level_r_admin.py"
+    spec = importlib.util.spec_from_file_location("level_r_admin_script", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_seal_command_takes_the_fold_count_from_folds_json(tmp_path, monkeypatch):
+    from test_level_r_registry import _row, write_registry     # tests/ is on sys.path under pytest
+    reg = write_registry(tmp_path / "reg.csv", [_row(0, patient="P1"), _row(1, patient="P2")])
+    folds = tmp_path / "folds.json"
+    folds.write_text(json.dumps({"k": 5, "seed": 0, "patient_fold": {"P1": 0, "P2": 1}}))
+    final = _final_csv(tmp_path / "final.csv", _agreed(range(2)))
+    monkeypatch.setattr("sys.argv", ["level_r_admin.py", "seal", "--final", str(final), "--folds", str(folds), "--registry", str(reg),
+                                     "--out", str(tmp_path / "sealed"), "--manifest", str(tmp_path / "manifest.json")])
+    _admin_script().main()
+    man = json.loads((tmp_path / "manifest.json").read_text())
+    assert [man[f"fold{f}"]["rows"] for f in range(5)] == [1, 1, 0, 0, 0] and len(man) == 5
 
 
 def test_backup_copies_the_live_database_and_never_overwrites(tmp_path):

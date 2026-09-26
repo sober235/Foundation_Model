@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 import sqlite3
+from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -66,17 +67,23 @@ def export_csvs(store, out_dir):
     return written + [out_dir / "adjudications.csv", out_dir / "final_labels.csv"]
 
 
-def seal(final_labels_csv, lesion_fold, out_dir, manifest_path, now=None):
-    """Split final_labels.csv by outer fold into out_dir/labels_fold{k}.csv and write the sha256 manifest. One shot."""
+def seal(final_labels_csv, lesion_fold, out_dir, manifest_path, k, now=None):
+    """Split final_labels.csv by outer fold into out_dir/labels_fold{0..k-1}.csv and write the sha256 manifest. One shot.
+    k is the fold count of the fold table; the CSV must hold every lesion of lesion_fold exactly once, none pending."""
     with open(final_labels_csv, newline="", encoding="utf-8") as fh:
         rows = list(csv.DictReader(fh))
     pending = [r for r in rows if r["status"] == "pending"]
     if pending:
         raise ValueError(f"{len(pending)} lesions are pending adjudication; seal after the adjudicator has finished")
+    ids = Counter(int(r["lesion_id"]) for r in rows)
+    missing, extra = set(lesion_fold) - set(ids), set(ids) - set(lesion_fold)
+    duplicated = [i for i, n in ids.items() if n > 1]
+    if missing or extra or duplicated:
+        raise ValueError(f"{final_labels_csv} must hold each of the {len(lesion_fold)} lesions of the fold table exactly once: "
+                         f"{len(missing)} missing, {len(extra)} extra, {len(duplicated)} duplicated")
     out_dir, manifest_path = Path(out_dir), Path(manifest_path)
     if manifest_path.exists():
         raise FileExistsError(f"{manifest_path} exists; sealing is one-shot")
-    k = max(lesion_fold.values()) + 1
     per = {f: [] for f in range(k)}
     for r in rows:
         per[lesion_fold[int(r["lesion_id"])]].append(r)

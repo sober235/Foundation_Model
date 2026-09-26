@@ -76,7 +76,7 @@ def cmd_seal(a):
     folds = json.loads(a.folds.read_text())
     registry = load_registry(a.registry)
     lf = lesion_folds(registry, folds["patient_fold"])
-    man = seal(a.final, lf, a.out, a.manifest)
+    man = seal(a.final, lf, a.out, a.manifest, k=folds["k"])
     for k, m in man.items():
         print(f"{k}: {m['rows']} rows sha256 {m['sha256'][:12]}… -> {m['path']}")
     print(f"manifest -> {a.manifest}")
