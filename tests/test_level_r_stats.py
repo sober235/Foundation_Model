@@ -1,5 +1,3 @@
-import math
-
 import pytest
 
 from anatobind.eval.level_r_stats import (
@@ -60,26 +58,52 @@ B = [_lab(0, "white_matter"), _lab(1, "white_matter"), _lab(2, "cortex"), _lab(3
 
 def test_strata_report_sums_to_the_total_and_separates_3mm_volumes():
     P = pairs(A, B)
-    s = strata_report(P, REG)
+    s = strata_report(P, REG, n_boot=200, seed=0)
     assert sum(v["n"] for v in s["band"].values()) == 5 == sum(v["n"] for v in s["stratum_geometry"].values())
-    assert s["band"]["0"] == {"n": 2, "raw": 0.5, "set_agreement": 1.0}                 # lesion 1: sets {cortex, wm} & {wm}
-    assert s["band"][">4"]["raw"] == 1.0 and s["slice_3mm"] == {"n": 1, "raw": 1.0, "set_agreement": 1.0}
-    assert s["stratum_geometry"]["inplane_0.86_slice_5"]["raw"] == 0.0
+    # lesion 1: sets {cortex, wm} & {wm}; both band-0 lesions belong to p0, so every bootstrap draw is p0's mean 0.5
+    assert s["band"]["0"] == {"n": 2, "raw": 0.5, "set_agreement": 1.0, "raw_ci95": [0.5, 0.5]}
+    assert s["band"][">4"] == {"n": 1, "raw": 1.0, "set_agreement": 1.0} and s["slice_3mm"] == {"n": 1, "raw": 1.0, "set_agreement": 1.0}
+    assert s["stratum_geometry"]["inplane_0.86_slice_5"]["raw"] == 0.0 and "raw_ci95" not in s["stratum_geometry"]["inplane_0.86_slice_5"]
 
 
-def test_time_summary_and_gate():
+def test_band0_interval_resamples_patients():
+    reg = {0: _reg(0, "p0", "0", "s_slice_5"), 1: _reg(1, "p0", "0", "s_slice_5"), 2: _reg(2, "p1", "0", "s_slice_5")}
+    P = pairs([_lab(0, "cortex"), _lab(1, "cortex"), _lab(2, "cortex")], [_lab(0, "cortex"), _lab(1, "thalamus"), _lab(2, "cortex")])
+    lo, hi = strata_report(P, reg, n_boot=2000, seed=0)["band"]["0"]["raw_ci95"]
+    assert (lo, hi) == (0.5, 1.0)          # draws {p0,p0} -> 0.5, {p0,p1} -> 2/3, {p1,p1} -> 1.0, each end with probability 1/4
+
+
+def _row(lid, t, reader="r1"):
+    return {**_lab(lid, "cortex", t=t), "reader_id": reader}
+
+
+def test_time_summary_sums_revisits_and_restricts_to_the_requested_lesions():
     t = time_summary(A)
     assert t["n"] == 5 and t["median_s"] == 45 and t["q1_s"] == 30 and t["q3_s"] == 60 and t["hours_for_1297"] == pytest.approx(45 * 1297 / 3600)
     assert time_summary([_lab(0, "cortex")]) == {"n": 0, "median_s": None, "q1_s": None, "q3_s": None, "hours_for_1297": None}
-    assert gate_r7(0.81, 0.72) == {"all_ci_low": 0.81, "pass_all": True, "band0_raw": 0.72, "pass_band0": True, "single_host_endpoint_allowed": True}
-    assert gate_r7(0.79, 0.72)["pass_all"] is False and gate_r7(0.85, 0.69)["single_host_endpoint_allowed"] is False
+    rows = [_row(0, 30), _row(0, 15), _row(1, 60), _row(2, None), _row(3, 100)]     # lesion 0 read twice: 30 + 15 s
+    t = time_summary(rows, lesion_ids=[0, 1, 2])
+    assert t == {"n": 2, "median_s": 52.5, "q1_s": 48.75, "q3_s": 56.25, "hours_for_1297": pytest.approx(52.5 * 1297 / 3600)}
+    assert time_summary(rows)["n"] == 3 and time_summary(rows)["median_s"] == 60
+
+
+def test_gate_reports_the_band0_interval_without_changing_the_rule():
+    assert gate_r7(0.81, 0.72, 0.55) == {"all_ci_low": 0.81, "pass_all": True, "band0_raw": 0.72, "band0_ci_low": 0.55, "pass_band0": True,
+                                          "single_host_endpoint_allowed": True}
+    assert gate_r7(0.79, 0.72, 0.9)["pass_all"] is False and gate_r7(0.85, 0.69, 0.9)["single_host_endpoint_allowed"] is False
 
 
 def test_summarise_assembles_everything_and_restricts_to_a_lesion_subset():
     s = summarise(A, B, list(REG.values()), n_boot=200, seed=0)
     assert s["n_pairs"] == 5 and s["n_patients"] == 4 and s["raw"] == pytest.approx(0.4)
-    assert s["raw_ci95"][0] <= 0.4 <= s["raw_ci95"][1] and not math.isnan(s["kappa"]) and not math.isnan(s["ac1"])
+    assert s["raw_ci95"][0] <= 0.4 <= s["raw_ci95"][1] and s["kappa"] == pytest.approx((0.4 - 0.24) / (1 - 0.24))
+    # AC1 over the fixed K = 8 classes (7 hosts + not_a_lesion): pi = .4/.2/.2/.1/.1 -> sum pi(1 - pi) = .74, p_e = .74 / 7
+    assert s["ac1_categories"] == 8 and s["ac1"] == pytest.approx((0.4 - 0.74 / 7) / (1 - 0.74 / 7))
     assert s["set_agreement"] == pytest.approx(0.6) and s["gate_r7"]["band0_raw"] == 0.5 and s["gate_r7"]["pass_all"] is False
+    assert s["gate_r7"]["band0_ci_low"] == 0.5 == s["strata"]["band"]["0"]["raw_ci95"][0]
     assert set(s["strata"]) == {"band", "stratum_geometry", "slice_3mm"} and s["time"]["reader_a"]["n"] == 5 and s["time"]["reader_b"]["n"] == 0
     sub = summarise(A, B, list(REG.values()), lesion_ids=[0, 3], n_boot=50)
     assert sub["n_pairs"] == 2 and sub["raw"] == 1.0
+    assert sub["time"]["reader_a"]["n"] == 2 and sub["time"]["reader_a"]["median_s"] == 25            # lesions 0 and 3 only: 30, 20 s
+    rows = A + [{**_lab(3, "cerebellum", t=50)}]                                                       # lesion 3 revisited: 20 + 50 s
+    assert summarise(A, B, list(REG.values()), n_boot=50, a_rows=rows)["time"]["reader_a"]["median_s"] == 60   # 30 45 60 70 90

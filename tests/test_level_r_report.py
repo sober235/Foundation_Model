@@ -33,15 +33,36 @@ def test_build_summary_and_render(tmp_path):
     for i in range(6):
         s.submit_label("r1", i, _lab("white_matter", t=10.0 * (i + 1)))
         s.submit_label("r2", i, _lab("white_matter" if i < 5 else "cortex"))
+    s.submit_label("r1", 0, _lab("white_matter", t=25.0))                # a revisit: lesion 0 took r1 10 + 25 s
     summary = m.build_summary(s, _registry(), lesion_ids=[0, 1, 2, 3, 4, 5], n_boot=100, seed=0)
-    assert summary["readers"] == ["r1", "r2"] and summary["n_pairs"] == 6 and summary["raw"] == 5 / 6
+    assert summary["readers"] == ["r1", "r2"] and summary["n_pairs"] == 6 and summary["raw"] == 5 / 6 and summary["pilot_size"] == 6
+    assert summary["time"]["reader_a"]["median_s"] == 37.5                # 20 30 35 40 50 60 from the full history
     md = m.render_markdown(summary, title="pilot", command="python scripts/level_r_report.py --db x")
     for piece in ("# pilot", "GATE_R7:", "raw agreement", "positive agreement", "confusion", "band", "slice_3mm", "hours_for_1297",
-                  "python scripts/level_r_report.py --db x", '"n_pairs": 6'):
+                  "python scripts/level_r_report.py --db x", '"n_pairs": 6', "- r1 (reader A): n 6, median 37.5 s", "- r2 (reader B): n 6",
+                  "## confusion (rows r1 = reader A, columns r2 = reader B)", "between r1 and r2", "Gwet AC1 (K = 8)",
+                  "0 mm band raw 95% patient-bootstrap CI"):
         assert piece in md, piece
-    assert ("GATE_R7: PASS" in md) == summary["gate_r7"]["single_host_endpoint_allowed"]
+    assert ("GATE_R7: PASS" in md) == summary["gate_r7"]["single_host_endpoint_allowed"] and "⚠️" not in md
     sub = m.build_summary(s, _registry(), lesion_ids=[0, 1], n_boot=10, seed=0)
-    assert sub["n_pairs"] == 2 and sub["raw"] == 1.0
+    assert sub["n_pairs"] == 2 and sub["raw"] == 1.0 and sub["time"]["reader_a"]["n"] == 2
+
+
+def test_render_warns_when_pilot_lesions_lack_a_pair_and_appends_strict_json(tmp_path):
+    m = _load()
+    s = Store(tmp_path / "db.sqlite")
+    s.add_reader("r1", "reader", "0123456789abcdef", "读者 1")
+    s.add_reader("r2", "reader", "fedcba9876543210", "读者 2")
+    s.load_lesions([{"lesion_id": i, "code": f"c{i}", "volume_code": "v", "z0": 0, "z1": 0, "boxes": {}} for i in range(6)])
+    for i in (4, 5):
+        s.submit_label("r1", i, _lab("cortex"))
+    s.submit_label("r2", 4, _lab("cortex"))                              # r2 has not read pilot lesion 5 yet
+    summary = m.build_summary(s, _registry(), lesion_ids=[4, 5], n_boot=10, seed=0)
+    assert summary["n_pairs"] == 1 and summary["pilot_size"] == 2
+    md = m.render_markdown(summary, title="pilot", command="x")
+    assert "⚠️ pairs < pilot size" in md
+    block = md.split("```json\n", 1)[1].split("\n```", 1)[0]
+    assert "NaN" not in block and json.loads(block)["gate_r7"]["band0_raw"] is None     # no 0 mm pair: null, not NaN
 
 
 def test_main_writes_the_report_and_refuses_to_overwrite(tmp_path, monkeypatch, capsys):

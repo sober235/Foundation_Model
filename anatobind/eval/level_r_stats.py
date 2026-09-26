@@ -6,10 +6,11 @@ from collections import Counter, defaultdict
 import numpy as np
 
 from anatobind.level_r.registry import BANDS, is_3mm
-from anatobind.level_r.schema import NOT_A_LESION
+from anatobind.level_r.schema import NOT_A_LESION, PRIMARY_HOSTS
 
 N_FULL = 1297
 NAN = float("nan")
+AC1_CATEGORIES = list(PRIMARY_HOSTS) + [NOT_A_LESION]
 
 
 def host_of(label):
@@ -90,17 +91,35 @@ def _layer(P):
     return {"n": len(P), "raw": raw_agreement([p["x"] for p in P], [p["y"] for p in P]), "set_agreement": set_agreement(P)}
 
 
-def strata_report(P, reg_by_id):
+def _outcomes_by_patient(P, reg_by_id):
+    out = defaultdict(list)
+    for p in P:
+        out[reg_by_id[p["lesion_id"]]["patient_id"]].append(float(p["x"] == p["y"]))
+    return out
+
+
+def strata_report(P, reg_by_id, n_boot=2000, seed=0):
     out = {"band": {}, "stratum_geometry": {}}
     for key in out:
         for value in sorted({reg_by_id[p["lesion_id"]][key] for p in P}, key=lambda v: (BANDS.index(v) if v in BANDS else 99, v)):
             out[key][value] = _layer([p for p in P if reg_by_id[p["lesion_id"]][key] == value])
+    if "0" in out["band"]:                  # the 0 mm band is R7's second layer: its raw gets a patient-bootstrap interval too
+        band0 = [p for p in P if reg_by_id[p["lesion_id"]]["band"] == "0"]
+        out["band"]["0"]["raw_ci95"] = list(bootstrap_ci(_outcomes_by_patient(band0, reg_by_id), n_boot, seed))
     out["slice_3mm"] = _layer([p for p in P if is_3mm(reg_by_id[p["lesion_id"]]["stratum_geometry"])])
     return out
 
 
-def time_summary(labels):
-    t = np.array([l["time_seconds"] for l in labels if l.get("time_seconds") is not None], float)
+def time_summary(labels, lesion_ids=None):
+    """Reading time per lesion = time_seconds summed over every submission for it (pass the full history, label_rows,
+    so a revisit adds its time instead of replacing the first read), restricted to lesion_ids when given. n counts the
+    lesions with any recorded time."""
+    keep = None if lesion_ids is None else set(lesion_ids)
+    per = defaultdict(float)
+    for l in labels:
+        if l.get("time_seconds") is not None and (keep is None or l["lesion_id"] in keep):
+            per[(l.get("reader_id"), l["lesion_id"])] += l["time_seconds"]
+    t = np.array(list(per.values()), float)
     if not t.size:
         return {"n": 0, "median_s": None, "q1_s": None, "q3_s": None, "hours_for_1297": None}
     med = float(np.median(t))
@@ -108,24 +127,28 @@ def time_summary(labels):
             "hours_for_1297": med * N_FULL / 3600}
 
 
-def gate_r7(raw_ci_low, raw_band0):
+def gate_r7(raw_ci_low, raw_band0, band0_ci_low):
+    """R7 as the spec states it; band0_ci_low is reported next to the 0 mm point estimate and does not enter the rule."""
     pass_all = bool(raw_ci_low >= 0.80)
     pass_band0 = bool(raw_band0 >= 0.70)
-    return {"all_ci_low": raw_ci_low, "pass_all": pass_all, "band0_raw": raw_band0, "pass_band0": pass_band0,
-            "single_host_endpoint_allowed": pass_all and pass_band0}
+    return {"all_ci_low": raw_ci_low, "pass_all": pass_all, "band0_raw": raw_band0, "band0_ci_low": band0_ci_low,
+            "pass_band0": pass_band0, "single_host_endpoint_allowed": pass_all and pass_band0}
 
 
-def summarise(a, b, registry, lesion_ids=None, n_boot=2000, seed=0):
+def summarise(a, b, registry, lesion_ids=None, n_boot=2000, seed=0, a_rows=None, b_rows=None):
+    """a, b: each reader's latest answers. a_rows, b_rows: their full label history for the reading-time block (falls
+    back to a, b). AC1 uses the fixed K = 8 classes of the form (7 hosts + not_a_lesion), not the classes observed."""
     reg = {r["lesion_id"]: r for r in registry}
     P = pairs(a, b, lesion_ids)
     x, y = [p["x"] for p in P], [p["y"] for p in P]
-    outcomes = defaultdict(list)
-    for p in P:
-        outcomes[reg[p["lesion_id"]]["patient_id"]].append(float(p["x"] == p["y"]))
+    outcomes = _outcomes_by_patient(P, reg)
     lo, hi = bootstrap_ci(outcomes, n_boot, seed) if P else (NAN, NAN)
-    band0 = [p for p in P if reg[p["lesion_id"]]["band"] == "0"]
-    raw0 = raw_agreement([p["x"] for p in band0], [p["y"] for p in band0])
+    strata = strata_report(P, reg, n_boot, seed)
+    band0 = strata["band"].get("0")
+    raw0, ci0 = (band0["raw"], band0["raw_ci95"][0]) if band0 else (NAN, NAN)
     return {"n_pairs": len(P), "n_patients": len(outcomes), "raw": raw_agreement(x, y), "raw_ci95": [lo, hi],
-            "kappa": cohen_kappa(x, y), "ac1": gwet_ac1(x, y), "positive_agreement": positive_agreement(x, y),
-            "confusion": confusion(x, y), "set_agreement": set_agreement(P), "strata": strata_report(P, reg),
-            "gate_r7": gate_r7(lo, raw0), "time": {"reader_a": time_summary(a), "reader_b": time_summary(b)}}
+            "kappa": cohen_kappa(x, y), "ac1": gwet_ac1(x, y, categories=AC1_CATEGORIES), "ac1_categories": len(AC1_CATEGORIES),
+            "positive_agreement": positive_agreement(x, y), "confusion": confusion(x, y), "set_agreement": set_agreement(P),
+            "strata": strata, "gate_r7": gate_r7(lo, raw0, ci0),
+            "time": {"reader_a": time_summary(a if a_rows is None else a_rows, lesion_ids),
+                     "reader_b": time_summary(b if b_rows is None else b_rows, lesion_ids)}}

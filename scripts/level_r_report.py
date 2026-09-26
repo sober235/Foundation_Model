@@ -25,11 +25,24 @@ def build_summary(store, registry, lesion_ids, n_boot, seed):
     if len(readers) != 2:
         raise ValueError(f"need exactly two readers, have {readers}")
     a, b = (store.latest_labels(r) for r in readers)
-    return {"readers": readers, **summarise(a, b, registry, lesion_ids, n_boot=n_boot, seed=seed)}
+    a_rows, b_rows = (store.label_rows(r) for r in readers)          # full history: revisits add reading time
+    return {"readers": readers, "pilot_size": None if lesion_ids is None else len(lesion_ids),
+            **summarise(a, b, registry, lesion_ids, n_boot=n_boot, seed=seed, a_rows=a_rows, b_rows=b_rows)}
 
 
 def _f(x):
     return "nan" if x is None or x != x else f"{x:.3f}"
+
+
+def _clean(obj):
+    """NaN -> None (JSON null) all the way down, so the appended summary is strict JSON."""
+    if isinstance(obj, float) and obj != obj:
+        return None
+    if isinstance(obj, dict):
+        return {k: _clean(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_clean(v) for v in obj]
+    return obj
 
 
 def _table(header, rows):
@@ -37,27 +50,37 @@ def _table(header, rows):
 
 
 def render_markdown(s, title, command):
-    g = s["gate_r7"]
+    g, (ra, rb) = s["gate_r7"], s["readers"]
     lines = [f"# {title}", "",
-             f"readers {s['readers']} · pairs {s['n_pairs']} · patients {s['n_patients']}", "",
-             f"raw agreement {_f(s['raw'])} (95% patient-bootstrap CI {_f(s['raw_ci95'][0])}–{_f(s['raw_ci95'][1])}) · "
-             f"Cohen κ {_f(s['kappa'])} · Gwet AC1 {_f(s['ac1'])} · set-valued agreement {_f(s['set_agreement'])}", "",
-             f"GATE_R7: {'PASS' if g['single_host_endpoint_allowed'] else 'FAIL'} "
-             f"(all CI low {_f(g['all_ci_low'])} vs 0.80 -> {g['pass_all']}; 0 mm band raw {_f(g['band0_raw'])} vs 0.70 -> {g['pass_band0']})",
-             "", "## positive agreement per class", "",
-             _table(["class", "n reader A", "n reader B", "positive agreement"],
-                    [[c, v["n_x"], v["n_y"], _f(v["positive_agreement"])] for c, v in s["positive_agreement"].items()]),
-             "", "## confusion (rows reader A, columns reader B)", "",
-             _table([""] + s["confusion"]["categories"], [[c] + row for c, row in zip(s["confusion"]["categories"], s["confusion"]["counts"])]),
-             "", "## strata", ""]
+             f"readers {s['readers']} (reader A = {ra}, reader B = {rb}) · pairs {s['n_pairs']} · patients {s['n_patients']}", ""]
+    if s.get("pilot_size") is not None and s["n_pairs"] < s["pilot_size"]:
+        lines += [f"⚠️ pairs < pilot size: only {s['n_pairs']} of the {s['pilot_size']} requested lesions have answers from both "
+                  "readers; every number below covers those pairs only", ""]
+    lines += [f"raw agreement {_f(s['raw'])} (95% patient-bootstrap CI {_f(s['raw_ci95'][0])}–{_f(s['raw_ci95'][1])}) · "
+              f"Cohen κ {_f(s['kappa'])} · Gwet AC1 (K = {s['ac1_categories']}) {_f(s['ac1'])} · set-valued agreement {_f(s['set_agreement'])}", "",
+              f"GATE_R7: {'PASS' if g['single_host_endpoint_allowed'] else 'FAIL'} "
+              f"(all CI low {_f(g['all_ci_low'])} vs 0.80 -> {g['pass_all']}; "
+              f"0 mm band raw {_f(g['band0_raw'])} (95% CI low {_f(g['band0_ci_low'])}) vs 0.70 -> {g['pass_band0']})",
+              "", "## positive agreement per class", "",
+              _table(["class", f"n {ra} (A)", f"n {rb} (B)", "positive agreement"],
+                     [[c, v["n_x"], v["n_y"], _f(v["positive_agreement"])] for c, v in s["positive_agreement"].items()]),
+              "", f"## confusion (rows {ra} = reader A, columns {rb} = reader B)", "",
+              _table([""] + s["confusion"]["categories"], [[c] + row for c, row in zip(s["confusion"]["categories"], s["confusion"]["counts"])]),
+              "", "## strata", "", f"raw and set-valued agreement between {ra} and {rb} within each layer", ""]
     for key in ("band", "stratum_geometry"):
         lines += [f"### {key}", "", _table([key, "n", "raw", "set agreement"],
                                           [[k, v["n"], _f(v["raw"]), _f(v["set_agreement"])] for k, v in s["strata"][key].items()]), ""]
+        if key == "band" and "0" in s["strata"]["band"]:
+            lo0, hi0 = s["strata"]["band"]["0"]["raw_ci95"]
+            lines += [f"0 mm band raw 95% patient-bootstrap CI {_f(lo0)}–{_f(hi0)}", ""]
     t3 = s["strata"]["slice_3mm"]
-    lines += [f"slice_3mm volumes: n {t3['n']}, raw {_f(t3['raw'])}, set agreement {_f(t3['set_agreement'])}", "", "## reading time", ""]
-    for name, t in s["time"].items():
-        lines.append(f"- {name}: n {t['n']}, median {t['median_s']} s (IQR {t['q1_s']}–{t['q3_s']}), hours_for_1297 {t['hours_for_1297']}")
-    lines += ["", "## command", "", FENCE, command, FENCE, "", "## summary (raw)", "", FENCE + "json", json.dumps(s, indent=1, default=list), FENCE, ""]
+    lines += [f"slice_3mm volumes: n {t3['n']}, raw {_f(t3['raw'])}, set agreement {_f(t3['set_agreement'])}", "", "## reading time", "",
+              "per lesion: time_seconds summed over every submission (a revisit adds its time), requested lesions only", ""]
+    for key, rid, name in (("reader_a", ra, "A"), ("reader_b", rb, "B")):
+        t = s["time"][key]
+        lines.append(f"- {rid} (reader {name}): n {t['n']}, median {t['median_s']} s (IQR {t['q1_s']}–{t['q3_s']}), hours_for_1297 {t['hours_for_1297']}")
+    lines += ["", "## command", "", FENCE, command, FENCE, "", "## summary (raw)", "", FENCE + "json",
+              json.dumps(_clean(s), indent=1, allow_nan=False, default=list), FENCE, ""]
     return "\n".join(lines)
 
 
