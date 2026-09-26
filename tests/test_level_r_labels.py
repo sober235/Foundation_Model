@@ -33,6 +33,31 @@ def test_train_labels_exclude_the_held_out_fold(sealed):
     assert sorted(r["lesion_id"] for r in train) == [1, 2, 3, 4, 6, 7, 8, 9]
 
 
+BAD_FOLD_IDS = [5, -1, "0", True]           # out of range, negative, a string that formats as fold0, a bool
+
+
+@pytest.mark.parametrize("k", BAD_FOLD_IDS)
+def test_train_labels_refuse_fold_ids_that_do_not_name_a_sealed_fold(sealed, k):
+    d, m = sealed
+    with pytest.raises(SealedAccessError):
+        load_train_labels(k, d, m)
+
+
+@pytest.mark.parametrize("k", BAD_FOLD_IDS)
+def test_load_fold_refuses_fold_ids_that_do_not_name_a_sealed_fold(sealed, k):
+    d, m = sealed
+    with pytest.raises(SealedAccessError):
+        load_fold(k, d, m)
+
+
+@pytest.mark.parametrize("k", BAD_FOLD_IDS)
+def test_test_labels_refuse_a_bad_fold_id_before_writing_the_log(sealed, k):
+    d, m = sealed
+    with pytest.raises(SealedAccessError):
+        load_test_labels(k, unblind=True, sealed_dir=d, manifest_path=m)
+    assert not (d / "access_log.txt").exists()
+
+
 def test_tampering_is_detected(sealed):
     d, m = sealed
     p = d / "labels_fold1.csv"
