@@ -123,12 +123,14 @@ def make_handler(store, data_root, app_dir=APP_DIR):
             caller = self._caller(parse_qs(u.query))
             if caller is None:
                 return
-            n = int(self.headers.get("Content-Length") or 0)
             try:
+                n = int(self.headers.get("Content-Length") or 0)
                 body = json.loads(self.rfile.read(n) or b"{}")
+                if not isinstance(body, dict):
+                    raise TypeError("body must be a JSON object")
                 lid = int(body.get("lesion_id", -1))
             except (ValueError, TypeError):
-                return self._send(400, {"error": "body must be JSON with an integer lesion_id"})
+                return self._send(400, {"error": "body must be JSON object with an integer lesion_id"})
             try:
                 if u.path == "/api/label":
                     if caller["role"] != "reader":

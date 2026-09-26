@@ -1,3 +1,4 @@
+import http.client
 import json
 import threading
 import urllib.error
@@ -58,6 +59,19 @@ def post(base, path, token, payload):
             return r.status, json.loads(r.read())
     except urllib.error.HTTPError as e:
         return e.code, json.loads(e.read() or b"{}")
+
+
+def post_raw(base, path, headers, body):
+    """Like post(), but over a raw http.client connection so a caller-supplied (possibly bogus) Content-Length
+    header reaches the server as-is; urllib always computes a correct one itself."""
+    host, port = base[len("http://"):].split(":")
+    conn = http.client.HTTPConnection(host, int(port))
+    try:
+        conn.request("POST", path, body=body, headers=headers)
+        r = conn.getresponse()
+        return r.status, json.loads(r.read() or b"{}")
+    finally:
+        conn.close()
 
 
 def test_static_pages_and_enums_need_no_token(served):
@@ -149,3 +163,19 @@ def test_adjudicator_routes_report_409_without_two_readers(tmp_path):
         assert get(base, "/api/disagreements", TA)[0] == 409 and get(base, "/api/me", TA)[0] == 409
     finally:
         srv.shutdown()
+
+
+def test_bad_content_length_header_is_400_not_a_dropped_connection(served):
+    store, base = served
+    body = json.dumps({"lesion_id": 2, **WM}).encode()
+    status, out = post_raw(base, f"/api/label?token={T1}", {"Content-Type": "application/json", "Content-Length": "abc"}, body)
+    assert status == 400 and "error" in out
+    assert store.label_rows() == []
+
+
+def test_non_dict_json_body_is_400_not_a_dropped_connection(served):
+    store, base = served
+    body = json.dumps([1, 2, 3]).encode()
+    status, out = post_raw(base, f"/api/label?token={T1}", {"Content-Type": "application/json"}, body)
+    assert status == 400 and "error" in out
+    assert store.label_rows() == []
