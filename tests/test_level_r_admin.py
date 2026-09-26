@@ -13,7 +13,8 @@ from anatobind.level_r.admin import (
 from anatobind.level_r.store import Store
 
 WM = {"primary_host": "white_matter", "acceptable_hosts": ["white_matter"], "topography": "deep_white_matter", "adjacency": ["none"],
-      "ambiguity": "certain", "not_a_lesion": False, "local_quality": "good", "confidence": 5, "comment": "a,b"}
+      "ambiguity": "certain", "not_a_lesion": False, "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal",
+      "local_quality": "good", "confidence": 5, "comment": "a,b"}
 CX = {**WM, "primary_host": "cortex", "acceptable_hosts": ["cortex"]}
 
 

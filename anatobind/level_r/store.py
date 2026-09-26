@@ -25,19 +25,23 @@ CREATE TABLE IF NOT EXISTS labels(
     row_id INTEGER PRIMARY KEY, reader_id TEXT NOT NULL, lesion_id INTEGER NOT NULL,
     primary_host TEXT, acceptable_json TEXT NOT NULL, topography TEXT, adjacency_json TEXT NOT NULL, ambiguity TEXT,
     not_a_lesion INTEGER NOT NULL, local_quality TEXT, confidence INTEGER, comment TEXT NOT NULL,
-    time_seconds REAL, window_json TEXT, ts TEXT NOT NULL);
+    time_seconds REAL, window_json TEXT, ts TEXT NOT NULL, lesion_type TEXT, side TEXT, lobe TEXT);
 CREATE TABLE IF NOT EXISTS adjudications(
     row_id INTEGER PRIMARY KEY, adjudicator_id TEXT NOT NULL, lesion_id INTEGER NOT NULL,
     primary_host TEXT, acceptable_json TEXT NOT NULL, topography TEXT, adjacency_json TEXT NOT NULL, ambiguity TEXT,
-    not_a_lesion INTEGER NOT NULL, reason TEXT NOT NULL, ts TEXT NOT NULL);
+    not_a_lesion INTEGER NOT NULL, reason TEXT NOT NULL, ts TEXT NOT NULL, lesion_type TEXT, side TEXT, lobe TEXT);
 CREATE TABLE IF NOT EXISTS releases(
     row_id INTEGER PRIMARY KEY, reader_id TEXT NOT NULL, ts TEXT NOT NULL);
 """
 TABLES = tuple(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)\(", SCHEMA))
+# Columns added after the first databases were made (follow-up A1, 2026-09-26). Store(create=True), i.e. `level_r_admin.py
+# init`, adds them to an existing database with ALTER TABLE ... ADD COLUMN; old rows read them as None.
+ADDED_COLUMNS = {"labels": ("lesion_type", "side", "lobe"), "adjudications": ("lesion_type", "side", "lobe")}
 LABEL_COLUMNS = ("reader_id", "lesion_id", "primary_host", "acceptable_json", "topography", "adjacency_json", "ambiguity",
-                 "not_a_lesion", "local_quality", "confidence", "comment", "time_seconds", "window_json", "ts")
+                 "not_a_lesion", "local_quality", "confidence", "comment", "time_seconds", "window_json", "ts",
+                 "lesion_type", "side", "lobe")
 ADJ_COLUMNS = ("adjudicator_id", "lesion_id", "primary_host", "acceptable_json", "topography", "adjacency_json", "ambiguity",
-               "not_a_lesion", "reason", "ts")
+               "not_a_lesion", "reason", "ts", "lesion_type", "side", "lobe")
 
 
 def token_hash(token):
@@ -55,14 +59,31 @@ def _finite_number(v):
 
 
 def needs_adjudication(a, b):
-    """Spec R9: different primary host, or one says not_a_lesion, or the union of acceptable sets exceeds 2."""
+    """Spec R9: different primary host, or one says not_a_lesion, or the union of acceptable sets exceeds 2; since
+    follow-up A1 also a different lesion type or screen side. A different lobe alone is not adjudicated."""
     if a["not_a_lesion"] != b["not_a_lesion"]:
         return True
     if a["not_a_lesion"]:
         return False
-    if a["primary_host"] != b["primary_host"]:
+    if any(a[k] != b[k] for k in ("primary_host", "lesion_type", "side")):
         return True
     return len(set(a["acceptable_hosts"]) | set(b["acceptable_hosts"])) > MAX_ACCEPTABLE
+
+
+def _missing_columns(c):
+    """(table, column) pairs of ADDED_COLUMNS the open database lacks."""
+    out = []
+    for table, cols in ADDED_COLUMNS.items():
+        have = {r[1] for r in c.execute(f"PRAGMA table_info({table})")}
+        out += [(table, col) for col in cols if col not in have]
+    return out
+
+
+def _migrate(c):
+    """ALTER TABLE ... ADD COLUMN for every column of ADDED_COLUMNS an older database lacks (plain TEXT; old rows read
+    None)."""
+    for table, col in _missing_columns(c):
+        c.execute(f"ALTER TABLE {table} ADD COLUMN {col} TEXT")
 
 
 def _parse(row):
@@ -78,19 +99,25 @@ def _parse(row):
 
 class Store:
     def __init__(self, path, create=True):
-        """create=True (init, tests) creates the file and any missing table. create=False (every other entry point)
-        opens an existing Level R database read-write and raises sqlite3.OperationalError when the file is missing or
-        lacks a table, so a mistyped path never leaves an empty database behind."""
+        """create=True (init, tests) creates the file, any missing table and any missing column. create=False (every
+        other entry point) opens an existing Level R database read-write and raises sqlite3.OperationalError when the
+        file is missing, lacks a table or lacks a column, so a mistyped path never leaves an empty database behind and
+        the server never runs on a database `level_r_admin.py init` has not migrated."""
         self.path, self.create = str(path), create
         self._lock = threading.Lock()
         with self._conn() as c:
             if create:
                 c.executescript(SCHEMA)
+                _migrate(c)
             have = {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+            cols = _missing_columns(c)
         missing = [t for t in TABLES if t not in have]
         if missing:
             raise sqlite3.OperationalError(f"{self.path} lacks the Level R tables {missing}; "
                                            "scripts/level_r_admin.py init adds missing tables to an existing database")
+        if cols:
+            raise sqlite3.OperationalError(f"{self.path} lacks the Level R columns {[f'{t}.{c}' for t, c in cols]}; run "
+                                           "scripts/level_r_admin.py init once on this database to add them (existing rows are kept)")
 
     def _conn(self):
         if self.create:
@@ -165,7 +192,8 @@ class Store:
             raise InvalidLabel(f"window {window!r} must be a list of two numbers")
         row = (reader_id, int(lesion_id), lab["primary_host"], json.dumps(lab["acceptable_hosts"]), lab["topography"],
                json.dumps(lab["adjacency"]), lab["ambiguity"], int(lab["not_a_lesion"]), lab["local_quality"],
-               lab["confidence"], lab["comment"], t, json.dumps(window) if window is not None else None, now_iso())
+               lab["confidence"], lab["comment"], t, json.dumps(window) if window is not None else None, now_iso(),
+               lab["lesion_type"], lab["side"], lab["lobe"])
         with self._lock, self._conn() as c:
             if c.execute("SELECT 1 FROM lesions WHERE lesion_id = ?", (int(lesion_id),)).fetchone() is None:
                 raise KeyError(lesion_id)
@@ -209,7 +237,8 @@ class Store:
     def submit_adjudication(self, adjudicator_id, lesion_id, payload):
         lab = validate_adjudication(payload)
         row = (adjudicator_id, int(lesion_id), lab["primary_host"], json.dumps(lab["acceptable_hosts"]), lab["topography"],
-               json.dumps(lab["adjacency"]), lab["ambiguity"], int(lab["not_a_lesion"]), lab["reason"], now_iso())
+               json.dumps(lab["adjacency"]), lab["ambiguity"], int(lab["not_a_lesion"]), lab["reason"], now_iso(),
+               lab["lesion_type"], lab["side"], lab["lobe"])
         with self._lock, self._conn() as c:
             if c.execute("SELECT 1 FROM lesions WHERE lesion_id = ?", (int(lesion_id),)).fetchone() is None:
                 raise KeyError(lesion_id)
@@ -245,8 +274,9 @@ class Store:
         return set(self._current_adjudications(a, b))
 
     def final_labels(self):
-        """R9: agreed -> union of the acceptable sets; disagreement -> the last adjudication while it is current, else
-        pending."""
+        """R9: agreed -> union of the acceptable sets, the (equal) lesion type and side, and the lobe only when both
+        readers gave the same one (else None); disagreement -> the last adjudication while it is current, else pending
+        (every answer field None)."""
         readers = self._reader_ids()
         a, b = ({l["lesion_id"]: l for l in self.latest_labels(r)} for r in readers)
         adj = self._current_adjudications(a, b)
@@ -256,11 +286,14 @@ class Store:
             if not needs_adjudication(x, y):
                 out.append({"lesion_id": lid, "status": "agreed", "primary_host": x["primary_host"],
                             "acceptable_hosts": sorted(set(x["acceptable_hosts"]) | set(y["acceptable_hosts"])),
-                            "not_a_lesion": x["not_a_lesion"]})
+                            "not_a_lesion": x["not_a_lesion"], "lesion_type": x["lesion_type"], "side": x["side"],
+                            "lobe": x["lobe"] if x["lobe"] == y["lobe"] else None})
             elif lid in adj:
                 z = adj[lid]
                 out.append({"lesion_id": lid, "status": "adjudicated", "primary_host": z["primary_host"],
-                            "acceptable_hosts": sorted(z["acceptable_hosts"]), "not_a_lesion": z["not_a_lesion"]})
+                            "acceptable_hosts": sorted(z["acceptable_hosts"]), "not_a_lesion": z["not_a_lesion"],
+                            "lesion_type": z["lesion_type"], "side": z["side"], "lobe": z["lobe"]})
             else:
-                out.append({"lesion_id": lid, "status": "pending", "primary_host": None, "acceptable_hosts": [], "not_a_lesion": None})
+                out.append({"lesion_id": lid, "status": "pending", "primary_host": None, "acceptable_hosts": [], "not_a_lesion": None,
+                            "lesion_type": None, "side": None, "lobe": None})
         return out

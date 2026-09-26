@@ -20,7 +20,8 @@ T1, T2, TA, BAD = "0123456789abcdef", "fedcba9876543210", "aaaaaaaaaaaaaaaa", "f
 CODE = "0f0f0f0f"
 LESIONS = [{"lesion_id": i, "code": f"c{i:07d}", "volume_code": CODE, "z0": 1, "z1": 2, "boxes": {"1": [[2, 6, 3, 9]], "2": [[2, 6, 3, 9]]}} for i in range(4)]
 WM = {"primary_host": "white_matter", "acceptable_hosts": ["white_matter"], "topography": "deep_white_matter", "adjacency": ["none"],
-      "ambiguity": "certain", "not_a_lesion": False, "local_quality": "good", "confidence": 5, "comment": "", "time_seconds": 30.0, "window": [10, 900]}
+      "ambiguity": "certain", "not_a_lesion": False, "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal",
+      "local_quality": "good", "confidence": 5, "comment": "", "time_seconds": 30.0, "window": [10, 900]}
 CX = {**WM, "primary_host": "cortex", "acceptable_hosts": ["cortex"]}
 
 
@@ -190,7 +191,9 @@ def test_adjudicator_sees_disagreements_anonymously_and_can_rule(served):
     assert post(base, "/api/adjudication", TA, {"lesion_id": 1, **CX, "reason": ""})[0] == 400
     assert post(base, "/api/adjudication", TA, {"lesion_id": 0, **CX, "reason": "x"})[0] == 400
     status, out = post(base, "/api/adjudication", TA, {"lesion_id": 1, "primary_host": "cortex", "acceptable_hosts": ["cortex"],
-                                                       "topography": "cortical", "adjacency": [], "ambiguity": "certain", "reason": "皮层内"})
+                                                       "topography": "cortical", "adjacency": [], "ambiguity": "certain",
+                                                       "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal",
+                                                       "reason": "皮层内"})
     assert status == 200 and out["row_id"] == 1
     assert get(base, "/api/disagreements", TA)[1][0] == {"lesion_id": 1, "done": True}
     assert get(base, "/api/adjudicate/1", TA)[1]["answer"]["reason"] == "皮层内"
@@ -204,7 +207,7 @@ def test_disagreement_is_open_again_when_a_reader_revises_after_the_ruling(serve
     store.submit_label("r1", 1, WM)
     store.submit_label("r2", 1, CX)
     ruling = {"lesion_id": 1, "primary_host": "cortex", "acceptable_hosts": ["cortex"], "topography": "cortical", "adjacency": [],
-              "ambiguity": "certain", "reason": "皮层内"}
+              "ambiguity": "certain", "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal", "reason": "皮层内"}
     assert post(base, "/api/adjudication", TA, ruling)[0] == 200
     assert get(base, "/api/disagreements", TA)[1] == [{"lesion_id": 1, "done": True}]
     store.submit_label("r1", 1, {**WM, "comment": "又看了一遍"})

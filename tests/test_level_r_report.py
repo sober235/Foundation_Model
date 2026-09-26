@@ -15,7 +15,8 @@ def _load():
 
 def _lab(host, acc=None, t=20.0):
     return {"primary_host": host, "acceptable_hosts": acc or [host], "topography": "deep_white_matter", "adjacency": ["none"],
-            "ambiguity": "certain", "not_a_lesion": False, "local_quality": "good", "confidence": 4, "comment": "", "time_seconds": t}
+            "ambiguity": "certain", "not_a_lesion": False, "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal",
+            "local_quality": "good", "confidence": 4, "comment": "", "time_seconds": t}
 
 
 def _registry():
