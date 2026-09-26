@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from anatobind.level_r.admin import (
-    FINAL_COLUMNS, backup_db, export_csvs, lesion_folds, make_order, make_patient_folds, seal, sha256_file,
+    ADJ_COLUMNS, FINAL_COLUMNS, LABEL_COLUMNS, backup_db, export_csvs, lesion_folds, make_order, make_patient_folds, seal, sha256_file,
 )
 from anatobind.level_r.store import Store
 
@@ -50,7 +50,7 @@ def _filled_store(tmp_path):
     s.add_reader("r2", "reader", "fedcba9876543210", "读者 2")
     s.add_reader("adj", "adjudicator", "aaaaaaaaaaaaaaaa", "裁定")
     s.load_lesions([{"lesion_id": i, "code": f"c{i}", "volume_code": "v", "z0": 0, "z1": 0, "boxes": {}} for i in range(4)])
-    for lid, (a, b) in {0: (WM, WM), 1: (WM, CX), 2: (CX, CX), 3: (WM, CX)}.items():
+    for lid, (a, b) in {0: (WM, WM), 1: (WM, CX), 2: (CX, {**CX, "lobe": "parietal"}), 3: (WM, CX)}.items():
         s.submit_label("r1", lid, {**a, "time_seconds": 10.0, "window": [1, 2]})
         s.submit_label("r2", lid, b)
     s.submit_label("r1", 0, CX)                                       # history: r1 changed lesion 0 -> now a disagreement
@@ -70,11 +70,16 @@ def test_export_csvs_writes_history_adjudications_and_final_status(tmp_path):
     assert all(p.parent == out for p in files)
     r1 = list(csv.DictReader(open(out / "labels_r1.csv", newline="", encoding="utf-8")))
     assert len(r1) == 5 and r1[0]["comment"] == "a,b" and json.loads(r1[0]["acceptable_hosts"]) == ["white_matter"] and r1[0]["window"] == "[1, 2]"
+    assert list(r1[0]) == list(LABEL_COLUMNS) and (r1[0]["lesion_type"], r1[0]["side"], r1[0]["lobe"]) == ("nonspecific_wm_lesion", "image_left", "frontal")
     final = {int(r["lesion_id"]): r for r in csv.DictReader(open(out / "final_labels.csv", newline="", encoding="utf-8"))}
     assert final[0]["status"] == "pending" and final[1]["status"] == "adjudicated" and final[2]["status"] == "agreed" and final[3]["status"] == "pending"
     assert list(final[2]) == list(FINAL_COLUMNS) and final[2]["primary_host"] == "cortex"
+    assert (final[2]["lesion_type"], final[2]["side"], final[2]["lobe"]) == ("nonspecific_wm_lesion", "image_left", "")   # lobes differ
+    assert (final[1]["lesion_type"], final[1]["side"], final[1]["lobe"]) == ("nonspecific_wm_lesion", "image_left", "frontal")
+    assert final[0]["lesion_type"] == final[0]["side"] == final[0]["lobe"] == ""                                  # pending
     adj = list(csv.DictReader(open(out / "adjudications.csv", newline="", encoding="utf-8")))
     assert len(adj) == 1 and adj[0]["reason"] == "皮层"
+    assert list(adj[0]) == list(ADJ_COLUMNS) and (adj[0]["lesion_type"], adj[0]["side"], adj[0]["lobe"]) == ("nonspecific_wm_lesion", "image_left", "frontal")
     assert "皮层".encode("utf-8") in (out / "adjudications.csv").read_bytes()
 
 
@@ -107,7 +112,8 @@ def _final_csv(path, rows):
 
 
 def _agreed(ids):
-    return [{"lesion_id": i, "status": "agreed", "primary_host": "white_matter", "acceptable_hosts": '["white_matter"]', "not_a_lesion": False} for i in ids]
+    return [{"lesion_id": i, "status": "agreed", "primary_host": "white_matter", "acceptable_hosts": '["white_matter"]', "not_a_lesion": False,
+             "lesion_type": "nonspecific_wm_lesion", "side": "image_left", "lobe": "frontal"} for i in ids]
 
 
 def test_seal_splits_by_fold_writes_sha256_and_is_one_shot(tmp_path):
@@ -118,7 +124,9 @@ def test_seal_splits_by_fold_writes_sha256_and_is_one_shot(tmp_path):
     for k in range(5):
         p = tmp_path / "sealed" / f"labels_fold{k}.csv"
         assert man[f"fold{k}"]["sha256"] == sha256_file(p) and man[f"fold{k}"]["path"] == str(p)
-        assert [int(r["lesion_id"]) for r in csv.DictReader(open(p, newline="", encoding="utf-8"))] == [k, k + 5]
+        rows = list(csv.DictReader(open(p, newline="", encoding="utf-8")))
+        assert [int(r["lesion_id"]) for r in rows] == [k, k + 5]
+        assert all((r["lesion_type"], r["side"], r["lobe"]) == ("nonspecific_wm_lesion", "image_left", "frontal") for r in rows)
     assert json.loads((tmp_path / "manifest.json").read_text()) == man
     with pytest.raises(FileExistsError):
         seal(final, lesion_fold, tmp_path / "sealed", tmp_path / "manifest2.json", k=5)
