@@ -1,0 +1,221 @@
+1/165 file_brain_AXFLAIR_200_6002425: 6 lesions
+2/165 file_brain_AXFLAIR_200_6002428: 11 lesions
+3/165 file_brain_AXFLAIR_200_6002429: 8 lesions
+4/165 file_brain_AXFLAIR_200_6002458: 23 lesions
+5/165 file_brain_AXFLAIR_200_6002460: 10 lesions
+6/165 file_brain_AXFLAIR_200_6002462: 29 lesions
+7/165 file_brain_AXFLAIR_200_6002466: 17 lesions
+8/165 file_brain_AXFLAIR_200_6002467: 25 lesions
+9/165 file_brain_AXFLAIR_200_6002469: 12 lesions
+10/165 file_brain_AXFLAIR_200_6002477: 6 lesions
+11/165 file_brain_AXFLAIR_200_6002481: 5 lesions
+12/165 file_brain_AXFLAIR_200_6002483: 3 lesions
+13/165 file_brain_AXFLAIR_200_6002487: 12 lesions
+14/165 file_brain_AXFLAIR_200_6002488: 16 lesions
+15/165 file_brain_AXFLAIR_200_6002492: 5 lesions
+16/165 file_brain_AXFLAIR_200_6002501: 8 lesions
+17/165 file_brain_AXFLAIR_200_6002503: 3 lesions
+18/165 file_brain_AXFLAIR_200_6002506: 2 lesions
+19/165 file_brain_AXFLAIR_200_6002507: 4 lesions
+20/165 file_brain_AXFLAIR_200_6002516: 21 lesions
+21/165 file_brain_AXFLAIR_200_6002520: 4 lesions
+22/165 file_brain_AXFLAIR_200_6002525: 36 lesions
+23/165 file_brain_AXFLAIR_200_6002536: 1 lesions
+24/165 file_brain_AXFLAIR_200_6002538: 1 lesions
+25/165 file_brain_AXFLAIR_200_6002543: 2 lesions
+26/165 file_brain_AXFLAIR_200_6002548: 4 lesions
+27/165 file_brain_AXFLAIR_200_6002549: 2 lesions
+28/165 file_brain_AXFLAIR_200_6002553: 40 lesions
+29/165 file_brain_AXFLAIR_200_6002558: 9 lesions
+30/165 file_brain_AXFLAIR_200_6002560: 1 lesions
+31/165 file_brain_AXFLAIR_200_6002562: 8 lesions
+32/165 file_brain_AXFLAIR_200_6002566: 5 lesions
+33/165 file_brain_AXFLAIR_200_6002567: 24 lesions
+34/165 file_brain_AXFLAIR_200_6002570: 2 lesions
+35/165 file_brain_AXFLAIR_200_6002572: 87 lesions
+36/165 file_brain_AXFLAIR_200_6002576: 3 lesions
+37/165 file_brain_AXFLAIR_200_6002579: 19 lesions
+38/165 file_brain_AXFLAIR_200_6002581: 6 lesions
+39/165 file_brain_AXFLAIR_200_6002584: 1 lesions
+40/165 file_brain_AXFLAIR_200_6002585: 60 lesions
+41/165 file_brain_AXFLAIR_200_6002588: 4 lesions
+42/165 file_brain_AXFLAIR_200_6002595: 11 lesions
+43/165 file_brain_AXFLAIR_200_6002600: 2 lesions
+44/165 file_brain_AXFLAIR_200_6002603: 22 lesions
+45/165 file_brain_AXFLAIR_200_6002605: 84 lesions
+46/165 file_brain_AXFLAIR_200_6002606: 2 lesions
+47/165 file_brain_AXFLAIR_200_6002608: 28 lesions
+48/165 file_brain_AXFLAIR_200_6002614: 12 lesions
+49/165 file_brain_AXFLAIR_200_6002616: 1 lesions
+50/165 file_brain_AXFLAIR_200_6002629: 1 lesions
+51/165 file_brain_AXFLAIR_200_6002634: 1 lesions
+52/165 file_brain_AXFLAIR_200_6002638: 43 lesions
+53/165 file_brain_AXFLAIR_200_6002641: 2 lesions
+54/165 file_brain_AXFLAIR_200_6002644: 3 lesions
+55/165 file_brain_AXFLAIR_200_6002646: 8 lesions
+56/165 file_brain_AXFLAIR_200_6002650: 25 lesions
+57/165 file_brain_AXFLAIR_200_6002652: 12 lesions
+58/165 file_brain_AXFLAIR_200_6002656: 10 lesions
+59/165 file_brain_AXFLAIR_200_6002658: 23 lesions
+60/165 file_brain_AXFLAIR_201_6002867: 54 lesions
+61/165 file_brain_AXFLAIR_201_6002868: 3 lesions
+62/165 file_brain_AXFLAIR_201_6002871: 35 lesions
+63/165 file_brain_AXFLAIR_201_6002872: 1 lesions
+64/165 file_brain_AXFLAIR_201_6002873: 29 lesions
+65/165 file_brain_AXFLAIR_201_6002874: 3 lesions
+66/165 file_brain_AXFLAIR_201_6002876: 24 lesions
+67/165 file_brain_AXFLAIR_201_6002878: 2 lesions
+68/165 file_brain_AXFLAIR_201_6002881: 10 lesions
+69/165 file_brain_AXFLAIR_201_6002882: 16 lesions
+70/165 file_brain_AXFLAIR_201_6002896: 3 lesions
+71/165 file_brain_AXFLAIR_201_6002899: 3 lesions
+72/165 file_brain_AXFLAIR_201_6002903: 2 lesions
+73/165 file_brain_AXFLAIR_201_6002909: 1 lesions
+74/165 file_brain_AXFLAIR_201_6002910: 3 lesions
+75/165 file_brain_AXFLAIR_201_6002912: 1 lesions
+76/165 file_brain_AXFLAIR_201_6002913: 1 lesions
+77/165 file_brain_AXFLAIR_201_6002914: 4 lesions
+78/165 file_brain_AXFLAIR_201_6002916: 1 lesions
+79/165 file_brain_AXFLAIR_201_6002919: 1 lesions
+80/165 file_brain_AXFLAIR_201_6002922: 1 lesions
+81/165 file_brain_AXFLAIR_201_6002925: 3 lesions
+82/165 file_brain_AXFLAIR_201_6002928: 1 lesions
+83/165 file_brain_AXFLAIR_201_6002931: 2 lesions
+84/165 file_brain_AXFLAIR_201_6002936: 2 lesions
+85/165 file_brain_AXFLAIR_201_6002941: 7 lesions
+86/165 file_brain_AXFLAIR_201_6002946: 1 lesions
+87/165 file_brain_AXFLAIR_201_6002954: 3 lesions
+88/165 file_brain_AXFLAIR_201_6002956: 2 lesions
+89/165 file_brain_AXFLAIR_201_6002971: 3 lesions
+90/165 file_brain_AXFLAIR_201_6002973: 7 lesions
+91/165 file_brain_AXFLAIR_201_6002976: 3 lesions
+92/165 file_brain_AXFLAIR_201_6002978: 1 lesions
+93/165 file_brain_AXFLAIR_201_6002979: 1 lesions
+94/165 file_brain_AXFLAIR_201_6002985: 1 lesions
+95/165 file_brain_AXFLAIR_201_6002988: 1 lesions
+96/165 file_brain_AXFLAIR_201_6002991: 1 lesions
+97/165 file_brain_AXFLAIR_201_6002992: 2 lesions
+98/165 file_brain_AXFLAIR_201_6003004: 1 lesions
+99/165 file_brain_AXFLAIR_201_6003008: 1 lesions
+100/165 file_brain_AXFLAIR_201_6003012: 1 lesions
+101/165 file_brain_AXFLAIR_202_6000472: 3 lesions
+102/165 file_brain_AXFLAIR_202_6000473: 6 lesions
+103/165 file_brain_AXFLAIR_202_6000476: 1 lesions
+104/165 file_brain_AXFLAIR_202_6000480: 3 lesions
+105/165 file_brain_AXFLAIR_202_6000511: 2 lesions
+106/165 file_brain_AXFLAIR_202_6000520: 3 lesions
+107/165 file_brain_AXFLAIR_202_6000533: 3 lesions
+108/165 file_brain_AXFLAIR_202_6000536: 2 lesions
+109/165 file_brain_AXFLAIR_202_6000540: 5 lesions
+110/165 file_brain_AXFLAIR_202_6000555: 2 lesions
+111/165 file_brain_AXFLAIR_202_6000557: 2 lesions
+112/165 file_brain_AXFLAIR_202_6000558: 4 lesions
+113/165 file_brain_AXFLAIR_202_6000567: 3 lesions
+114/165 file_brain_AXFLAIR_202_6000571: 2 lesions
+115/165 file_brain_AXFLAIR_202_6000573: 1 lesions
+116/165 file_brain_AXFLAIR_202_6000581: 1 lesions
+117/165 file_brain_AXFLAIR_202_6000590: 6 lesions
+118/165 file_brain_AXFLAIR_203_6000875: 1 lesions
+119/165 file_brain_AXFLAIR_203_6000878: 7 lesions
+120/165 file_brain_AXFLAIR_203_6000881: 2 lesions
+121/165 file_brain_AXFLAIR_203_6000898: 2 lesions
+122/165 file_brain_AXFLAIR_203_6000904: 3 lesions
+123/165 file_brain_AXFLAIR_203_6000907: 3 lesions
+124/165 file_brain_AXFLAIR_203_6000909: 2 lesions
+125/165 file_brain_AXFLAIR_203_6000912: 5 lesions
+126/165 file_brain_AXFLAIR_203_6000913: 1 lesions
+127/165 file_brain_AXFLAIR_203_6000918: 4 lesions
+128/165 file_brain_AXFLAIR_203_6000924: 1 lesions
+129/165 file_brain_AXFLAIR_203_6000930: 1 lesions
+130/165 file_brain_AXFLAIR_203_6000931: 7 lesions
+131/165 file_brain_AXFLAIR_203_6000945: 3 lesions
+132/165 file_brain_AXFLAIR_203_6000955: 1 lesions
+133/165 file_brain_AXFLAIR_203_6000956: 2 lesions
+134/165 file_brain_AXFLAIR_203_6000957: 8 lesions
+135/165 file_brain_AXFLAIR_203_6000962: 4 lesions
+136/165 file_brain_AXFLAIR_203_6000963: 4 lesions
+137/165 file_brain_AXFLAIR_205_6000164: 4 lesions
+138/165 file_brain_AXFLAIR_206_6000241: 6 lesions
+139/165 file_brain_AXFLAIR_206_6000254: 2 lesions
+140/165 file_brain_AXFLAIR_206_6000260: 5 lesions
+141/165 file_brain_AXFLAIR_206_6000262: 1 lesions
+142/165 file_brain_AXFLAIR_209_6001346: 4 lesions
+143/165 file_brain_AXFLAIR_209_6001348: 4 lesions
+144/165 file_brain_AXFLAIR_209_6001369: 1 lesions
+145/165 file_brain_AXFLAIR_209_6001374: 1 lesions
+146/165 file_brain_AXFLAIR_209_6001391: 8 lesions
+147/165 file_brain_AXFLAIR_209_6001393: 7 lesions
+148/165 file_brain_AXFLAIR_209_6001395: 1 lesions
+149/165 file_brain_AXFLAIR_209_6001402: 5 lesions
+150/165 file_brain_AXFLAIR_209_6001411: 1 lesions
+151/165 file_brain_AXFLAIR_209_6001413: 1 lesions
+152/165 file_brain_AXFLAIR_209_6001421: 7 lesions
+153/165 file_brain_AXFLAIR_210_6001479: 5 lesions
+154/165 file_brain_AXFLAIR_210_6001484: 7 lesions
+155/165 file_brain_AXFLAIR_210_6001504: 2 lesions
+156/165 file_brain_AXFLAIR_210_6001531: 1 lesions
+157/165 file_brain_AXFLAIR_210_6001555: 3 lesions
+158/165 file_brain_AXFLAIR_210_6001835: 2 lesions
+159/165 file_brain_AXFLAIR_210_6001867: 5 lesions
+160/165 file_brain_AXFLAIR_210_6001900: 6 lesions
+161/165 file_brain_AXFLAIR_210_6001905: 5 lesions
+162/165 file_brain_AXFLAIR_210_6001914: 4 lesions
+163/165 file_brain_AXFLAIR_210_6001925: 1 lesions
+164/165 file_brain_AXFLAIR_210_6001932: 10 lesions
+165/165 file_brain_AXFLAIR_210_6001953: 1 lesions
+{
+ "version": "v1",
+ "built_at": "2026-09-27T15:37:23+00:00",
+ "git_commit": "1474c627e196e25d8ca510e13c4e5f0d4ac441c5",
+ "registry": "docs/verification/2026-09-24/gate05/lesions.csv",
+ "registry_sha256": "7d40d27b7e5dc64db97a2f5db60aa7e1d448a3d81bd6e4c0ce442f46750538f0",
+ "folds": "data/level_r/folds.json",
+ "folds_sha256": "99599c72f6332977d31e38a91024941ba1c03e68d32021db2c54a28e1b699a55",
+ "seg_root": "/data2/congcong/data/FM_data/derived/synthseg/fastmri_brain/seg_native",
+ "kspace_root": "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/kspace/brain",
+ "parameters": {
+  "candidate_mm": 15.0,
+  "distance_cap_mm": 30.0,
+  "soft_sigma_mm": 1.0,
+  "patch_mm": 36.0,
+  "pixel_mm": 0.75,
+  "patch_slices": 3,
+  "min_c1_agreement": 0.99
+ },
+ "n_lesions": 1297,
+ "n_patients": 165,
+ "per_fold": {
+  "0": {
+   "patients": 33,
+   "lesions": 280
+  },
+  "1": {
+   "patients": 33,
+   "lesions": 250
+  },
+  "2": {
+   "patients": 33,
+   "lesions": 276
+  },
+  "3": {
+   "patients": 33,
+   "lesions": 334
+  },
+  "4": {
+   "patients": 33,
+   "lesions": 157
+  }
+ },
+ "c1_distribution": {
+  "white_matter": 985,
+  "cortex": 310,
+  "basal_ganglia": 2
+ },
+ "c1_source_counts": {
+  "overlap": 1278,
+  "nearest": 19
+ },
+ "n_candidate_fallback": 1
+}
+c1_agreement 0.9953739398612182 mismatches [64, 147, 327, 836, 971, 1086]
+wrote /data2/congcong/data/FM_data/derived/relation/v1: 1297 lesions, patches (1297, 3, 48, 48)

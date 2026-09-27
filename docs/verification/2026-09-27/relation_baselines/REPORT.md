@@ -1,0 +1,175 @@
+# Relation baselines report (NOT_EVIDENCE)
+
+**NOT_EVIDENCE**: every number below is scored against the pseudo label C1, which is a function of the geometry columns the arms read; it proves the pipeline runs and is fair, not that any arm binds better.
+
+run: runs/relation/c1_stage1 (git 1474c627e196e25d8ca510e13c4e5f0d4ac441c5, table manifest a7276cfdd601, labels C1)
+
+lesions scored: 1297 of 1297; excluded (not_a_lesion): 0
+
+## Arms and metrics
+
+| arm | n | accuracy | singleton rate | top-2 | singleton acc | macro-F1 | balanced acc | agreement with C1 |
+|---|---|---|---|---|---|---|---|---|
+| b0 | 1297 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 |
+| b1 | 1297 | 0.9722 | 1.0000 | 1.0000 | 0.9722 | 0.8636 | 0.8038 | 0.9722 |
+| b2 | 1297 | 0.8335 | 1.0000 | 0.9977 | 0.8335 | 0.4874 | 0.4682 | 0.8335 |
+| bgeo_hgb | 1297 | 0.9961 | 1.0000 | 0.9985 | 0.9961 | 0.6638 | 0.6649 | 0.9961 |
+| bgeo_lr | 1297 | 0.9838 | 1.0000 | 0.9992 | 0.9838 | 0.6524 | 0.6492 | 0.9838 |
+| bgeo_mlp | 1297 | 0.9753 | 1.0000 | 0.9985 | 0.9753 | 0.6451 | 0.6447 | 0.9753 |
+| bprior_majority | 1297 | 0.7641 | 1.0000 | 0.9985 | 0.7641 | 0.3012 | 0.3398 | 0.7641 |
+| bprior_type | 1297 | 0.7641 | 1.0000 | 0.9985 | 0.7641 | 0.3012 | 0.3398 | 0.7641 |
+| bprior_type_side | 1297 | 0.7679 | 1.0000 | 0.9985 | 0.7679 | 0.3176 | 0.3474 | 0.7679 |
+| bprior_type_side_location | 1297 | 0.8011 | 1.0000 | 0.9985 | 0.8011 | 0.4453 | 0.4312 | 0.8011 |
+
+Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838], ["bgeo_hgb", 0.9953825042674953], ["bgeo_mlp", 0.9534689212053374]], "chosen": "bgeo_hgb", "tie": false}); Bprior comparator: bprior_type_side_location (best of the four variants on these labels)
+
+## Rescue / harm against the comparators (patient bootstrap 95% CI, exact McNemar)
+
+| arm | comparator | rescue | harm | net | net rate | CI lo | CI hi | McNemar p |
+|---|---|---|---|---|---|---|---|---|
+| b1 | b0 | 0 | 36 | -36 | -0.0278 | -0.0386 | -0.0191 | 0.0000 |
+| b1 | bprior | 237 | 15 | 222 | 0.1712 | 0.1468 | 0.1975 | 0.0000 |
+| b1 | bgeo | 2 | 33 | -31 | -0.0239 | -0.0349 | -0.0150 | 0.0000 |
+| b1 | b2 | 196 | 16 | 180 | 0.1388 | 0.1114 | 0.1660 | 0.0000 |
+| b2 | b0 | 0 | 216 | -216 | -0.1665 | -0.1946 | -0.1395 | 0.0000 |
+| b2 | bprior | 117 | 75 | 42 | 0.0324 | 0.0078 | 0.0593 | 0.0030 |
+| b2 | bgeo | 2 | 213 | -211 | -0.1627 | -0.1913 | -0.1354 | 0.0000 |
+| bgeo_hgb | b0 | 0 | 5 | -5 | -0.0039 | -0.0077 | -0.0008 | 0.0625 |
+| bgeo_hgb | bprior | 255 | 2 | 253 | 0.1951 | 0.1702 | 0.2220 | 0.0000 |
+| bgeo_hgb | bgeo | 0 | 0 | 0 | 0.0000 | 0.0000 | 0.0000 | 1.0000 |
+| bgeo_hgb | b2 | 213 | 2 | 211 | 0.1627 | 0.1354 | 0.1913 | 0.0000 |
+| bgeo_lr | b0 | 0 | 21 | -21 | -0.0162 | -0.0250 | -0.0088 | 0.0000 |
+| bgeo_lr | bprior | 240 | 3 | 237 | 0.1827 | 0.1580 | 0.2096 | 0.0000 |
+| bgeo_lr | bgeo | 2 | 18 | -16 | -0.0123 | -0.0209 | -0.0052 | 0.0004 |
+| bgeo_lr | b2 | 204 | 9 | 195 | 0.1503 | 0.1234 | 0.1785 | 0.0000 |
+| bgeo_mlp | b0 | 0 | 32 | -32 | -0.0247 | -0.0344 | -0.0160 | 0.0000 |
+| bgeo_mlp | bprior | 239 | 13 | 226 | 0.1742 | 0.1492 | 0.2016 | 0.0000 |
+| bgeo_mlp | bgeo | 2 | 29 | -27 | -0.0208 | -0.0304 | -0.0123 | 0.0000 |
+| bgeo_mlp | b2 | 200 | 16 | 184 | 0.1419 | 0.1152 | 0.1696 | 0.0000 |
+
+## Strata (set-valued accuracy)
+
+### band
+| arm | 0 | 0-2 | 2-4 | >4 |
+|---|---|---|---|---|
+| b0 | 1.0000 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
+| b1 | 0.9358 (n=545) | 1.0000 (n=210) | 0.9954 (n=217) | 1.0000 (n=325) |
+| b2 | 0.7505 (n=545) | 0.8762 (n=210) | 0.9171 (n=217) | 0.8892 (n=325) |
+| bgeo_hgb | 0.9908 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
+| bgeo_lr | 0.9615 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
+| bgeo_mlp | 0.9413 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
+| bprior_majority | 0.6991 (n=545) | 0.8667 (n=210) | 0.8986 (n=217) | 0.7169 (n=325) |
+| bprior_type | 0.6991 (n=545) | 0.8667 (n=210) | 0.8986 (n=217) | 0.7169 (n=325) |
+| bprior_type_side | 0.7046 (n=545) | 0.8667 (n=210) | 0.8986 (n=217) | 0.7231 (n=325) |
+| bprior_type_side_location | 0.7193 (n=545) | 0.8714 (n=210) | 0.8986 (n=217) | 0.8277 (n=325) |
+
+### stratum_geometry
+| arm | inplane_0.62_slice_3 | inplane_0.69_slice_5 | inplane_0.86_slice_3 | inplane_0.86_slice_5 |
+|---|---|---|---|---|
+| b0 | 1.0000 (n=32) | 1.0000 (n=1175) | 1.0000 (n=11) | 1.0000 (n=79) |
+| b1 | 0.9688 (n=32) | 0.9728 (n=1175) | 1.0000 (n=11) | 0.9620 (n=79) |
+| b2 | 0.7500 (n=32) | 0.8366 (n=1175) | 0.7273 (n=11) | 0.8354 (n=79) |
+| bgeo_hgb | 1.0000 (n=32) | 0.9966 (n=1175) | 1.0000 (n=11) | 0.9873 (n=79) |
+| bgeo_lr | 0.9688 (n=32) | 0.9855 (n=1175) | 1.0000 (n=11) | 0.9620 (n=79) |
+| bgeo_mlp | 1.0000 (n=32) | 0.9753 (n=1175) | 1.0000 (n=11) | 0.9620 (n=79) |
+| bprior_majority | 0.6250 (n=32) | 0.7711 (n=1175) | 0.5455 (n=11) | 0.7468 (n=79) |
+| bprior_type | 0.6250 (n=32) | 0.7711 (n=1175) | 0.5455 (n=11) | 0.7468 (n=79) |
+| bprior_type_side | 0.5938 (n=32) | 0.7753 (n=1175) | 0.5455 (n=11) | 0.7595 (n=79) |
+| bprior_type_side_location | 0.7500 (n=32) | 0.8034 (n=1175) | 0.6364 (n=11) | 0.8101 (n=79) |
+
+### stratum_series
+| arm | 200_201 | other |
+|---|---|---|
+| b0 | 1.0000 (n=1077) | 1.0000 (n=220) |
+| b1 | 0.9740 (n=1077) | 0.9636 (n=220) |
+| b2 | 0.8301 (n=1077) | 0.8500 (n=220) |
+| bgeo_hgb | 0.9963 (n=1077) | 0.9955 (n=220) |
+| bgeo_lr | 0.9861 (n=1077) | 0.9727 (n=220) |
+| bgeo_mlp | 0.9740 (n=1077) | 0.9818 (n=220) |
+| bprior_majority | 0.7660 (n=1077) | 0.7545 (n=220) |
+| bprior_type | 0.7660 (n=1077) | 0.7545 (n=220) |
+| bprior_type_side | 0.7697 (n=1077) | 0.7591 (n=220) |
+| bprior_type_side_location | 0.7985 (n=1077) | 0.8136 (n=220) |
+
+### lesion_type
+| arm | lacunar_infarct | nonspecific_wm_lesion |
+|---|---|---|
+| b0 | 1.0000 (n=57) | 1.0000 (n=1240) |
+| b1 | 0.9649 (n=57) | 0.9726 (n=1240) |
+| b2 | 0.8421 (n=57) | 0.8331 (n=1240) |
+| bgeo_hgb | 0.9649 (n=57) | 0.9976 (n=1240) |
+| bgeo_lr | 1.0000 (n=57) | 0.9831 (n=1240) |
+| bgeo_mlp | 0.9649 (n=57) | 0.9758 (n=1240) |
+| bprior_majority | 0.8070 (n=57) | 0.7621 (n=1240) |
+| bprior_type | 0.8070 (n=57) | 0.7621 (n=1240) |
+| bprior_type_side | 0.8070 (n=57) | 0.7661 (n=1240) |
+| bprior_type_side_location | 0.8246 (n=57) | 0.8000 (n=1240) |
+
+### is_3mm
+| arm | False | True |
+|---|---|---|
+| b0 | 1.0000 (n=1254) | 1.0000 (n=43) |
+| b1 | 0.9721 (n=1254) | 0.9767 (n=43) |
+| b2 | 0.8365 (n=1254) | 0.7442 (n=43) |
+| bgeo_hgb | 0.9960 (n=1254) | 1.0000 (n=43) |
+| bgeo_lr | 0.9841 (n=1254) | 0.9767 (n=43) |
+| bgeo_mlp | 0.9745 (n=1254) | 1.0000 (n=43) |
+| bprior_majority | 0.7695 (n=1254) | 0.6047 (n=43) |
+| bprior_type | 0.7695 (n=1254) | 0.6047 (n=43) |
+| bprior_type_side | 0.7743 (n=1254) | 0.5814 (n=43) |
+| bprior_type_side_location | 0.8038 (n=1254) | 0.7209 (n=43) |
+
+## Net rescue vs Bgeo+ along delta_d (patient bootstrap)
+
+### b1
+| bin | n | mean | lo | hi |
+|---|---|---|---|---|
+| [0.0, 1.0) | 649 | -0.0478 | -0.0694 | -0.0304 |
+| [1.0, 2.0) | 107 | 0.0000 | 0.0000 | 0.0000 |
+| [2.0, 4.0) | 217 | 0.0000 | 0.0000 | 0.0000 |
+| [4.0, 8.0) | 289 | 0.0000 | 0.0000 | 0.0000 |
+| [8.0, inf) | 35 | 0.0000 | 0.0000 | 0.0000 |
+
+### b2
+| bin | n | mean | lo | hi |
+|---|---|---|---|---|
+| [0.0, 1.0) | 649 | -0.2250 | -0.2635 | -0.1874 |
+| [1.0, 2.0) | 107 | -0.1121 | -0.1800 | -0.0583 |
+| [2.0, 4.0) | 217 | -0.0783 | -0.1198 | -0.0453 |
+| [4.0, 8.0) | 289 | -0.0969 | -0.1477 | -0.0514 |
+| [8.0, inf) | 35 | -0.2286 | -0.4000 | -0.0625 |
+
+## Gate R1 rehearsal (v2.6 §12.4)
+
+- b1: go=False (net rescue vs Bgeo+ -0.0239 [-0.0349, -0.0150]; > Bprior True, > Bgeo+ False, > B2 True)
+- b2: go=False (net rescue vs Bgeo+ -0.1627 [-0.1913, -0.1354]; > Bprior True, > Bgeo+ False, > B2 False)
+
+## Sanity checks
+
+- agreement with C1 per arm is in the metrics table: Bgeo+ close to 1 and B2 clearly lower is the written evidence that C1 is a function of the geometry columns.
+- inner-selection ties: 18
+  - bgeo_lr fold 0: chose {"C": 0.1} among [['{"C": 0.01}', 0.9742247939792075], ['{"C": 0.1}', 0.9797478672053158], ['{"C": 1.0}', 0.9806118708090118], ['{"C": 10.0}', 0.9779830492140829]] (tie rule P11)
+  - bgeo_lr fold 2: chose {"C": 0.1} among [['{"C": 0.01}', 0.9760585246324205], ['{"C": 0.1}', 0.9823747700560908], ['{"C": 1.0}', 0.9818451485996317], ['{"C": 10.0}', 0.9823144722797581]] (tie rule P11)
+  - bgeo_lr fold 3: chose {"C": 0.01} among [['{"C": 0.01}', 0.9810336618050199], ['{"C": 0.1}', 0.9803141822711948], ['{"C": 1.0}', 0.9730785137832075], ['{"C": 10.0}', 0.9667994559715674]] (tie rule P11)
+  - bgeo_lr fold 4: chose {"C": 0.1} among [['{"C": 0.01}', 0.9782077679323278], ['{"C": 0.1}', 0.9792774807398456], ['{"C": 1.0}', 0.9784710291269423], ['{"C": 10.0}', 0.9757979995164618]] (tie rule P11)
+  - bgeo_hgb fold 0: chose {"learning_rate": 0.03, "max_depth": 3} among [['{"learning_rate": 0.03, "max_depth": 3}', 0.9941853315766359], ['{"learning_rate": 0.03, "max_depth": 6}', 0.9941853315766359], ['{"learning_rate": 0.1, "max_depth": 3}', 0.9941853315766359], ['{"learning_rate": 0.1, "max_depth": 6}', 0.9941853315766359]] (tie rule P11)
+  - bgeo_hgb fold 1: chose {"learning_rate": 0.03, "max_depth": 3} among [['{"learning_rate": 0.03, "max_depth": 3}', 0.9959554034166805], ['{"learning_rate": 0.03, "max_depth": 6}', 0.9959554034166805], ['{"learning_rate": 0.1, "max_depth": 3}', 0.9951563952888393], ['{"learning_rate": 0.1, "max_depth": 6}', 0.9943160591543855]] (tie rule P11)
+  - bgeo_hgb fold 2: chose {"learning_rate": 0.03, "max_depth": 3} among [['{"learning_rate": 0.03, "max_depth": 3}', 0.9964924564474451], ['{"learning_rate": 0.03, "max_depth": 6}', 0.9964924564474451], ['{"learning_rate": 0.1, "max_depth": 3}', 0.9954974315718234], ['{"learning_rate": 0.1, "max_depth": 6}', 0.9954974315718234]] (tie rule P11)
+  - bgeo_hgb fold 3: chose {"learning_rate": 0.03, "max_depth": 3} among [['{"learning_rate": 0.03, "max_depth": 3}', 0.994890778060834], ['{"learning_rate": 0.03, "max_depth": 6}', 0.994890778060834], ['{"learning_rate": 0.1, "max_depth": 3}', 0.993600455480189], ['{"learning_rate": 0.1, "max_depth": 6}', 0.994890778060834]] (tie rule P11)
+  - bgeo_hgb fold 4: chose {"learning_rate": 0.03, "max_depth": 3} among [['{"learning_rate": 0.03, "max_depth": 3}', 0.9953885518358809], ['{"learning_rate": 0.03, "max_depth": 6}', 0.9953885518358809], ['{"learning_rate": 0.1, "max_depth": 3}', 0.9941615579708503], ['{"learning_rate": 0.1, "max_depth": 6}', 0.9953885518358809]] (tie rule P11)
+  - bgeo_mlp fold 0: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.959272199167363], ['{"alpha": 0.0001}', 0.959272199167363]] (tie rule P11)
+  - bgeo_mlp fold 1: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.9556325561005456], ['{"alpha": 0.0001}', 0.9556325561005456]] (tie rule P11)
+  - bgeo_mlp fold 2: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.9527055664832206], ['{"alpha": 0.0001}', 0.9527055664832206]] (tie rule P11)
+  - bgeo_mlp fold 3: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.9478346083861787], ['{"alpha": 0.0001}', 0.9478346083861787]] (tie rule P11)
+  - bgeo_mlp fold 4: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.9518996758893788], ['{"alpha": 0.0001}', 0.9518996758893788]] (tie rule P11)
+  - b1 fold 0: chose px32_s3 among [['px32_s3', 0.9777513007383885], ['px32_s1', 0.9751663965786811], ['px22_s3', 0.9757310987181864], ['px42_s3', 0.9767851171635092]] (tie rule P11)
+  - b1 fold 1: chose px32_s3 among [['px32_s3', 0.9765668291602548], ['px32_s1', 0.9765493757758495], ['px22_s3', 0.9746902235957492], ['px42_s3', 0.9761239153520215]] (tie rule P11)
+  - b1 fold 2: chose px32_s1 among [['px32_s3', 0.9737184584502744], ['px32_s1', 0.9750873578890644], ['px22_s3', 0.9737184584502744], ['px42_s3', 0.9751783124648729]] (tie rule P11)
+  - b1 fold 4: chose px32_s3 among [['px32_s3', 0.9780239202078075], ['px32_s1', 0.976630191984811], ['px22_s3', 0.9778571858498417], ['px42_s3', 0.9778571858498417]] (tie rule P11)
+
+## Commands
+
+```
+scripts/run_relation_baselines.py (see run.json)
+scripts/eval_relation_baselines.py --run runs/relation/c1_stage1 --table /data2/congcong/data/FM_data/derived/relation/v1 --labels C1 --out docs/verification/2026-09-27/relation_baselines
+```
