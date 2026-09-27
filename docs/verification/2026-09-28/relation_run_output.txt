@@ -1,0 +1,21 @@
+b0: written
+bprior_majority: written
+bprior_type: written
+bprior_type_side: written
+bprior_type_side_location: written
+bgeo_lr: written
+bgeo_hgb: written
+bgeo_mlp: written
+b1 fold 0: chose px22_s3 (tie True), refit 5 epochs, untrainable 0, 88 s
+b1 fold 1: chose px32_s3 (tie True), refit 5 epochs, untrainable 0, 86 s
+b1 fold 2: chose px32_s3 (tie True), refit 5 epochs, untrainable 0, 84 s
+b1 fold 3: chose px32_s1 (tie True), refit 5 epochs, untrainable 0, 75 s
+b1 fold 4: chose px32_s3 (tie True), refit 4 epochs, untrainable 0, 76 s
+b1: written
+b2 fold 0: chose px42_s3 (tie False), refit 7 epochs, untrainable 0, 62 s
+b2 fold 1: chose px42_s3 (tie False), refit 7 epochs, untrainable 0, 68 s
+b2 fold 2: chose px42_s3 (tie False), refit 4 epochs, untrainable 0, 60 s
+b2 fold 3: chose px42_s3 (tie False), refit 4 epochs, untrainable 0, 54 s
+b2 fold 4: chose px32_s3 (tie False), refit 5 epochs, untrainable 0, 71 s
+b2: written
+run written to runs/relation/c1_stage1_v2

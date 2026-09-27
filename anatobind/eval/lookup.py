@@ -117,3 +117,15 @@ class BrainLookup:
         near = np.concatenate([self.nearest[c0:c1, r0:r1, s].ravel() for c0, c1, r0, r1, s in rects])
         counts = np.bincount(near[near > 0], minlength=int(self.cand.max()) + 1)
         return int(np.argmax(counts)), 0.0
+
+
+# --- brain: class-level lookup C1 (spec 2026-09-27 P6) -------------------------------------------------------------
+def class_level_host(slots):
+    """C1 on slot_features: the host class with the largest share of the lesion's voxels (sides merged, ventricles/CSF
+    never candidates; ties -> lower class id); no overlap at all -> the in-volume class with the smallest surface
+    distance. Returns (class id, "overlap" | "nearest", fraction)."""
+    best = max(sorted(slots), key=lambda c: slots[c]["ioa"])
+    if slots[best]["ioa"] > 0:
+        return best, "overlap", slots[best]["ioa"]
+    near = min((c for c in sorted(slots) if slots[c]["in_volume"]), key=lambda c: slots[c]["min_surface_mm"])
+    return near, "nearest", 0.0
