@@ -6,7 +6,7 @@ torch = pytest.importorskip("torch")
 from anatobind.relation.encoder import TORCH_CONFIGS, crop
 from anatobind.relation.labels import acceptable_matrix, c1_labels
 from anatobind.relation.table import features_per_slot, slot_col
-from anatobind.relation.train import acceptable8, fit_torch_arm, predict_torch_arm, run_torch_arm
+from anatobind.relation.train import acceptable8, fit_torch_arm, geo_stats, predict_torch_arm, run_torch_arm
 from synth_relation import synthetic_table
 
 
@@ -21,12 +21,12 @@ def _setup():
 def test_fit_predict_shapes_early_stopping_and_determinism():
     t, p, labels, acc8, x, geo, present = _setup()
     tr, va = np.arange(0, 12), np.arange(12, 20)
-    st1, ep1, va1 = fit_torch_arm("b1", x, geo, present, acc8, tr, va, seed=0, device="cpu", epochs=3, patience=1)
-    st2, ep2, va2 = fit_torch_arm("b1", x, geo, present, acc8, tr, va, seed=0, device="cpu", epochs=3, patience=1)
+    st1, ep1, va1, sd1 = fit_torch_arm("b1", x, geo, present, acc8, tr, va, seed=0, device="cpu", epochs=3, patience=1)
+    st2, ep2, va2, sd2 = fit_torch_arm("b1", x, geo, present, acc8, tr, va, seed=0, device="cpu", epochs=3, patience=1)
     assert 1 <= ep1 <= 3 and 0 <= va1 <= 1 and ep1 == ep2 and va1 == va2
-    p1, p2 = (predict_torch_arm("b1", s, x, geo, present, va, "cpu") for s in (st1, st2))
+    p1, p2 = (predict_torch_arm("b1", s, st, x, geo, present, va, "cpu") for s, st in ((st1, sd1), (st2, sd2)))
     assert p1.shape == (8, 8) and np.allclose(p1, p2) and np.allclose(p1.sum(1), 1) and (p1[:, :7][~present[va]] == 0).all()
-    st, ep, acc = fit_torch_arm("b2", x, geo, present, acc8, tr, None, seed=0, device="cpu", epochs=2, patience=1)
+    st, ep, acc, _ = fit_torch_arm("b2", x, geo, present, acc8, tr, None, seed=0, device="cpu", epochs=2, patience=1)
     assert ep == 2 and np.isnan(acc)                                                     # refit without a validation fold
 
 
@@ -61,3 +61,34 @@ def test_a_label_outside_the_candidates_is_dropped_from_training_not_turned_into
     bad[0] = frozenset({"brainstem"})
     preds, rec, _ = run_torch_arm("b1", t, p, bad, configs=TORCH_CONFIGS[:1], seed=0, device="cpu", epochs=1, patience=1, inner_k=2)
     assert np.isfinite(preds["probs"]).all() and sum(f["n_untrainable"] for f in rec["folds"].values()) == 4   # lesion 0 trains 4 outer folds
+
+
+def test_geometry_standardisation_statistics_come_only_from_the_training_rows():
+    t, p, labels, acc8, x, geo, present = _setup()
+    tr, te = np.arange(0, 12), np.arange(12, 20)
+    mu, sd = geo_stats(geo, tr)
+    assert mu.shape == (26,) and sd.shape == (26,) and (sd > 0).all()
+    pooled = geo[tr].reshape(-1, 26).astype(np.float64)               # all 7 slots of the training rows pooled
+    assert np.allclose(mu, pooled.mean(0)) and np.allclose(sd[pooled.std(0) > 0], pooled.std(0)[pooled.std(0) > 0])
+    assert (sd[pooled.std(0) == 0] == 1).all() and (pooled.std(0) == 0).any()   # constant channels (dz, spacings here) get std 1
+    mutated = geo.copy()
+    mutated[te] = mutated[te] * 1e4 + 7.0                              # test rows change, training rows do not
+    mu2, sd2 = geo_stats(mutated, tr)
+    assert np.array_equal(mu, mu2) and np.array_equal(sd, sd2)
+    _, _, _, stats = fit_torch_arm("b1", x, mutated, present, acc8, tr, None, seed=0, device="cpu", epochs=1, patience=1)
+    assert np.array_equal(stats[0], mu) and np.array_equal(stats[1], sd)   # the fit uses exactly the training-row statistics
+
+
+def test_b1_trains_without_nan_on_real_scale_volumes():
+    t, p, labels, acc8, x, _, present = _setup()
+    rng = np.random.default_rng(0)
+    for r in t.rows:
+        r["volume_mm3"] = float(rng.uniform(5e4, 3.3e5))                # the real table reaches ~3.3e5 mm3
+        for s in ("white_matter", "cortex"):
+            r[slot_col(s, "dx_mm")] = float(rng.uniform(-128, 128))
+    geo = features_per_slot(t)
+    tr, va = np.arange(0, 12), np.arange(12, 20)
+    st, ep, acc, stats = fit_torch_arm("b1", x, geo, present, acc8, tr, va, seed=0, device="cpu", epochs=3, patience=3)
+    assert all(torch.isfinite(v).all() for v in st.values() if v.is_floating_point()) and np.isfinite(acc)
+    probs = predict_torch_arm("b1", st, stats, x, geo, present, va, "cpu")
+    assert np.isfinite(probs).all() and np.allclose(probs.sum(1), 1)

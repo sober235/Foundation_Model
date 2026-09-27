@@ -37,7 +37,20 @@ def _tensors(device, *arrays):
     return [torch.from_numpy(np.ascontiguousarray(a)).to(device) for a in arrays]
 
 
-def predict_torch_arm(arm, state, x, geo, present, idx, device, batch=256):
+def geo_stats(geo, rows):
+    """Per-channel mean and std of the per-slot geometry over ``rows`` (all seven slots pooled); a constant channel gets
+    std 1. A fit computes these from the rows it trains on and uses them for its validation and its predictions, so a
+    test fold never shapes its own inputs."""
+    g = np.asarray(geo, np.float64)[np.asarray(rows)].reshape(-1, np.shape(geo)[-1])
+    mu, sd = g.mean(0), g.std(0)
+    return mu.astype(np.float32), np.where(sd > 0, sd, 1.0).astype(np.float32)
+
+
+def _standardise(geo, stats):
+    return ((geo - stats[0]) / stats[1]).astype(np.float32)
+
+
+def predict_torch_arm(arm, state, stats, x, geo, present, idx, device, batch=256):
     model = _model(arm, x.shape[1]).to(device)
     model.load_state_dict(state)
     model.eval()
@@ -45,7 +58,7 @@ def predict_torch_arm(arm, state, x, geo, present, idx, device, batch=256):
     with torch.no_grad():
         for s in range(0, len(idx), batch):
             b = idx[s:s + batch]
-            xb, gb, pb = _tensors(device, x[b].astype(np.float32), geo[b].astype(np.float32), present[b])
+            xb, gb, pb = _tensors(device, x[b].astype(np.float32), _standardise(geo[b], stats), present[b])
             out.append(_forward(model, arm, xb, gb, pb).softmax(-1).cpu().numpy())
     probs = np.concatenate(out) if out else np.zeros((0, N_OUT))
     return mask_to_candidates(probs, present[idx])
@@ -59,21 +72,22 @@ def fit_torch_arm(arm, x, geo, present, acc8, train_idx, val_idx, seed, device, 
     if init_state is not None:
         model.load_state_dict(init_state)
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=wd)
+    stats = geo_stats(geo, train_idx)
     best_state, best_acc, best_epoch, bad = copy.deepcopy(model.state_dict()), -1.0, 0, 0
     for epoch in range(1, epochs + 1):
         model.train()
         order = rng.permutation(train_idx)
         for s in range(0, len(order), batch):
             b = order[s:s + batch]
-            xa, ga = augment(x[b], geo[b], rng)
-            xb, gb, pb, yb = _tensors(device, xa, ga, present[b], acc8[b])
+            xa, ga = augment(x[b], geo[b], rng)                  # flip in raw space (dx negated), then standardise
+            xb, gb, pb, yb = _tensors(device, xa, _standardise(ga, stats), present[b], acc8[b])
             loss = set_nll(_forward(model, arm, xb, gb, pb), yb)
             opt.zero_grad()
             loss.backward()
             opt.step()
         if val_idx is None:
             continue
-        val_acc = set_accuracy(predict_torch_arm(arm, model.state_dict(), x, geo, present, val_idx, device), acc8[val_idx][:, :N_SLOTS])
+        val_acc = set_accuracy(predict_torch_arm(arm, model.state_dict(), stats, x, geo, present, val_idx, device), acc8[val_idx][:, :N_SLOTS])
         if val_acc > best_acc:
             best_state, best_acc, best_epoch, bad = copy.deepcopy(model.state_dict()), val_acc, epoch, 0
         else:
@@ -81,8 +95,8 @@ def fit_torch_arm(arm, x, geo, present, acc8, train_idx, val_idx, seed, device, 
             if bad >= patience:
                 break
     if val_idx is None:
-        return copy.deepcopy(model.state_dict()), epochs, float("nan")
-    return best_state, best_epoch, best_acc
+        return copy.deepcopy(model.state_dict()), epochs, float("nan"), stats
+    return best_state, best_epoch, best_acc, stats
 
 
 def run_torch_arm(arm, table, patches, labels, configs=TORCH_CONFIGS, seed=0, device="cpu", epochs=40, patience=8, inner_k=5,
@@ -109,15 +123,15 @@ def run_torch_arm(arm, table, patches, labels, configs=TORCH_CONFIGS, seed=0, de
         for key in keys:
             accs, eps = [], []
             for itr, ival in inner_folds(patients[tr], inner_k, seed):
-                _, ep, va = fit_torch_arm(arm, xs[key], geo, present, acc8, tr[itr], tr[ival], seed, device, epochs, patience, init_state)
+                _, ep, va, _ = fit_torch_arm(arm, xs[key], geo, present, acc8, tr[itr], tr[ival], seed, device, epochs, patience, init_state)
                 accs.append(va)
                 eps.append(ep)
             scores.append((key, float(np.mean(accs))))
             inner_epochs[key] = eps
             best_epochs[key] = max(1, int(round(float(np.median(eps)))))
         chosen, rec = select_config(scores)
-        state, _, _ = fit_torch_arm(arm, xs[chosen], geo, present, acc8, tr, None, seed, device, best_epochs[chosen], patience, init_state)
-        preds["probs"][te] = predict_torch_arm(arm, state, xs[chosen], geo, present, te, device)
+        state, _, _, stats = fit_torch_arm(arm, xs[chosen], geo, present, acc8, tr, None, seed, device, best_epochs[chosen], patience, init_state)
+        preds["probs"][te] = predict_torch_arm(arm, state, stats, xs[chosen], geo, present, te, device)
         preds["config"][te] = chosen
         record["folds"][k] = {**rec, "epochs": best_epochs[chosen], "inner_epochs": inner_epochs, "n_untrainable": n_untrainable}
         states[k] = {n: v.detach().cpu() for n, v in state.items()}
