@@ -22,7 +22,7 @@
 | P8 | 侧别按病灶体素上 SynthSeg 左右标签族的多数判 image_left / image_right / midline；`image_left` = 列号小的一侧；实现时用测试对齐读片工具的屏幕左右 | 不依赖中线估计；与 Level R 表单同一约定（记屏幕侧，不记患者侧） |
 | P9 | Bprior 的"粗位置" = 侧别 × 行三分 × 层三分，均在图像坐标系里定义，不作前后 / 上下解剖断言 | 只供先验计数；解剖方向在 RSS 帧里未核实 |
 | P10 | 图像小块按最大档存（36 mm × 36 mm @ 0.75 mm = 48 × 48，中心层 ±1 共 3 层），训练时裁到 22 / 32 / 42 px（名义 16 / 24 / 32 mm，实际 16.5 / 24 / 31.5 mm）；同窗口另存 int8 class-map 小块 | §10.1 的内层范围要三档边长与 {1, 3} 层；class-map 供 S3 的 B4 派生候选掩膜与距离图 |
-| P11 | 内层选择的平局规则：阶段 1 内层准确率接近全 1 时，优先 §10.1 初始配置，再取更小的配置；平局过程写进报告 | 免得以后误读成"选出了最优" |
+| P11 | 内层选择的平局规则：阶段 1 内层准确率接近全 1 时，优先 §10.1 初始配置，再取更小的配置（更小 = 输入量 px² × 层数更小）；平局过程写进报告 | 免得以后误读成"选出了最优" |
 | P12 | 阶段 1 不做噪声视图增广、不做 B3 / B4、不做 B5 | 噪声视图要脑侧退化导出（S3）；B3 / B4 是 PR-D；B5 要医生标签与"最好的解剖"定义 |
 | P13 | 阶段 2 钩子现在就进代码：`--labels R` 从封存加载器取训练折医生标签、剔除 not_a_lesion、集合标签走集合损失；B1 / B2 可从阶段 1 权重初始化；Bgeo+ 重拟合。现在只有测试走这条路 | P2 的第二轮不该等到医生标完再写代码 |
 | P14 | §12.8 的 700 例中期无效性分析在"先训练后读片"下只对阶段 1 模型有意义；本规格不实现，留给 S3 在读片前决定做或不做 | 它是非约束性条款；升级触发后的模型在中期不存在 |
@@ -85,7 +85,7 @@ tests/test_relation_*.py             不读 /data2
 
 ### 4.3 槽级列（7 个槽，槽序固定为 `geometry.CLASS_NAMES`，列名前缀 wm_ / cortex_ / thalamus_ / bg_ / brainstem_ / cerebellum_ / odg_）
 
-每槽 10 列：`in_volume`（类在卷内）、`candidate`（min_surface ≤ 15 mm，P7）、`dx_mm`、`dy_mm`、`dz_mm`（病灶质心到该类最近体素的向量，mm，取自类距离图 `return_indices` 在质心体素处的索引）、`centroid_distance_mm`（该向量的模）、`min_surface_mm`（病灶体素上类距离图的最小值，重叠为 0）、`signed_surface_mm`（无重叠 = min_surface；有重叠 = −(病灶内属于该类体素到类边界距离的最大值)）、`ioa`（病灶体素属于该类的比例）、`soft_overlap`（病灶体素 exp(−d/1 mm) 的均值）。
+每槽 10 列：`in_volume`（类在卷内）、`candidate`（min_surface ≤ 15 mm，P7）、`dx_mm`、`dy_mm`、`dz_mm`（质心体素——病灶质心四舍五入到体素——到该类最近体素的向量，mm，取自类距离图 `return_indices` 在质心体素处的索引）、`centroid_distance_mm`（该向量的模）、`min_surface_mm`（病灶体素上类距离图的最小值，重叠为 0）、`signed_surface_mm`（无重叠 = min_surface；有重叠 = −(病灶内属于该类体素到类边界距离的最大值)）、`ioa`（病灶体素属于该类的比例）、`soft_overlap`（病灶体素 exp(−d/1 mm) 的均值）。
 
 距离一律封顶 30 mm。类不在卷内的槽：in_volume = candidate = False，距离 30，dx/dy/dz = 0，ioa = soft = 0。
 
@@ -100,12 +100,12 @@ tests/test_relation_*.py             不读 /data2
 
 ### 4.5 C1（P6）
 
-类级查表：`c1_class = argmax_c count(病灶体素 ∈ HOST_CLASSES[c])`，`c1_source = overlap`；全零时 `c1_class = argmin_c min_surface_mm`，`c1_source = nearest`。可接受集合 = {c1_class}。`lookup.py` 新函数 `brain_class_lookup(seg, spacing, rects)` 实现，`table.py` 调用。
+类级查表：`c1_class = argmax_c count(病灶体素 ∈ HOST_CLASSES[c])`，`c1_source = overlap`；全零时 `c1_class = argmin_c min_surface_mm`，`c1_source = nearest`。可接受集合 = {c1_class}。`lookup.py` 新函数 `class_level_host(slots)` 在 §4.3 的槽特征上实现（ioa 取 argmax，平局取类号小者；全零取 min_surface 最近的在卷类），建表时调用，不重算距离变换。
 
 ### 4.6 落盘与 manifest
 
 - `table.csv`（病灶级 + 展平的槽级列）、`patches.npz`、`manifest.json`：version、built_at、git_commit、registry 路径与 sha256、folds sha256、seg_root、kspace_root、参数（cap 30、candidate 15、window 36、pixel 0.75、slices 3、soft σ 1）、计数（病灶、患者、每折患者 / 病灶、C1 分布、c1_source 分布、无候选取最近的病灶数）、`c1_agreement`（一致率 + 不一致的 lesion_id 列表）。
-- 目标目录已存在就拒跑（用户硬规矩：不覆盖已有数据文件）。nice 19 单进程；预计 15 分钟 CPU。
+- 目标目录已存在就拒跑（用户硬规矩：不覆盖已有数据文件）。nice 19 单进程；2026-09-27 计划校验时实测约 6 分钟。
 
 ### 4.7 建表检查（任一失败即中止，不写文件）
 
@@ -127,13 +127,13 @@ tests/test_relation_*.py             不读 /data2
 
 - 每病灶一个向量（约 80 维）：7 槽 × [candidate, dx, dy, dz, centroid_distance, signed_surface, min_surface, ioa, soft_overlap] (63) + 病灶级 8 维 + 脑侧附加 4 维（d_interface, delta_d, dist_cortex, dist_ventricle）+ side one-hot (3) + lesion_type one-hot (2)。
 - 标准化（均值 / 方差）只在外层训练折上拟合。
-- 三个学习器与内层网格：多项 logistic 回归 C ∈ {0.01, 0.1, 1, 10}；`sklearn.ensemble.HistGradientBoostingClassifier` learning_rate ∈ {0.03, 0.1} × max_depth ∈ {3, 6}；`sklearn.neural_network.MLPClassifier` hidden (64, 64)，alpha ∈ {1e-4, 1e-3}，early_stopping。不加 XGBoost。
+- 三个学习器与内层网格：多项 logistic 回归 C ∈ {0.01, 0.1, 1, 10}；`sklearn.ensemble.HistGradientBoostingClassifier` learning_rate ∈ {0.03, 0.1} × max_depth ∈ {3, 6}；`sklearn.neural_network.MLPClassifier` hidden (64, 64)，alpha ∈ {1e-3, 1e-4}，early_stopping。不加 XGBoost。网格按所列顺序即平局顺序：更简单 / 正则更强的在先（C 升序；学习率、深度升序；alpha 降序）。
 - 训练里没出现的类不可预测；候选掩蔽后归一。
 - "Bgeo+ 最优学习器"（§6.3 的默认对照）= 三个学习器各自内层选完超参后，内层集合值准确率均值最高者；平局（差 < 1e-3）按 LR、HGB、MLP 的顺序取先者（简单优先），平局过程与 P11 一样写进报告。
 
 ### 5.4 共享病灶编码器 E_u（§10.1）
 
-输入：3 层 × 2 通道（image, mask）合成 6 通道 2D 张量（1 层配置时 2 通道）；4 个卷积块 32-64-64-128（3×3 卷积 + BatchNorm + GELU + 2×2 池化）+ 全局平均池化 → 128 维。配置范围：边长 {22, 32, 42} px × 层数 {1, 3}，从初始 (32, 3) 单因素变化 → 4 个配置：(32, 3)、(22, 3)、(42, 3)、(32, 1)。
+输入：3 层 × 2 通道（image, mask）合成 6 通道 2D 张量（1 层配置时 2 通道）；4 个卷积块 32-64-64-128（3×3 卷积 + BatchNorm + GELU + 2×2 池化）+ 全局平均池化 → 128 维。配置范围：边长 {22, 32, 42} px × 层数 {1, 3}，从初始 (32, 3) 单因素变化 → 4 个配置，按平局顺序列出：(32, 3)、(32, 1)、(22, 3)、(42, 3)（P11：初始配置在先，其余按输入量 px² × 层数从小到大：1024 < 1452 < 5292）。
 
 ### 5.5 B2 局部外观
 
@@ -145,15 +145,17 @@ E_u + 线性头 → 8 logits。不接触表里的任何几何列。
 
 ### 5.7 训练规则（B1、B2）
 
-交叉熵；标签为集合时损失 = −log Σ_{c∈Y} p_c。AdamW lr 1e-3、wd 1e-4、批 64、最多 40 epoch；内层验证折上按集合值准确率早停（耐心 8）；外层重训时无验证折，训练轮数取内层各折最佳轮数的中位数。增广：左右翻转（小块翻转同时 dx 取反、side 的 left/right 互换）、强度 ×U(0.9, 1.1)。种子：每个 (外层折, 配置) 固定 seed 0。设备 `CUDA_VISIBLE_DEVICES=0`，CPU 亦可。
+交叉熵；标签为集合时损失 = −log Σ_{c∈Y} p_c。AdamW lr 1e-3、wd 1e-4、批 64、最多 40 epoch；内层验证折上按集合值准确率早停（耐心 8）；外层重训时无验证折，训练轮数取内层各折最佳轮数的中位数。增广：左右翻转（小块翻转同时 dx 取反、side 的 left/right 互换）、强度 ×U(0.9, 1.1)。种子：每个 (外层折, 配置) 固定 seed 0。设备默认 CPU 16 线程（nice 19）：计划校验时真实数据上 B1 每 epoch 0.63 s、B2 0.24 s，而被别的任务占满的 GPU 0 是 3.30 s / 1.59 s；GPU 0 空闲时可用 `--device cuda`。
+
+可训练病灶：有标签，且可接受集合里至少一个槽是候选（P7）。所有臂的输出都限制在候选集内，真值落在候选集外的病灶谁也答不对；B1 的候选掩蔽还会让它的损失变成无穷。所以这类病灶不进任何学习臂的训练（Bprior、Bgeo+、B1、B2 用同一批训练病灶），评估时照常计入，对每个臂都算错；每折的剔除数记进 run.json。阶段 1 的 C1 恒为候选，剔除数为 0。
 
 ### 5.8 内层选择与平局（P11）
 
-外层训练折内按患者分 5 折（种子 0 打乱患者后均分）；Bgeo+ 的网格与 B1 / B2 的 4 个配置都按内层集合值准确率均值选；平局（差 < 1e-3）按 P11。选定后在整个外层训练折重训、预测外层测试折。每臂配置数 ≤ 12（v2.6 上限；Bgeo+ 三个学习器合计 10 个，B1 / B2 各 4 个）。算力：B1、B2 各 5 × (5 × 4 + 1) = 105 次小训练，合计 210 次，GPU 0 一小时内；Bgeo+ 的 sklearn 拟合以秒计。
+外层训练折内按患者分 5 折（种子 0 打乱患者后均分）；Bgeo+ 的网格与 B1 / B2 的 4 个配置都按内层集合值准确率均值选；平局（差 < 1e-3）按 P11。选定后在整个外层训练折重训、预测外层测试折。每臂配置数 ≤ 12（v2.6 上限；Bgeo+ 三个学习器合计 10 个，B1 / B2 各 4 个）。算力：B1、B2 各 5 × (5 × 4 + 1) = 105 次小训练，合计 210 次；Bgeo+ 三个学习器合计约 7 分钟（计划校验实测）；全程预计 30–60 分钟（CPU 16 线程）。
 
 ### 5.9 阶段 2 钩子（P13）
 
-`run_relation_baselines.py --labels R`：训练标签来自 `level_r_labels.load_train_labels(k)`（裁定后 primary_host 与 acceptable_hosts；not_a_lesion 剔除；集合标签走集合损失）；`--init-from <run_id>` 用阶段 1 的 B1 / B2 权重初始化；Bgeo+ 与 Bprior 在医生标签上重新拟合。测试用合成封存文件覆盖。
+`run_relation_baselines.py --labels R`：训练标签来自 `level_r_labels.load_train_labels(k)`（裁定后 primary_host 与 acceptable_hosts；not_a_lesion 剔除；集合标签走集合损失）；`--init-from <run_id>` 用阶段 1 的 B1 / B2 权重初始化：每个外层折从它自己的阶段 1 模型出发，沿用阶段 1 为该折选定的配置，不再在配置间选择（不同层数的输入通道数不同，权重无法跨配置加载），内层只定早停轮数；Bgeo+ 与 Bprior 在医生标签上重新拟合。测试用合成封存文件覆盖。
 
 ## 6. 评估骨架
 
@@ -163,13 +165,13 @@ E_u + 线性头 → 8 logits。不接触表里的任何几何列。
 
 ### 6.2 标签源（`relation/labels.py`）
 
-统一结构 `{lesion_id: {"acceptable": set, "singleton": bool, "strata": {...}}}`。
+统一结构 `{lesion_id: frozenset(可接受的槽名)}`；是否单元素由集合大小得出，分层字段从特征表取。读者本体的 `other` 对应第 7 槽 `other_deep_grey`。
 - `C1`：表的 c1_class；集合单元素；所有数字标 NOT_EVIDENCE。
 - `R`：`load_test_labels(k, unblind=True)` 汇总五折，只允许 `scripts/eval_relation_baselines.py --labels R --unblind` 调用；not_a_lesion 剔出主终点、单独计数；封存清单不全则拒跑；每次访问由加载器写日志。开发期间任何脚本拿不到测试折医生标签。
 
 ### 6.3 指标（`eval/relation_metrics.py`，§12.2）
 
-集合值正确性（argmax ∈ Y）；全体准确率；singleton rate；单元素子集的准确率、macro-F1、balanced accuracy；top-2 宿主准确率；混淆矩阵；rescue / harm / net rescue（默认对照 = 内层选出的 Bgeo+ 最优学习器；同时报对 B0、Bprior 最优变体、B2）。
+集合值正确性（argmax ∈ Y）；全体准确率；singleton rate；单元素子集的准确率、macro-F1、balanced accuracy；top-2 宿主准确率；混淆矩阵；rescue / harm / net rescue（默认对照 = 内层选出的 Bgeo+ 最优学习器；同时报对 B0、Bprior 最优变体、B2）。Bprior 最优变体 = 四个变体里在当次评估标签上准确率最高者（平局取更简单的变体）；用评估标签挑对照只会让对照更强，对被比较的模型是保守的，四个变体都照常报告。
 
 ### 6.4 推断（§12.3）
 
@@ -208,7 +210,7 @@ d_interface 四档；四个实测几何层；200/201 对其余系列；lesion_ty
 - 分支 `build/relation-baselines`（自 main 1f06d0f），工作树 `../foundation_model-relation`；S2 另开自己的分支与工作树。S1 结束合回 main、打 tag `handoff/<日期>-relation-baselines`；不 push 除非用户说。
 - 执行方式沿用 PR-B：子代理逐任务、先写测试、每个任务独立评审、台账在工作树 `.superpowers/sdd/`（gitignore）。
 - 提交作者用仓库本地配置，消息英文，不留 AI 痕迹。不删任何东西。
-- 建表 nice 19 单进程；B1 / B2 钉 GPU 0；导出类任务并发 ≤ 4。
+- 建表 nice 19 单进程；训练默认 CPU 16 线程 nice 19（GPU 0 空闲时可用）；导出类任务并发 ≤ 4。
 
 ## 9. S1 完成的判据
 
