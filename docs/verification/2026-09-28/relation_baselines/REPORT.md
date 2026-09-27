@@ -1,10 +1,8 @@
-Superseded by docs/verification/2026-09-28/relation_baselines/ (B1 geometry standardised inside training, final-review fix); kept as the record of the first run.
-
 # Relation baselines report (NOT_EVIDENCE)
 
 **NOT_EVIDENCE**: every number below is scored against the pseudo label C1, which is a function of the geometry columns the arms read; it proves the pipeline runs and is fair, not that any arm binds better.
 
-run: runs/relation/c1_stage1 (git 1474c627e196e25d8ca510e13c4e5f0d4ac441c5, table manifest a7276cfdd601, labels C1)
+run: runs/relation/c1_stage1_v2 (git 3703bb9f1d125acc31f67de9a79eacb9754d07bf, table manifest a7276cfdd601, labels C1)
 
 lesions scored: 1297 of 1297; excluded (not_a_lesion): 0
 
@@ -13,7 +11,7 @@ lesions scored: 1297 of 1297; excluded (not_a_lesion): 0
 | arm | n | accuracy | singleton rate | top-2 | singleton acc | macro-F1 | balanced acc | agreement with C1 |
 |---|---|---|---|---|---|---|---|---|
 | b0 | 1297 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 |
-| b1 | 1297 | 0.9722 | 1.0000 | 1.0000 | 0.9722 | 0.8636 | 0.8038 | 0.9722 |
+| b1 | 1297 | 0.9915 | 1.0000 | 1.0000 | 0.9915 | 0.6603 | 0.6607 | 0.9915 |
 | b2 | 1297 | 0.8335 | 1.0000 | 0.9977 | 0.8335 | 0.4874 | 0.4682 | 0.8335 |
 | bgeo_hgb | 1297 | 0.9961 | 1.0000 | 0.9985 | 0.9961 | 0.6638 | 0.6649 | 0.9961 |
 | bgeo_lr | 1297 | 0.9838 | 1.0000 | 0.9992 | 0.9838 | 0.6524 | 0.6492 | 0.9838 |
@@ -23,16 +21,16 @@ lesions scored: 1297 of 1297; excluded (not_a_lesion): 0
 | bprior_type_side | 1297 | 0.7679 | 1.0000 | 0.9985 | 0.7679 | 0.3176 | 0.3474 | 0.7679 |
 | bprior_type_side_location | 1297 | 0.8011 | 1.0000 | 0.9985 | 0.8011 | 0.4453 | 0.4312 | 0.8011 |
 
-Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838], ["bgeo_hgb", 0.9953825042674953], ["bgeo_mlp", 0.9534689212053374]], "chosen": "bgeo_hgb", "tie": false}); Bprior comparator: bprior_type_side_location (best of the four variants on these labels)
+Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9805800196867447], ["bgeo_hgb", 0.9953825042674953], ["bgeo_mlp", 0.9534689212053374]], "chosen": "bgeo_hgb", "tie": false}); Bprior comparator: bprior_type_side_location (best of the four variants on these labels)
 
 ## Rescue / harm against the comparators (patient bootstrap 95% CI, exact McNemar)
 
 | arm | comparator | rescue | harm | net | net rate | CI lo | CI hi | McNemar p |
 |---|---|---|---|---|---|---|---|---|
-| b1 | b0 | 0 | 36 | -36 | -0.0278 | -0.0386 | -0.0191 | 0.0000 |
-| b1 | bprior | 237 | 15 | 222 | 0.1712 | 0.1468 | 0.1975 | 0.0000 |
-| b1 | bgeo | 2 | 33 | -31 | -0.0239 | -0.0349 | -0.0150 | 0.0000 |
-| b1 | b2 | 196 | 16 | 180 | 0.1388 | 0.1114 | 0.1660 | 0.0000 |
+| b1 | b0 | 0 | 11 | -11 | -0.0085 | -0.0130 | -0.0044 | 0.0010 |
+| b1 | bprior | 253 | 6 | 247 | 0.1904 | 0.1661 | 0.2176 | 0.0000 |
+| b1 | bgeo | 3 | 9 | -6 | -0.0046 | -0.0095 | 0.0007 | 0.1460 |
+| b1 | b2 | 210 | 5 | 205 | 0.1581 | 0.1321 | 0.1856 | 0.0000 |
 | b2 | b0 | 0 | 216 | -216 | -0.1665 | -0.1946 | -0.1395 | 0.0000 |
 | b2 | bprior | 117 | 75 | 42 | 0.0324 | 0.0078 | 0.0593 | 0.0030 |
 | b2 | bgeo | 2 | 213 | -211 | -0.1627 | -0.1913 | -0.1354 | 0.0000 |
@@ -55,7 +53,7 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
 | arm | 0 | 0-2 | 2-4 | >4 |
 |---|---|---|---|---|
 | b0 | 1.0000 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
-| b1 | 0.9358 (n=545) | 1.0000 (n=210) | 0.9954 (n=217) | 1.0000 (n=325) |
+| b1 | 0.9798 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
 | b2 | 0.7505 (n=545) | 0.8762 (n=210) | 0.9171 (n=217) | 0.8892 (n=325) |
 | bgeo_hgb | 0.9908 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
 | bgeo_lr | 0.9615 (n=545) | 1.0000 (n=210) | 1.0000 (n=217) | 1.0000 (n=325) |
@@ -69,7 +67,7 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
 | arm | inplane_0.62_slice_3 | inplane_0.69_slice_5 | inplane_0.86_slice_3 | inplane_0.86_slice_5 |
 |---|---|---|---|---|
 | b0 | 1.0000 (n=32) | 1.0000 (n=1175) | 1.0000 (n=11) | 1.0000 (n=79) |
-| b1 | 0.9688 (n=32) | 0.9728 (n=1175) | 1.0000 (n=11) | 0.9620 (n=79) |
+| b1 | 1.0000 (n=32) | 0.9906 (n=1175) | 1.0000 (n=11) | 1.0000 (n=79) |
 | b2 | 0.7500 (n=32) | 0.8366 (n=1175) | 0.7273 (n=11) | 0.8354 (n=79) |
 | bgeo_hgb | 1.0000 (n=32) | 0.9966 (n=1175) | 1.0000 (n=11) | 0.9873 (n=79) |
 | bgeo_lr | 0.9688 (n=32) | 0.9855 (n=1175) | 1.0000 (n=11) | 0.9620 (n=79) |
@@ -83,7 +81,7 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
 | arm | 200_201 | other |
 |---|---|---|
 | b0 | 1.0000 (n=1077) | 1.0000 (n=220) |
-| b1 | 0.9740 (n=1077) | 0.9636 (n=220) |
+| b1 | 0.9898 (n=1077) | 1.0000 (n=220) |
 | b2 | 0.8301 (n=1077) | 0.8500 (n=220) |
 | bgeo_hgb | 0.9963 (n=1077) | 0.9955 (n=220) |
 | bgeo_lr | 0.9861 (n=1077) | 0.9727 (n=220) |
@@ -97,7 +95,7 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
 | arm | lacunar_infarct | nonspecific_wm_lesion |
 |---|---|---|
 | b0 | 1.0000 (n=57) | 1.0000 (n=1240) |
-| b1 | 0.9649 (n=57) | 0.9726 (n=1240) |
+| b1 | 1.0000 (n=57) | 0.9911 (n=1240) |
 | b2 | 0.8421 (n=57) | 0.8331 (n=1240) |
 | bgeo_hgb | 0.9649 (n=57) | 0.9976 (n=1240) |
 | bgeo_lr | 1.0000 (n=57) | 0.9831 (n=1240) |
@@ -111,7 +109,7 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
 | arm | False | True |
 |---|---|---|
 | b0 | 1.0000 (n=1254) | 1.0000 (n=43) |
-| b1 | 0.9721 (n=1254) | 0.9767 (n=43) |
+| b1 | 0.9912 (n=1254) | 1.0000 (n=43) |
 | b2 | 0.8365 (n=1254) | 0.7442 (n=43) |
 | bgeo_hgb | 0.9960 (n=1254) | 1.0000 (n=43) |
 | bgeo_lr | 0.9841 (n=1254) | 0.9767 (n=43) |
@@ -126,7 +124,7 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
 ### b1
 | bin | n | mean | lo | hi |
 |---|---|---|---|---|
-| [0.0, 1.0) | 649 | -0.0478 | -0.0694 | -0.0304 |
+| [0.0, 1.0) | 649 | -0.0092 | -0.0191 | 0.0013 |
 | [1.0, 2.0) | 107 | 0.0000 | 0.0000 | 0.0000 |
 | [2.0, 4.0) | 217 | 0.0000 | 0.0000 | 0.0000 |
 | [4.0, 8.0) | 289 | 0.0000 | 0.0000 | 0.0000 |
@@ -143,13 +141,13 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
 
 ## Gate R1 rehearsal (v2.6 §12.4)
 
-- b1: go=False (net rescue vs Bgeo+ -0.0239 [-0.0349, -0.0150]; > Bprior True, > Bgeo+ False, > B2 True)
+- b1: go=False (net rescue vs Bgeo+ -0.0046 [-0.0095, 0.0007]; > Bprior True, > Bgeo+ False, > B2 True)
 - b2: go=False (net rescue vs Bgeo+ -0.1627 [-0.1913, -0.1354]; > Bprior True, > Bgeo+ False, > B2 False)
 
 ## Sanity checks
 
 - agreement with C1 per arm is in the metrics table: Bgeo+ close to 1 and B2 clearly lower is the written evidence that C1 is a function of the geometry columns.
-- inner-selection ties: 18
+- inner-selection ties: 19
   - bgeo_lr fold 0: chose {"C": 0.1} among [['{"C": 0.01}', 0.9742247939792075], ['{"C": 0.1}', 0.9797478672053158], ['{"C": 1.0}', 0.9806118708090118], ['{"C": 10.0}', 0.9779830492140829]] (tie rule P11)
   - bgeo_lr fold 2: chose {"C": 0.1} among [['{"C": 0.01}', 0.9760585246324205], ['{"C": 0.1}', 0.9823747700560908], ['{"C": 1.0}', 0.9818451485996317], ['{"C": 10.0}', 0.9823144722797581]] (tie rule P11)
   - bgeo_lr fold 3: chose {"C": 0.01} among [['{"C": 0.01}', 0.9810336618050199], ['{"C": 0.1}', 0.9803141822711948], ['{"C": 1.0}', 0.9730785137832075], ['{"C": 10.0}', 0.9667994559715674]] (tie rule P11)
@@ -164,14 +162,15 @@ Bgeo+ comparator: bgeo_hgb (selection {"scores": [["bgeo_lr", 0.9807528204074838
   - bgeo_mlp fold 2: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.9527055664832206], ['{"alpha": 0.0001}', 0.9527055664832206]] (tie rule P11)
   - bgeo_mlp fold 3: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.9478346083861787], ['{"alpha": 0.0001}', 0.9478346083861787]] (tie rule P11)
   - bgeo_mlp fold 4: chose {"alpha": 0.001} among [['{"alpha": 0.001}', 0.9518996758893788], ['{"alpha": 0.0001}', 0.9518996758893788]] (tie rule P11)
-  - b1 fold 0: chose px32_s3 among [['px32_s3', 0.9777513007383885], ['px32_s1', 0.9751663965786811], ['px22_s3', 0.9757310987181864], ['px42_s3', 0.9767851171635092]] (tie rule P11)
-  - b1 fold 1: chose px32_s3 among [['px32_s3', 0.9765668291602548], ['px32_s1', 0.9765493757758495], ['px22_s3', 0.9746902235957492], ['px42_s3', 0.9761239153520215]] (tie rule P11)
-  - b1 fold 2: chose px32_s1 among [['px32_s3', 0.9737184584502744], ['px32_s1', 0.9750873578890644], ['px22_s3', 0.9737184584502744], ['px42_s3', 0.9751783124648729]] (tie rule P11)
-  - b1 fold 4: chose px32_s3 among [['px32_s3', 0.9780239202078075], ['px32_s1', 0.976630191984811], ['px22_s3', 0.9778571858498417], ['px42_s3', 0.9778571858498417]] (tie rule P11)
+  - b1 fold 0: chose px22_s3 among [['px32_s3', 0.9955518267167159], ['px32_s1', 0.996306543697848], ['px22_s3', 0.9972727272727273], ['px42_s3', 0.9981818181818183]] (tie rule P11)
+  - b1 fold 1: chose px32_s3 among [['px32_s3', 0.9991596638655462], ['px32_s1', 0.9983193277310924], ['px22_s3', 0.9991596638655462], ['px42_s3', 0.9975203196032512]] (tie rule P11)
+  - b1 fold 2: chose px32_s3 among [['px32_s3', 0.9966796808691225], ['px32_s1', 0.9959628349909861], ['px22_s3', 0.9966796808691225], ['px42_s3', 0.9966796808691225]] (tie rule P11)
+  - b1 fold 3: chose px32_s1 among [['px32_s3', 0.9946913193730189], ['px32_s1', 0.9961673341331666], ['px22_s3', 0.9967196493337379], ['px42_s3', 0.9962325396044985]] (tie rule P11)
+  - b1 fold 4: chose px32_s3 among [['px32_s3', 0.995823654665118], ['px32_s1', 0.9951292102206736], ['px22_s3', 0.995826074332172], ['px42_s3', 0.995826074332172]] (tie rule P11)
 
 ## Commands
 
 ```
 scripts/run_relation_baselines.py (see run.json)
-scripts/eval_relation_baselines.py --run runs/relation/c1_stage1 --table /data2/congcong/data/FM_data/derived/relation/v1 --labels C1 --out docs/verification/2026-09-27/relation_baselines
+scripts/eval_relation_baselines.py --run runs/relation/c1_stage1_v2 --table /data2/congcong/data/FM_data/derived/relation/v1 --labels C1 --out docs/verification/2026-09-28/relation_baselines
 ```
