@@ -65,10 +65,37 @@ def test_run_then_eval_on_c1_and_on_synthetic_sealed_labels(tmp_path, table_dir)
                         "acceptable_hosts": json.dumps([r["c1_class"]]), "not_a_lesion": r["lesion_id"] == 0,
                         "lesion_type": None, "side": None, "lobe": None})
     seal(final, {r["lesion_id"]: r["fold"] for r in t.rows}, tmp_path / "sealed", tmp_path / "manifest.json", k=5, now="2026-10-01T00:00:00+00:00")
-    with pytest.raises(SystemExit):
+    with pytest.raises(SystemExit) as e:
         eval_main(["--run", str(run), "--table", str(tdir), "--labels", "R", "--sealed-dir", str(tmp_path / "sealed"),
                    "--manifest", str(tmp_path / "manifest.json"), "--out", str(tmp_path / "eval_r")])
+    assert e.value.code == 2
     eval_main(["--run", str(run), "--table", str(tdir), "--labels", "R", "--unblind", "--sealed-dir", str(tmp_path / "sealed"),
                "--manifest", str(tmp_path / "manifest.json"), "--out", str(tmp_path / "eval_r"), "--n-boot", "50"])
     report_r = (tmp_path / "eval_r" / "REPORT.md").read_text()
     assert "NOT_EVIDENCE" not in report_r and "excluded (not_a_lesion): 1" in report_r
+
+
+def test_eval_missing_required_arms_exits_2(tmp_path, table_dir):
+    tdir, t = table_dir
+    run = tmp_path / "run_b1_only"
+    run_main(["--table", str(tdir), "--out", str(run), "--labels", "C1", "--arms", "b1", "--device", "cpu",
+              "--epochs", "1", "--patience", "1", "--inner-k", "2"])
+    with pytest.raises(SystemExit) as e:
+        eval_main(["--run", str(run), "--table", str(tdir), "--labels", "C1", "--out", str(tmp_path / "eval_b1_only")])
+    assert e.value.code == 2
+
+
+def test_stage_two_init_from_stage_one(tmp_path, table_dir):
+    tdir, t = table_dir
+    settings = ["--labels", "C1", "--arms", "b1", "--device", "cpu", "--epochs", "1", "--patience", "1", "--inner-k", "2"]
+    run1 = tmp_path / "run1"
+    run_main(["--table", str(tdir), "--out", str(run1)] + settings)
+    run2 = tmp_path / "run2"
+    run_main(["--table", str(tdir), "--out", str(run2)] + settings + ["--init-from", str(run1)])
+    preds2 = read_preds(run2 / "preds" / "b1.csv")
+    assert sorted(preds2["lesion_id"].tolist()) == list(range(30))
+    meta1 = json.loads((run1 / "run.json").read_text())
+    meta2 = json.loads((run2 / "run.json").read_text())
+    assert meta2["init_from"] == str(run1)
+    for k, f1 in meta1["records"]["b1"]["folds"].items():
+        assert meta2["records"]["b1"]["folds"][k]["chosen"] == f1["chosen"]

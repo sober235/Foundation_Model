@@ -50,11 +50,18 @@ def evaluate(run_dir, table, labels, excluded, evidence, n_boot):
         pr = read_preds(p)
         order = [pr["lesion_id"].tolist().index(int(l)) for l in table.lesion_id]
         arms[p.stem] = pr["probs"][order][keep]
+    missing = [name for name, present in (("b0", "b0" in arms), ("bprior_*", any(a.startswith("bprior_") for a in arms)),
+                                          ("bgeo_*", any(a.startswith("bgeo_") for a in arms))) if not present]
+    if missing:
+        print(f"{run_dir}: evaluation needs b0, at least one bprior_* and at least one bgeo_* arm; missing {missing} "
+              f"(found {sorted(arms)}). Run scripts/run_relation_baselines.py with those arms included.", file=sys.stderr)
+        sys.exit(2)
     acc, patients = acc[keep], table.patients()[keep]
     c1 = table.c1_slot()[keep]
     bgeo_best = run.get("bgeo_best") or next(a for a in arms if a.startswith("bgeo_"))
     # spec §6.3: the Bprior comparator is the best of the four variants on these labels (conservative for any model
-    # compared with it); ties go to the simpler variant, in PRIOR_VARIANTS order
+    # compared with it); plain max breaks only exact ties, keeping the first maximal variant in PRIOR_VARIANTS order
+    # (there is no tolerance here, unlike select_config's P11 rule)
     prior_arms = [f"bprior_{v}" for v in PRIOR_VARIANTS if f"bprior_{v}" in arms]
     prior_best = max(prior_arms, key=lambda name: is_correct(arms[name], acc).mean())
     comparators = {"b0": arms["b0"], "bprior": arms[prior_best], "bgeo": arms[bgeo_best], "b2": arms.get("b2")}
@@ -151,7 +158,9 @@ def main(argv=None):
         labels, excluded, evidence = c1_labels(table), [], "NOT_EVIDENCE"
     else:
         if not a.unblind or not (a.sealed_dir and a.manifest):
-            sys.exit("--labels R is the one-shot final evaluation: it needs --unblind, --sealed-dir and --manifest (v2.6 §12.7)")
+            print("--labels R is the one-shot final evaluation: it needs --unblind, --sealed-dir and --manifest (v2.6 §12.7)",
+                  file=sys.stderr)
+            sys.exit(2)
         labels, excluded = r_test_labels(a.sealed_dir, a.manifest, unblind=True)
         evidence = "R"
     buf = io.StringIO()
