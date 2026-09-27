@@ -11,7 +11,7 @@ pytest.importorskip("torch")
 
 from anatobind.level_r.admin import FINAL_COLUMNS, seal
 from anatobind.relation.cv import read_preds
-from anatobind.relation.table import write_table
+from anatobind.relation.table import SLOTS, write_table
 from synth_relation import synthetic_table
 
 
@@ -99,3 +99,58 @@ def test_stage_two_init_from_stage_one(tmp_path, table_dir):
     assert meta2["init_from"] == str(run1)
     for k, f1 in meta1["records"]["b1"]["folds"].items():
         assert meta2["records"]["b1"]["folds"][k]["chosen"] == f1["chosen"]
+
+
+def test_stage_two_on_sealed_r_labels_trains_on_training_folds_only(tmp_path):
+    """The stage-2 path end to end on 160 lesions: sealed R labels with sets outside the candidates, a two-element set,
+    the reader host "other" and one not_a_lesion; the run reads training folds only and the final eval unblinds once."""
+    t, p = synthetic_table(40, 4)
+    tdir = tmp_path / "v1"
+    write_table(tdir, t.rows, p, {"version": "v1"})
+    cand = t.candidates()
+    outside = 0
+    with open(tmp_path / "final.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=FINAL_COLUMNS)
+        w.writeheader()
+        for i, r in enumerate(t.rows):
+            reader = lambda s: "other" if s == "other_deep_grey" else s                        # noqa: E731
+            not_cand = [s for j, s in enumerate(SLOTS) if not cand[i, j]]
+            if i % 4 == 0 and not_cand:
+                hosts = [reader(not_cand[0])]                                                   # truth outside the candidates
+                outside += 1
+            elif i % 4 == 1:
+                hosts = [r["c1_class"], "cortex" if r["c1_class"] != "cortex" else "white_matter"]
+            elif i % 8 == 2:
+                hosts = ["other"]
+            else:
+                hosts = [r["c1_class"]]
+            w.writerow({"lesion_id": r["lesion_id"], "status": "agreed", "primary_host": hosts[0], "acceptable_hosts": json.dumps(hosts),
+                        "not_a_lesion": i == 5, "lesion_type": None, "side": None, "lobe": None})
+    assert outside > 0
+    sealed, manifest = tmp_path / "sealed", tmp_path / "manifest.json"
+    seal(tmp_path / "final.csv", {r["lesion_id"]: r["fold"] for r in t.rows}, sealed, manifest, k=5, now="2026-10-01T00:00:00+00:00")
+    small = ["--arms", "b0,bprior,bgeo,b1,b2", "--device", "cpu", "--epochs", "1", "--patience", "1", "--inner-k", "2"]
+    run1, run2 = tmp_path / "run1", tmp_path / "run2"
+    run_main(["--table", str(tdir), "--out", str(run1), "--labels", "C1"] + small)
+    run_main(["--table", str(tdir), "--out", str(run2), "--labels", "R", "--sealed-dir", str(sealed), "--manifest", str(manifest),
+              "--init-from", str(run1)] + small)
+    assert not (sealed / "access_log.txt").exists()                                            # no test fold was ever read
+    meta1 = json.loads((run1 / "run.json").read_text())
+    meta2 = json.loads((run2 / "run.json").read_text())
+    for pf in (run2 / "preds").glob("*.csv"):
+        assert sorted(read_preds(pf)["lesion_id"].tolist()) == list(range(160)), pf.stem
+    rec = meta2["records"]
+    per_arm = {"bprior_majority": rec["bprior_majority"]["n_untrainable"]}
+    per_arm.update({a: {k: f["n_untrainable"] for k, f in rec[a]["folds"].items()} for a in ("bgeo_lr", "bgeo_hgb", "bgeo_mlp", "b1", "b2")})
+    for v in ("type", "type_side", "type_side_location"):
+        per_arm[f"bprior_{v}"] = rec[f"bprior_{v}"]["n_untrainable"]
+    ref = per_arm["b1"]
+    assert set(ref) == {"0", "1", "2", "3", "4"} and all(n > 0 for n in ref.values())
+    assert all(v == ref for v in per_arm.values()), per_arm
+    for arm in ("b1", "b2"):
+        for k, f1 in meta1["records"][arm]["folds"].items():
+            assert rec[arm]["folds"][k]["chosen"] == f1["chosen"]
+    out = tmp_path / "eval_r"
+    eval_main(["--run", str(run2), "--table", str(tdir), "--labels", "R", "--unblind", "--sealed-dir", str(sealed),
+               "--manifest", str(manifest), "--out", str(out), "--n-boot", "50"])
+    assert "excluded (not_a_lesion): 1" in (out / "REPORT.md").read_text()
