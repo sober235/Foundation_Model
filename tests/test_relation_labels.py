@@ -51,3 +51,17 @@ def test_acceptable_matrix_marks_slots_and_missing_labels():
     assert has.tolist() == [True, False, True] and acc.shape == (3, 7)
     assert acc[0].tolist() == [True] + [False] * 6 and acc[2].tolist() == [False, True, True, False, False, False, False]
     assert not acc[1].any()
+
+
+def _r_row(lid, hosts, not_a_lesion=False):
+    return {"lesion_id": lid, "status": "agreed", "primary_host": hosts[0] if hosts else None, "acceptable_hosts": hosts,
+            "not_a_lesion": not_a_lesion, "lesion_type": None, "side": None, "lobe": None}
+
+
+def test_level_r_rows_reject_an_unknown_host_and_an_empty_set_on_a_real_lesion():
+    with pytest.raises(ValueError, match="lesion 3"):
+        from_level_r_rows([_r_row(0, ["white_matter"]), _r_row(3, ["white_matter", "ventricle"])])
+    with pytest.raises(ValueError, match="lesion 4"):
+        from_level_r_rows([_r_row(4, [])])
+    labels, excluded = from_level_r_rows([_r_row(5, [], not_a_lesion=True), _r_row(6, ["other"])])   # empty is fine when excluded
+    assert excluded == [5] and labels == {6: frozenset({"other_deep_grey"})}

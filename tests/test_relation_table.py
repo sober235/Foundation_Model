@@ -54,6 +54,17 @@ def test_mask_to_candidates_zeroes_non_candidates_and_renormalises():
     assert np.allclose(out[0, [0, 1, 7]], 1 / 3) and out[0, 2:7].sum() == 0 and np.isclose(out.sum(), 1)
 
 
+def test_mask_to_candidates_turns_a_row_with_no_candidate_mass_into_uniform_over_its_candidates():
+    probs = np.zeros((2, N_OUT))
+    probs[0, 4] = 1.0                                                  # all mass on brainstem, which is not a candidate
+    probs[1, [0, 7]] = 0.5
+    cand = np.zeros((2, 7), bool)
+    cand[:, [0, 2, 3]] = True
+    out = mask_to_candidates(probs, cand)
+    assert np.allclose(out[0, [0, 2, 3]], 1 / 3) and out[0, [1, 4, 5, 6, 7]].sum() == 0      # P7: never an all-zero row
+    assert np.allclose(out[1, [0, 7]], 0.5) and np.allclose(out.sum(1), 1)
+
+
 def test_write_refuses_an_existing_directory_and_load_round_trips(tmp_path):
     rows = [_row(0, "p0", 0), _row(1, "p1", 1)]
     patches = {"lesion_id": np.array([0, 1]), "image": np.zeros((2, 3, 48, 48), np.float16),

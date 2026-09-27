@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.relation_metrics import (  # noqa: E402
     by_stratum, delta_d_curve, gate_r1, is_correct, mcnemar, patient_bootstrap, rescue_harm, summary,
 )
+from anatobind.level_r.admin import sha256_file  # noqa: E402
 from anatobind.relation.baselines import PRIOR_VARIANTS  # noqa: E402
 from anatobind.relation.cv import read_preds  # noqa: E402
 from anatobind.relation.labels import acceptable_matrix, c1_labels, r_test_labels  # noqa: E402
@@ -153,6 +154,14 @@ def main(argv=None):
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--n-boot", type=int, default=10_000)
     a = ap.parse_args(argv)
+    if a.out.exists():
+        raise FileExistsError(f"{a.out} exists; reports are never overwritten")
+    run_sha = json.loads((a.run / "run.json").read_text(encoding="utf-8")).get("table_manifest_sha256")
+    table_sha = sha256_file(a.table / "manifest.json")
+    if run_sha != table_sha:
+        print(f"{a.run}: run.json table_manifest_sha256 {run_sha} differs from sha256({a.table / 'manifest.json'}) {table_sha}; "
+              "score a run only against the table it was trained on", file=sys.stderr)
+        sys.exit(2)
     table, _ = load_table(a.table, with_patches=False)
     if a.labels == "C1":
         labels, excluded, evidence = c1_labels(table), [], "NOT_EVIDENCE"
@@ -167,7 +176,7 @@ def main(argv=None):
     with redirect_stdout(buf):
         report, rows_long = evaluate(a.run, table, labels, excluded, evidence, a.n_boot)
         print(report)
-    a.out.mkdir(parents=True, exist_ok=True)
+    a.out.mkdir(parents=True)
     (a.out / "REPORT.md").write_text(report, encoding="utf-8")
     with open(a.out / "tables.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=["arm", "metric", "stratum", "value", "lo", "hi"])

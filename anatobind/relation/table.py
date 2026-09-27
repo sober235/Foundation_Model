@@ -121,12 +121,18 @@ def features_per_slot(table):
 
 
 def mask_to_candidates(probs, candidates):
-    """Zero every non-candidate slot (spec P7); the none column is kept; rows are renormalised."""
+    """Zero every non-candidate slot (spec P7); the none column is kept; rows are renormalised. A row with no mass left
+    on its candidates and none becomes uniform over its candidates (or all none if it has no candidate)."""
     p = np.array(probs, dtype=np.float64)
-    keep = np.concatenate([np.asarray(candidates, bool), np.ones((len(p), 1), bool)], 1)
+    cand = np.asarray(candidates, bool)
+    keep = np.concatenate([cand, np.ones((len(p), 1), bool)], 1)
     p[~keep] = 0.0
     s = p.sum(1, keepdims=True)
-    return p / np.where(s > 0, s, 1.0)
+    empty = s[:, 0] <= 0
+    if empty.any():
+        p[empty] = np.concatenate([cand[empty], ~cand[empty].any(1, keepdims=True)], 1)
+        s[empty] = p[empty].sum(1, keepdims=True)
+    return p / s
 
 
 def write_table(out_dir, rows, patches, manifest):

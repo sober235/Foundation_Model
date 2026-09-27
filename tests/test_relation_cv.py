@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 
+import anatobind.relation.cv as cv
+
 pytest.importorskip("sklearn")
 
 from anatobind.relation.cv import (
@@ -72,3 +74,15 @@ def test_rows_whose_acceptable_set_misses_every_candidate_do_not_train():
     cand = np.zeros((3, 7), bool)
     cand[:, [0, 1]] = True                                            # brainstem is not a candidate anywhere
     assert trainable_rows(has, acc, cand).tolist() == [True, False, False]
+
+
+def test_bgeo_mean_inner_score_averages_the_chosen_config_not_the_best(monkeypatch):
+    t, _ = synthetic_table(10, 4)
+    labels = c1_labels(t)
+    original = cv.select_config
+    monkeypatch.setattr(cv, "select_config", lambda scores: original(scores, tol=1.0))   # every config ties: the first wins
+    _, rec = run_bgeo(t, labels, "lr", seed=0, inner_k=3)
+    chosen = [dict(rec["folds"][k]["scores"])[rec["folds"][k]["chosen"]] for k in rec["folds"]]
+    best = [max(s for _, s in rec["folds"][k]["scores"]) for k in rec["folds"]]
+    assert any(c < b for c, b in zip(chosen, best))                    # the fixture really separates chosen from best
+    assert rec["mean_inner_score"] == pytest.approx(float(np.mean(chosen)))

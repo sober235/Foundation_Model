@@ -154,3 +154,20 @@ def test_stage_two_on_sealed_r_labels_trains_on_training_folds_only(tmp_path):
     eval_main(["--run", str(run2), "--table", str(tdir), "--labels", "R", "--unblind", "--sealed-dir", str(sealed),
                "--manifest", str(manifest), "--out", str(out), "--n-boot", "50"])
     assert "excluded (not_a_lesion): 1" in (out / "REPORT.md").read_text()
+
+
+def test_eval_refuses_an_existing_out_and_a_table_other_than_the_run_s(tmp_path, table_dir, capsys):
+    tdir, t = table_dir
+    run = tmp_path / "run_sklearn"
+    run_main(["--table", str(tdir), "--out", str(run), "--labels", "C1", "--arms", "b0,bprior,bgeo", "--inner-k", "2"])
+    out = tmp_path / "eval"
+    eval_main(["--run", str(run), "--table", str(tdir), "--labels", "C1", "--out", str(out), "--n-boot", "20"])
+    with pytest.raises(FileExistsError):
+        eval_main(["--run", str(run), "--table", str(tdir), "--labels", "C1", "--out", str(out), "--n-boot", "20"])
+    other = tmp_path / "v2"
+    write_table(other, t.rows, synthetic_table(10, 3)[1], {"version": "v2"})           # same rows, another manifest
+    capsys.readouterr()
+    with pytest.raises(SystemExit) as e:
+        eval_main(["--run", str(run), "--table", str(other), "--labels", "C1", "--out", str(tmp_path / "eval_v2"), "--n-boot", "20"])
+    assert e.value.code == 2 and "table_manifest_sha256" in capsys.readouterr().err
+    assert not (tmp_path / "eval_v2").exists()

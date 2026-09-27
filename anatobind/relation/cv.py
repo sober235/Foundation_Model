@@ -124,5 +124,5 @@ def run_bgeo(table, labels, kind, seed=0, inner_k=5):
         preds["probs"][te] = GeoLearner(kind, params, seed).fit(X[tr], acc[tr]).predict_probs(X[te], cand[te])
         preds["config"][te] = chosen
         record["folds"][k] = {**rec, "n_untrainable": n_untrainable}
-    record["mean_inner_score"] = float(np.mean([max(s for _, s in record["folds"][k]["scores"]) for k in record["folds"]]))
+    record["mean_inner_score"] = float(np.mean([dict(f["scores"])[f["chosen"]] for f in record["folds"].values()]))
     return preds, record
