@@ -1,7 +1,10 @@
 """CLI to infer brain small lesions from fastMRI FLAIR h5 files."""
 import argparse
+import sys
+from pathlib import Path
 
-from anatobind.infer.brain import run
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from anatobind.infer.brain import run  # noqa: E402
 
 
 def main():

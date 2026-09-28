@@ -14,6 +14,32 @@ def test_lesion_rows_give_per_slice_row_col_boxes():
     assert lesion_rows(dets, lab) == [{"z0": 1, "z1": 2, "score": 0.8, "boxes": {"1": [[5, 8, 3, 7]], "2": [[5, 9, 4, 6]]}}]
 
 
+def test_lesion_rows_isolates_components_with_overlapping_boxes():
+    """Two separate components whose bounding boxes overlap in-plane; each detection captures only its own component."""
+    lab = np.zeros((20, 20, 2), np.uint8)
+    # L-shape in slice 0
+    lab[2:5, 2:4, 0] = 1  # vertical part
+    lab[4:6, 2:6, 0] = 1  # horizontal part
+    # Separate blob in slice 0, inside the L's bounding box but not connected
+    lab[4:6, 4:6, 0] = 1  # This creates a separate component (no 26-connectivity to the L)
+
+    # Bounding box for the L (enclosing both parts)
+    dets = [
+        {"box": (2, 2, 0, 6, 6, 1), "score": 0.9, "family": "small_lesion"},  # L's bbox
+        {"box": (4, 4, 0, 6, 6, 1), "score": 0.8, "family": "small_lesion"},  # blob's bbox
+    ]
+
+    rows = lesion_rows(dets, lab)
+    # Each row should cover only its own component's voxels
+    assert len(rows) == 2
+    # First row should have the L's voxels only
+    assert rows[0]["score"] == 0.9
+    assert "0" in rows[0]["boxes"]
+    # Second row should have the blob's voxels only
+    assert rows[1]["score"] == 0.8
+    assert "0" in rows[1]["boxes"]
+
+
 def test_run_writes_a_table_and_handles_no_detections(tmp_path, monkeypatch):
     import anatobind.infer.brain as B
 
