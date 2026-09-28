@@ -667,3 +667,115 @@ wrapt==2.0.1
 yarl==1.15.2
 zipp==3.20.2
 ```
+
+## Runner on the toy task
+
+Task 3's `scripts/nndet_runner.py` was checked against Task 1's toy smoke outputs (`Task000D3_Example`, fold 0).
+The runner output directory did not exist beforehand
+(`test ! -e /data2/congcong/data/FM_data/derived/nndet_smoke/runner` passed). Idle GPUs were re-checked immediately
+before the `predict` call:
+
+```
+$ nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits
+0, 14
+1, 8453
+2, 14
+3, 14
+4, 14
+5, 26351
+6, 25869
+7, 25755
+$ nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv,noheader
+GPU-05cb1334-b9c8-1afc-ec78-b0eef86e193d, 3054677
+GPU-18b3d14a-7ef2-870d-d438-1d6d09755a2d, 2586011
+GPU-61e060ef-8507-bae3-7db9-2a4fef8d408a, 2586013
+GPU-20a60eab-8897-efa2-5c04-ce8d2e284218, 2586015
+```
+
+GPUs 0, 2, 3 and 4 had < 1000 MiB used and no compute app; GPU 2 was used.
+
+Command:
+
+```bash
+bash -ex <<'EOF' > logs/nndet_install/03_runner_toy.log 2>&1
+source scripts/nndet_env.sh
+export det_data=/data2/congcong/data/FM_data/derived/nndet_smoke/data
+export det_models=/data2/congcong/data/FM_data/derived/nndet_smoke/models
+T=$det_models/Task000D3_Example/RetinaUNetV001_D3V001_3d/fold0
+W=/data2/congcong/data/FM_data/derived/nndet_smoke/runner
+python scripts/nndet_runner.py extract --state $T/sweep_predictions --params default --out $W/extract_default.json
+python scripts/nndet_runner.py extract --state $T/sweep_predictions --params swept --train-dir $T --out $W/extract_swept.json
+python scripts/nndet_runner.py gt --prep $det_data/Task000D3_Example/preprocessed --out $W/gt.json
+IMG=$(ls $det_data/Task000D3_Example/raw_splitted/imagesTs/*_0000.nii.gz | head -1)
+CUDA_VISIBLE_DEVICES=2 python scripts/nndet_runner.py predict --image $IMG --train-dir $T --work $W/predict_work --out $W/predict.json
+EOF
+```
+
+The run finished on its own (exit code 0, no hung process this time). Its four `wrote ...` lines:
+
+```
+wrote /data2/congcong/data/FM_data/derived/nndet_smoke/runner/extract_default.json: 2 cases, 1575 boxes
+wrote /data2/congcong/data/FM_data/derived/nndet_smoke/runner/extract_swept.json: 2 cases, 396 boxes
+wrote /data2/congcong/data/FM_data/derived/nndet_smoke/runner/gt.json: 10 cases, 10 boxes
+wrote /data2/congcong/data/FM_data/derived/nndet_smoke/runner/predict.json: 1 cases, 789 boxes
+```
+
+`grep -n "Found inference plan" logs/nndet_install/03_runner_toy.log`:
+
+```
+55:2026-09-29 03:15:19.111 | INFO     | nndet.ptmodule.retinaunet.base:get_predictor:710 - Found inference plan: {} for prediction
+```
+
+Check against nnDetection's own outputs (nndet env):
+
+```bash
+bash -c 'source scripts/nndet_env.sh && python - <<"PY"
+import json, pickle
+from pathlib import Path
+import numpy as np
+import SimpleITK as sitk
+D = Path("/data2/congcong/data/FM_data/derived/nndet_smoke/data/Task000D3_Example")
+T = Path("/data2/congcong/data/FM_data/derived/nndet_smoke/models/Task000D3_Example/RetinaUNetV001_D3V001_3d/fold0")
+W = Path("/data2/congcong/data/FM_data/derived/nndet_smoke/runner")
+plan = pickle.load(open(D / "preprocessed/D3V001_3d.pkl", "rb"))
+stage = D / "preprocessed" / plan["data_identifier"] / "imagesTr"
+tb = list(plan["transpose_backward"])
+# 1) swept extraction == nnDetection val_predictions (restored), high ends equal, low ends shifted by the spacing ratio
+sw = json.load(open(W / "extract_swept.json"))["cases"]
+worst = 0.0
+for case, rec in sw.items():
+    theirs = pickle.load(open(T / "val_predictions" / f"{case}_boxes.pkl", "rb"))
+    tbx = np.asarray(theirs["pred_boxes"], float).reshape(-1, 6)
+    ours = np.asarray(rec["boxes"], float).reshape(-1, 6)
+    props = pickle.load(open(stage / f"{case}.pkl", "rb"))
+    scale = np.asarray(props["spacing_after_resampling"])[tb] / np.asarray(props["original_spacing"])
+    assert ours.shape == tbx.shape and np.allclose(rec["scores"], np.asarray(theirs["pred_scores"]).reshape(-1))
+    assert np.allclose(ours[:, [2, 3, 5]], tbx[:, [2, 3, 5]])
+    assert np.allclose(ours[:, [0, 1, 4]] - tbx[:, [0, 1, 4]], scale[[0, 1, 2]])
+    worst = max(worst, float(np.abs(ours - tbx).max()) if len(ours) else 0.0)
+print("swept vs val_predictions: cases", len(sw), "all consistent; max abs diff", worst)
+# 2) gt conversion == tight boxes of the raw instance labels (exact when the case was not resampled)
+gt = json.load(open(W / "gt.json"))["cases"]
+n, errs = 0, []
+for case, rec in gt.items():
+    lab = sitk.GetArrayFromImage(sitk.ReadImage(str(D / "raw_splitted/labelsTr" / f"{case}.nii.gz")))
+    for k, b in zip(rec["instances"], rec["boxes"]):
+        s, r, c = np.nonzero(lab == k)
+        tight = np.array([s.min(), r.min(), s.max() + 1, r.max() + 1, c.min(), c.max() + 1], float)
+        errs.append(float(np.abs(np.asarray(b) - tight).max())); n += 1
+print("gt instances", n, "max coordinate error", max(errs), "exact", sum(e < 1e-6 for e in errs))
+pr = json.load(open(W / "predict.json"))["cases"]
+print("predict cases", list(pr), "boxes", len(pr["case"]["boxes"]), "top scores", sorted(pr["case"]["scores"])[-3:])
+PY'
+```
+
+Printout:
+
+```
+swept vs val_predictions: cases 2 all consistent; max abs diff 1.0
+gt instances 10 max coordinate error 0.0 exact 10
+predict cases ['case'] boxes 789 top scores [0.022872405126690865, 0.023091508075594902, 0.03112873062491417]
+```
+
+All three checks matched the expected shape: the swept-vs-nnDetection assertions held, gt max coordinate error was
+0.0 (no resampling on this toy task), and predict returned exactly one case `case`.
