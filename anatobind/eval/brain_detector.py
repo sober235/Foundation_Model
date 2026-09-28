@@ -42,6 +42,21 @@ def strata_sensitivity(scans, thr, stratum_of):
     return out
 
 
+def strata_maps(registry):
+    """The four report-only strata of spec 2026-09-28 §4 by lesion id, as scripts/eval_brain_detector.py builds them:
+    d_interface band, 1 vs >1 slices, in-plane size tertile over the registry, measured geometry stratum."""
+    vals = sorted(r["inplane_mm"] for r in registry)
+    t33, t67 = vals[len(vals) // 3], vals[2 * len(vals) // 3]
+
+    def tertile(mm):
+        return "tertile_1" if mm <= t33 else ("tertile_2" if mm <= t67 else "tertile_3")
+
+    return {"band": {r["lesion_id"]: r["band"] for r in registry},
+            "n_slices": {r["lesion_id"]: "1" if r["n_slices"] == 1 else ">1" for r in registry},
+            "inplane_tertile": {r["lesion_id"]: tertile(r["inplane_mm"]) for r in registry},
+            "stratum_geometry": {r["lesion_id"]: r["stratum_geometry"] for r in registry}}
+
+
 def evaluate(scans, normal_cases):
     rows = sweep(scans)
     g = gate(rows)

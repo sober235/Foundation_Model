@@ -1,0 +1,35 @@
+# nnDetection coordinate check: ground truth as prediction (spec §5 check two)
+
+Pass: True
+
+```json
+{
+ "pass": true,
+ "n_gt": 1297,
+ "n_present": 1289,
+ "lost": [
+  1001,
+  1004,
+  1011,
+  1042,
+  1061,
+  1063,
+  1080,
+  1104
+ ],
+ "below_iou": [],
+ "min_iou": 0.31555356342447327,
+ "median_iou": 1.0,
+ "n_iou_ge_0_99": 1151,
+ "n_hit_at_0_05": 1289,
+ "n_fp": 0,
+ "input": "/data2/congcong/data/FM_data/derived/nndet_runs/gt.json",
+ "input_sha256": "d23fd149fd6cb0adbf2adced36f2b483abd704c4881872369c74de9bd3fd6867"
+}
+```
+
+## Command
+
+```
+scripts/eval_brain_nndet.py --gt-check /data2/congcong/data/FM_data/derived/nndet_runs/gt.json --out docs/verification/2026-09-29/brain_nndet/gt_check
+```
