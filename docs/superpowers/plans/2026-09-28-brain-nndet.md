@@ -1935,7 +1935,7 @@ if __name__ == "__main__":
 
 ### Task 9: After training — extraction, fold-0 report, inference smoke
 
-**Precondition:** training and its sweep finished: the log ends without a traceback, and `T=${det_models}/Task903_FastMRIBrainSmallLesion/RetinaUNetV001_D3V001_3d/fold0` holds `model_last.ckpt`, `plan_inference.pkl` and 51 `sweep_predictions/*_boxes.pt`.
+**Precondition:** training and its sweep finished: `train.log` in the training dir ends with the analysis lines (`run_analysis_suite … Found 51 predictions for analysis`), and `T=${det_models}/Task903_FastMRIBrainSmallLesion/RetinaUNetV001_D3V001_3d/fold0` holds `model_last.ckpt`, `plan_inference.pkl` and 51 `sweep_predictions/*_boxes.pt`.
 
 **Files:**
 - Create: `docs/verification/2026-09-29/brain_nndet/fold0/` (REPORT.md, froc.csv, output.txt, rule_a.json), `docs/verification/2026-09-29/brain_nndet/training.txt`, `docs/verification/2026-09-29/brain_nndet/infer_smoke.md`
@@ -1947,7 +1947,7 @@ T=/data2/congcong/data/FM_data/derived/nndet_models/Task903_FastMRIBrainSmallLes
 { ls $T; ls $T/sweep_predictions/*_boxes.pt | wc -l; head -3 $T/train.log; tail -5 $T/train.log; tail -c 1500 logs/brain_nndet/fold0.log; } | tee docs/verification/2026-09-29/brain_nndet/training.txt
 ```
 
-Expected: 51 state files; no traceback. Otherwise stop and report.
+Expected: 51 state files; `train.log` ends with the analysis lines. The launcher log may end with batchgenerators' teardown error `RuntimeError: One or more background workers are no longer alive` — that is printed after the work is done and is not a failure (seen in Task 1's toy run); any other traceback is. nnDetection may also hang at exit after that error (toy run: 6 threads in futex/poll wait, GPU memory still held, outputs already complete): once the outputs above are complete, the controller stops it with `kill -TERM <pid of nndet_train>` and records the pid, the time and the exit code in `training.txt`. Otherwise stop and report.
 
 - [ ] **Step 2: Extract** (nndet env, CPU is enough):
 
