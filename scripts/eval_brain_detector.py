@@ -17,30 +17,45 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.brain_detector import collect, evaluate, normal_fp_per_scan, strata_sensitivity  # noqa: E402
 from anatobind.nnunet.brain_lesion import DATASET_NAME, gt_boxes  # noqa: E402
-from anatobind.level_r.registry import load_registry  # noqa: E402
+from anatobind.level_r.registry import load_registry, BANDS  # noqa: E402
+
+# Module-level constants for testability
+EXPECTED_N_GT = 1297
+EXPECTED_N_SCANS = 253
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description="Out-of-fold evaluation of the brain small-lesion detector")
     ap.add_argument("--config", choices=("2d", "3d_fullres"), required=True, help="nnU-Net configuration")
     ap.add_argument("--out", type=Path, required=True, help="Output directory (must not exist)")
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
 
     # Verify output directory doesn't exist
     if a.out.exists():
         raise FileExistsError(f"--out {a.out} already exists")
 
-    # Get paths from environment
-    raw_root = Path(os.environ.get("nnUNet_raw", ""))
-    preprocessed_root = Path(os.environ.get("nnUNet_preprocessed", ""))
-    results_root = Path(os.environ.get("nnUNet_results", ""))
+    # Get paths from environment, validating they are set and non-empty
+    raw_val = os.environ.get("nnUNet_raw", "").strip()
+    preprocessed_val = os.environ.get("nnUNet_preprocessed", "").strip()
+    results_val = os.environ.get("nnUNet_results", "").strip()
+
+    if not raw_val:
+        raise FileNotFoundError("nnUNet_raw environment variable not set or empty")
+    if not preprocessed_val:
+        raise FileNotFoundError("nnUNet_preprocessed environment variable not set or empty")
+    if not results_val:
+        raise FileNotFoundError("nnUNet_results environment variable not set or empty")
+
+    raw_root = Path(raw_val)
+    preprocessed_root = Path(preprocessed_val)
+    results_root = Path(results_val)
 
     if not raw_root.is_dir():
-        raise FileNotFoundError(f"nnUNet_raw {raw_root} not found or not set")
+        raise FileNotFoundError(f"nnUNet_raw {raw_root} is not a directory")
     if not preprocessed_root.is_dir():
-        raise FileNotFoundError(f"nnUNet_preprocessed {preprocessed_root} not found or not set")
+        raise FileNotFoundError(f"nnUNet_preprocessed {preprocessed_root} is not a directory")
     if not results_root.is_dir():
-        raise FileNotFoundError(f"nnUNet_results {results_root} not found or not set")
+        raise FileNotFoundError(f"nnUNet_results {results_root} is not a directory")
 
     # Load cases.json and splits_final.json
     cases_json = raw_root / DATASET_NAME / "cases.json"
@@ -80,12 +95,12 @@ def main():
 
     # Assert expectations
     n_gt_total = sum(len(gt) for gt in gt_of_case.values())
-    if n_gt_total != 1297:
-        raise AssertionError(f"Expected 1297 total lesions, got {n_gt_total}")
+    if n_gt_total != EXPECTED_N_GT:
+        raise AssertionError(f"Expected {EXPECTED_N_GT} total lesions, got {n_gt_total}")
 
     n_scans = len(info)
-    if n_scans != 253:
-        raise AssertionError(f"Expected 253 scans, got {n_scans}")
+    if n_scans != EXPECTED_N_SCANS:
+        raise AssertionError(f"Expected {EXPECTED_N_SCANS} scans, got {n_scans}")
 
     # Collect and evaluate
     scans = collect(results_root, a.config, splits, gt_of_case)
@@ -164,7 +179,7 @@ def main():
         band_strata = strata_sensitivity(scans, thr, band_of)
         report_lines.append("| Band | N (GT) | N (Hit) | Sensitivity |\n")
         report_lines.append("|------|--------|--------|-------------|\n")
-        for band in ["0", "0-2", "2-4", ">4"]:
+        for band in BANDS:
             if band in band_strata:
                 s = band_strata[band]
                 report_lines.append(f"| {band} | {s['n_gt']} | {s['n_hit']} | {s['sensitivity']:.4f} |\n")
