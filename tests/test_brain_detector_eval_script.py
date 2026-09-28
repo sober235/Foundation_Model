@@ -17,7 +17,19 @@ def _load_script():
 
 
 def _synthetic_registry():
-    """Return synthetic registry rows for 3 lesions in 2 files."""
+    """Return synthetic registry rows for 3 lesions in 2 files.
+
+    Hand-computable fixture:
+    - case_les_1 fold 1: lesion 0 (score 0.91, found), lesion 1 (score 0.31, missed at 0.30)
+    - case_les_2 fold 0: lesion 2 (score 0.71, found)
+    - case_norm fold 2: no GT lesions, 2 FPs (scores 0.81, 0.39)
+
+    At threshold 0.30 (operating point):
+    - n_gt = 3, n_hit = 3, sensitivity_family = 1.0
+    - n_fp = 2, fp_per_scan = 2/3 ≈ 0.6667
+    - gate.pass = True (sensitivity >= 0.5)
+    - normal_fp_per_scan = 2/1 = 2.0
+    """
     return [
         {"lesion_id": 0, "file": "case_les_1", "band": "0", "n_slices": 1, "inplane_mm": 2.5, "stratum_geometry": "rect", "z0": 10, "z1": 10, "x0": 5, "y0": 5, "x1": 10, "y1": 10},
         {"lesion_id": 1, "file": "case_les_1", "band": "0-2", "n_slices": 2, "inplane_mm": 3.5, "stratum_geometry": "rect", "z0": 15, "z1": 16, "x0": 20, "y0": 20, "x1": 25, "y1": 25},
@@ -63,7 +75,7 @@ def test_script_end_to_end(tmp_path, monkeypatch):
     ]
     (preprocessed_ds / "splits_final.json").write_text(json.dumps(splits))
 
-    # Create synthetic validation outputs
+    # Create synthetic validation outputs with hand-computed scores
     # Shape: (cols, rows, slices) = (64, 64, 20)
     shape = (64, 64, 20)
     for fold, split in enumerate(splits):
@@ -71,26 +83,33 @@ def test_script_end_to_end(tmp_path, monkeypatch):
         fold_dir.mkdir(parents=True, exist_ok=True)
 
         for case in split["val"]:
-            # Create label map (only for lesion cases; normal case has zeros)
             lab = np.zeros(shape, np.uint8)
+            probs = np.zeros((2, shape[0], shape[1], shape[2]), np.float32)
+
             if case == "case_les_2" and fold == 0:
-                # Paint lesion boxes from registry
-                lab[30:35, 30:35, 8] = 1  # lesion_id 2
+                # Fold 0, val: case_les_2 with lesion 2 (score 0.71)
+                lab[30:35, 30:35, 8] = 1
+                probs[1][30:35, 30:35, 8] = 0.71
+
             elif case == "case_les_1" and fold == 1:
-                # Paint lesion boxes from registry
-                lab[5:10, 5:10, 10] = 1   # lesion_id 0
-                lab[20:25, 20:25, 15:17] = 1  # lesion_id 1
+                # Fold 1, val: case_les_1 with lesion 0 (score 0.91) and lesion 1 (score 0.31)
+                lab[5:10, 5:10, 10] = 1
+                probs[1][5:10, 5:10, 10] = 0.91
+                lab[20:25, 20:25, 15:17] = 1
+                probs[1][20:25, 20:25, 15:17] = 0.31
+
+            elif case == "case_norm_1" and fold == 2:
+                # Fold 2, val: case_norm_1 (normal, no GT) with 2 FPs (scores 0.81, 0.39)
+                lab[40:45, 40:45, 5] = 1
+                probs[1][40:45, 40:45, 5] = 0.81
+                lab[50:55, 50:55, 5] = 1
+                probs[1][50:55, 50:55, 5] = 0.39
 
             # Write label map
             img = nib.Nifti1Image(lab, np.eye(4))
             nib.save(img, str(fold_dir / f"{case}.nii.gz"))
 
-            # Create probabilities: (C, X, Y, Z) shape for the export format
-            # decode_boxes will transpose it to (C, X, Y, Z) internally
-            probs = np.zeros((2, shape[0], shape[1], shape[2]), np.float32)
-            probs[1] = (lab > 0).astype(np.float32)  # class 1 is lesion
-
-            # Save in nnU-Net format (C, Z, Y, X) - transpose back for saving
+            # Save in nnU-Net format (C, Z, Y, X) as stored by nnU-Net
             probs_nnunet = np.ascontiguousarray(probs.transpose(0, 3, 2, 1)).astype(np.float32)
             np.savez_compressed(fold_dir / f"{case}.npz", probabilities=probs_nnunet)
 
@@ -112,7 +131,7 @@ def test_script_end_to_end(tmp_path, monkeypatch):
         assert (out / "froc.csv").exists()
         assert (out / "output.txt").exists()
 
-        # Verify gate JSON exists in REPORT.md
+        # Verify gate JSON and check hand-computed values
         report_text = (out / "REPORT.md").read_text()
         assert "Gate" in report_text
         # Extract JSON from report (it's in a code block)
@@ -120,12 +139,35 @@ def test_script_end_to_end(tmp_path, monkeypatch):
         json_end = report_text.find("\n```", json_start)
         gate_json_text = report_text[json_start:json_end]
         gate = json.loads(gate_json_text)
-        assert "sensitivity_family" in gate
+
+        # At threshold 0.30 (operating point):
+        # - n_gt=3, n_hit=3, sensitivity_family = 1.0
+        # - n_fp=2, fp_per_scan = 2/3 ≈ 0.6667
+        # - gate.pass = True (sensitivity >= 0.5)
+        # - normal_fp_per_scan = 2/1 = 2.0
+        assert gate["pass"] is True, "Gate should pass with sensitivity 1.0 >= 0.5"
+        assert gate["thr"] == 0.30, f"Operating threshold should be 0.30, got {gate['thr']}"
+        assert abs(gate["sensitivity_family"] - 1.0) < 0.01, f"Sensitivity should be 1.0, got {gate['sensitivity_family']}"
+        assert abs(gate["fp_per_scan"] - 0.6667) < 0.01, f"FP per scan should be ~0.6667, got {gate['fp_per_scan']}"
 
         # Verify FROC CSV has correct header and data
         froc_text = (out / "froc.csv").read_text()
         lines = froc_text.strip().split("\n")
         assert lines[0] == "thr,sensitivity,sensitivity_family,fp_per_scan"
+        # At threshold 0.30: sensitivity_family = 1.0, fp_per_scan = 0.6667
+        froc_row_030 = next((l for l in lines if l.startswith("0.30,")), None)
+        assert froc_row_030 is not None, "FROC table should have threshold 0.30"
+        assert "1.000000" in froc_row_030, f"Sensitivity at 0.30 should be 1.0: {froc_row_030}"
+
+        # Check REPORT.md contains strata tables with expected counts
+        # band="0": n_gt=1, n_hit=1
+        # band="0-2": n_gt=1, n_hit=1
+        # band="2-4": n_gt=1, n_hit=1
+        # n_slices=1: n_gt=2, n_hit=2
+        assert "| 0 | 1 | 1 |" in report_text, "Band 0 should have n_gt=1, n_hit=1"
+        assert "| 0-2 | 1 | 1 |" in report_text, "Band 0-2 should have n_gt=1, n_hit=1"
+        assert "| 2-4 | 1 | 1 |" in report_text, "Band 2-4 should have n_gt=1, n_hit=1"
+        assert "1 slice(s) | 2 | 2 |" in report_text, "Single-slice should have n_gt=2, n_hit=2"
 
     # Test that existing --out is refused
     with pytest.raises(FileExistsError, match="already exists"):
