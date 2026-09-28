@@ -1,0 +1,1 @@
+volumes 165, lesions 1297, registry boxes with no label voxel 0, label voxels outside every registry box 0 of 910357

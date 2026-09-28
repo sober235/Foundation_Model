@@ -1,0 +1,7 @@
+GT lesions 1297; touched by any predicted voxel (population=all): 668 (0.515)
+GT lesions whose overlapping component(s) include one with box IoU < 0.1 (population=all): 189
+GT lesions covered per predicted component (5 = 5+) (population=all): {1: 528, 2: 60, 3: 18, 4: 6, 5: 6}
+GT lesions 1297; touched by any predicted voxel (population=decoded (>= 9 voxels)): 645 (0.497)
+GT lesions whose overlapping component(s) include one with box IoU < 0.1 (population=decoded (>= 9 voxels)): 174
+GT lesions covered per predicted component (5 = 5+) (population=decoded (>= 9 voxels)): {1: 479, 2: 59, 3: 18, 4: 6, 5: 6}
+Command: scripts/diagnose_brain_detector.py --config 2d --out docs/verification/2026-09-28/brain_detector/2d/diagnostic_NOT_GATE_v2.txt

@@ -1,0 +1,1 @@
+wrote /data2/congcong/data/FM_data/derived/nnunet/preprocessed/Dataset903_FastMRIBrainSmallLesion/splits_final.json: cases per fold {0: 51, 1: 51, 2: 51, 3: 50, 4: 50}

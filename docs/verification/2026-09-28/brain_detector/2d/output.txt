@@ -1,0 +1,7 @@
+Scans: 253
+Total ground truth lesions: 1297
+Gate pass: False
+Operating threshold: 0.55
+Family sensitivity at operating point: 0.3662
+FP per scan at operating point: 1.6364
+Normal FP per volume: 0.3523
