@@ -15,3 +15,10 @@ def test_idle_gpus_parse_nvidia_smi_and_skip_busy_cards():
 def test_assign_folds_round_robin_and_command():
     assert bdt.assign([0, 1, 2, 3, 4], [0, 1, 2, 3]) == [(0, 0), (1, 1), (2, 2), (3, 3), (4, 0)]
     assert bdt.train_command("2d", 3, "nnUNetTrainer_250epochs") == ["nnUNetv2_train", "903", "2d", "3", "-tr", "nnUNetTrainer_250epochs", "--npz"]
+
+
+def test_existing_logs_names_only_the_folds_that_would_be_overwritten(tmp_path):
+    (tmp_path / "2d_fold0.log").write_text("old run")
+    assert bdt.existing_logs("2d", [0, 1], tmp_path) == [tmp_path / "2d_fold0.log"]
+    assert bdt.existing_logs("2d", [1, 2], tmp_path) == []
+    assert bdt.existing_logs("3d_fullres", [0], tmp_path) == []

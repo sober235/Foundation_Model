@@ -6,6 +6,7 @@
   PYTHONPATH=. python scripts/brain_detector_train.py --config 2d --folds 0 1 2 3 4 --gpus 0 1 2 3 --trainer nnUNetTrainer_250epochs
 """
 import argparse
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -45,6 +46,12 @@ def assign(folds, gpus):
 def train_command(config, fold, trainer):
     """nnU-Net v2 training command for one fold."""
     return ["nnUNetv2_train", DATASET_ID, config, str(fold), "-tr", trainer, "--npz"]
+
+
+def existing_logs(config, folds, log_dir):
+    """Target log paths for these folds that already exist under log_dir (would be silently
+    overwritten by the chain's `>` redirect if launched)."""
+    return [p for p in (log_dir / f"{config}_fold{f}.log" for f in folds) if p.exists()]
 
 
 def query_nvidia_smi():
@@ -89,7 +96,7 @@ def build_chain(config, gpu, fold_list, trainer, repo_root, log_dir):
     for fold in fold_list:
         cmd = train_command(config, fold, trainer)
         log_path = log_dir / f"{config}_fold{fold}.log"
-        cmd_str = " ".join(cmd)
+        cmd_str = " ".join(shlex.quote(part) for part in cmd)
         parts.append(f"CUDA_VISIBLE_DEVICES={gpu} nice -n 19 {cmd_str} > {log_path} 2>&1")
     chain = " && ".join(parts)
     return ["setsid", "bash", "-c", chain]
@@ -107,6 +114,12 @@ def main(argv=None):
     repo_root = Path(__file__).resolve().parents[1]
     log_dir = repo_root / "logs" / "brain_detector"
     log_dir.mkdir(parents=True, exist_ok=True)
+
+    clobbered = existing_logs(args.config, args.folds, log_dir)
+    if clobbered:
+        names = ", ".join(str(p) for p in clobbered)
+        print(f"Refusing to start: log file(s) already exist and would be overwritten: {names}", file=sys.stderr)
+        return 1
 
     csv = query_nvidia_smi()
     busy_pids = query_busy_pids()
