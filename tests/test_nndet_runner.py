@@ -1,3 +1,4 @@
+# tests/test_nndet_runner.py — run in the nndet env (see Global Constraints); skipped elsewhere
 import importlib.util
 from pathlib import Path
 
