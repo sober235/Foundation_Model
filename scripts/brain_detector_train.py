@@ -48,10 +48,10 @@ def train_command(config, fold, trainer):
     return ["nnUNetv2_train", DATASET_ID, config, str(fold), "-tr", trainer, "--npz"]
 
 
-def existing_logs(config, folds, log_dir):
+def existing_logs(config, trainer, folds, log_dir):
     """Target log paths for these folds that already exist under log_dir (would be silently
     overwritten by the chain's `>` redirect if launched)."""
-    return [p for p in (log_dir / f"{config}_fold{f}.log" for f in folds) if p.exists()]
+    return [p for p in (log_dir / f"{config}_{trainer}_fold{f}.log" for f in folds) if p.exists()]
 
 
 def query_nvidia_smi():
@@ -95,7 +95,7 @@ def build_chain(config, gpu, fold_list, trainer, repo_root, log_dir):
     parts = [f"source {repo_root / 'scripts/nnunet_env.sh'}"]
     for fold in fold_list:
         cmd = train_command(config, fold, trainer)
-        log_path = log_dir / f"{config}_fold{fold}.log"
+        log_path = log_dir / f"{config}_{trainer}_fold{fold}.log"
         cmd_str = " ".join(shlex.quote(part) for part in cmd)
         parts.append(f"CUDA_VISIBLE_DEVICES={gpu} nice -n 19 {cmd_str} > {log_path} 2>&1")
     chain = " && ".join(parts)
@@ -115,7 +115,7 @@ def main(argv=None):
     log_dir = repo_root / "logs" / "brain_detector"
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    clobbered = existing_logs(args.config, args.folds, log_dir)
+    clobbered = existing_logs(args.config, args.trainer, args.folds, log_dir)
     if clobbered:
         names = ", ".join(str(p) for p in clobbered)
         print(f"Refusing to start: log file(s) already exist and would be overwritten: {names}", file=sys.stderr)
