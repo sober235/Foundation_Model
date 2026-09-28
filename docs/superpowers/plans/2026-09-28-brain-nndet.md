@@ -1596,7 +1596,7 @@ Expected: `validation cases per fold [51, 51, 51, 50, 50]`.
 - [ ] **Step 5: Ground-truth coordinate check** (spec §5 check two; training must not start unless it passes):
 
 ```bash
-bash -c 'source scripts/nndet_env.sh && python scripts/nndet_runner.py gt --prep "$det_data/Task903_FastMRIBrainSmallLesion/preprocessed" --out /data2/congcong/data/FM_data/derived/nndet_runs/gt.json'
+bash -c 'source scripts/nndet_env.sh && nice -n 19 python scripts/nndet_runner.py gt --prep "$det_data/Task903_FastMRIBrainSmallLesion/preprocessed" --out /data2/congcong/data/FM_data/derived/nndet_runs/gt.json'
 PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python scripts/eval_brain_nndet.py --gt-check /data2/congcong/data/FM_data/derived/nndet_runs/gt.json --out docs/verification/2026-09-29/brain_nndet/gt_check
 ```
 
@@ -1840,7 +1840,7 @@ def test_run_runner_pins_the_gpu_and_calls_predict(tmp_path, monkeypatch):
     B.run_runner(tmp_path / "a b.nii.gz", tmp_path / "t", tmp_path / "w", tmp_path / "p.json", 5)
     cmd = calls[0]
     assert cmd[:2] == ["bash", "-c"]
-    assert "CUDA_VISIBLE_DEVICES=5 python" in cmd[2] and "nndet_runner.py predict" in cmd[2]
+    assert "CUDA_VISIBLE_DEVICES=5 nice -n 19 python" in cmd[2] and "nndet_runner.py predict" in cmd[2]
     assert f"--image '{tmp_path / 'a b.nii.gz'}'" in cmd[2]
 ```
 
@@ -1866,7 +1866,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def run_runner(image, train_dir, work, out_json, gpu):
     q = lambda p: shlex.quote(str(p))  # noqa: E731
-    inner = (f"source {q(REPO / 'scripts/nndet_env.sh')} && CUDA_VISIBLE_DEVICES={int(gpu)} python "
+    inner = (f"source {q(REPO / 'scripts/nndet_env.sh')} && CUDA_VISIBLE_DEVICES={int(gpu)} nice -n 19 python "
              f"{q(REPO / 'scripts/nndet_runner.py')} predict --image {q(image)} --train-dir {q(train_dir)} "
              f"--work {q(work)} --out {q(out_json)}")
     subprocess.run(["bash", "-c", inner], check=True)
@@ -1952,7 +1952,7 @@ Expected: 51 state files; `train.log` ends with the analysis lines. The launcher
 - [ ] **Step 2: Extract** (nndet env, CPU is enough):
 
 ```bash
-bash -c 'source scripts/nndet_env.sh && T=$det_models/Task903_FastMRIBrainSmallLesion/RetinaUNetV001_D3V001_3d/fold0 && R=/data2/congcong/data/FM_data/derived/nndet_runs && python scripts/nndet_runner.py extract --state $T/sweep_predictions --params default --out $R/fold0_default.json && python scripts/nndet_runner.py extract --state $T/sweep_predictions --params swept --train-dir $T --out $R/fold0_swept.json'
+bash -c 'source scripts/nndet_env.sh && T=$det_models/Task903_FastMRIBrainSmallLesion/RetinaUNetV001_D3V001_3d/fold0 && R=/data2/congcong/data/FM_data/derived/nndet_runs && nice -n 19 python scripts/nndet_runner.py extract --state $T/sweep_predictions --params default --out $R/fold0_default.json && nice -n 19 python scripts/nndet_runner.py extract --state $T/sweep_predictions --params swept --train-dir $T --out $R/fold0_swept.json'
 ```
 
 - [ ] **Step 3: Fold-0 report**
