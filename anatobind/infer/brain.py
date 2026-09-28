@@ -29,17 +29,15 @@ def lesion_rows(dets, label_map):
         # Find which component has the most voxels inside this detection's box
         box_region = comp[c0:c1, r0:r1, s0:s1]
         comp_ids, counts = np.unique(box_region[box_region > 0], return_counts=True)
-        if len(comp_ids) == 0:
-            continue
-        comp_id = comp_ids[np.argmax(counts)]
-
         boxes = {}
-        for s in range(s0, s1):
-            # Extract only voxels of this component
-            mask = comp[c0:c1, r0:r1, s] == comp_id
-            cols, rows = np.nonzero(mask)
-            if cols.size:
-                boxes[str(s)] = [[int(r0 + rows.min()), int(r0 + rows.max() + 1), int(c0 + cols.min()), int(c0 + cols.max() + 1)]]
+        if len(comp_ids) > 0:
+            comp_id = comp_ids[np.argmax(counts)]
+            for s in range(s0, s1):
+                # Extract only voxels of this component
+                mask = comp[c0:c1, r0:r1, s] == comp_id
+                cols, rows = np.nonzero(mask)
+                if cols.size:
+                    boxes[str(s)] = [[int(r0 + rows.min()), int(r0 + rows.max() + 1), int(c0 + cols.min()), int(c0 + cols.max() + 1)]]
         out.append({"z0": int(s0), "z1": int(s1 - 1), "score": float(d["score"]), "boxes": boxes})
     return out
 
