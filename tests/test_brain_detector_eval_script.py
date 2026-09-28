@@ -192,6 +192,46 @@ def test_script_end_to_end(tmp_path, monkeypatch):
         mod.main(["--config", "2d", "--out", str(tmp_path / "output2")])
 
 
+def test_script_requires_splits_to_partition_cases(tmp_path, monkeypatch):
+    """A case missing from every fold's val list must raise AssertionError naming it, before collect() runs."""
+    raw = tmp_path / "raw"
+    preprocessed = tmp_path / "preprocessed"
+    results = tmp_path / "results"
+    raw.mkdir()
+    preprocessed.mkdir()
+    results.mkdir()
+
+    monkeypatch.setenv("nnUNet_raw", str(raw))
+    monkeypatch.setenv("nnUNet_preprocessed", str(preprocessed))
+    monkeypatch.setenv("nnUNet_results", str(results))
+
+    from anatobind.nnunet.brain_lesion import DATASET_NAME
+    raw_ds = raw / DATASET_NAME
+    preprocessed_ds = preprocessed / DATASET_NAME
+    raw_ds.mkdir()
+    preprocessed_ds.mkdir()
+
+    cases_info = {
+        "case_les_1": {"patient_id": "p1", "kind": "lesion", "n_label_voxels": 100},
+        "case_les_2": {"patient_id": "p2", "kind": "lesion", "n_label_voxels": 80},
+        "case_norm_1": {"patient_id": "p3", "kind": "normal", "n_label_voxels": 0},
+    }
+    (raw_ds / "cases.json").write_text(json.dumps(cases_info))
+
+    # fold 2's val is empty: case_norm_1 never appears in any fold's val list.
+    splits = [
+        {"train": ["case_les_1", "case_norm_1"], "val": ["case_les_2"]},
+        {"train": ["case_les_2", "case_norm_1"], "val": ["case_les_1"]},
+        {"train": ["case_les_1", "case_les_2", "case_norm_1"], "val": []},
+    ]
+    (preprocessed_ds / "splits_final.json").write_text(json.dumps(splits))
+
+    mod = _load_script()
+    with patch.object(mod, "load_registry", return_value=_synthetic_registry()):
+        with pytest.raises(AssertionError, match="case_norm_1"):
+            mod.main(["--config", "2d", "--out", str(tmp_path / "output_missing")])
+
+
 def test_script_missing_env_variables(tmp_path, monkeypatch):
     """Test that missing environment variables are caught with clear messages."""
     mod = _load_script()

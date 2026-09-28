@@ -93,19 +93,30 @@ def main(argv=None):
     # Identify normal cases
     normal_cases = {c for c, ci in info.items() if ci["kind"] == "normal"}
 
-    # Assert expectations
-    n_gt_total = sum(len(gt) for gt in gt_of_case.values())
-    if n_gt_total != EXPECTED_N_GT:
-        raise AssertionError(f"Expected {EXPECTED_N_GT} total lesions, got {n_gt_total}")
-
-    n_scans = len(info)
-    if n_scans != EXPECTED_N_SCANS:
-        raise AssertionError(f"Expected {EXPECTED_N_SCANS} scans, got {n_scans}")
+    # The splits' val lists must partition cases.json: every case exactly once.
+    val_cases = [c for split in splits for c in split["val"]]
+    seen = set()
+    duplicated = set()
+    for c in val_cases:
+        if c in seen:
+            duplicated.add(c)
+        seen.add(c)
+    missing = set(info) - seen
+    if missing or duplicated:
+        raise AssertionError(
+            f"splits val lists must partition cases.json: missing {sorted(missing)}, duplicated {sorted(duplicated)}"
+        )
 
     # Collect and evaluate
     scans = collect(results_root, a.config, splits, gt_of_case)
 
     result = evaluate(scans, normal_cases)
+
+    # Assert on what was actually scored, not merely on the inputs.
+    if result["n_scans"] != EXPECTED_N_SCANS:
+        raise AssertionError(f"Expected {EXPECTED_N_SCANS} scans, got {result['n_scans']}")
+    if result["n_gt"] != EXPECTED_N_GT:
+        raise AssertionError(f"Expected {EXPECTED_N_GT} total lesions, got {result['n_gt']}")
 
     # Build strata_of
     # 1. band
