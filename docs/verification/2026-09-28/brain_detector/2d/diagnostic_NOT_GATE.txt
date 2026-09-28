@@ -1,0 +1,3 @@
+GT lesions 1297; touched by any predicted voxel: 668 (0.515)
+GT lesions whose overlapping component(s) include one with box IoU < 0.1: 174
+GT lesions covered per predicted component (5 = 5+): {1: 528, 2: 60, 3: 18, 4: 6, 5: 6}
