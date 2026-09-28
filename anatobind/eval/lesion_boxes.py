@@ -12,12 +12,14 @@ from anatobind.nnunet.lesion_labels import FAMILY_OF_LABEL
 
 STRUCTURE = np.ones((3, 3, 3), bool)     # 26-connectivity
 MIN_VOXELS = 27                          # a 3x3x3 block; smaller blobs are decoder noise
+BRAIN_MIN_VOXELS = 9                     # 3x3x1: a single-slice 4x4 brain lesion has 16 voxels (spec 2026-09-28 D6)
 AGREEMENT_MIN = 0.99
 
 
-def decode_boxes(label_map, probs=None, min_voxels=MIN_VOXELS):
+def decode_boxes(label_map, probs=None, min_voxels=MIN_VOXELS, families=None):
+    """families: {label: family name}; default the knee families."""
     out = []
-    for label, family in FAMILY_OF_LABEL.items():
+    for label, family in (FAMILY_OF_LABEL if families is None else families).items():
         comp, n = ndimage.label(label_map == label, structure=STRUCTURE)
         if n == 0:
             continue
