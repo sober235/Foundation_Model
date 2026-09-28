@@ -1,0 +1,10 @@
+data_identifier D3V001_3d
+target_spacing [5.     0.6875 0.6875]
+transpose_forward [0, 1, 2] transpose_backward [0, 1, 2]
+patch_size [ 12 256 224] batch_size 4
+analysis
+D3V001_3d
+D3V001_3d.pkl
+labelsTr
+properties
+wrote /data2/congcong/data/FM_data/derived/nndet/Task903_FastMRIBrainSmallLesion/preprocessed/splits_final.pkl: validation cases per fold [51, 51, 51, 50, 50]
