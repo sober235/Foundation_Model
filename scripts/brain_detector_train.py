@@ -92,12 +92,12 @@ def query_busy_pids():
 
 def build_chain(config, gpu, fold_list, trainer, repo_root, log_dir):
     """One setsid bash -c chain that runs fold_list sequentially, pinned to gpu."""
-    parts = [f"source {repo_root / 'scripts/nnunet_env.sh'}"]
+    parts = [f"source {shlex.quote(str(repo_root / 'scripts/nnunet_env.sh'))}"]
     for fold in fold_list:
         cmd = train_command(config, fold, trainer)
         log_path = log_dir / f"{config}_{trainer}_fold{fold}.log"
         cmd_str = " ".join(shlex.quote(part) for part in cmd)
-        parts.append(f"CUDA_VISIBLE_DEVICES={gpu} nice -n 19 {cmd_str} > {log_path} 2>&1")
+        parts.append(f"CUDA_VISIBLE_DEVICES={gpu} nice -n 19 {cmd_str} > {shlex.quote(str(log_path))} 2>&1")
     chain = " && ".join(parts)
     return ["setsid", "bash", "-c", chain]
 

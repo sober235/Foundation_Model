@@ -1,4 +1,5 @@
 import importlib.util
+import shlex
 from pathlib import Path
 
 spec = importlib.util.spec_from_file_location("bdt", Path(__file__).resolve().parents[1] / "scripts/brain_detector_train.py")
@@ -23,3 +24,16 @@ def test_existing_logs_names_only_the_folds_that_would_be_overwritten(tmp_path):
     assert bdt.existing_logs("2d", "nnUNetTrainer_250epochs", [1, 2], tmp_path) == []
     assert bdt.existing_logs("3d_fullres", "nnUNetTrainer_250epochs", [0], tmp_path) == []
     assert bdt.existing_logs("2d", "nnUNetTrainer_5epochs", [0], tmp_path) == []
+
+
+def test_build_chain_quotes_trainer_in_log_redirect(tmp_path):
+    """An adversarial --trainer must not let its `;`/space escape the redirect's shell quoting.
+    Constructs strings only; nothing here is executed."""
+    trainer = "x; echo pwned #"
+    chain = bdt.build_chain("2d", 0, [0], trainer, Path("/repo"), tmp_path)
+    assert chain[:3] == ["setsid", "bash", "-c"]
+    inner = chain[3]
+    tokens = shlex.split(inner)
+    expected_log = str(tmp_path / f"2d_{trainer}_fold0.log")
+    assert expected_log in tokens
+    assert not any(t == ";" for t in tokens)
