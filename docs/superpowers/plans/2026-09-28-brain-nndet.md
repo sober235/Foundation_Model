@@ -159,7 +159,7 @@ grep -n -E 'Predict cases with default settings|Start parameter sweep|Found infe
 
 Record the wall time of the sweep (timestamps of "Predict cases with default settings" and the end of `train.log`) and the number of validation cases it predicted.
 
-- [ ] **Step 8: Write `docs/nndet_install.md`** with: the three install attempts of Step 5 (each script verbatim and the last 15 lines of its log, and why it was abandoned); the commands of Steps 6–7; `bash -c 'source scripts/nndet_env.sh && pip freeze'`; `~/anaconda3/envs/nndet/bin/nvcc -V`; `g++-10 --version | head -1`; the Step 6 output; the Step 7 confirmations (file listing, the plan line, the swept parameter names, sweep wall time and case count). Paste real outputs only.
+- [ ] **Step 8: Write `docs/nndet_install.md`** with: every install run of Step 5 (01–07; each script verbatim and the last 15 lines of its log, and why it was abandoned); the commands of Steps 6–7; `bash -c 'source scripts/nndet_env.sh && pip freeze'`; `~/anaconda3/envs/nndet/bin/nvcc -V`; `g++-10 --version | head -1`; the Step 6 output; the Step 7 confirmations (file listing, the plan line, the swept parameter names, sweep wall time and case count). Paste real outputs only.
 
 - [ ] **Step 9: Commit** — `git add scripts/nndet_env.sh tests/test_nndet_env.py docs/nndet_install.md && git commit -m "nnDetection environment: env file, install record and toy smoke run with sweep"`
 
