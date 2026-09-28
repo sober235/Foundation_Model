@@ -99,31 +99,30 @@ export det_verbose=1
 
 - [ ] **Step 4: Run** the test → 1 passed.
 
-- [ ] **Step 5: The conda env — installed by the controller ahead of the branch (2026-09-29); do not reinstall.** The scripts and logs are in `~/logs/nndet_install/`:
-  - `01_env.sh/.log` — the README route (conda `gxx_linux-64==9.3.0`, conda pytorch): `conda create -n nndet python=3.8` succeeded (python 3.8.20 from conda-forge); the classic solver then ran 28 min on `gxx_linux-64` against the full Tsinghua conda-forge repodata (`~/.condarc`: Tsinghua mirror, strict channel priority) and was stopped.
-  - `02_env.sh/.log` — `--override-channels -c defaults gxx_linux-64=9.3.0`: unsatisfiable, because the env's python/libgcc come from conda-forge.
-  - `03_env.sh/.log` — the route in use: no conda compiler (the system has gcc-10/g++-10; nvcc 11.3 accepts host gcc ≤ 10, the default g++ is 11.4), nvcc 11.3.1 alone from its channel, torch from the official pip wheel:
+- [ ] **Step 5: The conda env — installed by the controller ahead of the branch (2026-09-29, done 02:21); do not reinstall.** Every script and log is in `~/logs/nndet_install/` (read them for Step 8):
+  - `01_env.sh/.log` — the README route: `conda create -n nndet python=3.8` succeeded (python 3.8.20 from conda-forge); the classic solver then ran 28 min on `gxx_linux-64==9.3.0` against the full Tsinghua conda-forge repodata (`~/.condarc`: Tsinghua mirror, strict channel priority) and was stopped.
+  - `02_env.sh/.log` — `--override-channels -c defaults gxx_linux-64=9.3.0`: unsatisfiable (the env's python/libgcc come from conda-forge). No conda compiler is used from here on: the system has gcc-10/g++-10, which nvcc 11.3 accepts (host gcc ≤ 10; the default g++ is 11.4).
+  - `03_env.sh/.log` — `conda install -y --override-channels -c nvidia/label/cuda-11.3.1 cuda` succeeded (nvcc 11.3.122 in the env). Its next step, a bare `pip`, resolved to `/usr/bin/pip` (system python 3.10): on this machine `conda activate` puts the env's `bin` after `~/.local/bin` and `/usr/bin`. It was stopped while downloading; nothing was installed. From here on every command names the env's python by absolute path.
+  - `04_env.sh/.log` — the 1.6 GB torch wheel download through the proxy was cut at 0.9 GB and failed its sha256 check.
+  - `05_env.sh/.log` — aria2c got HTTP 403 from the Aliyun mirror with its default user agent.
+  - `06_env.sh/.log` — succeeded up to the build: the wheel fetched with `aria2c -U curl/7.81.0 -x 8 -s 8` from `https://mirrors.aliyun.com/pytorch-wheels/cu113/torch-1.11.0+cu113-cp38-cp38-linux_x86_64.whl` and checked against the official sha256 `b6a799bdb6ee3d914e5e62bddb4276d4a10248c1af4f2d217738e5f9ee27485b` (`sha256sum -c`: OK); then `python -m pip install <wheel> torchvision==0.12.0+cu113 torchaudio==0.11.0 --extra-index-url https://download.pytorch.org/whl/cu113`, `-r requirements.txt`, `hydra-core --upgrade --pre`, `pytorch_model_summary`, `pytest`; `import torch` → `1.11.0+cu113 11.3`. The build failed: `cannot import name 'packaging' from 'pkg_resources'` (setuptools 70.3.0 is too new for torch 1.11's cpp_extension).
+  - `07_build.sh/.log` — the working finish:
 
 ```bash
-export https_proxy=http://127.0.0.1:7897 http_proxy=http://127.0.0.1:7897
-source ~/anaconda3/bin/activate nndet
-conda install -y --override-channels -c nvidia/label/cuda-11.3.1 cuda
+E=$HOME/anaconda3/envs/nndet
+export PATH="$E/bin:$PATH"
 export PYTHONNOUSERSITE=1
-pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0 --extra-index-url https://download.pytorch.org/whl/cu113
+export https_proxy=http://127.0.0.1:7897 http_proxy=http://127.0.0.1:7897
+"$E/bin/python" -m pip install setuptools==59.5.0
 cd ~/src/nnDetection
-git checkout --detach 97a58f31
-pip install -r requirements.txt
-pip install hydra-core --upgrade --pre
-pip install git+https://github.com/mibaumgartner/pytorch_model_summary.git
-pip install pytest
-python -c "import torch; print('torch', torch.__version__, torch.version.cuda)"
-which nvcc; nvcc -V | tail -2; gcc-10 --version | head -1; g++-10 --version | head -1
-CC=gcc-10 CXX=g++-10 CUDA_HOME=$CONDA_PREFIX FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST=8.0 pip install -v -e .
-git status --short --untracked-files=no
-echo "ENV_SETUP_DONE $(date '+%F %T')"
+CC=gcc-10 CXX=g++-10 CUDA_HOME="$E" FORCE_CUDA=1 TORCH_CUDA_ARCH_LIST=8.0 "$E/bin/python" -m pip install -v -e .
+git status --short --untracked-files=no          # printed nothing
+echo "ENV_SETUP_DONE $(date '+%F %T')"            # ENV_SETUP_DONE 2026-09-29 02:21:04
 ```
 
-Precondition for the implementer: `grep ENV_SETUP_DONE ~/logs/nndet_install/03_env.log` prints one line and `bash -c 'cd ~/src/nnDetection && git rev-parse --short HEAD && git status --short --untracked-files=no'` prints `97a58f3` and nothing else. If not, stop and report (BLOCKED); do not install anything yourself.
+  Controller's check after 07 (`CUDA_VISIBLE_DEVICES=3`, from `/tmp`): `import torch, nndet._C, nndet` → `1.11.0+cu113 11.3 True`; `pytorch_lightning 1.4.2`, `SimpleITK 2.0.2`, `numpy 1.24.4`.
+
+Precondition for the implementer: `grep ENV_SETUP_DONE ~/logs/nndet_install/07_build.log` prints the line above and `bash -c 'cd ~/src/nnDetection && git rev-parse --short HEAD && git status --short --untracked-files=no'` prints `97a58f3` and nothing else. If not, stop and report (BLOCKED); do not install anything yourself.
 
 - [ ] **Step 6: Import check** (pick an idle GPU first: `nvidia-smi --query-gpu=index,memory.used --format=csv,noheader,nounits` and `nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv,noheader`; a card with < 1000 MiB and no compute app):
 
