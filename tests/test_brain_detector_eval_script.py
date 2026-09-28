@@ -17,23 +17,29 @@ def _load_script():
 
 
 def _synthetic_registry():
-    """Return synthetic registry rows for 3 lesions in 2 files.
+    """Return synthetic registry rows for 4 lesions: 3 detected, 1 missed.
 
     Hand-computable fixture:
-    - case_les_1 fold 1: lesion 0 (score 0.91, found), lesion 1 (score 0.31, missed at 0.30)
+    - case_les_1 fold 1: lesion 0 (score 0.91, found), lesion 1 (score 0.31, found),
+                         lesion 3 (score 0.2, NEVER FOUND - outside any predicted box)
     - case_les_2 fold 0: lesion 2 (score 0.71, found)
     - case_norm fold 2: no GT lesions, 2 FPs (scores 0.81, 0.39)
 
     At threshold 0.30 (operating point):
-    - n_gt = 3, n_hit = 3, sensitivity_family = 1.0
+    - n_gt = 4 (lesions 0, 1, 2, 3)
+    - n_hit = 3 (lesion 3 missed: score 0.2 < 0.30 everywhere, no component detected)
+    - sensitivity_family = 3/4 = 0.75
     - n_fp = 2, fp_per_scan = 2/3 ≈ 0.6667
-    - gate.pass = True (sensitivity >= 0.5)
-    - normal_fp_per_scan = 2/1 = 2.0
+    - gate.pass = True (0.75 >= 0.5 minimum)
+    - gate.thr = 0.30 (best achievable with these 4 lesions)
+    - normal_fp_per_scan = 2/1 = 2.0 (2 FPs in 1 normal case)
+    - Stratum of lesion 3 (e.g., band=">4"): n_gt=1, n_hit=0 (shows missed detection)
     """
     return [
         {"lesion_id": 0, "file": "case_les_1", "band": "0", "n_slices": 1, "inplane_mm": 2.5, "stratum_geometry": "rect", "z0": 10, "z1": 10, "x0": 5, "y0": 5, "x1": 10, "y1": 10},
         {"lesion_id": 1, "file": "case_les_1", "band": "0-2", "n_slices": 2, "inplane_mm": 3.5, "stratum_geometry": "rect", "z0": 15, "z1": 16, "x0": 20, "y0": 20, "x1": 25, "y1": 25},
         {"lesion_id": 2, "file": "case_les_2", "band": "2-4", "n_slices": 1, "inplane_mm": 4.5, "stratum_geometry": "3d", "z0": 8, "z1": 8, "x0": 30, "y0": 30, "x1": 35, "y1": 35},
+        {"lesion_id": 3, "file": "case_les_1", "band": ">4", "n_slices": 1, "inplane_mm": 5.5, "stratum_geometry": "ellipse", "z0": 5, "z1": 5, "x0": 0, "y0": 0, "x1": 2, "y1": 2},
     ]
 
 
@@ -117,7 +123,7 @@ def test_script_end_to_end(tmp_path, monkeypatch):
     mod = _load_script()
 
     # Monkeypatch the constants to match our test data
-    with patch.object(mod, "EXPECTED_N_GT", 3), \
+    with patch.object(mod, "EXPECTED_N_GT", 4), \
          patch.object(mod, "EXPECTED_N_SCANS", 3), \
          patch.object(mod, "load_registry", return_value=_synthetic_registry()):
 
@@ -141,33 +147,40 @@ def test_script_end_to_end(tmp_path, monkeypatch):
         gate = json.loads(gate_json_text)
 
         # At threshold 0.30 (operating point):
-        # - n_gt=3, n_hit=3, sensitivity_family = 1.0
+        # - n_gt=4 (3 found + 1 missed), n_hit=3, sensitivity_family = 3/4 = 0.75
         # - n_fp=2, fp_per_scan = 2/3 ≈ 0.6667
-        # - gate.pass = True (sensitivity >= 0.5)
+        # - gate.pass = True (0.75 >= 0.5 minimum)
         # - normal_fp_per_scan = 2/1 = 2.0
-        assert gate["pass"] is True, "Gate should pass with sensitivity 1.0 >= 0.5"
+        assert gate["pass"] is True, "Gate should pass with sensitivity 0.75 >= 0.5"
         assert gate["thr"] == 0.30, f"Operating threshold should be 0.30, got {gate['thr']}"
-        assert abs(gate["sensitivity_family"] - 1.0) < 0.01, f"Sensitivity should be 1.0, got {gate['sensitivity_family']}"
+        assert abs(gate["sensitivity_family"] - 0.75) < 0.01, f"Sensitivity should be 0.75 (3/4), got {gate['sensitivity_family']}"
         assert abs(gate["fp_per_scan"] - 0.6667) < 0.01, f"FP per scan should be ~0.6667, got {gate['fp_per_scan']}"
 
         # Verify FROC CSV has correct header and data
         froc_text = (out / "froc.csv").read_text()
         lines = froc_text.strip().split("\n")
         assert lines[0] == "thr,sensitivity,sensitivity_family,fp_per_scan"
-        # At threshold 0.30: sensitivity_family = 1.0, fp_per_scan = 0.6667
+        # At threshold 0.30: sensitivity_family = 0.75, fp_per_scan = 0.6667
         froc_row_030 = next((l for l in lines if l.startswith("0.30,")), None)
         assert froc_row_030 is not None, "FROC table should have threshold 0.30"
-        assert "1.000000" in froc_row_030, f"Sensitivity at 0.30 should be 1.0: {froc_row_030}"
+        assert "0.750000" in froc_row_030, f"Sensitivity at 0.30 should be 0.75 (3/4): {froc_row_030}"
+
+        # Verify normal-volume false positives: must see exactly "2.0000" in output
+        output_text = (out / "output.txt").read_text()
+        assert "Normal FP per volume: 2.0000" in output_text, \
+            f"Must show 2.0000 normal FP per volume, got:\n{output_text}"
 
         # Check REPORT.md contains strata tables with expected counts
-        # band="0": n_gt=1, n_hit=1
-        # band="0-2": n_gt=1, n_hit=1
-        # band="2-4": n_gt=1, n_hit=1
-        # n_slices=1: n_gt=2, n_hit=2
+        # band="0": n_gt=1, n_hit=1 (lesion 0)
+        # band="0-2": n_gt=1, n_hit=1 (lesion 1)
+        # band="2-4": n_gt=1, n_hit=1 (lesion 2)
+        # band=">4": n_gt=1, n_hit=0 (lesion 3 MISSED - proves test catches missed lesions)
+        # n_slices=1: n_gt=3, n_hit=3 (lesions 0, 2, 3; note 3 is missed so 2 hits)
         assert "| 0 | 1 | 1 |" in report_text, "Band 0 should have n_gt=1, n_hit=1"
         assert "| 0-2 | 1 | 1 |" in report_text, "Band 0-2 should have n_gt=1, n_hit=1"
         assert "| 2-4 | 1 | 1 |" in report_text, "Band 2-4 should have n_gt=1, n_hit=1"
-        assert "1 slice(s) | 2 | 2 |" in report_text, "Single-slice should have n_gt=2, n_hit=2"
+        # Missed lesion (lesion 3, band >4, single-slice): n_gt=1, n_hit=0
+        assert "| >4 | 1 | 0 |" in report_text, "Band >4 should have n_gt=1, n_hit=0 (missed lesion)"
 
     # Test that existing --out is refused
     with pytest.raises(FileExistsError, match="already exists"):
