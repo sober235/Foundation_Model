@@ -37,3 +37,31 @@ def test_build_chain_quotes_trainer_in_log_redirect(tmp_path):
     expected_log = str(tmp_path / f"2d_{trainer}_fold0.log")
     assert expected_log in tokens
     assert not any(t == ";" for t in tokens)
+
+
+def test_existing_results_returns_only_the_folds_that_exist_in_fold_order(tmp_path):
+    base = tmp_path / "Dataset903_FastMRIBrainSmallLesion" / "nnUNetTrainer_250epochs__nnUNetPlans__2d"
+    (base / "fold_1").mkdir(parents=True)
+    (base / "fold_3").mkdir(parents=True)
+    assert bdt.existing_results(tmp_path, "2d", "nnUNetTrainer_250epochs", [0, 1, 2, 3]) == [base / "fold_1", base / "fold_3"]
+    assert bdt.existing_results(tmp_path, "2d", "nnUNetTrainer_250epochs", [0, 2]) == []
+    assert bdt.existing_results(tmp_path, "3d_fullres", "nnUNetTrainer_250epochs", [1]) == []
+    assert bdt.existing_results(tmp_path, "2d", "nnUNetTrainer_5epochs", [1]) == []
+
+
+def test_main_refuses_when_nnunet_results_fold_dir_already_exists(tmp_path, monkeypatch, capsys):
+    """The results-dir check must run before any nvidia-smi query, so a training run already sitting in that
+    folder is never at risk of being started a second time."""
+    trainer = "nnUNetTrainer_250epochs_TESTONLY"
+    fold_dir = tmp_path / "Dataset903_FastMRIBrainSmallLesion" / f"{trainer}__nnUNetPlans__2d" / "fold_0"
+    fold_dir.mkdir(parents=True)
+    monkeypatch.setenv("nnUNet_results", str(tmp_path))
+
+    def boom():
+        raise AssertionError("query_nvidia_smi must not be called")
+
+    monkeypatch.setattr(bdt, "query_nvidia_smi", boom)
+
+    rc = bdt.main(["--config", "2d", "--folds", "0", "--gpus", "0", "--trainer", trainer])
+    assert rc == 1
+    assert str(fold_dir) in capsys.readouterr().err

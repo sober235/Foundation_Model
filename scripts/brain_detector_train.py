@@ -6,10 +6,14 @@
   PYTHONPATH=. python scripts/brain_detector_train.py --config 2d --folds 0 1 2 3 4 --gpus 0 1 2 3 --trainer nnUNetTrainer_250epochs
 """
 import argparse
+import os
 import shlex
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from anatobind.infer.knee import NNUNET_ROOT  # noqa: E402
 
 DATASET_ID = "903"
 IDLE_MEM_THRESHOLD_MIB = 1000
@@ -52,6 +56,14 @@ def existing_logs(config, trainer, folds, log_dir):
     """Target log paths for these folds that already exist under log_dir (would be silently
     overwritten by the chain's `>` redirect if launched)."""
     return [p for p in (log_dir / f"{config}_{trainer}_fold{f}.log" for f in folds) if p.exists()]
+
+
+def existing_results(results_root, config, trainer, folds):
+    """Existing nnU-Net fold output directories for these folds, in fold order (`nnUNetv2_train` without
+    `--c` starts fresh inside an existing fold folder and overwrites checkpoint_best, checkpoint_final and
+    validation/)."""
+    base = Path(results_root) / f"Dataset{DATASET_ID}_FastMRIBrainSmallLesion" / f"{trainer}__nnUNetPlans__{config}"
+    return [p for p in (base / f"fold_{f}" for f in folds) if p.exists()]
 
 
 def query_nvidia_smi():
@@ -119,6 +131,13 @@ def main(argv=None):
     if clobbered:
         names = ", ".join(str(p) for p in clobbered)
         print(f"Refusing to start: log file(s) already exist and would be overwritten: {names}", file=sys.stderr)
+        return 1
+
+    results_root = Path(os.environ.get("nnUNet_results") or NNUNET_ROOT / "results")
+    existing = existing_results(results_root, args.config, args.trainer, args.folds)
+    if existing:
+        names = ", ".join(str(p) for p in existing)
+        print(f"Refusing to start: nnU-Net output folder(s) already exist and would be overwritten: {names}", file=sys.stderr)
         return 1
 
     csv = query_nvidia_smi()
