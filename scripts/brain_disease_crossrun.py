@@ -118,6 +118,9 @@ def main(argv=None):
         "10 mm3 included; a ground-truth lesion is claimed when a detection shares a voxel with it, and only lesions of "
         "at least 10 mm3 are counted. These are counts of overlap: not a sensitivity, not a precision and not a "
         "false-positive rate.\n\n"
+        "Threshold: it is the model's operating threshold, measured on single-fold models (every case predicted by the "
+        "fold that held it out). Here the model's folds are averaged; the behaviour of the averaged model at this "
+        "threshold was not measured on its own data.\n\n"
         "```json\n", json.dumps(s, indent=1),
         "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]))
     print(json.dumps(s))

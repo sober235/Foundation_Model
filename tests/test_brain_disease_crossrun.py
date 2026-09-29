@@ -48,6 +48,9 @@ def test_overlap_counts_by_hand():
     assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.7) == {"n_det": 2, "n_det_on_gt": 1, "n_gt": 2, "n_gt_claimed": 1}
     assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.5) == {"n_det": 3, "n_det_on_gt": 1, "n_gt": 2, "n_gt_claimed": 1}
     assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.9) == {"n_det": 0, "n_det_on_gt": 0, "n_gt": 2, "n_gt_claimed": 0}
+    # a score equal to the threshold is kept
+    assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.75) == {"n_det": 2, "n_det_on_gt": 1, "n_gt": 2, "n_gt_claimed": 1}
+    assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.875)["n_det"] == 1
 
 
 def test_summary_rates_and_empty_inputs():
