@@ -1,5 +1,6 @@
 # tests/test_gpu_queue.py
 import importlib.util
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -47,8 +48,9 @@ def test_refusal_names_existing_outputs(tmp_path):
 def test_command_pins_the_gpu_sets_the_workers_and_quotes_the_log():
     cmd = _load().command(("glioma", 3), 5, "nnUNetTrainer_250epochs", Path("/tmp/a b/x.log"), Path("/r/scripts/nnunet_env.sh"))
     assert cmd[:2] == ["bash", "-c"]
-    assert cmd[2] == ("source /r/scripts/nnunet_env.sh && export nnUNet_n_proc_DA=6 && CUDA_VISIBLE_DEVICES=5 nice -n 19 "
-                      "nnUNetv2_train 904 3d_fullres 3 -tr nnUNetTrainer_250epochs --npz > '/tmp/a b/x.log' 2>&1")
+    # the redirect covers the whole group, so a failing `source` is written to the job's log too
+    assert cmd[2] == ("{ source /r/scripts/nnunet_env.sh && export nnUNet_n_proc_DA=6 && CUDA_VISIBLE_DEVICES=5 nice -n 19 "
+                      "nnUNetv2_train 904 3d_fullres 3 -tr nnUNetTrainer_250epochs --npz; } > '/tmp/a b/x.log' 2>&1")
 
 
 def test_skip_files_name_diseases_by_dataset_id(tmp_path):
@@ -69,3 +71,34 @@ def test_dry_run_prints_the_first_round_and_launches_nothing(tmp_path, monkeypat
     out = capsys.readouterr().out
     assert "would launch ('glioma', 0) on GPU 1" in out and "would launch ('metastasis', 0) on GPU 2" in out
     assert "('infarct', 0) on GPU" not in out                   # GPUs 0 and 3 are busy: no card for the third job
+
+
+def test_a_failing_gpu_query_costs_one_round_not_the_queue(tmp_path, monkeypatch, capsys):
+    q = _load()
+
+    def boom():
+        raise subprocess.CalledProcessError(9, ["nvidia-smi"])
+
+    monkeypatch.setattr(q, "query_nvidia_smi", boom)
+    monkeypatch.setattr(q, "query_busy_pids", lambda: {})
+    assert q.idle_now([0, 1]) is None
+    assert "GPU query failed (CalledProcessError" in capsys.readouterr().out
+    monkeypatch.setattr(q, "query_nvidia_smi", lambda: "0, 14\n1, not-a-number\n")
+    assert q.idle_now([0, 1]) is None and "GPU query failed (ValueError" in capsys.readouterr().out
+    monkeypatch.setattr(q, "query_nvidia_smi", lambda: "0, 14\n1, 30000\n")
+    assert q.idle_now([0, 1]) == [0]
+    # the loop itself: a failing query starts nothing and does not raise
+    monkeypatch.setattr(q, "query_nvidia_smi", boom)
+    monkeypatch.setattr(q, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setenv("nnUNet_results", str(tmp_path / "res"))
+    assert q.main(["--diseases", "infarct", "--folds", "0", "--dry-run"]) == 0
+    out = capsys.readouterr().out
+    assert "nothing starts in this round" in out and "would launch" not in out
+
+
+def test_the_job_log_receives_a_failure_of_the_environment_script(tmp_path):
+    q = _load()
+    log = tmp_path / "job.log"
+    cmd = q.command(("infarct", 0), 0, "nnUNetTrainer_250epochs", log, tmp_path / "no_such_env.sh")
+    done = subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    assert done.returncode != 0 and "no_such_env.sh" in log.read_text()

@@ -53,8 +53,8 @@ def refusal(results_root, log_dir, job, trainer):
 
 def command(job, gpu, trainer, log, env_sh, n_proc_da=N_PROC_DA):
     cmd = ["nnUNetv2_train", str(DISEASES[job[0]]["id"]), CONFIG, str(int(job[1])), "-tr", trainer, "--npz"]
-    inner = (f"source {shlex.quote(str(env_sh))} && export nnUNet_n_proc_DA={int(n_proc_da)} && "
-             f"CUDA_VISIBLE_DEVICES={int(gpu)} nice -n 19 {' '.join(shlex.quote(c) for c in cmd)} "
+    inner = (f"{{ source {shlex.quote(str(env_sh))} && export nnUNet_n_proc_DA={int(n_proc_da)} && "
+             f"CUDA_VISIBLE_DEVICES={int(gpu)} nice -n 19 {' '.join(shlex.quote(c) for c in cmd)}; }} "
              f"> {shlex.quote(str(log))} 2>&1")
     return ["bash", "-c", inner]
 
@@ -73,6 +73,16 @@ def plan_launches(pending, running_gpus, idle, max_jobs):
 
 def say(msg):
     print(f"{datetime.now():%Y-%m-%d %H:%M:%S} {msg}", flush=True)
+
+
+def idle_now(gpus):
+    """Idle GPUs among gpus, or None when nvidia-smi cannot be queried or read right now: the queue then starts
+    nothing in this round and asks again at the next poll."""
+    try:
+        return idle_gpus(query_nvidia_smi(), gpus, query_busy_pids())
+    except (subprocess.SubprocessError, OSError, ValueError) as e:
+        say(f"GPU query failed ({type(e).__name__}: {e}); nothing starts in this round")
+        return None
 
 
 def main(argv=None):
@@ -105,8 +115,7 @@ def main(argv=None):
             say("queue empty, nothing running: done")
             return 0
         if pending and len(running) < a.max_jobs:
-            idle = idle_gpus(query_nvidia_smi(), a.gpus, query_busy_pids())
-            for job, gpu in plan_launches(pending, set(running), idle, a.max_jobs):
+            for job, gpu in plan_launches(pending, set(running), idle_now(a.gpus) or [], a.max_jobs):
                 pending.remove(job)
                 why = refusal(results_root, LOG_DIR, job, a.trainer)
                 if why:
