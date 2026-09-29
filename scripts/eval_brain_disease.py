@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.brain_disease import (  # noqa: E402
-    binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
+    binding_agreement, case_scan, code_version, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
 )
 from anatobind.eval.lesion_components import MIN_MM3, STRATA, size_stratum  # noqa: E402
 from anatobind.infer.brain_disease import study_record  # noqa: E402
@@ -95,7 +95,7 @@ def main(argv=None):
                        strata(scans, thr, lambda s, r: "yes" if info[s["case"]].get("prior_surgery") else "no"), ("no", "yes"))
         L += ["## Binding agreement (NOT_EVIDENCE: the anatomy is a SynthSeg pseudo-label)\n\n```json\n",
               json.dumps(binding_agreement(scans, thr), indent=1), "\n```\n\n"]
-    L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]
+    L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n\nCode: commit ", code_version(Path(__file__).resolve().parents[1]), "\n"]
     fold_of = {c: f for f in a.folds for c in splits[f]["val"]}
     records = {}
     if a.records is not None and thr is not None:

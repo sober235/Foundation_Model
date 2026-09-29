@@ -20,6 +20,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from anatobind.eval.brain_disease import code_version  # noqa: E402
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities  # noqa: E402
 from anatobind.eval.lesion_components import component_mask, component_rows, components  # noqa: E402
 from anatobind.infer.brain_disease import detections, run_nnunet  # noqa: E402
@@ -122,7 +123,8 @@ def main(argv=None):
         "fold that held it out). Here the model's folds are averaged; the behaviour of the averaged model at this "
         "threshold was not measured on its own data.\n\n"
         "```json\n", json.dumps(s, indent=1),
-        "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]))
+        "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n\nCode: commit ",
+        code_version(Path(__file__).resolve().parents[1]), "\n"]))
     print(json.dumps(s))
 
 

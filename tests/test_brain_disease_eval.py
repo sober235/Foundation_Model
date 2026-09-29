@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 
 from anatobind.eval.brain_disease import (
-    beyond_budget, binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
+    beyond_budget, binding_agreement, case_scan, code_version, dice_summary, evaluate, false_positive_spread, jobs, strata,
+    verdict,
 )
 from anatobind.eval.lesion_components import size_stratum
 from anatobind.nnunet.brain_disease import fold_dir
@@ -204,3 +205,30 @@ def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_pat
     assert far["host_distance_mm"] == 5.0 and far["host_sides"] == {"white_matter": "right"}
     # one of the two detections is bound by the nearest rule, 5 mm away: near enough to be located
     assert binding_agreement([s], 0.5)["nearest_rate"] == 0.5 and binding_agreement([s], 0.5)["unlocated_rate"] == 0.0
+
+
+def test_the_two_side_agreements_are_counted_apart():
+    box = (2, 2, 2, 6, 6, 5)
+    gt = {"box": box, "family": "tumor", "host": "thalamus", "side": "right", "host_side": "left"}
+    det = {"box": box, "family": "tumor", "score": 0.875, "host": "thalamus", "host_rule": "overlap", "side": "right",
+           "host_side": "right", "host_distance_mm": 0.0}
+    out = binding_agreement([{"case": "c", "gt": [gt], "dets": [det]}], 0.5)
+    assert (out["n_pairs"], out["side_agreement"], out["host_side_agreement"]) == (1, 1.0, 0.0)
+
+
+def test_the_code_version_names_the_commit_and_marks_changed_files(tmp_path):
+    import subprocess
+    assert code_version(tmp_path / "no_such_folder") == "unknown"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false"]
+    subprocess.run(git + ["init", "-q"], cwd=repo, check=True)
+    (repo / "a.txt").write_text("one\n")
+    subprocess.run(git + ["add", "a.txt"], cwd=repo, check=True)
+    subprocess.run(git + ["commit", "-q", "-m", "one"], cwd=repo, check=True)
+    clean = code_version(repo)
+    assert len(clean) >= 7 and not clean.endswith("+")
+    (repo / "untracked.txt").write_text("x\n")
+    assert code_version(repo) == clean                         # files git does not track do not count
+    (repo / "a.txt").write_text("two\n")
+    assert code_version(repo) == clean + "+"

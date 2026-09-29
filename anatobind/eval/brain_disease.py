@@ -2,6 +2,7 @@
 components with their binding, the D1-style gate per disease, size strata, nnU-Net's Dice, and the agreement of the
 binding between matched pairs (NOT_EVIDENCE)."""
 import json
+import subprocess
 from pathlib import Path
 
 import nibabel as nib
@@ -17,6 +18,18 @@ from anatobind.nnunet.brain_disease import DISEASES, fold_dir
 EARLY_STOP = 0.3
 REACH_LESIONS = 2
 N_FOLDS = 5
+
+
+def code_version(repo):
+    """The commit a report was made with: the short hash, with "+" when tracked files differ from it; "unknown"
+    where git cannot tell."""
+    try:
+        head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=str(repo), capture_output=True, text=True, check=True)
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=str(repo), capture_output=True,
+                               text=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+    return head.stdout.strip() + ("+" if dirty.stdout.strip() else "")
 
 
 def case_scan(job):
