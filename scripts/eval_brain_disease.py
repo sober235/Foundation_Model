@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.brain_disease import (  # noqa: E402
-    binding_agreement, case_scan, dice_summary, evaluate, jobs, strata, verdict,
+    binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
 )
 from anatobind.eval.lesion_components import MIN_MM3, STRATA, size_stratum  # noqa: E402
 from anatobind.infer.brain_disease import study_record  # noqa: E402
@@ -67,6 +67,11 @@ def main(argv=None):
           "operating point, so no sensitivity was measured and strata, binding agreement and records are not produced. "
           "With all five folds this fails the gate; an early reading without an operating point does not stop the "
           "remaining folds by itself (the rule of spec M4 needs a measured sensitivity): that decision is the user's.\n\n"),
+         ("" if not (v["early_stop_undecided"] and thr is not None) else
+          f"The sensitivity at the operating point is under 0.3, but the row just beyond the budget (threshold "
+          f"{v['beyond_budget']['thr']:.2f}: sensitivity {v['beyond_budget']['sensitivity']:.4f} at "
+          f"{v['beyond_budget']['fp_per_scan']:.4f} false positives per scan) is not: a threshold between the two rows of "
+          "the grid may reach 0.3. The early stop is undecided, the remaining folds go on, the decision is the user's.\n\n"),
          f"Scans {result['n_scans']}; ground-truth lesions counted {result['n_gt']}; ignored (< {MIN_MM3:g} mm3) "
          f"{result['n_ignored']}.\n\n",
          "Scores are mean foreground probabilities over components of the argmax map, so they exceed 0.5 by construction: "
@@ -75,6 +80,8 @@ def main(argv=None):
     L += [f"| {r['thr']:.2f} | {r['n_hit']} | {r['sensitivity']:.4f} | {r['fp_per_scan']:.4f} |\n" for r in result["rows"]]
     L += ["\n## Dice (report only, nnU-Net summary.json, cases with ground truth)\n\n```json\n", json.dumps(dice, indent=1), "\n```\n\n"]
     if thr is not None:
+        L += ["## False positives per scan at the operating threshold (report only)\n\n```json\n",
+              json.dumps(false_positive_spread(scans, thr), indent=1), "\n```\n\n"]
         L += ["## Strata at the operating threshold (report only)\n\n"]
         L += table("Equivalent diameter (mm)", strata(scans, thr, lambda s, r: size_stratum(r["mm3"])), STRATA)
         if a.disease == "metastasis":
@@ -83,6 +90,11 @@ def main(argv=None):
         L += ["## Binding agreement (NOT_EVIDENCE: the anatomy is a SynthSeg pseudo-label)\n\n```json\n",
               json.dumps(binding_agreement(scans, thr), indent=1), "\n```\n\n"]
     L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]
+    fold_of = {c: f for f in a.folds for c in splits[f]["val"]}
+    records = {}
+    if a.records is not None and thr is not None:
+        records = {s["case"]: json.dumps(study_record(s["case"], a.disease, thr, s["dets"], [fold_of[s["case"]]]),
+                                         ensure_ascii=False, indent=1) for s in scans}
     a.out.mkdir(parents=True)                                   # everything is computed: only now is anything written
     (a.out / "REPORT.md").write_text("".join(L))
     (a.out / "verdict.json").write_text(json.dumps(v, indent=1))
@@ -92,14 +104,14 @@ def main(argv=None):
            f"Scans: {result['n_scans']}; lesions counted: {result['n_gt']}; ignored: {result['n_ignored']}\n",
            (f"Sensitivity {v['sensitivity']:.4f} at threshold {thr} with {v['fp_per_scan']} FP per scan\n" if thr is not None
             else "No threshold keeps the false positives at or below 2 per scan: no operating point\n"),
-           f"Pass: {v['pass']}; stop remaining folds: {v['stop_remaining_folds']}\n",
+           f"Pass: {v['pass']}; stop remaining folds: {v['stop_remaining_folds']}; "
+           f"early stop undecided: {v['early_stop_undecided']}\n",
            f"Dice mean {dice['mean']} over {dice['n_cases']} cases\n"]
     (a.out / "output.txt").write_text("".join(out))
-    if a.records is not None and thr is not None:
+    if records:
         a.records.mkdir(parents=True)
-        for s in scans:
-            (a.records / f"{s['case']}.json").write_text(
-                json.dumps(study_record(s["case"], a.disease, thr, s["dets"]), ensure_ascii=False, indent=1))
+        for case, text in records.items():
+            (a.records / f"{case}.json").write_text(text)
     print("".join(out), end="")
 
 

@@ -8,7 +8,7 @@ import nibabel as nib
 import numpy as np
 
 from anatobind.bind.brain_lookup import BrainBinder
-from anatobind.eval.detection_metrics import gate, scan_matches, sweep
+from anatobind.eval.detection_metrics import FP_MAX, gate, scan_matches, sweep
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities
 from anatobind.eval.lesion_components import component_rows, components
 from anatobind.infer.brain_disease import bind_rows, detections
@@ -56,18 +56,34 @@ def evaluate(scans):
             "n_ignored": sum(1 for s in scans for r in s["gt"] if r.get("ignore"))}
 
 
+def beyond_budget(rows, fp_max=FP_MAX):
+    """The row with the highest threshold whose false positives exceed the budget, or None. The grid is coarse: the
+    threshold that just meets the budget lies between this row and the operating point."""
+    over = [r for r in rows if r["fp_per_scan"] > fp_max]
+    return max(over, key=lambda r: r["thr"]) if over else None
+
+
 def verdict(result, folds):
     """The gate when all five folds were scored; otherwise an early reading with the early-stop flag (spec M4).
 
     Without an operating point (no threshold keeps the false positives within the budget) no sensitivity was measured:
-    it is None, the gate fails, and an early reading does not stop the remaining folds by itself."""
+    it is None and the gate fails. An early reading stops the remaining folds only when it is clear: the sensitivity
+    at the operating point is under EARLY_STOP, and so is the sensitivity of the row just beyond the budget (a
+    threshold between the two rows cannot reach more than that row). Every other low reading is undecided: the
+    remaining folds go on and the user decides."""
     full = sorted(folds) == list(range(N_FOLDS))
     g = result["gate"]
     found = g["thr"] is not None
     sens = g["sensitivity_family"] if found else None
+    b = beyond_budget(result.get("rows", []))
+    low = found and sens < EARLY_STOP
+    within_reach = b is not None and b["sensitivity_family"] >= EARLY_STOP
     return {"kind": "gate" if full else "early_reading", "folds": sorted(folds), "pass": g["pass"] if full else None,
             "operating_point": found, "sensitivity": sens, "thr": g["thr"], "fp_per_scan": g["fp_per_scan"],
-            "stop_remaining_folds": bool(not full and found and sens < EARLY_STOP)}
+            "beyond_budget": None if b is None else {"thr": b["thr"], "sensitivity": b["sensitivity_family"],
+                                                     "fp_per_scan": b["fp_per_scan"]},
+            "stop_remaining_folds": bool(not full and low and not within_reach),
+            "early_stop_undecided": bool(not full and (not found or (low and within_reach)))}
 
 
 def strata(scans, thr, key):
@@ -86,20 +102,30 @@ def strata(scans, thr, key):
     return out
 
 
+def false_positive_spread(scans, thr):
+    """How the false positives at thr spread over the scans: the budget is a mean, a few scans can carry it."""
+    fps = [scan_matches(s, thr)[1] for s in scans]
+    return {"n_scans": len(fps), "median": float(np.median(fps)) if fps else None, "max": int(max(fps)) if fps else None,
+            "n_scans_over_budget": sum(1 for f in fps if f > FP_MAX)}
+
+
 def binding_agreement(scans, thr):
     """NOT_EVIDENCE. Over matched (ground truth, detection) pairs: the share with the same main structure and the
-    share with the same side; over all detections at thr: the share without any host."""
-    n = same_host = same_side = n_det = no_host = 0
+    share with the same side; over all detections at thr: the share without any host, and the share that overlaps no
+    structure and was bound to the nearest one."""
+    n = same_host = same_side = n_det = no_host = nearest = 0
     for s in scans:
         hits, _, dets = scan_matches(s, thr)
         n_det += len(dets)
         no_host += sum(1 for d in dets if d["host"] is None)
+        nearest += sum(1 for d in dets if d["host_rule"] == "nearest")
         for g, p in hits.items():
             n += 1
             same_host += int(s["gt"][g]["host"] == dets[p]["host"])
             same_side += int(s["gt"][g]["side"] == dets[p]["side"])
     return {"n_pairs": n, "host_agreement": same_host / n if n else None, "side_agreement": same_side / n if n else None,
-            "n_detections": n_det, "no_host_rate": no_host / n_det if n_det else None}
+            "n_detections": n_det, "no_host_rate": no_host / n_det if n_det else None,
+            "nearest_rate": nearest / n_det if n_det else None}
 
 
 def dice_summary(results_root, disease, folds):

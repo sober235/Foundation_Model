@@ -70,7 +70,8 @@ def test_fold_report_records_and_refusals(tmp_path):
         v = json.loads((out / "verdict.json").read_text())
         # fold 0: two lesions, BIG found (score 0.875) up to threshold 0.85, no false positive
         assert v == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": True, "sensitivity": 0.5,
-                     "thr": 0.85, "fp_per_scan": 0.0, "stop_remaining_folds": False}
+                     "thr": 0.85, "fp_per_scan": 0.0, "beyond_budget": None, "stop_remaining_folds": False,
+                     "early_stop_undecided": False}
         rep = (out / "REPORT.md").read_text()
         assert "NOT the gate" in rep and "NOT_EVIDENCE" in rep
         assert "| <5 | 2 | 1 | 0.5000 |" in rep                                   # 48 mm3 is a 4.5 mm sphere
@@ -81,7 +82,9 @@ def test_fold_report_records_and_refusals(tmp_path):
         a = json.loads((rec / "100101A.json").read_text())
         assert a["impression"] == "疑似脑转移瘤" and a["lesions"][0]["side"] == "left" and a["lesions"][0]["score"] == 0.875
         assert a["sentence"] == "左侧大脑白质存在转移瘤样异常，体积约 48 mm³。疑似脑转移瘤。"
-        assert json.loads((rec / "100101B.json").read_text())["impression"] == "未见相关异常"
+        assert a["threshold"] == 0.85 and a["model_folds"] == [0] and "NOT_EVIDENCE" in a["anatomy_source"]
+        assert json.loads((rec / "100101B.json").read_text())["impression"] == "未检出相关异常"
+        assert '"n_scans_over_budget": 0' in rep and '"nearest_rate": 0.0' in rep
         assert sorted(p.name for p in rec.iterdir()) == ["100101A.json", "100101B.json"]
         with pytest.raises(FileExistsError):
             mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--workers", "1"])
@@ -113,7 +116,8 @@ def test_no_operating_point_is_said_plainly_and_writes_no_records(tmp_path):
         mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--records", str(rec), "--workers", "1"])
     assert json.loads((out / "verdict.json").read_text()) == {
         "kind": "early_reading", "folds": [0], "pass": None, "operating_point": False, "sensitivity": None, "thr": None,
-        "fp_per_scan": None, "stop_remaining_folds": False}
+        "fp_per_scan": None, "beyond_budget": {"thr": 0.95, "sensitivity": 0.0, "fp_per_scan": 3.0},
+        "stop_remaining_folds": False, "early_stop_undecided": True}
     rep = (out / "REPORT.md").read_text()
     assert "there is no operating point" in rep and "does not stop the remaining folds" in rep
     assert "no operating point" in (out / "output.txt").read_text() and not rec.exists()
@@ -129,3 +133,17 @@ def test_a_failure_while_the_report_is_computed_leaves_no_folder(tmp_path):
             mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(tmp_path / "rep"),
                       "--records", str(tmp_path / "records"), "--workers", "1"])
     assert not (tmp_path / "rep").exists() and not (tmp_path / "records").exists()
+
+
+def test_records_hold_only_detections_at_the_operating_threshold(tmp_path):
+    mod = _load()
+    # fold 0: BIG found at 0.875 (the operating threshold becomes 0.85), one stray at 0.625 in each scan
+    _tree(tmp_path, {"100101A": ([BIG], [(SHIFTED, 0.875), (STRAY, 0.625)], 0), "100101B": ([OTHER], [(STRAY, 0.625)], 0),
+                     "100102A": ([], [], 1)})
+    with patch.object(mod, "FM", tmp_path), patch.object(mod, "NNUNET", tmp_path / "derived/nnunet"):
+        mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(tmp_path / "rep"),
+                  "--records", str(tmp_path / "records"), "--workers", "1"])
+    a = json.loads((tmp_path / "records" / "100101A.json").read_text())
+    b = json.loads((tmp_path / "records" / "100101B.json").read_text())
+    assert a["threshold"] == 0.85 and [l["score"] for l in a["lesions"]] == [0.875]      # the stray at 0.625 is left out
+    assert b["lesions"] == [] and b["sentence"] == "本模型未检出转移瘤样异常（阈值 0.85）。"

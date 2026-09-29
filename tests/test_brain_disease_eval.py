@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 from anatobind.eval.brain_disease import (
-    binding_agreement, case_scan, dice_summary, evaluate, jobs, strata, verdict,
+    beyond_budget, binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
 )
 from anatobind.eval.lesion_components import size_stratum
 from anatobind.nnunet.brain_disease import fold_dir
@@ -15,9 +15,9 @@ AFF = np.diag([1.0, 1.0, 1.0, 1.0])
 SHAPE = (24, 24, 8)
 
 
-def _save(path, data):
+def _save(path, data, affine=AFF):
     path.parent.mkdir(parents=True, exist_ok=True)
-    nib.save(nib.Nifti1Image(data, AFF), str(path))
+    nib.save(nib.Nifti1Image(data, affine), str(path))
     return path
 
 
@@ -82,8 +82,10 @@ def test_evaluate_counts_by_hand(tmp_path):
 
 def test_verdict_is_a_gate_only_with_five_folds(tmp_path):
     r = evaluate(_scans(tmp_path))
+    # the row just beyond the budget does not exist here: the strays never exceed 2 per scan
     assert verdict(r, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": True,
-                               "sensitivity": 0.5, "thr": 0.85, "fp_per_scan": 0.0, "stop_remaining_folds": False}
+                               "sensitivity": 0.5, "thr": 0.85, "fp_per_scan": 0.0, "beyond_budget": None,
+                               "stop_remaining_folds": False, "early_stop_undecided": False}
     assert verdict(r, [4, 3, 2, 1, 0])["kind"] == "gate" and verdict(r, [0, 1, 2, 3, 4])["pass"] is True
     low = {"gate": {"pass": False, "thr": 0.55, "sensitivity_family": 0.29, "fp_per_scan": 1.0}}
     assert verdict(low, [0])["stop_remaining_folds"] is True and verdict(low, [0, 1, 2, 3, 4])["stop_remaining_folds"] is False
@@ -96,7 +98,9 @@ def test_strata_and_binding_agreement(tmp_path):
     by_case = strata(scans, 0.5, lambda s, r: s["case"])
     assert by_case == {"a": {"n_gt": 1, "n_hit": 1, "sensitivity": 1.0}, "b": {"n_gt": 1, "n_hit": 0, "sensitivity": 0.0}}
     assert binding_agreement(scans, 0.5) == {"n_pairs": 1, "host_agreement": 1.0, "side_agreement": 1.0,
-                                             "n_detections": 3, "no_host_rate": 0.0}
+                                             "n_detections": 3, "no_host_rate": 0.0, "nearest_rate": 0.0}
+    assert false_positive_spread(scans, 0.5) == {"n_scans": 3, "median": 1.0, "max": 1, "n_scans_over_budget": 0}
+    assert false_positive_spread(scans, 0.7) == {"n_scans": 3, "median": 0.0, "max": 1, "n_scans_over_budget": 0}
     assert binding_agreement(scans, 0.95)["host_agreement"] is None
 
 
@@ -126,7 +130,8 @@ def test_dice_summary_skips_cases_without_ground_truth(tmp_path):
 def test_verdict_without_an_operating_point_measures_nothing_and_stops_nothing():
     none = {"gate": {"pass": False, "thr": None, "sensitivity_family": 0.0, "fp_per_scan": None}}   # what gate() returns
     assert verdict(none, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": False,
-                                  "sensitivity": None, "thr": None, "fp_per_scan": None, "stop_remaining_folds": False}
+                                  "sensitivity": None, "thr": None, "fp_per_scan": None, "beyond_budget": None,
+                                  "stop_remaining_folds": False, "early_stop_undecided": True}
     full = verdict(none, [0, 1, 2, 3, 4])
     assert full["kind"] == "gate" and full["pass"] is False and full["sensitivity"] is None
     edge = {"gate": {"pass": False, "thr": 0.9, "sensitivity_family": 0.3, "fp_per_scan": 2.0}}
@@ -138,3 +143,48 @@ def test_jobs_refuse_folds_given_twice_or_out_of_range(tmp_path):
     for folds in ([0, 0], [5], [-1, 0]):
         with pytest.raises(ValueError, match="folds must be distinct and within 0..4"):
             jobs(tmp_path / "res", tmp_path / "raw", "glioma", splits, folds, {}, lambda c: tmp_path / c)
+
+
+def _rows(*triples):
+    return [{"thr": t, "sensitivity_family": s, "fp_per_scan": f} for t, s, f in triples]
+
+
+def test_an_early_stop_needs_the_row_beyond_the_budget_to_be_low_too():
+    low = {"pass": False, "thr": 0.95, "sensitivity_family": 0.27, "fp_per_scan": 1.6}
+    # 0.90 exceeds the budget with sensitivity 0.34: a threshold between the two rows may reach 0.3
+    near = verdict({"gate": low, "rows": _rows((0.85, 0.40, 3.1), (0.90, 0.34, 2.4), (0.95, 0.27, 1.6))}, [0])
+    assert near["beyond_budget"] == {"thr": 0.90, "sensitivity": 0.34, "fp_per_scan": 2.4}
+    assert near["stop_remaining_folds"] is False and near["early_stop_undecided"] is True
+    # 0.90 exceeds the budget with sensitivity 0.29: no threshold reaches 0.3
+    far = verdict({"gate": low, "rows": _rows((0.90, 0.29, 2.4), (0.95, 0.27, 1.6))}, [0])
+    assert far["stop_remaining_folds"] is True and far["early_stop_undecided"] is False
+    # the budget is never exceeded: the operating point is the lowest threshold, nothing lies beyond it
+    alone = verdict({"gate": dict(low, thr=0.05), "rows": _rows((0.05, 0.27, 1.6), (0.95, 0.20, 0.4))}, [0])
+    assert alone["beyond_budget"] is None and alone["stop_remaining_folds"] is True
+    full = verdict({"gate": low, "rows": _rows((0.90, 0.34, 2.4), (0.95, 0.27, 1.6))}, [0, 1, 2, 3, 4])
+    assert full["stop_remaining_folds"] is False and full["early_stop_undecided"] is False and full["pass"] is False
+    assert beyond_budget(_rows((0.5, 0.9, 2.0))) is None        # exactly the budget is within the budget
+
+
+def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_path):
+    aff = np.diag([1.0, 1.0, 2.5, 1.0])                          # 2.5 mm3 per voxel: the floor is 4 voxels
+    lab, pred = np.zeros(SHAPE, np.uint8), np.zeros(SHAPE, np.uint8)
+    lab[2:7, 2, 2] = 1                                           # 5 voxels = 12.5 mm3: counted
+    lab[2:5, 10, 2] = 1                                          # 3 voxels = 7.5 mm3: ignored
+    pred[2:7, 2, 2] = 1                                          # found
+    pred[2:5, 20, 6] = 1                                         # 3 voxels: dropped
+    pred[10:14, 12, 4] = 1                                       # 4 voxels = 10 mm3, on no structure
+    probs = np.zeros((2,) + SHAPE, np.float32)
+    probs[0] = 1.0
+    probs[1][pred == 1], probs[0][pred == 1] = 0.875, 0.125
+    seg = np.zeros(SHAPE, np.int16)
+    seg[:8, :8] = 2                                              # left white matter around the lesion
+    seg[10:14, 12, 1] = 3                                        # left cortex 3 voxels below the last detection: 7.5 mm
+    seg[10:14, 17, 4] = 41                                       # right white matter 5 voxels beside it: 5 mm
+    d = tmp_path / "c"
+    np.savez(_save(d / "lab.nii.gz", lab, aff).parent / "p.npz", probabilities=np.ascontiguousarray(probs.transpose(0, 3, 2, 1)))
+    s = case_scan(("c", "infarct", d / "lab.nii.gz", _save(d / "pred.nii.gz", pred, aff), d / "p.npz",
+                   _save(d / "seg.nii.gz", seg, aff), 2.5))
+    assert [(r["n_voxels"], r["mm3"], r["ignore"]) for r in s["gt"]] == [(5, 12.5, False), (3, 7.5, True)]
+    assert sorted((r["n_voxels"], r["mm3"], r["host"], r["host_rule"], r["side"]) for r in s["dets"]) == [
+        (4, 10.0, "white_matter", "nearest", "right"), (5, 12.5, "white_matter", "overlap", "left")]
