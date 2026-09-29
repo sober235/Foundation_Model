@@ -1,0 +1,14 @@
+{
+ "kind": "early_reading",
+ "folds": [
+  0
+ ],
+ "pass": null,
+ "operating_point": true,
+ "sensitivity": 0.5677570093457944,
+ "thr": 0.6,
+ "fp_per_scan": 1.66,
+ "beyond_budget": null,
+ "stop_remaining_folds": false,
+ "early_stop_undecided": false
+}

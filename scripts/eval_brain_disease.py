@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.brain_disease import (  # noqa: E402
-    binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
+    binding_agreement, case_scan, code_version, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
 )
 from anatobind.eval.lesion_components import MIN_MM3, STRATA, size_stratum  # noqa: E402
 from anatobind.infer.brain_disease import study_record  # noqa: E402
@@ -67,11 +67,17 @@ def main(argv=None):
           "operating point, so no sensitivity was measured and strata, binding agreement and records are not produced. "
           "With all five folds this fails the gate; an early reading without an operating point does not stop the "
           "remaining folds by itself (the rule of spec M4 needs a measured sensitivity): that decision is the user's.\n\n"),
+         ("" if not (thr is None and v["beyond_budget"] and v["beyond_budget"]["out_of_reach"]) else
+          f"In substance this reading is decisive all the same: the row at threshold {v['beyond_budget']['thr']:.2f} still "
+          f"exceeds the budget ({v['beyond_budget']['fp_per_scan']:.4f} false positives per scan) and finds "
+          f"{v['beyond_budget']['n_hit']} of {v['beyond_budget']['n_gt']} lesions; a threshold that meets the budget lies "
+          "above it and is not expected to find more.\n\n"),
          ("" if not (v["early_stop_undecided"] and thr is not None) else
           f"The sensitivity at the operating point is under 0.3, but the row just beyond the budget (threshold "
-          f"{v['beyond_budget']['thr']:.2f}: sensitivity {v['beyond_budget']['sensitivity']:.4f} at "
-          f"{v['beyond_budget']['fp_per_scan']:.4f} false positives per scan) is not: a threshold between the two rows of "
-          "the grid may reach 0.3. The early stop is undecided, the remaining folds go on, the decision is the user's.\n\n"),
+          f"{v['beyond_budget']['thr']:.2f}: {v['beyond_budget']['n_hit']} of {v['beyond_budget']['n_gt']} lesions at "
+          f"{v['beyond_budget']['fp_per_scan']:.4f} false positives per scan) reaches 0.3 or misses it by at most two "
+          "lesions, and the matching is redone at every threshold: a threshold between the two rows of the grid may reach "
+          "0.3. The early stop is undecided, the remaining folds go on, the decision is the user's.\n\n"),
          f"Scans {result['n_scans']}; ground-truth lesions counted {result['n_gt']}; ignored (< {MIN_MM3:g} mm3) "
          f"{result['n_ignored']}.\n\n",
          "Scores are mean foreground probabilities over components of the argmax map, so they exceed 0.5 by construction: "
@@ -89,7 +95,7 @@ def main(argv=None):
                        strata(scans, thr, lambda s, r: "yes" if info[s["case"]].get("prior_surgery") else "no"), ("no", "yes"))
         L += ["## Binding agreement (NOT_EVIDENCE: the anatomy is a SynthSeg pseudo-label)\n\n```json\n",
               json.dumps(binding_agreement(scans, thr), indent=1), "\n```\n\n"]
-    L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]
+    L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n\nCode: commit ", code_version(Path(__file__).resolve().parents[1]), "\n"]
     fold_of = {c: f for f in a.folds for c in splits[f]["val"]}
     records = {}
     if a.records is not None and thr is not None:

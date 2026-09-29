@@ -12,7 +12,6 @@ import nibabel as nib
 import numpy as np
 
 from anatobind.bind.brain_lookup import BrainBinder
-from anatobind.eval.geometry import HOST_CLASSES, LEFT_LABELS, RIGHT_LABELS
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities
 from anatobind.eval.lesion_components import component_mask, component_rows, components
 from anatobind.infer.knee import nnunet_env
@@ -23,7 +22,7 @@ HOST_ZH = {"white_matter": "大脑白质", "cortex": "大脑皮层", "thalamus":
            "brainstem": "脑干", "cerebellum": "小脑", "other_deep_grey": "深部灰质（海马、杏仁核等）"}
 TYPE_ZH = {"tumor": "肿瘤样异常", "metastasis": "转移瘤样异常", "infarct": "梗死样异常"}
 NOWHERE_ZH = "未能定位的区域"
-SIDED_HOSTS = frozenset(h for h, labels in HOST_CLASSES.items() if set(labels) & set(LEFT_LABELS + RIGHT_LABELS))
+NEAR_MM = 10.0
 ANATOMY_SOURCE = "SynthSeg pseudo-label, lookup by voxel count (NOT_EVIDENCE)"
 MAX_SENTENCE_LESIONS = 5
 INVOLVED_MIN = 0.10
@@ -50,7 +49,8 @@ def detections(pred, probs, voxel_mm3, family):
 
 
 def bind_rows(rows, comp, binder):
-    """Attach host, host_rule, host_fractions and side to every row (in place); returns rows."""
+    """Attach the binder's fields (host, host_rule, host_fractions, side, host_side, host_sides, host_distance_mm) to
+    every row, in place; returns rows."""
     for r in rows:
         r.update(binder.bind(*component_mask(comp, r)))
     return rows
@@ -64,34 +64,58 @@ def volume_text(mm3):
     return f"约 {mm3:.0f} mm³"
 
 
+def place(lesion):
+    """Where a lesion lies, in words: side and main structure, "邻近…" for the nearest rule within NEAR_MM, not
+    located beyond it or without any structure."""
+    if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
+        return NOWHERE_ZH
+    where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
+    return f"邻近{where}" if lesion["host_rule"] == "nearest" else where
+
+
 def lesion_clause(lesion):
-    """One lesion in words. The side is written only before a structure that has a left and a right half; a lesion
-    that overlaps no structure is said to lie next to the nearest one."""
-    if not lesion["host"]:
-        where = NOWHERE_ZH
-    else:
-        where = (SIDE_ZH[lesion["side"]] if lesion["host"] in SIDED_HOSTS else "") + HOST_ZH[lesion["host"]]
-        if lesion["host_rule"] == "nearest":
-            where = f"邻近{where}（未与任何结构重叠）"
-    involved = [HOST_ZH[h] for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
+    """One lesion in words. The side written before the main structure is the side of the lesion's voxels inside
+    that structure (none for the brainstem). When every involved structure lies on the main structure's side, no side
+    is written after "累及"; when one does not, every involved structure gets its side, so that a lesion across the
+    midline reads as one and no side word is read on to the next structure; the brainstem, which has no side, then
+    comes first. A lesion that overlaps no structure is said to lie next to the nearest one when that is at most
+    NEAR_MM away (user, 2026-09-29), else it is not located."""
+    where = place(lesion) + ("（未与任何结构重叠）" if lesion["host_rule"] == "nearest" and place(lesion) != NOWHERE_ZH else "")
+    sides = lesion["host_sides"]
+    involved = [h for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
                 if h != lesion["host"] and f >= INVOLVED_MIN]
+    if any(sides[h] not in ("midline", lesion["host_side"]) for h in involved):
+        involved = [h for h in involved if sides[h] == "midline"] + [h for h in involved if sides[h] != "midline"]
+        words = [SIDE_ZH[sides[h]] + HOST_ZH[h] for h in involved]
+    else:
+        words = [HOST_ZH[h] for h in involved]
     text = f"{where}存在{TYPE_ZH[lesion['type']]}，体积{volume_text(lesion['volume_mm3'])}"
-    return text + (f"，累及{'、'.join(involved)}" if involved else "")
+    return text + (f"，累及{'、'.join(words)}" if words else "")
 
 
 def study_record(study, disease, threshold, rows, folds=None):
-    """rows: bound detections (any score); only those at or above the threshold enter the record. folds: the folds of
-    the model that predicted. Without a lesion the sentence says that this model detected nothing at this threshold;
-    that is no negative finding."""
+    """rows: bound detections (any score); only those at or above the threshold enter the record, highest score
+    first. The sentence names the MAX_SENTENCE_LESIONS largest lesions, largest first: the score is a mean
+    probability, which is highest for the smallest components, and a reader looks for the largest lesion first.
+    The others are counted, and their places are named where no named lesion lies there.
+    folds: the folds of the model that predicted. Without a lesion the sentence says that this model detected nothing
+    at this threshold; that is no negative finding."""
     spec = DISEASES[disease]
     lesions = [{"type": spec["type"], "score": round(float(r["score"]), 4), "box": [int(v) for v in r["box"]],
                 "volume_mm3": round(float(r["mm3"]), 1), "host": r["host"], "host_rule": r["host_rule"],
-                "host_fractions": r["host_fractions"], "side": r["side"]}
+                "host_fractions": r["host_fractions"], "side": r["side"], "host_side": r["host_side"],
+                "host_sides": r["host_sides"], "host_distance_mm": r["host_distance_mm"]}
                for r in sorted(rows, key=lambda r: -r["score"]) if r["score"] >= threshold]
     if lesions:
         rest = len(lesions) - MAX_SENTENCE_LESIONS
-        sentence = "；".join(lesion_clause(l) for l in lesions[:MAX_SENTENCE_LESIONS])
-        sentence += (f"；另有 {rest} 处同类异常" if rest > 0 else "") + f"。{spec['impression']}。"
+        by_volume = sorted(lesions, key=lambda l: -l["volume_mm3"])
+        largest, others = by_volume[:MAX_SENTENCE_LESIONS], by_volume[MAX_SENTENCE_LESIONS:]
+        named = {place(l) for l in largest}
+        also = list(dict.fromkeys(place(l) for l in others if place(l) not in named))
+        sentence = "；".join(lesion_clause(l) for l in largest)
+        if rest > 0:
+            sentence += f"；另有 {rest} 处同类异常" + (f"（还见于{'、'.join(also)}）" if also else "")
+        sentence += f"。{spec['impression']}。"
         impression = spec["impression"]
     else:
         sentence, impression = f"本模型未检出{TYPE_ZH[spec['type']]}（阈值 {float(threshold):.2f}）。", "未检出相关异常"

@@ -1,81 +1,98 @@
-# STATUS：2026-09-29（S7 脑部多病种：十个代码任务已实现并逐个评审，全分支终审结论"可以出数"、终审提出的修补已落地，15 个训练由队列在空卡上跑，预计 09-30 出齐；nnDetection 第二臂 fold 0 仍在训练；S4 脑部解剖层在设计中；本轮中途交接）
+# STATUS：2026-09-29 18:00（S7 脑部多病种：代码与全分支终审完成，第一份读数已出——梗死 fold 0 早读 0.568 @ 1.66 误报/例，不是达标结论；15 个训练里 2 个已完成、6 个在跑、7 个排队；句子有两处写法等用户确认；nnDetection 第二臂 fold 0 仍在训练；S4 脑部解剖层的设计概览已给用户、等点头）
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 
 ## 1. 已完成且已验证
 
-**本轮：S7 脑部多病种检测，阶段 A（每个病种一个 nnU-Net，各用原生序列）。** 规格 `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md`（决定 M1–M14），计划 `docs/superpowers/plans/2026-09-29-brain-multidisease.md`（13 个任务）。分支 `build/brain-multidisease`（工作树 `../foundation_model-multidisease`）。执行 = 子代理逐任务：实现与逐任务评审用 sonnet，控制方重跑测试、检查提交信息、与事先验证过的代码逐字节比对；逐任务裁定在台账 `../foundation_model-multidisease/.superpowers/sdd/2026-09-29-brain-multidisease/progress.md`（gitignore，不入库）。
+**本轮：S7 脑部多病种检测，阶段 A（每个病种一个 nnU-Net，各用原生序列）。** 规格 `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md`（决定 M1–M14），计划 `docs/superpowers/plans/2026-09-29-brain-multidisease.md`（13 个任务）。分支 `build/brain-multidisease`（工作树 `../foundation_model-multidisease`）。台账 `../foundation_model-multidisease/.superpowers/sdd/2026-09-29-brain-multidisease/progress.md`（gitignore，不入库；终审原文 `final-review-1-report.md` 也在那里）。
 
-- **测试**（2026-09-29 16:25，分支头 ecb172d；nndet 环境那一条是 15:51 在 a8668f7 上跑的，之后没有改动它涉及的文件）：
+- **测试**（2026-09-29 17:49，分支头 c1b26e3 的代码；nndet 环境那一条是 15:51 跑的，之后没有改动它涉及的文件）：
   ```
   PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
-  824 passed, 1 skipped in 108.54s (0:01:48)
+  831 passed, 1 skipped in 109.86s (0:01:49)
   bash -c 'source scripts/nndet_env.sh && nice -n 19 python -m pytest tests/test_nndet_runner.py -q -p no:cacheprovider --noconftest'
   2 passed, 5 warnings in 2.80s
   ```
-- **三个数据集已建好**（Task 2，记录 `docs/verification/2026-09-29/brain_multidisease/build/`）：
+- **第一份读数：梗死 fold 0 的早读**（不是达标结论；记录 `docs/verification/2026-09-29/brain_multidisease/infarct_fold0/`，提交 5ff45ef，用 001cfd1 的代码出的）：
+  ```
+  PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/eval_brain_disease.py --disease infarct --folds 0 --workers 2 --out docs/verification/2026-09-29/brain_multidisease/infarct_fold0
+  Disease: infarct; folds [0]; kind early_reading
+  Scans: 50; lesions counted: 428; ignored: 33
+  Sensitivity 0.5678 at threshold 0.6 with 1.66 FP per scan
+  Pass: None; stop remaining folds: False; early stop undecided: False
+  Dice mean 0.753277521477103 over 49 cases
+  ```
+  - 误报预算没有用满（不设阈值时每例 1.68），所以 0.568 就是这一折的上限；阈值 0.95 时 0.423 @ 0.74。
+  - 按等效直径分层：< 5 mm 60/193 = 0.311；5–10 mm 107/152 = 0.704；≥ 10 mm 76/83 = 0.916。漏的主要是小病灶。
+  - 每例误报：中位数 1，最大 12，14 例超过 2 个。
+  - 绑定一致率（NOT_EVIDENCE）：主结构 0.947，侧别 0.988。
+  - 控制方另写了一段只用 scipy 的代码独立计数：计入 428、忽略 33、保留的预测块 327（= 243 命中 + 84 误报），与报告一致。终审者在这一折的五例真实输出上逐例、逐阈值重算，也一致。
+- **训练进度**（17:55；队列进程 pid 1091434，2026-09-29 13:46:13 启动，记录 `docs/verification/2026-09-29/brain_multidisease/launch.md`）：
+
+  | 训练 | 状态 |
+  |---|---|
+  | 梗死 fold 0、fold 1 | 已完成（17:04、17:02，退出码 0；nnU-Net 自报 Dice 0.753、0.785） |
+  | 转移瘤 fold 1 | 第 213 轮，约 35 分钟 |
+  | 转移瘤 fold 0 | 第 134 轮，约 3 小时 |
+  | 胶质瘤 fold 0、fold 1 | 第 89–90 轮，约 5–6 小时 |
+  | 转移瘤 fold 2（17:04 启动） | 第 31 轮，约 7 小时 |
+  | 胶质瘤 fold 2（17:02 启动） | 第 10 轮，每轮 233–346 秒，约 15–23 小时（见 §2 第 1 条） |
+  | 其余 7 个 | 排队 |
+- **三个数据集**（Task 2，记录 `docs/verification/2026-09-29/brain_multidisease/build/`）：
 
   | 数据集 | 通道 | 扫描 / 病人 | 无标签体素的例 | 规划（间距 mm，块，batch） | 每折例数 |
   |---|---|---|---|---|---|
   | Dataset904_PDGMGlioma | T1、T1c、T2、FLAIR | 501 / 495 | 0 | 1.0 各向同性，128×160×112，2 | 100 / 101 / 100 / 99 / 101 |
   | Dataset905_BMSRMetastasis | T1pre、T1post、FLAIR | 461 / 314 | 0 | 1.5 × 0.859 × 0.859，80×192×160，2 | 105 / 86 / 87 / 106 / 77 |
   | Dataset906_ISLESInfarct | DWI、ADC | 250 / 250 | 3 | 2.0 各向同性，80×96×80，8 | 50 × 5 |
+- **代码**：`anatobind/nnunet/brain_disease.py`、`anatobind/eval/lesion_components.py`、`anatobind/eval/detection_metrics.py`（`scan_matches` 与"忽略"标记）、`anatobind/bind/brain_lookup.py`、`anatobind/infer/brain_disease.py`、`anatobind/eval/brain_disease.py`；脚本 `scripts/brain_disease_{prepare,crossrun}.py`、`gpu_queue.py`、`eval_brain_disease.py`、`infer_brain_disease.py`。十个代码任务由子代理实现并逐个评审（sonnet）；终审后的五轮修补由控制方直接落地（代码先在副本里验证，每个提交先看新测试在旧代码上失败）。分支上 22 个代码与测试文件与计划里的代码逐字节一致。
+- **全分支终审（最强模型）共六次往返，最后结论："可以写逐例记录"，前提是用户确认句子的两处写法（§2）。** 要点：
+  - 终审者用另写的代码独立重算（分母、命中、误报），与分支一致；确认读的是折外预测、15 个折里没有病人跨训练与验证。
+  - 它读了本机 nnU-Net 2.8.0 的导出代码：标签图就是所存 float32 概率图的 argmax，所以"预测块里出现前景概率 < 0.5 的体素就报错"这项检查不会在正确输出上误报（防的是轴序错位）。
+  - 它把三十多种"改坏代码"的方式逐一施加到副本上，除一种（git 调用是否加锁）外都有测试拦住。
+  - 终审引出的改动：早停规则（见 §5）；队列对失败训练的处理（供下次启动）；句子的多处写法（见下一条）；体积下限对 float32 文件头的容差；记录加 `model_folds`、`anatomy_source`、`host_side`、`host_sides`、`host_distance_mm`；报告加每例误报分布、按最近距离定位的比例、"未能定位"的比例、主结构侧别一致率、代码提交号。
+- **句子现在的写法**（`anatobind/infer/brain_disease.py`；三例真实梗死预测的句子见台账）：
+  - 写体积最大的 5 处，从大到小；其余计数，并补上"前 5 处都没提到的位置"，如"另有 21 处同类异常（还见于右侧大脑皮层、左侧小脑、左侧丘脑）"。**这两点是建议，待用户确认。**
+  - 主结构前的侧别按"病灶落在主结构里的那部分体素"算；脑干不写侧别。
+  - "累及"后面的结构都与主结构同侧时不写侧别；有一个不同侧就全部写出，脑干排最前。
+  - 不与任何结构重叠的病灶：离最近结构 ≤ 10 mm 写"邻近<侧><结构>（未与任何结构重叠）存在…"，超过 10 mm 写"未能定位的区域存在…"（10 mm 是用户定的）。
+  - 没检出写"本模型未检出<类型>（阈值 0.xx）。"，印象写"未检出相关异常"。
+- **真实数据上的五项只读核查**（脚本、命令与原始输出在 `docs/verification/2026-09-29/brain_multidisease/checks/`）：体积下限不会被文件头改动一格；1212 例的 SynthSeg 图都在且与标签同网格；3887 个通道文件与解剖图仿射完全相同；三组交叉运行的输入都在且同网格；没有一张解剖图缺宿主体素。
+- **用户本轮拍板**：S7 走 C（先 A 后 B）；达标线与 S2 的 D1 同口径、三病种分别判；产出 = 检测器 + 查表绑定 + 结构化记录，脑叶留给 S4；五折全训、fold 0 先报（"B，不用留卡"）；方法 nnU-Net 3d_fullres；采纳两条建议（交叉误报只报告；S4 设计与训练并行）。算力原话："后续整个服务器的算力都要优先该任务使用，但是前提是只能是考虑或者占用空的 GPU"。S4 的老师用方案 B。2026-09-29 16:52 用户回复"按照你的建议"：距离上限 10 mm；控制方同时把它理解为此前列出的几项也按建议办（句子三处措辞、"未定"的早停不自动停、GPU 冲突先等、S4 输出粒度 A），并已在聊天里说明这一理解、请用户有出入就指出，用户未提出异议。
 
-  图像是指向原文件的软链接，标签重写成二类并保留原文件头；折按病人（种子 0），评审者全量核对：3887 个软链接都能解析、1212 个标签与 `cases.json` 的体素数一致、0 个病人跨折。
-- **训练队列已启动**（Task 3，记录 `docs/verification/2026-09-29/brain_multidisease/launch.md`）：2026-09-29 13:46:13 启动，队列进程 pid 1091434；首批六个训练在 GPU 0、1、2、4、5、6（三个病种各 fold 0、fold 1），其余九个等卡。启动后 16 分钟实测每轮：胶质瘤 93–99 s、转移瘤 78–84 s、梗死 45–46 s，单个训练约 7.2 h / 6.1 h / 3.4 h，都远低于 24 h。队列只在空卡上启动、从不向任何进程发信号；控制文件在 `logs/brain_disease/`：`skip_<数据集号>` 停某病种的新折，`stop` 停止启动新任务。
-- **代码**（Task 1、4–10，全部评审通过）：`anatobind/nnunet/brain_disease.py`、`anatobind/eval/lesion_components.py`、`anatobind/eval/detection_metrics.py`（加 `scan_matches` 与"忽略"标记）、`anatobind/bind/brain_lookup.py`、`anatobind/infer/brain_disease.py`、`anatobind/eval/brain_disease.py`；脚本 `scripts/brain_disease_{prepare,crossrun}.py`、`gpu_queue.py`、`eval_brain_disease.py`、`infer_brain_disease.py`。分支自 main 起 22 个代码与测试文件，逐个与计划里的代码一致。
-- **评审后追加的修补**（都已写回计划与规格）：
-  1. `per_family` 也认"忽略"标记（4c55ca9）；不带标记时新旧函数在 8000 次随机比较中结果相同。
-  2. 推理入口在预测之前逐通道核对：与解剖图同形状、仿射最大差 ≤ 1e-3；不符即拒绝，此时不写任何文件（56b930f）。
-  3. **没有工作点时**（阈值网格上每例误报始终 > 2）：判定写 `operating_point: false`、灵敏度记空、**不自动停其余各折**，报用户定；五折齐全时无工作点即不过线（7b66d16）。
-  4. 交叉误报脚本写明所用病例（数据方 fold 0 的验证病例）与计数规则，并在建目录之前检查模型权重与全部通道文件（5f38722、404eb9d）；评估脚本全部算完才建输出目录（404eb9d）。
-- **全分支终审（最强模型，出数之前做，16:05 返回）：结论"可以出数"，没有严重问题。** 终审者用另写的代码独立重算，在预演小模型的真实 nnU-Net 输出上，三个病种、四个阈值的（分母、命中、误报）都与分支一致；确认评估读的是折外预测、15 个折里没有病人跨训练与验证、从标签文件到句子的 11 个交接环节约定一致。它提出 3 个重要问题和 9 个小问题，处理如下（提交 68a2017、1598009、39f2ded、de8fe83、ecb172d；代码事先在副本里验证，由控制方直接落地，每个提交先看新测试在旧代码上失败）：
-  1. **早停规则**：阈值网格步长 0.05，最后一格可能误判。现在自动停要求工作点灵敏度 < 0.3 **且**"刚超预算的那一行"灵敏度也 < 0.3；其余偏低的读数（含无工作点）判定记 `early_stop_undecided`，各折照常训，报用户定。
-  2. **队列**（供下次启动；正在跑的队列是旧代码）：训练启动 10 分钟内失败就不再启动新任务；最后一行给出成功、失败、被拒、未启动的计数，返回码随之；每次启动写带时间的日志名。
-  3. **句子措辞**（用户可改）：不与任何结构重叠的病灶写"邻近<侧><结构>（未与任何结构重叠）存在…"；主结构是脑干时不写侧别词；没检出写"本模型未检出<类型>（阈值 0.xx）。"、印象"未检出相关异常"。
-  4. 其余：体积下限对同一网格的两个 float32 文件头给出同一个值；预测块里出现前景概率 < 0.5 的体素就报错（防轴序错位）；记录带 `model_folds` 与 `anatomy_source`；报告里加每例误报的分布与"按最近距离定位"的比例；补了终审指出的"测试发现不了"的几类回归。
-  5. 用预演小模型的真实输出端到端重跑了修补后的评估脚本：胶质瘤 1.0 @ 0.95；转移瘤 0.125 @ 0.90（该读数会触发停）；梗死无工作点（0.95 处灵敏度 0.5、每例误报 2.5，未定）。这些是 5 个 epoch、每病种 2 例的小模型，**NOT_EVIDENCE**，只说明代码链路通。
-  终审全文存于台账目录 `final-review-1-report.md`。
-- **终审修补的复审（16:38 返回）：结论仍是"可以出数"。** 复审者把 12 种改坏代码的方式（分数取最大值、体素体积写死、轴序反转、记录阈值写死、`>=` 改 `>`、队列忽略 skip 或 stop 文件、关掉概率检查、关掉早停的第二个条件、关掉快速失败规则等）逐一施加到副本上，每一种现在都至少有一个测试失败；读了本机安装的 nnU-Net 2.8.0 的导出代码，确认标签图就是所存 float32 概率图的 argmax（五折集成是先平均 logits 再走同一条路），所以新加的概率检查不会在正确输出上误报。它新提的 4 个小问题都不影响早读，见 §3 第 3 条。
-- **真实数据上的五项只读核查**（脚本、命令与原始输出在 `docs/verification/2026-09-29/brain_multidisease/checks/`）：10 mm³ 下限不会被 float32 文件头改动一格；1212 例的 SynthSeg 图都在，且与标签同网格（仿射偏差 0）；3887 个通道文件与解剖图仿射完全相同；三组交叉运行的输入都在且同网格；没有一张解剖图缺宿主体素。
-- **用户本轮拍板**：S7 走 C（先 A 后 B）；达标线与 S2 的 D1 同口径、三病种分别判；产出 = 检测器 + 查表绑定 + 结构化记录，脑叶留给 S4；划分改为五折全训、fold 0 先报（"B，不用留卡"）；方法 nnU-Net 3d_fullres；采纳两条建议（交叉误报检查只报告；S4 设计与训练并行）。算力原话："后续整个服务器的算力都要优先该任务使用，但是前提是只能是考虑或者占用空的 GPU"。S4 的老师用方案 B（外部数据集整头高分辨 T1 上的 SynthSeg 当老师，学生看同病人的 FLAIR 并处理成 fastMRI 的样子）。
+**nnDetection 第二臂（S2）**：fold 0 自 04:24 在 GPU 3 训练，17:55 在第 52 轮（共 60 轮），3.0 步/秒，预计 20:00 前后训练结束，之后是 sweep。计划 Task 1–8 已在 main。
 
-**nnDetection 第二臂（S2）**：fold 0 自 04:24 在 GPU 3 训练，15:49 在第 48 轮（共 60 轮）。14:31 起被共用同一张卡的任务拖慢（见 §2），原先 3.6 步/秒，现在约 0.25 步/秒。计划 Task 1–8 已在 main（tag `handoff/2026-09-29-nndet-fold0-training`）。
+**S4 脑部解剖层**：设计概览已在聊天里给用户（约 17:25），等点头。只读探查的新事实：`/data2/congcong/data/FM_data/SibBMS_ms/sibbms.zip`（11 GB，未解压）里有健康人 100 人（T1、T2、FLAIR）和多发性硬化 93 人 / 272 次检查（另有增强 T1），全部 197×233×189、1 mm、已去颅骨并在标准空间；本机所有带 FLAIR 的数据集都去过颅骨。
 
 **之前（保留）**：S2 nnU-Net 检测器 D1 门不过（2d 五折 0.3662 @ 1.636 FP/卷，主因漏检），记录索引 `docs/verification/2026-09-28/brain_detector/README.md`。S1 关系基线（NOT_EVIDENCE）、Level R 读片工具（冒烟服务 8791，浏览器验收仍 USER_REPORTED）同前。
 
-**还没有任何 S7 的检测数字。** 第一份读数（梗死 fold 0 的早读，不是达标结论）要等该折训练与验证预测结束。
-
 ## 2. 待用户拍板
 
-- **GPU 冲突**：2026-09-29 14:31:52，同一用户的另一个会话（GS 项目，工作树 `mcgs_ce_mask_wt`，实验 `CE_retro_cssense_af16_vdpois`）在我们训练占着的卡上启动了任务：GPU 0（pid 1333445）、GPU 3（1333443）、GPU 4（1333440）各一个 MC-GS（4000 步，15:23 时约 1350 步），GPU 1 上是一条经典重建链。后果：胶质瘤两折每轮 95 s → 约 290 s，转移瘤 fold 0 在 65–257 s 之间波动，nnDetection 3.6 → 0.25 步/秒。本会话没有动这些进程。已给用户三个选项（A 等它们跑完；B 用户去那个会话挪走；C 授权本会话处理并点名进程），用户回复"continue"，未选，按 A 进行。
-- **早停的两种"未定"情形**（§1 修补 3 与终审第 1 条）：规格 M4 只说了"fold 0 灵敏度 < 0.3 就停"。没有工作点，或工作点 < 0.3 而刚超预算的那一行 ≥ 0.3 时，现在都不自动停、报用户定。用户可改成自动停。
-- **句子措辞**（终审第 3 条）：三处改动按终审建议先落地，已在聊天里告知用户，用户未表态。逐例记录到计划 Task 12 才写，之前都可以改。
-- **终审给用户的六条提醒**（原文在 `final-review-1-report.md`）：达标数字取决于分数的分布，nnU-Net 的分数集中在 1 附近；"无工作点"与找到多少病灶无关；"疑似 X"只说明跑的是 X 模型；数据里几乎没有正常脑（1212 例里 3 例无病灶），"未检出"不能当阴性；解剖词来自伪标签上的体素计票；左右取决于文件头（未独立核实）。
-- **S4 第二问**：解剖模型输出到多细。A 分两步（现在先做大类加左右侧，分叶等权重到位再加，推荐）；B 等分叶权重到位一次做完；C 只做大类。SynthSeg 的分叶与 QC 权重本机没有，FreeSurfer 官方两个地址 2026-09-29 连不上。
-- **push**：main 自 afe641e 起所有提交与 tag 都只在本地。
-- **nnDetection fold 0 出结果后**：规则 A（≥ 106/280）通过就要补五折，开跑前问；不通过就停。
-- **读片人**、Level R 读片说明里 "other" 的定义、伦理备案：同前。
-- **可删清单（只列，不删；删除由用户执行）**：S2 工作树 `../foundation_model-detector` 与分支 `build/brain-detector`（已合并）；`/data2/congcong/data/FM_data/derived/nndet_smoke/`；`~/logs/nndet_install/wheels/` 里 1.6 GB 的 torch 安装包；会话 scratch（`/tmp/claude-1002/-home-congcongliu--claude/614ccd9c-f8e8-435b-afc8-47ae37fe3721/scratchpad/` 下的 `plan_dryrun`、`s7_dryrun`、`s7_nnunet`、`s7_e2e`、`s7probe`、`s4probe`、`s7_checks`、`review_*` 等）。
-- 旧遗留：Q9 删除授权、其余 4850 卷 SynthSeg、Redivis token、两条远端评审分支去留、RSS 左右手性换算规则。
+1. **其他会话持续在我们占着的卡上启动任务，胶质瘤 fold 2 按现在的速度会超过 24 小时。** 我们的训练每个只占约 8 GB，别的会话按剩余显存挑卡就会落到这些卡上。经过：14:31 GS 会话（`mcgs_ce_mask_wt`，`CE_retro_cssense_af16_vdpois`）在 GPU 0、3、4 起 MC-GS、GPU 1 起重建链（约 17:05 前结束）；17:02 膝关节筛选会话（`mcgs_nb_knee_wt`）在 GPU 6、7 起任务，GPU 6 与我们的胶质瘤 fold 2 在同两秒内抢到同一张卡；17:33 GS 会话又在 GPU 0、1、2、4 各起一个 25 GB 的任务。本会话没有动任何不是自己启动的进程。已给用户三个选项：A 维持现状；B 用户去告诉那两个会话只用没有任何进程的空卡；C 授权本会话给它们发消息。用户未答复，按 A 进行。
+2. **句子按体积从大到小写前 5 处**（原规格是按分数）。理由：分数是块内概率均值，小块最高；真实一例 26 处病灶里，按分数只写出 16–64 mm³ 的五处，最大的 744 mm³ 被并进"另有 21 处"。代码已按建议改，规格里标为待确认。
+3. **"另有 N 处"后面补位置**（"还见于…"）。同上，已按建议改，待确认。
+4. **S4 设计概览**：方向对的话继续分段细化。
+5. **push**：main 自 afe641e 起所有提交与 tag 都只在本地。
+6. **nnDetection fold 0 出结果后**：规则 A（≥ 106/280）通过就要补五折，开跑前问；不通过就停。
+7. **读片人**、Level R 读片说明里 "other" 的定义、伦理备案：同前。
+8. **可删清单（只列，不删；删除由用户执行）**：S2 工作树 `../foundation_model-detector` 与分支 `build/brain-detector`（已合并）；`/data2/congcong/data/FM_data/derived/nndet_smoke/`；`~/logs/nndet_install/wheels/` 里 1.6 GB 的 torch 安装包；会话 scratch（`/tmp/claude-1002/-home-congcongliu--claude/614ccd9c-f8e8-435b-afc8-47ae37fe3721/scratchpad/` 下的 `plan_dryrun`、`s7_dryrun`、`s7_nnunet`、`s7_e2e*`、`s7_readings`、`s7probe`、`s4probe`、`s7_checks`、`review_*` 等）。
+9. 旧遗留：Q9 删除授权、其余 4850 卷 SynthSeg、Redivis token、两条远端评审分支去留、RSS 左右手性换算规则。
+
+**终审给用户的提醒**（已在聊天里转达）：达标数字取决于分数的分布，nnU-Net 的分数集中在 1 附近；"无工作点"与找到多少病灶无关；"疑似 X"只说明跑的是 X 模型；数据里几乎没有正常脑（1212 例里 3 例无病灶），"未检出"不能当阴性；解剖词来自伪标签上的体素计票；左右取决于文件头（未独立核实）；侧别按 40% 规则判，一个 65/35 的跨中线肿瘤会写成单侧；10 mm 在层厚约 5 mm 的扫描里只相当于两层。
 
 ## 3. 下一步
 
-1. **评估记录出来后**再补一次针对记录与文档的复核（终审已覆盖代码）。
-2. **计划 Task 11，每个病种 fold 0 的早读**。前提：`<results>/<Dataset>/nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres/fold_0/validation/summary.json` 存在，且 `logs/brain_disease/queue.log` 有 `finished ('<病种>', 0) … exit code 0`。命令（训练还在跑时只开 2 个进程）：
+1. **每个 `finished` 都核对退出码**（正在跑的队列是旧代码，失败只记一行）。监视已挂，队列出事件会通知。
+2. **计划 Task 11，转移瘤与胶质瘤 fold 0 的早读**（梗死已做）。前提：该折 `validation/summary.json` 存在，且 `logs/brain_disease/queue.log` 有 `finished ('<病种>', 0) … exit code 0`。命令（训练还在跑时只开 2 个进程）：
    ```
    PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/eval_brain_disease.py --disease <病种> --folds 0 --workers 2 --out docs/verification/2026-09-29/brain_multidisease/<病种>_fold0
    ```
-   读 `verdict.json`：`early_stop_undecided` 为 true 就不写 skip 文件，把 FROC 表和那两行报给用户；`stop_remaining_folds` 为 true 才写 `logs/brain_disease/skip_<数据集号>`（写了就删不掉，只有用户能撤）。提交读数，报告用户并写明"这是早读，不是达标结论"。
-3. **写逐例记录之前（计划 Task 12 Step 1 之前）要先修的四处**，都来自复审，都不影响早读：
-   - 侧别词按整个病灶统计，却写在主结构前面：55% 左丘脑 + 45% 右白质会写成"双侧丘脑"。改成绑定时另算"主结构那部分体素"的侧别，句子用它。
-   - "邻近"不带距离：离最近结构 30 个体素也写"邻近"。记录里加 `host_distance_mm`；超过多远改写"未能定位的区域"由用户定。
-   - "刚超预算的那一行"不是严格上界（匹配按总 IoU 最大做，每个阈值重做；随机拥挤场景 20000 次里 32 次沿阈值多出一个命中）：改措辞，并把离 0.3 不到两个病灶的那一行也算作"够得着"。
-   - 无工作点且 0.95 那一行灵敏度已 < 0.3 时，读数其实已经有结论，报告里加一句；在此之前由控制方在给用户的消息里说明。
-4. **计划 Task 12**：队列日志出现 `queue empty, nothing running: done` 后，三个病种五折评估（写逐例记录到 `/data2/congcong/data/FM_data/derived/brain_disease/<病种>/records`）、三组交叉误报、每病种一例推理冒烟（每次冒烟用新的输出目录）、记录索引 README。
+   读 `verdict.json`：`early_stop_undecided` 为 true 就不写 skip 文件，把 FROC 表和"刚超预算的那一行"报给用户；`stop_remaining_folds` 为 true 才写 `logs/brain_disease/skip_<数据集号>`（写了就删不掉，只有用户能撤）。提交读数（`git commit -m "Brain disease <disease>: fold 0 early reading (not the gate)"`），报告用户并写明"这是早读，不是达标结论"。
+3. **写逐例记录之前**：用户确认 §2 第 2、3 条；另按终审建议，先用转移瘤和胶质瘤的真实输出在内存里各生成三句读一遍（重点看带卫星灶的胶质瘤和病灶很多的转移瘤，"还见于"后面的位置可能有十来个，要不要设上限到时再定）。
+4. **计划 Task 12**：队列日志出现 `queue empty, nothing running: done`，且每个要评估的折都有 `finished … with exit code 0` 后：三个病种五折评估（逐例记录写到 `/data2/congcong/data/FM_data/derived/brain_disease/<病种>/records`）、三组交叉误报、每病种一例推理冒烟（每次用新的输出目录）、记录索引 README（写明匹配规则与 S2 相同、阈值是单折模型上测的）。
 5. **计划 Task 13**：更新本文件与 CLAUDE.md、记录复核、合回 main、tag `handoff/<日期>-brain-multidisease`，不 push。
 6. **nnDetection**：训练与 sweep 结束后做其计划 Task 9（提取、fold 0 报告、规则 A、推理冒烟）与 Task 10。进程 3334388 结束时可能卡在退出，输出齐了再 `kill -TERM`（那是本会话自己的进程）。
-7. **S4 设计**：等用户回答第二问后继续（训练数据、仿真 fastMRI 的几何、验证口径、去颅骨），再写规格与计划。
+7. **S4 设计**：用户点头后分段细化（数据、仿真、验证与达标线、推理），再写规格与计划。SibBMS 要先解压、再用 CPU 跑 SynthSeg（372 次，约 6 小时），CPU 现在贴着上限，得等 S7 的训练跑完一批。
 8. 阶段 B（只吃 FLAIR 的统一模型）等阶段 A 出数后再设计。
 
 ## 4. 坑与别重做
@@ -83,21 +100,24 @@
 - **训练日志滞后**：训练的标准输出重定向到文件是块缓冲，`logs/brain_disease/Dataset90*_fold*.log` 会落后十几分钟。每轮耗时读 nnU-Net 结果目录里的 `training_log_*.txt`。
 - **CPU 已贴着上限**：六个训练加 nnDetection 实测 47.2 核（上限 48）。训练期间任何评估都加 `--workers 2`，全量测试一次只跑一个。
 - **别的会话会把任务放到我们占着的卡上**：队列只保证自己不抢别人的卡，防不住别人。发现变慢先看 `nvidia-smi --query-compute-apps`，不是自己启动的进程一律不动，报用户。
-- **这里不能删任何东西**，所以半成品目录会一直留着并挡住下一次同名运行：脚本都改成"先检查、后建目录"；推理冒烟失败后换一个新的 `--out`。
-- **队列重启不要覆盖日志**：13:46 那次启动写的是 `logs/brain_disease/queue.log`，之后任何一次启动都用新名字（`queue_$(date +%Y%m%d_%H%M%S).log`），否则退出码的唯一记录会被截断。正在跑的队列是旧代码：训练失败只记一行就继续，所以每个 `finished` 都要核对退出码；出现非零码先读该任务的日志，若原因会影响每次启动就建 `logs/brain_disease/stop` 并报用户。
-- **匹配规则与 S2 相同**：取总 IoU 最大的一对一指派，再去掉 IoU < 0.1 的对；拥挤时偶尔比最优的一对一匹配少一个命中（终审随机实验 20000 次里 47 次），从不多。为了与 S2 可比不改，记录索引 README 里要写明。
-- **分数的性质**：检测分数是连通块内前景概率的均值，块来自 argmax 图，所以分数都大于 0.5；FROC 表里阈值 ≤ 0.50 的各行相同，每例 2 个误报的预算可能压不到。
+- **这里不能删任何东西**，所以半成品目录会一直留着并挡住下一次同名运行：脚本都是"先检查、后建目录"；推理冒烟失败后换一个新的 `--out`。早读先输出到 scratch 看一眼、再写进仓库，是因为仓库里的目录写了就不能重来。
+- **队列重启不要覆盖日志**：13:46 那次启动写的是 `logs/brain_disease/queue.log`，之后任何一次启动都用新名字（`queue_$(date +%Y%m%d_%H%M%S).log`）。出现非零退出码先读该任务的日志，若原因会影响每次启动就建 `logs/brain_disease/stop` 并报用户。
+- **句子的每一处写法都要拿真实输出读一遍**：终审五轮里每一轮都是在真实或接近真实的病灶上才发现句子的问题（按分数排序、侧别词串读、"另有 N 处"藏住位置）。单元测试守得住规则，守不住"读起来对不对"。
+- **匹配规则与 S2 相同**：取总 IoU 最大的一对一指派，再去掉 IoU < 0.1 的对；拥挤时偶尔比最优的一对一匹配少一个命中，命中数也因此不一定随阈值单调。为了与 S2 可比不改，记录索引 README 里要写明。
+- **分数的性质**：检测分数是连通块内前景概率的均值，块来自 argmax 图，所以分数都大于 0.5；FROC 表里阈值 ≤ 0.50 的各行相同；小块的分数最高。
 - **绑定一致率不是证据**：真值和预测都用同一张 SynthSeg 伪标签图查表。
 - **计划里的代码事先跑过**：计划的每段代码都在分支的临时副本里执行过；临时副本在会话 scratch 里，是一次性的，以仓库里的计划为准。
+- 台账里 17:28–17:42 的几个时刻是估的（已改成"约"）；要准的时间以提交时间和队列日志为准。
 - nnDetection 的环境、约定、下载的坑同上一版（`docs/nndet_install.md`）；zsh 的 `pgrep -f` 会匹配到自己，等待循环用 `ps -p <pid>`。
 - 别在 nnU-Net 上调参救线（M5、D9）；C1 上的数字都不是证据。
 
 ## 5. 关键决定的为什么
 
-- **先 A 后 B（M1）**：病种与数据集完全混杂（每个病种只来自一个数据集），统一模型可以只靠图像风格分辨病种。A 先给出每个病种在原生序列上的上限，B 需要的标注转换、按病人划分、评估代码 A 都先做出来。
-- **按 10 mm³ 而不是按体素数定下限（M7）**：三个数据集体素大小差很多（转移瘤一个数据集内下限就从 5 格到 55 格），按 9 个体素会去掉 55% 的梗死。
-- **五折全训、fold 0 先报（M4）**：用户说不用留卡；五折折外预测让每个病例都有一条记录，数字也更稳。
-- **无工作点不自动停**：误停会错杀一个可能过线的病种，之后还要重启；多训四折只多花空闲 GPU 时间。
-- **推理前核对网格**：体积和最近结构都按解剖图的体素大小算，形状相同而网格不同会悄悄算错，而这正是要交给用户的那句话。
-- **终审提前到出数之前**：代码已全部写完，出数之后才发现问题就要重算，而且已经报出去的数字收不回来。
+- **先 A 后 B（M1）**：病种与数据集完全混杂（每个病种只来自一个数据集），统一模型可以只靠图像风格分辨病种。
+- **按 10 mm³ 而不是按体素数定下限（M7）**：三个数据集体素大小差很多（转移瘤一个数据集内下限就从 5 格到 55 格）。
+- **五折全训、fold 0 先报（M4）**：用户说不用留卡；五折折外预测让每个病例都有一条记录。
+- **早停只在读数明确时触发**：工作点灵敏度 < 0.3，且"刚超预算的那一行"加上两个病灶也到不了 0.3。阈值网格步长 0.05，最后一格可能误判；skip 文件写了就删不掉；误停会错杀一个可能过线的病种，多训几折只多花空闲 GPU 时间。没有工作点时没有测到灵敏度，一律不自动停。
+- **推理前核对网格**：体积和最近结构都按解剖图的体素大小算，形状相同而网格不同会悄悄算错。
+- **句子按体积排序**：读的人先找最大的病灶，而分数最高的是最小的块。
+- **终审提前到出数之前**：出数之后才发现问题就要重算，而且已经报出去的数字收不回来。
 - **中途交接合入 main**：训练要到第二天，协作者只读 main，最新状态不能只停在侧分支。

@@ -85,6 +85,9 @@ def test_fold_report_records_and_refusals(tmp_path):
         assert a["threshold"] == 0.85 and a["model_folds"] == [0] and "NOT_EVIDENCE" in a["anatomy_source"]
         assert json.loads((rec / "100101B.json").read_text())["impression"] == "未检出相关异常"
         assert '"n_scans_over_budget": 0' in rep and '"nearest_rate": 0.0' in rep
+        assert '"host_side_agreement": 1.0' in rep and '"unlocated_rate": 0.0' in rep
+        assert rep.rstrip().splitlines()[-1].startswith("Code: commit ")
+        assert a["lesions"][0]["host_side"] == "left" and a["lesions"][0]["host_sides"] == {"white_matter": "left"}
         assert sorted(p.name for p in rec.iterdir()) == ["100101A.json", "100101B.json"]
         with pytest.raises(FileExistsError):
             mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--workers", "1"])
@@ -116,10 +119,12 @@ def test_no_operating_point_is_said_plainly_and_writes_no_records(tmp_path):
         mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--records", str(rec), "--workers", "1"])
     assert json.loads((out / "verdict.json").read_text()) == {
         "kind": "early_reading", "folds": [0], "pass": None, "operating_point": False, "sensitivity": None, "thr": None,
-        "fp_per_scan": None, "beyond_budget": {"thr": 0.95, "sensitivity": 0.0, "fp_per_scan": 3.0},
+        "fp_per_scan": None, "beyond_budget": {"thr": 0.95, "sensitivity": 0.0, "fp_per_scan": 3.0, "n_hit": 0, "n_gt": 2,
+                                               "out_of_reach": False},
         "stop_remaining_folds": False, "early_stop_undecided": True}
     rep = (out / "REPORT.md").read_text()
     assert "there is no operating point" in rep and "does not stop the remaining folds" in rep
+    assert "decisive all the same" not in rep          # two lesions in the fold: nothing is out of reach of 0.3
     assert "no operating point" in (out / "output.txt").read_text() and not rec.exists()
     assert (out / "froc.csv").read_text().splitlines()[19] == "0.95,0,0.000000,3.000000"
 
@@ -147,3 +152,18 @@ def test_records_hold_only_detections_at_the_operating_threshold(tmp_path):
     b = json.loads((tmp_path / "records" / "100101B.json").read_text())
     assert a["threshold"] == 0.85 and [l["score"] for l in a["lesions"]] == [0.875]      # the stray at 0.625 is left out
     assert b["lesions"] == [] and b["sentence"] == "本模型未检出转移瘤样异常（阈值 0.85）。"
+
+
+def test_a_reading_without_an_operating_point_says_when_it_is_decisive_all_the_same(tmp_path):
+    mod = _load()
+    strays = [((slice(8, 11), slice(16, 19), slice(5, 8)), 0.96875), ((slice(14, 17), slice(16, 19), slice(0, 3)), 0.96875),
+              ((slice(20, 23), slice(18, 21), slice(4, 7)), 0.96875)]
+    seven = [(slice(x, x + 2), slice(0, 2), slice(0, 3)) for x in range(0, 21, 3)]      # 7 lesions of 12 mm3, none found
+    _tree(tmp_path, {"100101A": (seven, strays, 0), "100101B": ([], strays, 0), "100102A": ([], [], 1)})
+    with patch.object(mod, "FM", tmp_path), patch.object(mod, "NNUNET", tmp_path / "derived/nnunet"):
+        mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(tmp_path / "rep"), "--workers", "1"])
+    v = json.loads((tmp_path / "rep" / "verdict.json").read_text())
+    assert v["operating_point"] is False and v["early_stop_undecided"] is True and v["stop_remaining_folds"] is False
+    assert v["beyond_budget"] == {"thr": 0.95, "sensitivity": 0.0, "fp_per_scan": 3.0, "n_hit": 0, "n_gt": 7, "out_of_reach": True}
+    rep = (tmp_path / "rep" / "REPORT.md").read_text()
+    assert "decisive all the same" in rep and "finds 0 of 7 lesions" in rep

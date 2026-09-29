@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 
 from anatobind.eval.brain_disease import (
-    beyond_budget, binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
+    beyond_budget, binding_agreement, case_scan, code_version, dice_summary, evaluate, false_positive_spread, jobs, strata,
+    verdict,
 )
 from anatobind.eval.lesion_components import size_stratum
 from anatobind.nnunet.brain_disease import fold_dir
@@ -98,7 +99,8 @@ def test_strata_and_binding_agreement(tmp_path):
     by_case = strata(scans, 0.5, lambda s, r: s["case"])
     assert by_case == {"a": {"n_gt": 1, "n_hit": 1, "sensitivity": 1.0}, "b": {"n_gt": 1, "n_hit": 0, "sensitivity": 0.0}}
     assert binding_agreement(scans, 0.5) == {"n_pairs": 1, "host_agreement": 1.0, "side_agreement": 1.0,
-                                             "n_detections": 3, "no_host_rate": 0.0, "nearest_rate": 0.0}
+                                             "host_side_agreement": 1.0, "n_detections": 3, "no_host_rate": 0.0,
+                                             "nearest_rate": 0.0, "unlocated_rate": 0.0}
     assert false_positive_spread(scans, 0.5) == {"n_scans": 3, "median": 1.0, "max": 1, "n_scans_over_budget": 0}
     assert false_positive_spread(scans, 0.7) == {"n_scans": 3, "median": 0.0, "max": 1, "n_scans_over_budget": 0}
     assert binding_agreement(scans, 0.95)["host_agreement"] is None
@@ -145,25 +147,36 @@ def test_jobs_refuse_folds_given_twice_or_out_of_range(tmp_path):
             jobs(tmp_path / "res", tmp_path / "raw", "glioma", splits, folds, {}, lambda c: tmp_path / c)
 
 
-def _rows(*triples):
-    return [{"thr": t, "sensitivity_family": s, "fp_per_scan": f} for t, s, f in triples]
+def _rows(*triples, n_gt=100):
+    """(threshold, lesions found, false positives per scan) of a fold with n_gt counted lesions."""
+    return [{"thr": t, "n_gt": n_gt, "n_hit_family": h, "sensitivity_family": h / n_gt, "fp_per_scan": f} for t, h, f in triples]
 
 
-def test_an_early_stop_needs_the_row_beyond_the_budget_to_be_low_too():
+def test_an_early_stop_needs_the_row_beyond_the_budget_to_be_out_of_reach_too():
     low = {"pass": False, "thr": 0.95, "sensitivity_family": 0.27, "fp_per_scan": 1.6}
-    # 0.90 exceeds the budget with sensitivity 0.34: a threshold between the two rows may reach 0.3
-    near = verdict({"gate": low, "rows": _rows((0.85, 0.40, 3.1), (0.90, 0.34, 2.4), (0.95, 0.27, 1.6))}, [0])
-    assert near["beyond_budget"] == {"thr": 0.90, "sensitivity": 0.34, "fp_per_scan": 2.4}
+    # 0.90 exceeds the budget and finds 34 of 100: a threshold between the two rows may reach 0.3
+    near = verdict({"gate": low, "rows": _rows((0.85, 40, 3.1), (0.90, 34, 2.4), (0.95, 27, 1.6))}, [0])
+    assert near["beyond_budget"] == {"thr": 0.90, "sensitivity": 0.34, "fp_per_scan": 2.4, "n_hit": 34, "n_gt": 100,
+                                     "out_of_reach": False}
     assert near["stop_remaining_folds"] is False and near["early_stop_undecided"] is True
-    # 0.90 exceeds the budget with sensitivity 0.29: no threshold reaches 0.3
-    far = verdict({"gate": low, "rows": _rows((0.90, 0.29, 2.4), (0.95, 0.27, 1.6))}, [0])
+    # 28 of 100 is two lesions short of 0.3: the matching is redone per threshold, so this is still within reach
+    close = verdict({"gate": low, "rows": _rows((0.90, 28, 2.4), (0.95, 27, 1.6))}, [0])
+    assert close["stop_remaining_folds"] is False and close["early_stop_undecided"] is True
+    # 27 of 100 is three lesions short: out of reach, the reading is clear
+    far = verdict({"gate": low, "rows": _rows((0.90, 27, 2.4), (0.95, 27, 1.6))}, [0])
+    assert far["beyond_budget"]["out_of_reach"] is True
     assert far["stop_remaining_folds"] is True and far["early_stop_undecided"] is False
     # the budget is never exceeded: the operating point is the lowest threshold, nothing lies beyond it
-    alone = verdict({"gate": dict(low, thr=0.05), "rows": _rows((0.05, 0.27, 1.6), (0.95, 0.20, 0.4))}, [0])
+    alone = verdict({"gate": dict(low, thr=0.05), "rows": _rows((0.05, 27, 1.6), (0.95, 20, 0.4))}, [0])
     assert alone["beyond_budget"] is None and alone["stop_remaining_folds"] is True
-    full = verdict({"gate": low, "rows": _rows((0.90, 0.34, 2.4), (0.95, 0.27, 1.6))}, [0, 1, 2, 3, 4])
+    full = verdict({"gate": low, "rows": _rows((0.90, 34, 2.4), (0.95, 27, 1.6))}, [0, 1, 2, 3, 4])
     assert full["stop_remaining_folds"] is False and full["early_stop_undecided"] is False and full["pass"] is False
-    assert beyond_budget(_rows((0.5, 0.9, 2.0))) is None        # exactly the budget is within the budget
+    assert beyond_budget(_rows((0.5, 90, 2.0))) is None         # exactly the budget is within the budget
+    # no operating point: always undecided; out_of_reach tells whether the reading is decisive in substance
+    none = {"pass": False, "thr": None, "sensitivity_family": 0.0, "fp_per_scan": None}
+    flood = verdict({"gate": none, "rows": _rows((0.90, 30, 4.0), (0.95, 20, 2.5))}, [0])
+    assert flood["early_stop_undecided"] is True and flood["stop_remaining_folds"] is False
+    assert flood["beyond_budget"]["thr"] == 0.95 and flood["beyond_budget"]["out_of_reach"] is True
 
 
 def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_path):
@@ -188,3 +201,37 @@ def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_pat
     assert [(r["n_voxels"], r["mm3"], r["ignore"]) for r in s["gt"]] == [(5, 12.5, False), (3, 7.5, True)]
     assert sorted((r["n_voxels"], r["mm3"], r["host"], r["host_rule"], r["side"]) for r in s["dets"]) == [
         (4, 10.0, "white_matter", "nearest", "right"), (5, 12.5, "white_matter", "overlap", "left")]
+    far = next(r for r in s["dets"] if r["host_rule"] == "nearest")
+    assert far["host_distance_mm"] == 5.0 and far["host_sides"] == {"white_matter": "right"}
+    # one of the two detections is bound by the nearest rule, 5 mm away: near enough to be located
+    assert binding_agreement([s], 0.5)["nearest_rate"] == 0.5 and binding_agreement([s], 0.5)["unlocated_rate"] == 0.0
+
+
+def test_the_two_side_agreements_are_counted_apart():
+    box = (2, 2, 2, 6, 6, 5)
+    gt = {"box": box, "family": "tumor", "host": "thalamus", "side": "right", "host_side": "left"}
+    det = {"box": box, "family": "tumor", "score": 0.875, "host": "thalamus", "host_rule": "overlap", "side": "right",
+           "host_side": "right", "host_distance_mm": 0.0}
+    out = binding_agreement([{"case": "c", "gt": [gt], "dets": [det]}], 0.5)
+    assert (out["n_pairs"], out["side_agreement"], out["host_side_agreement"]) == (1, 1.0, 0.0)
+
+
+def test_the_code_version_names_the_commit_and_marks_changed_files(tmp_path):
+    import subprocess
+    assert code_version(tmp_path / "no_such_folder") == "unknown"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false"]
+    subprocess.run(git + ["init", "-q"], cwd=repo, check=True)
+    (repo / "anatobind").mkdir()
+    (repo / "anatobind" / "x.py").write_text("one\n")
+    (repo / "STATUS.md").write_text("one\n")
+    subprocess.run(git + ["add", "anatobind/x.py", "STATUS.md"], cwd=repo, check=True)
+    subprocess.run(git + ["commit", "-q", "-m", "one"], cwd=repo, check=True)
+    clean = code_version(repo)
+    assert len(clean) >= 7 and not clean.endswith("+")
+    (repo / "anatobind" / "untracked.py").write_text("x\n")
+    (repo / "STATUS.md").write_text("two\n")
+    assert code_version(repo) == clean                         # untracked files and documents do not count
+    (repo / "anatobind" / "x.py").write_text("two\n")
+    assert code_version(repo) == clean + "+"
