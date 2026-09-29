@@ -130,3 +130,34 @@ def test_run_handles_no_detection_and_a_grid_mismatch(tmp_path):
     with pytest.raises(ValueError, match="different grids"):
         B.run("infarct", images, anatomy, tmp_path / "o2", [0], 0, 0.5,
               predict=lambda *a: nothing(*a, shape=(10, 10, 5)))
+
+
+def test_run_refuses_channels_off_the_anatomy_grid_before_anything_is_written(tmp_path):
+    anatomy = _write(tmp_path / "seg.nii.gz", np.full((10, 10, 6), 2, np.int16))
+    ones = np.ones((10, 10, 6), np.float32)
+    dwi = _write(tmp_path / "dwi.nii.gz", ones)
+    thick = _write(tmp_path / "thick.nii.gz", ones, affine=np.diag([2.0, 2.0, 5.0, 1.0]))      # same shape, other voxel size
+    moved = np.diag([2.0, 2.0, 2.0, 1.0])
+    moved[0, 3] = 4.0                                                                          # same voxels, shifted by 4 mm
+    moved = _write(tmp_path / "moved.nii.gz", ones, affine=moved)
+    small = _write(tmp_path / "small.nii.gz", np.ones((10, 10, 5), np.float32))
+    called = []
+    for k, bad in enumerate((thick, moved, small)):
+        with pytest.raises(ValueError, match="is not on the anatomy's grid"):
+            B.run("infarct", [dwi, bad], anatomy, tmp_path / f"o{k}", [0], 0, 0.5, predict=lambda *a: called.append(a))
+        assert not (tmp_path / f"o{k}").exists()
+    with pytest.raises(FileNotFoundError):
+        B.run("infarct", [dwi, tmp_path / "missing.nii.gz"], anatomy, tmp_path / "o9", [0], 0, 0.5,
+              predict=lambda *a: called.append(a))
+    assert called == [] and not (tmp_path / "o9").exists()
+
+
+def test_a_rounding_difference_of_the_affine_is_the_same_grid_and_links_need_every_file(tmp_path):
+    anatomy = nib.load(str(_write(tmp_path / "seg.nii.gz", np.full((4, 4, 4), 2, np.int16))))
+    near = np.diag([2.0, 2.0, 2.0, 1.0])
+    near[:3] += 1e-5
+    a = _write(tmp_path / "a.nii.gz", np.ones((4, 4, 4), np.float32), affine=near)
+    B.check_grid([a], anatomy)                                                                 # no error
+    with pytest.raises(FileNotFoundError):
+        B.link_inputs(tmp_path / "in", "case", [a, tmp_path / "missing.nii.gz"], 2)
+    assert not (tmp_path / "in").exists()

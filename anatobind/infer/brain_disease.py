@@ -24,6 +24,7 @@ TYPE_ZH = {"tumor": "肿瘤样异常", "metastasis": "转移瘤样异常", "infa
 NOWHERE_ZH = "未能定位的区域"
 MAX_SENTENCE_LESIONS = 5
 INVOLVED_MIN = 0.10
+GRID_TOL = 1e-3
 
 
 def detections(pred, probs, voxel_mm3, family):
@@ -86,13 +87,28 @@ def run_nnunet(dataset_id, in_dir, out_dir, folds, gpu):
     subprocess.run(["nice", "-n", "19", *cmd], check=True, env=nnunet_env(gpu))
 
 
-def link_inputs(in_dir, case, images, n_channels):
-    if len(images) != n_channels:
-        raise ValueError(f"{n_channels} channels are needed, {len(images)} given")
-    Path(in_dir).mkdir(parents=True)
-    for k, p in enumerate(images):
+def check_grid(images, seg_img):
+    """Every channel must be on the anatomy's grid (same shape, affines equal within GRID_TOL): lesion volumes and the
+    nearest structure are computed with the anatomy's voxel size."""
+    for p in images:
         if not Path(p).is_file():
             raise FileNotFoundError(p)
+        img = nib.load(str(p))
+        dev = float(np.abs(img.affine - seg_img.affine).max())
+        if img.shape != seg_img.shape or dev > GRID_TOL:
+            raise ValueError(f"{p} is not on the anatomy's grid: shape {img.shape} against {seg_img.shape}, "
+                             f"largest affine difference {dev:.3g}")
+
+
+def link_inputs(in_dir, case, images, n_channels):
+    """Nothing is created unless the channel count is right and every file exists."""
+    if len(images) != n_channels:
+        raise ValueError(f"{n_channels} channels are needed, {len(images)} given")
+    for p in images:
+        if not Path(p).is_file():
+            raise FileNotFoundError(p)
+    Path(in_dir).mkdir(parents=True)
+    for k, p in enumerate(images):
         os.symlink(Path(p).resolve(), Path(in_dir) / f"{case}_{k:04d}.nii.gz")
 
 
@@ -103,6 +119,7 @@ def run(disease, images, anatomy, out_dir, folds, gpu, threshold, predict=run_nn
         raise FileExistsError(f"{out} exists")
     spec = DISEASES[disease]
     seg_img = nib.load(str(anatomy))
+    check_grid(images, seg_img)
     link_inputs(out / "input", "case", images, len(spec["channels"]))
     predict(spec["id"], out / "input", out / "pred", folds, gpu)
     pred = load_label_map(out / "pred" / "case.nii.gz")
