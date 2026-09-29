@@ -1,0 +1,5 @@
+Disease: infarct; folds [0]; kind early_reading
+Scans: 50; lesions counted: 428; ignored: 33
+Sensitivity 0.5678 at threshold 0.6 with 1.66 FP per scan
+Pass: None; stop remaining folds: False; early stop undecided: False
+Dice mean 0.753277521477103 over 49 cases
