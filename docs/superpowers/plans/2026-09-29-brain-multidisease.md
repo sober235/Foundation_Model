@@ -1299,7 +1299,7 @@ def test_main_structure_fractions_and_side_by_overlap():
     assert out["host"] == "white_matter"           # a tie goes to the lower class id
     out = b.bind(*_box(12, 16, 0, 4, 0, 2))
     assert out == {"host": "white_matter", "host_rule": "overlap", "host_fractions": {"white_matter": 1.0}, "side": "right",
-                   "host_side": "right", "host_distance_mm": 0.0}
+                   "host_side": "right", "host_sides": {"white_matter": "right"}, "host_distance_mm": 0.0}
 
 
 def test_both_sides_above_forty_percent_is_bilateral():
@@ -1316,7 +1316,7 @@ def test_a_structure_without_a_side_is_midline():
 def test_a_lesion_on_a_landmark_takes_the_nearest_host():
     out = BrainBinder(_seg(), (1.0, 1.0, 1.0)).bind(*_box(8, 10, 4, 6, 1, 2))   # inside the left lateral ventricle
     assert out == {"host": "white_matter", "host_rule": "nearest", "host_fractions": {}, "side": "left",
-                   "host_side": "left", "host_distance_mm": 1.0}
+                   "host_side": "left", "host_sides": {"white_matter": "left"}, "host_distance_mm": 1.0}
 
 
 def test_nearest_uses_millimetres_not_voxels():
@@ -1333,7 +1333,7 @@ def test_no_host_anywhere_and_a_mask_off_the_grid():
     seg[0, 0, 0] = 4
     b = BrainBinder(seg, (1.0, 1.0, 1.0))
     assert b.bind(*_box(1, 2, 1, 2, 1, 2)) == {"host": None, "host_rule": None, "host_fractions": {}, "side": "midline",
-                                               "host_side": "midline", "host_distance_mm": None}
+                                               "host_side": "midline", "host_sides": {}, "host_distance_mm": None}
     with pytest.raises(ValueError, match="does not fit"):
         b.bind((slice(2, 6), slice(0, 1), slice(0, 1)), np.ones((4, 1, 1), bool))
 
@@ -1346,10 +1346,12 @@ def test_the_side_of_the_main_structure_is_counted_on_its_own_voxels():
     b = BrainBinder(seg, (1.0, 1.0, 1.0))
     out = b.bind(*_box(5, 14, 0, 1, 0, 1))            # 5 voxels of the left thalamus, 4 of the right white matter
     assert out["host"] == "thalamus" and out["side"] == "bilateral" and out["host_side"] == "left"
+    assert out["host_sides"] == {"white_matter": "right", "thalamus": "left"}
     out = b.bind(*_box(7, 10, 8, 10, 0, 1))           # 4 voxels of the left thalamus, 2 of the brainstem
     assert out["host"] == "thalamus" and out["host_side"] == "left"
     out = b.bind(*_box(8, 11, 8, 10, 0, 1))           # 4 brainstem voxels, 2 of the left thalamus
     assert out["host"] == "brainstem" and out["side"] == "left" and out["host_side"] == "midline"
+    assert out["host_sides"] == {"thalamus": "left", "brainstem": "midline"}
 
 
 def test_the_distance_of_the_nearest_rule_is_in_millimetres():
@@ -1415,9 +1417,11 @@ class BrainBinder:
     def bind(self, sl, mask):
         """sl: the lesion box as slices; mask: the lesion's voxels inside that box.
 
-        side is counted over the whole lesion, host_side over the lesion's voxels inside the main structure: a lesion
-        of the left thalamus that reaches into the right white matter is bilateral, its main structure is the left
-        thalamus. host_distance_mm is 0 when the lesion overlaps a structure, else the distance to the nearest one."""
+        side is counted over the whole lesion, host_side over the lesion's voxels inside the main structure, and
+        host_sides likewise for every structure of host_fractions: a lesion of the left thalamus that reaches into
+        the right white matter is bilateral, its main structure is the left thalamus, the white matter it involves is
+        the right one. host_distance_mm is 0 when the lesion overlaps a structure, else the distance to the nearest
+        one."""
         if self.seg[sl].shape != mask.shape:
             raise ValueError(f"lesion mask {mask.shape} does not fit the anatomy grid {self.seg.shape}")
         labels = self.seg[sl][mask]
@@ -1425,18 +1429,18 @@ class BrainBinder:
         if counts.sum() > 0:
             host, rule, distance = CLASS_NAMES[int(np.argmax(counts))], "overlap", 0.0
             fractions = {CLASS_NAMES[i]: round(float(c) / float(counts.sum()), 4) for i, c in enumerate(counts) if c}
-            of_host = labels[np.isin(labels, HOST_CLASSES[host])]
+            sides = {name: side_of(labels[np.isin(labels, HOST_CLASSES[name])]) for name in fractions}
         else:
             dist, near = self._nearest_host()
             if dist is None:
                 return {"host": None, "host_rule": None, "host_fractions": {}, "side": "midline", "host_side": "midline",
-                        "host_distance_mm": None}
+                        "host_sides": {}, "host_distance_mm": None}
             j = int(np.argmin(dist[sl][mask]))
-            labels = of_host = near[sl][mask][j:j + 1]
+            labels = near[sl][mask][j:j + 1]
             host, rule, fractions = CLASS_NAMES[int(host_class_map(labels)[0]) - 1], "nearest", {}
-            distance = round(float(dist[sl][mask][j]), 2)
+            sides, distance = {host: side_of(labels)}, round(float(dist[sl][mask][j]), 2)
         return {"host": host, "host_rule": rule, "host_fractions": fractions, "side": side_of(labels),
-                "host_side": side_of(of_host), "host_distance_mm": distance}
+                "host_side": sides[host], "host_sides": sides, "host_distance_mm": distance}
 ````
 
 - [ ] **Step 4: Run** the test → 8 passed (after the re-review of 2026-09-29 the binder also returns `host_side`, the side counted over the lesion's voxels inside the main structure, and `host_distance_mm`).
@@ -1470,10 +1474,13 @@ import anatobind.infer.brain_disease as B
 from anatobind.bind.brain_lookup import BrainBinder
 
 
-def _row(score, mm3, host="white_matter", side="right", fractions=None, box=(1, 2, 3, 4, 5, 6), host_side=None):
+def _row(score, mm3, host="white_matter", side="right", fractions=None, box=(1, 2, 3, 4, 5, 6), host_side=None, sides=None):
+    """sides: the side of the involved structures that differ from the main structure's side."""
+    fractions = fractions if fractions is not None else {host: 1.0}
+    host_side = side if host_side is None else host_side
     return {"component": 1, "family": "tumor", "box": box, "n_voxels": 1, "mm3": mm3, "score": score, "host": host,
-            "host_rule": "overlap" if host else None, "host_fractions": fractions if fractions is not None else {host: 1.0},
-            "side": side, "host_side": side if host_side is None else host_side, "host_distance_mm": 0.0 if host else None}
+            "host_rule": "overlap" if host else None, "host_fractions": fractions, "side": side, "host_side": host_side,
+            "host_sides": {h: (sides or {}).get(h, host_side) for h in fractions}, "host_distance_mm": 0.0 if host else None}
 
 
 def test_detections_drop_small_components_and_score_by_mean_probability():
@@ -1518,7 +1525,8 @@ def test_record_and_sentence_for_one_large_tumour():
     assert len(rec["lesions"]) == 1 and rec["lesions"][0] == {
         "type": "tumor", "score": 0.93, "box": [1, 2, 3, 4, 5, 6], "volume_mm3": 81750.0, "host": "white_matter",
         "host_rule": "overlap", "host_fractions": {"white_matter": 0.61, "cortex": 0.30, "basal_ganglia": 0.09}, "side": "right",
-        "host_side": "right", "host_distance_mm": 0.0}
+        "host_side": "right", "host_sides": {"white_matter": "right", "cortex": "right", "basal_ganglia": "right"},
+        "host_distance_mm": 0.0}
     assert rec["sentence"] == "右侧大脑白质存在肿瘤样异常，体积约 82 mL，累及大脑皮层。疑似胶质瘤。"
     json.dumps(rec)
 
@@ -1644,21 +1652,25 @@ def test_the_score_is_the_mean_and_a_foreign_probability_map_is_refused():
 def test_the_sentence_says_next_to_for_the_nearest_rule_and_no_side_for_the_brainstem():
     near = dict(_row(0.8, 64.0, side="left"), host_rule="nearest", host_fractions={}, host_distance_mm=10.0)
     stem = _row(0.7, 300.0, host="brainstem", side="left", host_side="midline",
-                fractions={"brainstem": 0.9, "cerebellum": 0.1})
+                fractions={"brainstem": 0.9, "cerebellum": 0.1}, sides={"cerebellum": "left"})
     rec = B.study_record("s5", "metastasis", 0.5, [near, stem], folds=[3, 1])
     assert rec["sentence"] == ("邻近左侧大脑白质（未与任何结构重叠）存在转移瘤样异常，体积约 64 mm³；"
-                               "脑干存在转移瘤样异常，体积约 300 mm³，累及小脑。疑似脑转移瘤。")
+                               "脑干存在转移瘤样异常，体积约 300 mm³，累及左侧小脑。疑似脑转移瘤。")
     assert rec["lesions"][1]["side"] == "left" and rec["lesions"][1]["host_side"] == "midline"   # the record keeps both
     assert rec["model_folds"] == [1, 3] and "NOT_EVIDENCE" in rec["anatomy_source"]
 
 
 def test_the_side_before_the_structure_is_the_structure_s_own_and_a_far_lesion_is_not_located():
-    across = _row(0.9, 900.0, host="thalamus", side="bilateral", host_side="left",
-                  fractions={"thalamus": 0.55, "white_matter": 0.45})
+    across = _row(0.9, 900.0, host="thalamus", side="right", host_side="left",
+                  fractions={"thalamus": 0.38, "white_matter": 0.31, "cortex": 0.21, "basal_ganglia": 0.10},
+                  sides={"white_matter": "right", "cortex": "bilateral"})
     far = dict(_row(0.8, 64.0, side="right"), host_rule="nearest", host_fractions={}, host_distance_mm=10.01)
     rec = B.study_record("s7", "glioma", 0.5, [across, far])
-    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及大脑白质；"
+    # the side of an involved structure is written when it is not the main structure's: the basal ganglia are on the left
+    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及右侧大脑白质、双侧大脑皮层、基底节；"
                                "未能定位的区域存在肿瘤样异常，体积约 64 mm³。疑似胶质瘤。")
+    assert rec["lesions"][0]["host_sides"] == {"thalamus": "left", "white_matter": "right", "cortex": "bilateral",
+                                               "basal_ganglia": "left"}
     assert rec["lesions"][1]["host"] == "white_matter" and rec["lesions"][1]["host_distance_mm"] == 10.01
     assert B.NEAR_MM == 10.0
 
@@ -1724,8 +1736,8 @@ def detections(pred, probs, voxel_mm3, family):
 
 
 def bind_rows(rows, comp, binder):
-    """Attach the binder's fields (host, host_rule, host_fractions, side, host_side, host_distance_mm) to every row,
-    in place; returns rows."""
+    """Attach the binder's fields (host, host_rule, host_fractions, side, host_side, host_sides, host_distance_mm) to
+    every row, in place; returns rows."""
     for r in rows:
         r.update(binder.bind(*component_mask(comp, r)))
     return rows
@@ -1741,15 +1753,17 @@ def volume_text(mm3):
 
 def lesion_clause(lesion):
     """One lesion in words. The side written before the main structure is the side of the lesion's voxels inside
-    that structure (none for the brainstem). A lesion that overlaps no structure is said to lie next to the nearest
-    one when that is at most NEAR_MM away (user, 2026-09-29), else it is not located."""
+    that structure (none for the brainstem). An involved structure gets its side only when it differs from the main
+    structure's, so that a lesion across the midline reads as one. A lesion that overlaps no structure is said to lie
+    next to the nearest one when that is at most NEAR_MM away (user, 2026-09-29), else it is not located."""
     if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
         where = NOWHERE_ZH
     else:
         where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
         if lesion["host_rule"] == "nearest":
             where = f"邻近{where}（未与任何结构重叠）"
-    involved = [HOST_ZH[h] for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
+    involved = [(SIDE_ZH[lesion["host_sides"][h]] if lesion["host_sides"][h] != lesion["host_side"] else "") + HOST_ZH[h]
+                for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
                 if h != lesion["host"] and f >= INVOLVED_MIN]
     text = f"{where}存在{TYPE_ZH[lesion['type']]}，体积{volume_text(lesion['volume_mm3'])}"
     return text + (f"，累及{'、'.join(involved)}" if involved else "")
@@ -1763,7 +1777,7 @@ def study_record(study, disease, threshold, rows, folds=None):
     lesions = [{"type": spec["type"], "score": round(float(r["score"]), 4), "box": [int(v) for v in r["box"]],
                 "volume_mm3": round(float(r["mm3"]), 1), "host": r["host"], "host_rule": r["host_rule"],
                 "host_fractions": r["host_fractions"], "side": r["side"], "host_side": r["host_side"],
-                "host_distance_mm": r["host_distance_mm"]}
+                "host_sides": r["host_sides"], "host_distance_mm": r["host_distance_mm"]}
                for r in sorted(rows, key=lambda r: -r["score"]) if r["score"] >= threshold]
     if lesions:
         rest = len(lesions) - MAX_SENTENCE_LESIONS
@@ -1868,7 +1882,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** `tests/test_brain_disease_record.py tests/test_brain_detector_infer.py` → all pass (14 new). Do not run the CLI for real (the smoke run is Task 12). The side written before a structure is `host_side`; a lesion bound by the nearest rule farther than `NEAR_MM = 10` mm from every structure is written as not located (user, 2026-09-29). After the whole-branch review of 2026-09-29: a lesion that overlaps no structure is written as next to the nearest one; the side is written only before structures with a left and a right half; an empty record says that this model detected nothing at this threshold; records name their folds and the anatomy's source; `detections` refuses a probability map that does not belong to the label map. `check_grid`, the file check of `link_inputs` before its `mkdir` and the last two tests were added after the task review of 2026-09-29: `run()` compared only array shapes, so an anatomy of the same shape on another grid gave a wrong volume, structure and side without an error, and a mistyped image path left a partial output folder that blocked the next try. On the real data all 3887 channel files have exactly the affine of their case's SynthSeg map.
+- [ ] **Step 4: Run** `tests/test_brain_disease_record.py tests/test_brain_detector_infer.py` → all pass (14 new). Do not run the CLI for real (the smoke run is Task 12). The side written before a structure is `host_side`; an involved structure gets its side (`host_sides`) only when it differs from the main structure's, so that a lesion across the midline reads as one; a lesion bound by the nearest rule farther than `NEAR_MM = 10` mm from every structure is written as not located (user, 2026-09-29). After the whole-branch review of 2026-09-29: a lesion that overlaps no structure is written as next to the nearest one; the side is written only before structures with a left and a right half; an empty record says that this model detected nothing at this threshold; records name their folds and the anatomy's source; `detections` refuses a probability map that does not belong to the label map. `check_grid`, the file check of `link_inputs` before its `mkdir` and the last two tests were added after the task review of 2026-09-29: `run()` compared only array shapes, so an anatomy of the same shape on another grid gave a wrong volume, structure and side without an error, and a mistyped image path left a partial output folder that blocked the next try. On the real data all 3887 channel files have exactly the affine of their case's SynthSeg map.
 
 - [ ] **Step 5: Commit** — `git add anatobind/infer/brain_disease.py scripts/infer_brain_disease.py tests/test_brain_disease_record.py && git commit -m "Brain disease inference: scored components, binding, structured record and sentence per study"`
 
@@ -1987,7 +2001,8 @@ def test_strata_and_binding_agreement(tmp_path):
     by_case = strata(scans, 0.5, lambda s, r: s["case"])
     assert by_case == {"a": {"n_gt": 1, "n_hit": 1, "sensitivity": 1.0}, "b": {"n_gt": 1, "n_hit": 0, "sensitivity": 0.0}}
     assert binding_agreement(scans, 0.5) == {"n_pairs": 1, "host_agreement": 1.0, "side_agreement": 1.0,
-                                             "n_detections": 3, "no_host_rate": 0.0, "nearest_rate": 0.0}
+                                             "host_side_agreement": 1.0, "n_detections": 3, "no_host_rate": 0.0,
+                                             "nearest_rate": 0.0, "unlocated_rate": 0.0}
     assert false_positive_spread(scans, 0.5) == {"n_scans": 3, "median": 1.0, "max": 1, "n_scans_over_budget": 0}
     assert false_positive_spread(scans, 0.7) == {"n_scans": 3, "median": 0.0, "max": 1, "n_scans_over_budget": 0}
     assert binding_agreement(scans, 0.95)["host_agreement"] is None
@@ -2088,6 +2103,10 @@ def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_pat
     assert [(r["n_voxels"], r["mm3"], r["ignore"]) for r in s["gt"]] == [(5, 12.5, False), (3, 7.5, True)]
     assert sorted((r["n_voxels"], r["mm3"], r["host"], r["host_rule"], r["side"]) for r in s["dets"]) == [
         (4, 10.0, "white_matter", "nearest", "right"), (5, 12.5, "white_matter", "overlap", "left")]
+    far = next(r for r in s["dets"] if r["host_rule"] == "nearest")
+    assert far["host_distance_mm"] == 5.0 and far["host_sides"] == {"white_matter": "right"}
+    # one of the two detections is bound by the nearest rule, 5 mm away: near enough to be located
+    assert binding_agreement([s], 0.5)["nearest_rate"] == 0.5 and binding_agreement([s], 0.5)["unlocated_rate"] == 0.0
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_brain_disease_eval.py -q -p no:cacheprovider` → `ModuleNotFoundError: No module named 'anatobind.eval.brain_disease'`.
@@ -2108,7 +2127,7 @@ from anatobind.bind.brain_lookup import BrainBinder
 from anatobind.eval.detection_metrics import FP_MAX, gate, scan_matches, sweep
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities
 from anatobind.eval.lesion_components import component_rows, components
-from anatobind.infer.brain_disease import bind_rows, detections
+from anatobind.infer.brain_disease import NEAR_MM, bind_rows, detections
 from anatobind.nnunet.brain_disease import DISEASES, fold_dir
 
 EARLY_STOP = 0.3
@@ -2216,22 +2235,27 @@ def false_positive_spread(scans, thr):
 
 
 def binding_agreement(scans, thr):
-    """NOT_EVIDENCE. Over matched (ground truth, detection) pairs: the share with the same main structure and the
-    share with the same side; over all detections at thr: the share without any host, and the share that overlaps no
-    structure and was bound to the nearest one."""
-    n = same_host = same_side = n_det = no_host = nearest = 0
+    """NOT_EVIDENCE. Over matched (ground truth, detection) pairs: the share with the same main structure, with the
+    same side of the whole lesion and with the same side of the main structure (the one the sentence writes); over all
+    detections at thr: the share without any host, the share that overlaps no structure and was bound to the nearest
+    one, and the share that the sentence calls not located (no host, or the nearest one beyond NEAR_MM)."""
+    n = same_host = same_side = same_host_side = n_det = no_host = nearest = unlocated = 0
     for s in scans:
         hits, _, dets = scan_matches(s, thr)
         n_det += len(dets)
         no_host += sum(1 for d in dets if d["host"] is None)
         nearest += sum(1 for d in dets if d["host_rule"] == "nearest")
+        unlocated += sum(1 for d in dets if d["host"] is None
+                         or (d["host_rule"] == "nearest" and d["host_distance_mm"] > NEAR_MM))
         for g, p in hits.items():
             n += 1
             same_host += int(s["gt"][g]["host"] == dets[p]["host"])
             same_side += int(s["gt"][g]["side"] == dets[p]["side"])
+            same_host_side += int(s["gt"][g]["host_side"] == dets[p]["host_side"])
     return {"n_pairs": n, "host_agreement": same_host / n if n else None, "side_agreement": same_side / n if n else None,
+            "host_side_agreement": same_host_side / n if n else None,
             "n_detections": n_det, "no_host_rate": no_host / n_det if n_det else None,
-            "nearest_rate": nearest / n_det if n_det else None}
+            "nearest_rate": nearest / n_det if n_det else None, "unlocated_rate": unlocated / n_det if n_det else None}
 
 
 def dice_summary(results_root, disease, folds):
@@ -2350,6 +2374,8 @@ def test_fold_report_records_and_refusals(tmp_path):
         assert a["threshold"] == 0.85 and a["model_folds"] == [0] and "NOT_EVIDENCE" in a["anatomy_source"]
         assert json.loads((rec / "100101B.json").read_text())["impression"] == "未检出相关异常"
         assert '"n_scans_over_budget": 0' in rep and '"nearest_rate": 0.0' in rep
+        assert '"host_side_agreement": 1.0' in rep and '"unlocated_rate": 0.0' in rep
+        assert a["lesions"][0]["host_side"] == "left" and a["lesions"][0]["host_sides"] == {"white_matter": "left"}
         assert sorted(p.name for p in rec.iterdir()) == ["100101A.json", "100101B.json"]
         with pytest.raises(FileExistsError):
             mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--workers", "1"])
