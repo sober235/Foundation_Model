@@ -1,0 +1,14 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/floor_boundary.py   # 2026-09-29 15:30:45
+glioma: 501 cases; voxel volume min 1.000000 median 1.000000 max 1.000000 mm3
+  floor (voxels) -> cases: {10: 501}
+  cases with 10/volume within 1e-4 of an integer: 501
+    spacing (1.0, 1.0, 1.0) volume 1.0 10/volume 10.0 floor 10: 501 cases
+metastasis: 461 cases; voxel volume min 0.184620 median 1.107852 max 2.295918 mm3
+  floor (voxels) -> cases: {5: 88, 6: 1, 7: 9, 8: 7, 9: 57, 10: 191, 11: 2, 12: 2, 13: 1, 14: 16, 15: 57, 16: 5, 18: 1, 20: 1, 26: 1, 27: 1, 29: 1, 34: 3, 37: 1, 40: 4, 42: 1, 46: 2, 47: 1, 50: 1, 54: 1, 55: 6}
+  cases with 10/volume within 1e-4 of an integer: 4
+    spacing (0.5, 1.0, 0.5) volume 0.25 10/volume 40.0 floor 40: 2 cases
+    spacing (0.5, 0.5, 1.0) volume 0.25 10/volume 40.0 floor 40: 1 cases
+    spacing (0.5, 0.5, 2.0) volume 0.5 10/volume 20.0 floor 20: 1 cases
+infarct: 250 cases; voxel volume min 1.531250 median 8.000000 max 20.000000 mm3
+  floor (voxels) -> cases: {1: 30, 2: 218, 7: 2}
+  cases with 10/volume within 1e-4 of an integer: 0

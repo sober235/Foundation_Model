@@ -1,0 +1,4 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/channel_grid.py   # 2026-09-29 15:30:55
+glioma: 2004 channel files on the anatomy's shape, 0 with another shape; affine deviation max 0.000e+00, 99.9th percentile 0.000e+00, files with deviation > 0: 0, > 1e-6: 0, > 1e-3: 0
+metastasis: 1383 channel files on the anatomy's shape, 0 with another shape; affine deviation max 0.000e+00, 99.9th percentile 0.000e+00, files with deviation > 0: 0, > 1e-6: 0, > 1e-3: 0
+infarct: 500 channel files on the anatomy's shape, 0 with another shape; affine deviation max 0.000e+00, 99.9th percentile 0.000e+00, files with deviation > 0: 0, > 1e-6: 0, > 1e-3: 0

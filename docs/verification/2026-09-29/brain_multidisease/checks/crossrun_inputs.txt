@@ -1,0 +1,4 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/crossrun_inputs.py   # 2026-09-29 15:31:04
+infarct model on glioma data: 100 cases x 2 channels ('DWI', 'ADC'); missing 0; off the label's grid 0; largest affine deviation 0.000e+00
+metastasis model on glioma data: 100 cases x 3 channels ('T1', 'T1c', 'FLAIR'); missing 0; off the label's grid 0; largest affine deviation 0.000e+00
+glioma model on metastasis data: 105 cases x 4 channels ('T1pre', 'T1post', 'T2Synth', 'FLAIR'); missing 0; off the label's grid 0; largest affine deviation 8.521e-08

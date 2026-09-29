@@ -1,0 +1,1 @@
+461 subjects; columns: ['SubjectID', 'Sex', 'Age', 'CancerType', 'ScannerType', 'Scanner Strength (Tesla)', 'In-plane voxel size (mm)', 'Slice Thickness (mm)', 'Matrix size', 'TRAIN or TEST', 'Prior Craniotomy/Biopsy/Resection', 'NumberMetastases', 'VolumeMetastases_mm3', 'column_13', 'BraTS_ID']
