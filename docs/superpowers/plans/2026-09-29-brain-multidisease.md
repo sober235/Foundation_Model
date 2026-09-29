@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions M1–M14). Read it before any task.
 
-**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 56 new tests pass, the full suite gives 803 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
+**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 58 new tests pass, the full suite gives 805 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
 
 ## Global Constraints
 
@@ -993,11 +993,11 @@ def component_mask(comp, row):
 ### Task 5: Ignore flag in `anatobind/eval/detection_metrics.py`
 
 **Files:**
-- Modify: `anatobind/eval/detection_metrics.py` (replace `_count`, add `scan_matches` above it; nothing else changes)
+- Modify: `anatobind/eval/detection_metrics.py` (replace `_count`, add `scan_matches` above it, replace `per_family`; nothing else changes)
 - Test: `tests/test_detection_metrics_ignore.py`
 
 **Interfaces:**
-- Produces: `scan_matches(s, thr, iou=IOU) -> (hits {gt index: detection index}, n false positives, detections at thr)`; `sweep`, `gate`, `operating_point` unchanged in signature; ground-truth rows may carry `"ignore": True`.
+- Produces: `scan_matches(s, thr, iou=IOU) -> (hits {gt index: detection index}, n false positives, detections at thr)`; `sweep`, `gate`, `operating_point`, `per_family` unchanged in signature; ground-truth rows may carry `"ignore": True`, and every counting function of the module leaves them out.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1005,7 +1005,7 @@ def component_mask(comp, row):
 # tests/test_detection_metrics_ignore.py
 import copy
 
-from anatobind.eval.detection_metrics import gate, scan_matches, sweep
+from anatobind.eval.detection_metrics import gate, per_family, scan_matches, sweep
 
 
 def _gt(box, ignore=None):
@@ -1058,6 +1058,28 @@ def test_without_flags_the_counts_are_the_plain_ones():
         r["ignore"] = False
     assert sweep([false_flags], thresholds=(0.5,))[0] == row
     assert gate(sweep([plain]))["pass"] is True                    # 2 of 3 at 1 false positive per scan
+
+
+def test_per_family_leaves_ignored_rows_out():
+    assert per_family([_scan()], 0.5) == {"tumor": {"n_gt": 2, "n_hit": 1, "n_hit_family": 1, "sensitivity": 0.5,
+                                                    "sensitivity_family": 0.5}}
+    only_a_fragment = {"case": "s", "gt": [_gt(C, True)], "dets": [_det(C, 0.9)]}
+    assert per_family([only_a_fragment], 0.5) == {}                # a detection on the fragment is no hit
+    plain = copy.deepcopy(_scan())
+    for r in plain["gt"]:
+        r.pop("ignore")
+    assert per_family([plain], 0.5)["tumor"] == {"n_gt": 3, "n_hit": 2, "n_hit_family": 2, "sensitivity": 2 / 3,
+                                                 "sensitivity_family": 2 / 3}
+
+
+def test_a_fragment_excuses_one_detection_and_empty_scans_count_every_detection():
+    twice = {"case": "s", "gt": [_gt(C, True)], "dets": [_det(C, 0.9), _det(C, 0.8), _det(D, 0.7)]}
+    hits, fp, _ = scan_matches(twice, 0.5)
+    assert hits == {} and fp == 2                                  # the second detection on C and the stray at D
+    row = sweep([twice, _scan()], thresholds=(0.5,))[0]            # a scan with fragments only adds nothing to n_gt
+    assert (row["n_gt"], row["n_hit"], row["n_fp"], row["n_scans"]) == (2, 1, 3, 2)
+    empty = {"case": "n", "gt": [], "dets": [_det(A, 0.9), _det(B, 0.6)]}
+    assert scan_matches(empty, 0.5)[:2] == ({}, 2)
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_detection_metrics_ignore.py -q -p no:cacheprovider` → `ImportError: cannot import name 'scan_matches'`.
@@ -1092,7 +1114,29 @@ def _count(scans, thr, iou):
     return n_gt, n_hit, n_fam, n_fp
 ````
 
-- [ ] **Step 4: Run** `tests/test_detection_metrics_ignore.py tests/test_detection_metrics.py tests/test_brain_detector_eval.py tests/test_brain_detector_eval_script.py tests/test_nndet_eval.py tests/test_nndet_eval_script.py tests/test_eval_knee_folds_script.py` → all pass (3 new; the old ones unchanged).
+and replace the whole function `per_family` by:
+
+````python
+def per_family(scans, thr, iou=IOU):
+    """Counts per family over the ground truth that is not ignored, with the matches of scan_matches."""
+    out = {}
+    for s in scans:
+        hits, _, dets = scan_matches(s, thr, iou)
+        for g, r in enumerate(s["gt"]):
+            if r.get("ignore"):
+                continue
+            f = out.setdefault(r["family"], {"n_gt": 0, "n_hit": 0, "n_hit_family": 0})
+            f["n_gt"] += 1
+            if g in hits:
+                f["n_hit"] += 1
+                f["n_hit_family"] += int(dets[hits[g]]["family"] == r["family"])
+    for f in out.values():
+        f["sensitivity"] = _rate(f["n_hit"], f["n_gt"])
+        f["sensitivity_family"] = _rate(f["n_hit_family"], f["n_gt"])
+    return out
+````
+
+- [ ] **Step 4: Run** `tests/test_detection_metrics_ignore.py tests/test_detection_metrics.py tests/test_brain_detector_eval.py tests/test_brain_detector_eval_script.py tests/test_nndet_eval.py tests/test_nndet_eval_script.py tests/test_eval_knee_folds_script.py` → all pass (5 new; the old ones unchanged). The last two tests and the new `per_family` were added after the task review of 2026-09-29: `per_family` counted ignored rows and hits on them, and three corners (two detections on one ignored row, a scan whose ground truth is ignored entirely, a scan without ground truth) had no test. Without any flag the old and the new `per_family` agree (8000 random comparisons in the dry-run copy).
 
 - [ ] **Step 5: Commit** — `git add anatobind/eval/detection_metrics.py tests/test_detection_metrics_ignore.py && git commit -m "Detection metrics: optional ignore flag on ground-truth rows, real rows matched first; unchanged without the flag"`
 
@@ -2277,7 +2321,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 803 passed, 1 skipped.
+- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 805 passed, 1 skipped.
 
 - [ ] **Step 5: Commit** — `git add scripts/brain_disease_crossrun.py tests/test_brain_disease_crossrun.py && git commit -m "Brain disease cross runs: one disease's detector on another disease's data, report only"`
 
