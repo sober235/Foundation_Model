@@ -1,0 +1,34 @@
+$ PYTHONNOUSERSITE=1 nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/s4_probe/sibbms_headers.py   # 2026-09-29 19:31:18
+NIfTI files per top-level folder: {'Annotation': 49, 'MS': 1071, 'Norm': 305}
+sessions with anat: 372 | MS 272 | Norm 100
+subjects: MS 93 | Norm 100
+  sessions 265 sequences ('FLAIR', 'T1w', 'T2w', 'ce-GAD_T1w')
+  sessions 100 sequences ('FLAIR', 'T1w', 'T2w')
+  sessions 3 sequences ('T1w', 'T2w', 'ce-GAD_T1w')
+  sessions 1 sequences ('FLAIR', 'T1w', 'ce-GAD_T1w')
+  sessions 1 sequences ('T1w', 'ce-GAD_T1w')
+  sessions 1 sequences ('T1w',)
+  sessions 1 sequences ('T2w',)
+MS sub-037 FLAIR | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.78
+MS sub-037 T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.78
+MS sub-037 T2w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.76
+MS sub-037 ce-GAD_T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.78
+MS sub-077 FLAIR | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.76
+MS sub-077 T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.71
+MS sub-077 T2w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.80
+MS sub-077 ce-GAD_T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.68
+MS sub-063 FLAIR | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.76
+MS sub-063 T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.74
+MS sub-063 T2w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.89
+MS sub-063 ce-GAD_T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.68
+MS sub-040 FLAIR | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.78
+MS sub-040 T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.77
+MS sub-040 T2w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.74
+MS sub-040 ce-GAD_T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.79
+MS sub-008 FLAIR | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.77
+MS sub-008 T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.77
+MS sub-008 T2w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.71
+MS sub-008 ce-GAD_T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.77
+Norm sub-041 FLAIR | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.78
+Norm sub-041 T1w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.77
+Norm sub-041 T2w | shape (197, 233, 189) | zooms (1.0, 1.0, 1.0) | axcodes RAS | zero fraction 0.74

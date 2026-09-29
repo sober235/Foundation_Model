@@ -1,0 +1,19 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/sentence_preview.py metastasis 1 0.80 3   # 2026-09-29 18:54:02, code 7c4ae27
+metastasis fold 1, threshold 0.80: 86 studies; lesions per study min 1, median 4, max 26; studies without a lesion 0, with more than five 27; places named after the count: in 21 studies, at most 5; longest sentence 207 characters
+
+## most lesions
+- 100360A (26 lesions, largest 2648.9 mm3): 右侧大脑皮层存在转移瘤样异常，体积约 2.6 mL，累及大脑白质；左侧大脑白质存在转移瘤样异常，体积约 1.8 mL；左侧小脑存在转移瘤样异常，体积约 937 mm³；右侧小脑存在转移瘤样异常，体积约 89 mm³；左侧小脑存在转移瘤样异常，体积约 88 mm³；另有 21 处同类异常（还见于右侧大脑白质）。疑似脑转移瘤。
+- 100212B (19 lesions, largest 53.2 mm3): 左侧大脑皮层存在转移瘤样异常，体积约 53 mm³；左侧大脑皮层存在转移瘤样异常，体积约 51 mm³，累及大脑白质；右侧大脑皮层存在转移瘤样异常，体积约 46 mm³；右侧大脑皮层存在转移瘤样异常，体积约 43 mm³，累及大脑白质；左侧大脑皮层存在转移瘤样异常，体积约 40 mm³，累及大脑白质；另有 14 处同类异常（还见于右侧小脑、右侧深部灰质、左侧大脑白质、右侧大脑白质）。疑似脑转移瘤。
+- 100300A (16 lesions, largest 160.7 mm3): 左侧大脑皮层存在转移瘤样异常，体积约 161 mm³，累及大脑白质；左侧大脑皮层存在转移瘤样异常，体积约 142 mm³；左侧大脑皮层存在转移瘤样异常，体积约 78 mm³，累及大脑白质；左侧深部灰质（海马、杏仁核等）存在转移瘤样异常，体积约 78 mm³；左侧大脑皮层存在转移瘤样异常，体积约 71 mm³；另有 11 处同类异常（还见于左侧丘脑、右侧小脑、右侧大脑皮层、左侧小脑、右侧大脑白质）。疑似脑转移瘤。
+
+## two to five lesions
+- 100133A (5 lesions, largest 201.6 mm3): 右侧小脑存在转移瘤样异常，体积约 202 mm³；右侧大脑白质存在转移瘤样异常，体积约 53 mm³，累及大脑皮层；左侧大脑白质存在转移瘤样异常，体积约 22 mm³，累及大脑皮层；左侧大脑白质存在转移瘤样异常，体积约 21 mm³；左侧大脑白质存在转移瘤样异常，体积约 18 mm³。疑似脑转移瘤。
+- 100163B (5 lesions, largest 3220.8 mm3): 脑干存在转移瘤样异常，体积约 3.2 mL；右侧小脑存在转移瘤样异常，体积约 413 mm³；脑干存在转移瘤样异常，体积约 58 mm³；右侧大脑皮层存在转移瘤样异常，体积约 40 mm³；脑干存在转移瘤样异常，体积约 29 mm³。疑似脑转移瘤。
+- 100209A (5 lesions, largest 117.4 mm3): 右侧大脑白质存在转移瘤样异常，体积约 117 mm³；右侧大脑白质存在转移瘤样异常，体积约 41 mm³；右侧大脑白质存在转移瘤样异常，体积约 39 mm³；右侧大脑白质存在转移瘤样异常，体积约 35 mm³；左侧大脑白质存在转移瘤样异常，体积约 27 mm³。疑似脑转移瘤。
+
+## one lesion
+- 100118A (1 lesions, largest 3036.5 mm3): 右侧大脑皮层存在转移瘤样异常，体积约 3.0 mL。疑似脑转移瘤。
+- 100120A (1 lesions, largest 54.6 mm3): 左侧大脑白质存在转移瘤样异常，体积约 55 mm³，累及大脑皮层。疑似脑转移瘤。
+- 100125A (1 lesions, largest 182.8 mm3): 右侧大脑白质存在转移瘤样异常，体积约 183 mm³，累及大脑皮层。疑似脑转移瘤。
+
+## no lesion

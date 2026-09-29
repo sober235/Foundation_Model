@@ -1,0 +1,5 @@
+Disease: metastasis; folds [1]; kind early_reading
+Scans: 86; lesions counted: 580; ignored: 91
+Sensitivity 0.7190 at threshold 0.8 with 0.45348837209302323 FP per scan
+Pass: None; stop remaining folds: False; early stop undecided: False
+Dice mean 0.8274601104276936 over 86 cases

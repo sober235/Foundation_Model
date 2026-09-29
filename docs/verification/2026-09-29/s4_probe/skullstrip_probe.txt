@@ -1,0 +1,16 @@
+$ PYTHONNOUSERSITE=1 nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/s4_probe/skullstrip_probe.py   # 2026-09-29 19:33:12
+figure /home/congcongliu/figs/foundation_model/s4probe/skullstrip_file_brain_AXFLAIR_200_6002487.png
+figure /home/congcongliu/figs/foundation_model/s4probe/skullstrip_file_brain_AXFLAIR_201_6002940.png
+figure /home/congcongliu/figs/foundation_model/s4probe/skullstrip_file_brain_AXFLAIR_201_6002964.png
+figure /home/congcongliu/figs/foundation_model/s4probe/skullstrip_file_brain_AXFLAIR_202_6000517.png
+figure /home/congcongliu/figs/foundation_model/s4probe/skullstrip_file_brain_AXFLAIR_203_6000900.png
+figure /home/congcongliu/figs/foundation_model/s4probe/skullstrip_file_brain_AXFLAIR_209_6001393.png
+447 FLAIR label maps; image missing 0; shape differs 0; measured 447
+  volume inside the outline (mL): min 0.000, 5th percentile 437.232, median 719.614, 95th percentile 859.343, max 960.506
+  share of the outline in its largest component: min 0.000, 5th percentile 1.000, median 1.000, 95th percentile 1.000, max 1.000
+  share of the outline inside the head: min 0.000, 5th percentile 0.997, median 1.000, 95th percentile 1.000, max 1.000
+  outline as a share of the head: min 0.000, 5th percentile 0.162, median 0.227, 95th percentile 0.305, max 0.391
+  share of the outline in the outer 6 voxels of the head: min 0.000, 5th percentile 0.685, median 0.727, 95th percentile 0.836, max 1.000
+  slices with under 1 cm2 of outline: min 0.000, 5th percentile 1.000, median 2.000, 95th percentile 4.000, max 16.000
+  most outline in the outer shell: [(1.0, 'file_brain_AXFLAIR_201_6002953'), (1.0, 'file_brain_AXFLAIR_201_6003027'), (1.0, 'file_brain_AXFLAIR_202_6000530'), (1.0, 'file_brain_AXFLAIR_203_6000923'), (0.888, 'file_brain_AXFLAIR_203_6000893')]
+  smallest volumes: [(0, 'file_brain_AXFLAIR_201_6002998'), (21, 'file_brain_AXFLAIR_202_6000530'), (96, 'file_brain_AXFLAIR_201_6002985'), (106, 'file_brain_AXFLAIR_202_6000540'), (143, 'file_brain_AXFLAIR_201_6003017')]
