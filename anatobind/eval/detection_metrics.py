@@ -68,16 +68,18 @@ def operating_point(rows, fp_max=FP_MAX):
 
 
 def per_family(scans, thr, iou=IOU):
+    """Counts per family over the ground truth that is not ignored, with the matches of scan_matches."""
     out = {}
     for s in scans:
-        dets = [d for d in s["dets"] if d["score"] >= thr]
-        pairs = match_scan(s["gt"], dets, iou)
+        hits, _, dets = scan_matches(s, thr, iou)
         for g, r in enumerate(s["gt"]):
+            if r.get("ignore"):
+                continue
             f = out.setdefault(r["family"], {"n_gt": 0, "n_hit": 0, "n_hit_family": 0})
             f["n_gt"] += 1
-            if g in pairs:
+            if g in hits:
                 f["n_hit"] += 1
-                f["n_hit_family"] += int(dets[pairs[g]]["family"] == r["family"])
+                f["n_hit_family"] += int(dets[hits[g]]["family"] == r["family"])
     for f in out.values():
         f["sensitivity"] = _rate(f["n_hit"], f["n_gt"])
         f["sensitivity_family"] = _rate(f["n_hit_family"], f["n_gt"])

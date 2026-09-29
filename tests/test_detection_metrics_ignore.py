@@ -1,7 +1,7 @@
 # tests/test_detection_metrics_ignore.py
 import copy
 
-from anatobind.eval.detection_metrics import gate, scan_matches, sweep
+from anatobind.eval.detection_metrics import gate, per_family, scan_matches, sweep
 
 
 def _gt(box, ignore=None):
@@ -54,3 +54,25 @@ def test_without_flags_the_counts_are_the_plain_ones():
         r["ignore"] = False
     assert sweep([false_flags], thresholds=(0.5,))[0] == row
     assert gate(sweep([plain]))["pass"] is True                    # 2 of 3 at 1 false positive per scan
+
+
+def test_per_family_leaves_ignored_rows_out():
+    assert per_family([_scan()], 0.5) == {"tumor": {"n_gt": 2, "n_hit": 1, "n_hit_family": 1, "sensitivity": 0.5,
+                                                    "sensitivity_family": 0.5}}
+    only_a_fragment = {"case": "s", "gt": [_gt(C, True)], "dets": [_det(C, 0.9)]}
+    assert per_family([only_a_fragment], 0.5) == {}                # a detection on the fragment is no hit
+    plain = copy.deepcopy(_scan())
+    for r in plain["gt"]:
+        r.pop("ignore")
+    assert per_family([plain], 0.5)["tumor"] == {"n_gt": 3, "n_hit": 2, "n_hit_family": 2, "sensitivity": 2 / 3,
+                                                 "sensitivity_family": 2 / 3}
+
+
+def test_a_fragment_excuses_one_detection_and_empty_scans_count_every_detection():
+    twice = {"case": "s", "gt": [_gt(C, True)], "dets": [_det(C, 0.9), _det(C, 0.8), _det(D, 0.7)]}
+    hits, fp, _ = scan_matches(twice, 0.5)
+    assert hits == {} and fp == 2                                  # the second detection on C and the stray at D
+    row = sweep([twice, _scan()], thresholds=(0.5,))[0]            # a scan with fragments only adds nothing to n_gt
+    assert (row["n_gt"], row["n_hit"], row["n_fp"], row["n_scans"]) == (2, 1, 3, 2)
+    empty = {"case": "n", "gt": [], "dets": [_det(A, 0.9), _det(B, 0.6)]}
+    assert scan_matches(empty, 0.5)[:2] == ({}, 2)
