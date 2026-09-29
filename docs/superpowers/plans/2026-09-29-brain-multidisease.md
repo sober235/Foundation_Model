@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions M1–M14). Read it before any task.
 
-**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 65 new tests pass, the full suite gives 812 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
+**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 66 new tests pass, the full suite gives 813 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
 
 ## Global Constraints
 
@@ -2072,6 +2072,17 @@ def test_no_operating_point_is_said_plainly_and_writes_no_records(tmp_path):
     assert "there is no operating point" in rep and "does not stop the remaining folds" in rep
     assert "no operating point" in (out / "output.txt").read_text() and not rec.exists()
     assert (out / "froc.csv").read_text().splitlines()[19] == "0.95,0,0.000000,3.000000"
+
+
+def test_a_failure_while_the_report_is_computed_leaves_no_folder(tmp_path):
+    mod = _load()
+    _tree(tmp_path)
+    with patch.object(mod, "FM", tmp_path), patch.object(mod, "NNUNET", tmp_path / "derived/nnunet"), \
+            patch.object(mod, "binding_agreement", side_effect=RuntimeError("late failure")):
+        with pytest.raises(RuntimeError, match="late failure"):
+            mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(tmp_path / "rep"),
+                      "--records", str(tmp_path / "records"), "--workers", "1"])
+    assert not (tmp_path / "rep").exists() and not (tmp_path / "records").exists()
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_brain_disease_eval_script.py -q -p no:cacheprovider` → FileNotFoundError on the script path.
@@ -2140,7 +2151,6 @@ def main(argv=None):
     thr = v["thr"]
     dice = dice_summary(NNUNET / "results", a.disease, a.folds)
 
-    a.out.mkdir(parents=True)
     L = [f"# Brain multi-disease detector: {a.disease} ({name}), folds {sorted(a.folds)}\n\n",
          ("All five folds: the line below is the gate (spec M2).\n\n" if v["kind"] == "gate" else
           "Fold subset: an early reading, NOT the gate (spec M4).\n\n"),
@@ -2165,6 +2175,7 @@ def main(argv=None):
         L += ["## Binding agreement (NOT_EVIDENCE: the anatomy is a SynthSeg pseudo-label)\n\n```json\n",
               json.dumps(binding_agreement(scans, thr), indent=1), "\n```\n\n"]
     L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]
+    a.out.mkdir(parents=True)                                   # everything is computed: only now is anything written
     (a.out / "REPORT.md").write_text("".join(L))
     (a.out / "verdict.json").write_text(json.dumps(v, indent=1))
     (a.out / "froc.csv").write_text("thr,n_hit,sensitivity,fp_per_scan\n" + "".join(
@@ -2188,7 +2199,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** `tests/test_brain_disease_eval_script.py tests/test_brain_disease_eval.py` → all pass (3 new).
+- [ ] **Step 4: Run** `tests/test_brain_disease_eval_script.py tests/test_brain_disease_eval.py` → all pass (4 new). The report folder is created only when everything is computed (after the task review of 2026-09-29: a failure between the `mkdir` and the first file would have left an empty folder, which cannot be deleted here and blocks the next try). While trainings run, pass `--workers 2`: the default of 8 does not fit the CPU rule beside six trainings.
 
 - [ ] **Step 5: Commit** — `git add scripts/eval_brain_disease.py tests/test_brain_disease_eval_script.py && git commit -m "Brain disease evaluation script: verdict, FROC, strata, Dice, binding agreement and per-study records"`
 
@@ -2460,7 +2471,8 @@ def main(argv=None):
         "numbers describe this pair of datasets, not the diseases in general.\n\n",
         "Counting: a detection is on ground truth when it shares a voxel with any labelled voxel, fragments under "
         "10 mm3 included; a ground-truth lesion is claimed when a detection shares a voxel with it, and only lesions of "
-        "at least 10 mm3 are counted. These are counts of overlap, not a sensitivity and not a false-positive rate.\n\n"
+        "at least 10 mm3 are counted. These are counts of overlap: not a sensitivity, not a precision and not a "
+        "false-positive rate.\n\n"
         "```json\n", json.dumps(s, indent=1),
         "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]))
     print(json.dumps(s))
@@ -2470,7 +2482,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** the test → 7 passed; then the full suite → 812 passed, 1 skipped. (After the task review of 2026-09-29: the channel tuples are pinned by a test, the report states its counting rule and its cases, and every check comes before the first `mkdir`, because a partial folder cannot be deleted here.)
+- [ ] **Step 4: Run** the test → 7 passed; then the full suite → 813 passed, 1 skipped. (After the task review of 2026-09-29: the channel tuples are pinned by a test, the report states its counting rule and its cases, and every check comes before the first `mkdir`, because a partial folder cannot be deleted here.)
 
 - [ ] **Step 5: Commit** — `git add scripts/brain_disease_crossrun.py tests/test_brain_disease_crossrun.py && git commit -m "Brain disease cross runs: one disease's detector on another disease's data, report only"`
 
@@ -2480,7 +2492,7 @@ if __name__ == "__main__":
 
 **Precondition:** the disease's fold 0 has finished: `<results>/<Dataset>/nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres/fold_0/validation/summary.json` exists and the queue log shows `finished ('<disease>', 0) … exit code 0`.
 
-- [ ] **Step 1:** `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/eval_brain_disease.py --disease <disease> --folds 0 --out docs/verification/2026-09-29/brain_multidisease/<disease>_fold0`
+- [ ] **Step 1:** `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/eval_brain_disease.py --disease <disease> --folds 0 --workers 2 --out docs/verification/2026-09-29/brain_multidisease/<disease>_fold0` (`--workers 2` while trainings run)
 - [ ] **Step 2:** read `verdict.json`. If `operating_point` is false, write no skip file: report the FROC table to the user, who decides whether the remaining folds go on (they go on meanwhile). If `stop_remaining_folds` is true: `test ! -e logs/brain_disease/skip_<id> && echo "fold 0 sensitivity <value> < 0.3 ($(date '+%F %T'))" > logs/brain_disease/skip_<id>`; folds of that disease already running are left to finish (nobody's process is signalled, ours included, unless the user says so).
 - [ ] **Step 3:** commit the reading — `git add docs/verification/2026-09-29/brain_multidisease/<disease>_fold0 && git commit -m "Brain disease <disease>: fold 0 early reading (not the gate)"` — and report it to the user: sensitivity, threshold, false positives per scan, Dice, the size strata, and the line "this is an early reading, not the gate".
 
