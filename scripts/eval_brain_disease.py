@@ -59,7 +59,6 @@ def main(argv=None):
     thr = v["thr"]
     dice = dice_summary(NNUNET / "results", a.disease, a.folds)
 
-    a.out.mkdir(parents=True)
     L = [f"# Brain multi-disease detector: {a.disease} ({name}), folds {sorted(a.folds)}\n\n",
          ("All five folds: the line below is the gate (spec M2).\n\n" if v["kind"] == "gate" else
           "Fold subset: an early reading, NOT the gate (spec M4).\n\n"),
@@ -84,6 +83,7 @@ def main(argv=None):
         L += ["## Binding agreement (NOT_EVIDENCE: the anatomy is a SynthSeg pseudo-label)\n\n```json\n",
               json.dumps(binding_agreement(scans, thr), indent=1), "\n```\n\n"]
     L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]
+    a.out.mkdir(parents=True)                                   # everything is computed: only now is anything written
     (a.out / "REPORT.md").write_text("".join(L))
     (a.out / "verdict.json").write_text(json.dumps(v, indent=1))
     (a.out / "froc.csv").write_text("thr,n_hit,sensitivity,fp_per_scan\n" + "".join(

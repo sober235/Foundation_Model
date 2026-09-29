@@ -116,7 +116,8 @@ def main(argv=None):
         "numbers describe this pair of datasets, not the diseases in general.\n\n",
         "Counting: a detection is on ground truth when it shares a voxel with any labelled voxel, fragments under "
         "10 mm3 included; a ground-truth lesion is claimed when a detection shares a voxel with it, and only lesions of "
-        "at least 10 mm3 are counted. These are counts of overlap, not a sensitivity and not a false-positive rate.\n\n"
+        "at least 10 mm3 are counted. These are counts of overlap: not a sensitivity, not a precision and not a "
+        "false-positive rate.\n\n"
         "```json\n", json.dumps(s, indent=1),
         "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]))
     print(json.dumps(s))

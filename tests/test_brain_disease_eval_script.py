@@ -118,3 +118,14 @@ def test_no_operating_point_is_said_plainly_and_writes_no_records(tmp_path):
     assert "there is no operating point" in rep and "does not stop the remaining folds" in rep
     assert "no operating point" in (out / "output.txt").read_text() and not rec.exists()
     assert (out / "froc.csv").read_text().splitlines()[19] == "0.95,0,0.000000,3.000000"
+
+
+def test_a_failure_while_the_report_is_computed_leaves_no_folder(tmp_path):
+    mod = _load()
+    _tree(tmp_path)
+    with patch.object(mod, "FM", tmp_path), patch.object(mod, "NNUNET", tmp_path / "derived/nnunet"), \
+            patch.object(mod, "binding_agreement", side_effect=RuntimeError("late failure")):
+        with pytest.raises(RuntimeError, match="late failure"):
+            mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(tmp_path / "rep"),
+                      "--records", str(tmp_path / "records"), "--workers", "1"])
+    assert not (tmp_path / "rep").exists() and not (tmp_path / "records").exists()
