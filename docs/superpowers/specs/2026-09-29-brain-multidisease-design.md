@@ -131,7 +131,7 @@
 
 ## 7. 推理入口
 
-`anatobind/infer/brain_disease.py` + `scripts/infer_brain_disease.py`：输入病种、按该病种通道顺序排列的 NIfTI 图像、同网格的 SynthSeg 标签图、所用的折（默认五折集成）、GPU 号；用 nnU-Net 预测、解码、绑定，输出 §6 的记录。解剖伪标签需事先备好（SynthSeg 在另一个环境里、只用 CPU）。输出目录已存在就拒绝。冒烟：每个病种挑一个 fold 0 的验证病例，只用 fold 0 的模型跑通，核对格式。
+`anatobind/infer/brain_disease.py` + `scripts/infer_brain_disease.py`：输入病种、按该病种通道顺序排列的 NIfTI 图像、同网格的 SynthSeg 标签图、所用的折（默认五折集成）、GPU 号；用 nnU-Net 预测、解码、绑定，输出 §6 的记录。解剖伪标签需事先备好（SynthSeg 在另一个环境里、只用 CPU）。输出目录已存在就拒绝。开跑前逐个通道核对：文件存在、与解剖图同形状、两者仿射最大差不超过 1e-3；任何一条不符就拒绝，此时不写任何文件、不占 GPU（2026-09-29 任务评审后加：原先只比数组形状，形状相同而网格不同时体积与解剖定位会悄悄算错）。冒烟：每个病种挑一个 fold 0 的验证病例，只用 fold 0 的模型跑通，核对格式。
 
 ## 8. 代码布局
 

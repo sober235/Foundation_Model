@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions M1–M14). Read it before any task.
 
-**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 58 new tests pass, the full suite gives 805 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
+**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 60 new tests pass, the full suite gives 807 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
 
 ## Global Constraints
 
@@ -1303,7 +1303,7 @@ class BrainBinder:
 
 **Interfaces:**
 - Consumes: Tasks 1, 4, 6; `anatobind.eval.lesion_boxes.{load_label_map, load_nnunet_probabilities}`; `anatobind.infer.knee.nnunet_env`.
-- Produces: `detections(pred, probs, voxel_mm3, family) -> (rows sorted by score, component map)` (rows as `component_rows` without `ignore`, plus `score`), `bind_rows(rows, comp, binder) -> rows`, `volume_text(mm3)`, `lesion_clause(lesion)`, `study_record(study, disease, threshold, rows) -> dict`, `run_nnunet(dataset_id, in_dir, out_dir, folds, gpu)`, `link_inputs(in_dir, case, images, n_channels)`, `run(disease, images, anatomy, out_dir, folds, gpu, threshold, predict=run_nnunet) -> record`.
+- Produces: `detections(pred, probs, voxel_mm3, family) -> (rows sorted by score, component map)` (rows as `component_rows` without `ignore`, plus `score`), `bind_rows(rows, comp, binder) -> rows`, `volume_text(mm3)`, `lesion_clause(lesion)`, `study_record(study, disease, threshold, rows) -> dict`, `run_nnunet(dataset_id, in_dir, out_dir, folds, gpu)`, `GRID_TOL = 1e-3`, `check_grid(images, seg_img)` (every channel on the anatomy's grid: same shape, affines equal within `GRID_TOL`; raises before anything is written), `link_inputs(in_dir, case, images, n_channels)` (checks every file before it creates the folder), `run(disease, images, anatomy, out_dir, folds, gpu, threshold, predict=run_nnunet) -> record`.
 - The spec (§5) says decoding reuses `decode_boxes`; `detections` replaces it here because binding needs the component of every detection, which `decode_boxes` does not return. Scores and boxes are computed the same way.
 
 - [ ] **Step 1: Write the failing test**
@@ -1441,6 +1441,37 @@ def test_run_handles_no_detection_and_a_grid_mismatch(tmp_path):
     with pytest.raises(ValueError, match="different grids"):
         B.run("infarct", images, anatomy, tmp_path / "o2", [0], 0, 0.5,
               predict=lambda *a: nothing(*a, shape=(10, 10, 5)))
+
+
+def test_run_refuses_channels_off_the_anatomy_grid_before_anything_is_written(tmp_path):
+    anatomy = _write(tmp_path / "seg.nii.gz", np.full((10, 10, 6), 2, np.int16))
+    ones = np.ones((10, 10, 6), np.float32)
+    dwi = _write(tmp_path / "dwi.nii.gz", ones)
+    thick = _write(tmp_path / "thick.nii.gz", ones, affine=np.diag([2.0, 2.0, 5.0, 1.0]))      # same shape, other voxel size
+    moved = np.diag([2.0, 2.0, 2.0, 1.0])
+    moved[0, 3] = 4.0                                                                          # same voxels, shifted by 4 mm
+    moved = _write(tmp_path / "moved.nii.gz", ones, affine=moved)
+    small = _write(tmp_path / "small.nii.gz", np.ones((10, 10, 5), np.float32))
+    called = []
+    for k, bad in enumerate((thick, moved, small)):
+        with pytest.raises(ValueError, match="is not on the anatomy's grid"):
+            B.run("infarct", [dwi, bad], anatomy, tmp_path / f"o{k}", [0], 0, 0.5, predict=lambda *a: called.append(a))
+        assert not (tmp_path / f"o{k}").exists()
+    with pytest.raises(FileNotFoundError):
+        B.run("infarct", [dwi, tmp_path / "missing.nii.gz"], anatomy, tmp_path / "o9", [0], 0, 0.5,
+              predict=lambda *a: called.append(a))
+    assert called == [] and not (tmp_path / "o9").exists()
+
+
+def test_a_rounding_difference_of_the_affine_is_the_same_grid_and_links_need_every_file(tmp_path):
+    anatomy = nib.load(str(_write(tmp_path / "seg.nii.gz", np.full((4, 4, 4), 2, np.int16))))
+    near = np.diag([2.0, 2.0, 2.0, 1.0])
+    near[:3] += 1e-5
+    a = _write(tmp_path / "a.nii.gz", np.ones((4, 4, 4), np.float32), affine=near)
+    B.check_grid([a], anatomy)                                                                 # no error
+    with pytest.raises(FileNotFoundError):
+        B.link_inputs(tmp_path / "in", "case", [a, tmp_path / "missing.nii.gz"], 2)
+    assert not (tmp_path / "in").exists()
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_brain_disease_record.py -q -p no:cacheprovider` → `ModuleNotFoundError: No module named 'anatobind.infer.brain_disease'`.
@@ -1474,6 +1505,7 @@ TYPE_ZH = {"tumor": "肿瘤样异常", "metastasis": "转移瘤样异常", "infa
 NOWHERE_ZH = "未能定位的区域"
 MAX_SENTENCE_LESIONS = 5
 INVOLVED_MIN = 0.10
+GRID_TOL = 1e-3
 
 
 def detections(pred, probs, voxel_mm3, family):
@@ -1536,13 +1568,28 @@ def run_nnunet(dataset_id, in_dir, out_dir, folds, gpu):
     subprocess.run(["nice", "-n", "19", *cmd], check=True, env=nnunet_env(gpu))
 
 
-def link_inputs(in_dir, case, images, n_channels):
-    if len(images) != n_channels:
-        raise ValueError(f"{n_channels} channels are needed, {len(images)} given")
-    Path(in_dir).mkdir(parents=True)
-    for k, p in enumerate(images):
+def check_grid(images, seg_img):
+    """Every channel must be on the anatomy's grid (same shape, affines equal within GRID_TOL): lesion volumes and the
+    nearest structure are computed with the anatomy's voxel size."""
+    for p in images:
         if not Path(p).is_file():
             raise FileNotFoundError(p)
+        img = nib.load(str(p))
+        dev = float(np.abs(img.affine - seg_img.affine).max())
+        if img.shape != seg_img.shape or dev > GRID_TOL:
+            raise ValueError(f"{p} is not on the anatomy's grid: shape {img.shape} against {seg_img.shape}, "
+                             f"largest affine difference {dev:.3g}")
+
+
+def link_inputs(in_dir, case, images, n_channels):
+    """Nothing is created unless the channel count is right and every file exists."""
+    if len(images) != n_channels:
+        raise ValueError(f"{n_channels} channels are needed, {len(images)} given")
+    for p in images:
+        if not Path(p).is_file():
+            raise FileNotFoundError(p)
+    Path(in_dir).mkdir(parents=True)
+    for k, p in enumerate(images):
         os.symlink(Path(p).resolve(), Path(in_dir) / f"{case}_{k:04d}.nii.gz")
 
 
@@ -1553,6 +1600,7 @@ def run(disease, images, anatomy, out_dir, folds, gpu, threshold, predict=run_nn
         raise FileExistsError(f"{out} exists")
     spec = DISEASES[disease]
     seg_img = nib.load(str(anatomy))
+    check_grid(images, seg_img)
     link_inputs(out / "input", "case", images, len(spec["channels"]))
     predict(spec["id"], out / "input", out / "pred", folds, gpu)
     pred = load_label_map(out / "pred" / "case.nii.gz")
@@ -1605,7 +1653,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** `tests/test_brain_disease_record.py tests/test_brain_detector_infer.py` → all pass (8 new). Do not run the CLI for real (the smoke run is Task 12).
+- [ ] **Step 4: Run** `tests/test_brain_disease_record.py tests/test_brain_detector_infer.py` → all pass (10 new). Do not run the CLI for real (the smoke run is Task 12). `check_grid`, the file check of `link_inputs` before its `mkdir` and the last two tests were added after the task review of 2026-09-29: `run()` compared only array shapes, so an anatomy of the same shape on another grid gave a wrong volume, structure and side without an error, and a mistyped image path left a partial output folder that blocked the next try. On the real data all 3887 channel files have exactly the affine of their case's SynthSeg map.
 
 - [ ] **Step 5: Commit** — `git add anatobind/infer/brain_disease.py scripts/infer_brain_disease.py tests/test_brain_disease_record.py && git commit -m "Brain disease inference: scored components, binding, structured record and sentence per study"`
 
@@ -2321,7 +2369,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 805 passed, 1 skipped.
+- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 807 passed, 1 skipped.
 
 - [ ] **Step 5: Commit** — `git add scripts/brain_disease_crossrun.py tests/test_brain_disease_crossrun.py && git commit -m "Brain disease cross runs: one disease's detector on another disease's data, report only"`
 
