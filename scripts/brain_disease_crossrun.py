@@ -109,6 +109,7 @@ def main(argv=None):
     s = {"model": a.model, "data": a.data, "cases": f"fold 0 validation cases of {host}",
          "channels": list(CROSS[(a.model, a.data)]), "note": NOTES.get((a.model, a.data)),
          "threshold": a.threshold, "model_folds": sorted(a.folds), **summarise(per_case)}
+    version = code_version(Path(__file__).resolve().parents[1])
     a.out.mkdir(parents=True)
     (a.out / "crossrun.json").write_text(json.dumps({"summary": s, "per_case": per_case}, indent=1))
     (a.out / "REPORT.md").write_text("".join([
@@ -123,8 +124,7 @@ def main(argv=None):
         "fold that held it out). Here the model's folds are averaged; the behaviour of the averaged model at this "
         "threshold was not measured on its own data.\n\n"
         "```json\n", json.dumps(s, indent=1),
-        "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n\nCode: commit ",
-        code_version(Path(__file__).resolve().parents[1]), "\n"]))
+        "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n\nCode: commit ", version, "\n"]))
     print(json.dumps(s))
 
 

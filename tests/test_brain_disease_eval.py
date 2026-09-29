@@ -223,12 +223,15 @@ def test_the_code_version_names_the_commit_and_marks_changed_files(tmp_path):
     repo.mkdir()
     git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false"]
     subprocess.run(git + ["init", "-q"], cwd=repo, check=True)
-    (repo / "a.txt").write_text("one\n")
-    subprocess.run(git + ["add", "a.txt"], cwd=repo, check=True)
+    (repo / "anatobind").mkdir()
+    (repo / "anatobind" / "x.py").write_text("one\n")
+    (repo / "STATUS.md").write_text("one\n")
+    subprocess.run(git + ["add", "anatobind/x.py", "STATUS.md"], cwd=repo, check=True)
     subprocess.run(git + ["commit", "-q", "-m", "one"], cwd=repo, check=True)
     clean = code_version(repo)
     assert len(clean) >= 7 and not clean.endswith("+")
-    (repo / "untracked.txt").write_text("x\n")
-    assert code_version(repo) == clean                         # files git does not track do not count
-    (repo / "a.txt").write_text("two\n")
+    (repo / "anatobind" / "untracked.py").write_text("x\n")
+    (repo / "STATUS.md").write_text("two\n")
+    assert code_version(repo) == clean                         # untracked files and documents do not count
+    (repo / "anatobind" / "x.py").write_text("two\n")
     assert code_version(repo) == clean + "+"

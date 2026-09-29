@@ -21,15 +21,17 @@ N_FOLDS = 5
 
 
 def code_version(repo):
-    """The commit a report was made with: the short hash, with "+" when tracked files differ from it; "unknown"
-    where git cannot tell."""
+    """The commit a report was made with: the short hash, with "+" when tracked code (anatobind, scripts) differs from
+    it; "unknown" where git cannot tell. Read-only: git takes no lock and refreshes no index."""
+    def git(*args):
+        return subprocess.run(["git", "--no-optional-locks", *args], cwd=str(repo), capture_output=True, text=True,
+                              check=True, timeout=30).stdout.strip()
     try:
-        head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=str(repo), capture_output=True, text=True, check=True)
-        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=str(repo), capture_output=True,
-                               text=True, check=True)
-    except (OSError, subprocess.CalledProcessError):
+        head = git("rev-parse", "--short", "HEAD")
+        changed = git("status", "--porcelain", "--untracked-files=no", "--", "anatobind", "scripts")
+    except (OSError, subprocess.SubprocessError):
         return "unknown"
-    return head.stdout.strip() + ("+" if dirty.stdout.strip() else "")
+    return head + ("+" if changed else "")
 
 
 def case_scan(job):
