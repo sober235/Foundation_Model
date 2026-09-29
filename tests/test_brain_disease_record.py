@@ -74,7 +74,8 @@ def test_midline_unlocated_and_empty_records():
                                                  _row(0.7, 200.0, host=None, side="midline", fractions={})])
     assert rec["sentence"] == "脑干存在梗死样异常，体积约 300 mm³；未能定位的区域存在梗死样异常，体积约 200 mm³。疑似缺血性梗死。"
     empty = B.study_record("s4", "infarct", 0.5, [_row(0.3, 300.0)])
-    assert empty["lesions"] == [] and empty["impression"] == "未见相关异常" and empty["sentence"] == "未见梗死样异常。"
+    assert empty["lesions"] == [] and empty["impression"] == "未检出相关异常"
+    assert empty["sentence"] == "本模型未检出梗死样异常（阈值 0.50）。"
 
 
 def _write(path, data, affine=np.diag([2.0, 2.0, 2.0, 1.0])):
@@ -126,7 +127,7 @@ def test_run_handles_no_detection_and_a_grid_mismatch(tmp_path):
         np.savez(out_dir / "case.npz", probabilities=p)
 
     rec = B.run("infarct", images, anatomy, tmp_path / "o1", [0], 0, 0.5, predict=nothing)
-    assert rec["lesions"] == [] and rec["sentence"] == "未见梗死样异常。"
+    assert rec["lesions"] == [] and rec["sentence"] == "本模型未检出梗死样异常（阈值 0.50）。" and rec["model_folds"] == [0]
     with pytest.raises(ValueError, match="different grids"):
         B.run("infarct", images, anatomy, tmp_path / "o2", [0], 0, 0.5,
               predict=lambda *a: nothing(*a, shape=(10, 10, 5)))
@@ -161,3 +162,34 @@ def test_a_rounding_difference_of_the_affine_is_the_same_grid_and_links_need_eve
     with pytest.raises(FileNotFoundError):
         B.link_inputs(tmp_path / "in", "case", [a, tmp_path / "missing.nii.gz"], 2)
     assert not (tmp_path / "in").exists()
+
+
+def test_the_score_is_the_mean_and_a_foreign_probability_map_is_refused():
+    pred = np.zeros((12, 12, 6), np.uint8)
+    pred[2:6, 2:6, 2:3] = 1                                       # one component of 16 voxels
+    probs = np.zeros((2, 12, 12, 6), np.float32)
+    probs[1][2:4, 2:6, 2:3], probs[1][4:6, 2:6, 2:3] = 0.875, 0.625
+    rows, _ = B.detections(pred, probs, 1.0, "tumor")
+    assert [(r["n_voxels"], r["score"]) for r in rows] == [(16, 0.75)]
+    with pytest.raises(ValueError, match="do not belong to this label map"):
+        B.detections(pred, probs.transpose(0, 2, 1, 3)[:, ::-1].copy(), 1.0, "tumor")   # the same values on other axes
+    small = np.zeros((12, 12, 6), np.uint8)
+    small[9, 9, 4] = 1                                            # under the floor: dropped, but checked all the same
+    with pytest.raises(ValueError, match="do not belong to this label map"):
+        B.detections(small, np.zeros((2, 12, 12, 6), np.float32), 1.0, "tumor")
+
+
+def test_the_sentence_says_next_to_for_the_nearest_rule_and_no_side_for_the_brainstem():
+    near = dict(_row(0.8, 64.0, side="left"), host_rule="nearest", host_fractions={})
+    stem = _row(0.7, 300.0, host="brainstem", side="left", fractions={"brainstem": 0.9, "cerebellum": 0.1})
+    rec = B.study_record("s5", "metastasis", 0.5, [near, stem], folds=[3, 1])
+    assert rec["sentence"] == ("邻近左侧大脑白质（未与任何结构重叠）存在转移瘤样异常，体积约 64 mm³；"
+                               "脑干存在转移瘤样异常，体积约 300 mm³，累及小脑。疑似脑转移瘤。")
+    assert rec["lesions"][1]["side"] == "left"                    # the record keeps what the sentence leaves out
+    assert rec["model_folds"] == [1, 3] and "NOT_EVIDENCE" in rec["anatomy_source"]
+    assert B.SIDED_HOSTS == {"white_matter", "cortex", "thalamus", "basal_ganglia", "cerebellum", "other_deep_grey"}
+
+
+def test_a_score_equal_to_the_threshold_enters_the_record():
+    rec = B.study_record("s6", "glioma", 0.75, [_row(0.75, 100.0), _row(0.7499, 100.0)])
+    assert [l["score"] for l in rec["lesions"]] == [0.75] and rec["model_folds"] is None
