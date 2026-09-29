@@ -15,8 +15,9 @@ STRATA = ("<5", "5-10", ">=10")
 
 
 def min_voxels_for(voxel_mm3, min_mm3=MIN_MM3):
-    """Fewest voxels whose volume reaches min_mm3."""
-    return max(1, math.ceil(min_mm3 / float(voxel_mm3) - 1e-9))
+    """Fewest voxels whose volume reaches min_mm3. The relative tolerance absorbs float32 headers: two headers of one
+    grid (0.5 mm and 0.49999997 mm) give one floor."""
+    return max(1, math.ceil(min_mm3 / float(voxel_mm3) * (1.0 - 1e-6)))
 
 
 def equivalent_diameter_mm(mm3):

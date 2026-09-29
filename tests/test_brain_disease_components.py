@@ -58,3 +58,9 @@ def test_component_mask_selects_only_its_own_component():
 def test_an_empty_mask_has_no_rows():
     comp, n = components(np.zeros((4, 4, 4), np.uint8))
     assert n == 0 and component_rows(comp, n, 1.0, "tumor") == []
+
+
+def test_the_floor_is_the_same_for_two_float32_headers_of_one_grid():
+    assert min_voxels_for(0.5 * 0.5 * 2.0) == 20 and min_voxels_for(0.49999997 * 0.5 * 2.0) == 20    # scan 100201B
+    assert min_voxels_for(0.5 * 1.0 * 0.5) == 40 and min_voxels_for(0.5 * 0.99999994 * 0.5) == 40    # scan 100203A
+    assert min_voxels_for(0.4999) == 21                        # a voxel that is smaller by more than a rounding
