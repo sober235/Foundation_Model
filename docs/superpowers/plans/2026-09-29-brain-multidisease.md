@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions M1–M14). Read it before any task.
 
-**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 53 new tests pass, the full suite gives 800 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue launched 5-epoch trainings on them. Implementers still run every step themselves; these numbers are a hint, not evidence.
+**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 54 new tests pass, the full suite gives 801 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
 
 ## Global Constraints
 
@@ -801,7 +801,7 @@ mkdir -p logs/brain_disease
 bash -c 'source scripts/nnunet_env.sh && PYTHONPATH=. setsid nohup python scripts/gpu_queue.py --diseases glioma metastasis infarct --folds 0 1 2 3 4 > logs/brain_disease/queue.log 2>&1 < /dev/null &'
 ```
 
-- [ ] **Step 7 (controller): timing (M5 of the S2 line, N9-style rule).** After about 15 minutes read the epoch times of the running jobs: `grep "Epoch time" logs/brain_disease/Dataset90*_fold0.log | tail -20`. Projection per job = 250 × mean epoch time + validation. Write `docs/verification/2026-09-29/brain_multidisease/launch.md` (nvidia-smi snapshot, the queue's first lines, epoch times, projection per disease, how many cards were idle). A job projected beyond 24 h: tell the user and ask; the queue keeps running meanwhile. Commit the record: `git add docs/verification/2026-09-29/brain_multidisease/launch.md && git commit -m "Brain disease trainings queued: idle cards, epoch times and projection"`.
+- [ ] **Step 7 (controller): timing (M5 of the S2 line, N9-style rule).** After about 15 minutes read the epoch times of the running jobs: `grep "Epoch time" logs/brain_disease/Dataset90*_fold0.log | tail -20`. Projection per job = 250 × mean epoch time + validation (the dry run measured 67–73 s, 62–67 s and 23 s per epoch for glioma, metastasis and infarct). Write `docs/verification/2026-09-29/brain_multidisease/launch.md` (nvidia-smi snapshot, the queue's first lines, epoch times, projection per disease, how many cards were idle). A job projected beyond 24 h: tell the user and ask; the queue keeps running meanwhile. Commit the record: `git add docs/verification/2026-09-29/brain_multidisease/launch.md && git commit -m "Brain disease trainings queued: idle cards, epoch times and projection"`.
 
 ---
 
@@ -1828,10 +1828,10 @@ def _save(path, data):
     nib.save(nib.Nifti1Image(data, np.eye(4)), str(path))
 
 
-def _tree(root):
+def _tree(root, cases=None):
     nn, name = root / "derived/nnunet", "Dataset905_BMSRMetastasis"
     info, dice = {}, {0: [], 1: []}
-    for case, (gt, pred, fold) in CASES.items():
+    for case, (gt, pred, fold) in (cases or CASES).items():
         lab, out = np.zeros(SHAPE, np.uint8), np.zeros(SHAPE, np.uint8)
         probs = np.zeros((2,) + SHAPE, np.float32)
         probs[0] = 1.0
@@ -1896,6 +1896,23 @@ def test_both_folds_count_the_stray_and_a_missing_prediction_is_named(tmp_path):
         (fold_dir(tmp_path / "derived/nnunet/results", "metastasis", 1) / "validation" / "100102A.npz").rename(tmp_path / "moved.npz")
         with pytest.raises(FileNotFoundError, match="fold 1 case 100102A"):
             mod.main(["--disease", "metastasis", "--folds", "1", "--out", str(tmp_path / "rep3"), "--workers", "1"])
+
+
+def test_no_operating_point_is_said_plainly_and_writes_no_records(tmp_path):
+    mod = _load()
+    strays = [((slice(8, 11), slice(16, 19), slice(5, 8)), 0.96875), ((slice(14, 17), slice(16, 19), slice(0, 3)), 0.96875),
+              ((slice(20, 23), slice(18, 21), slice(4, 7)), 0.96875)]
+    # three confident strays in each fold 0 scan: 3 false positives per scan at every threshold of the grid
+    _tree(tmp_path, {"100101A": ([BIG], strays, 0), "100101B": ([OTHER], strays, 0), "100102A": ([], [], 1)})
+    with patch.object(mod, "FM", tmp_path), patch.object(mod, "NNUNET", tmp_path / "derived/nnunet"):
+        out, rec = tmp_path / "rep", tmp_path / "records"
+        mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--records", str(rec), "--workers", "1"])
+    assert json.loads((out / "verdict.json").read_text()) == {
+        "kind": "early_reading", "folds": [0], "pass": None, "sensitivity": 0.0, "thr": None, "fp_per_scan": None,
+        "stop_remaining_folds": True}
+    assert "there is no operating point" in (out / "REPORT.md").read_text()
+    assert "no operating point" in (out / "output.txt").read_text() and not rec.exists()
+    assert (out / "froc.csv").read_text().splitlines()[19] == "0.95,0,0.000000,3.000000"
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_brain_disease_eval_script.py -q -p no:cacheprovider` → FileNotFoundError on the script path.
@@ -1969,6 +1986,8 @@ def main(argv=None):
          ("All five folds: the line below is the gate (spec M2).\n\n" if v["kind"] == "gate" else
           "Fold subset: an early reading, NOT the gate (spec M4).\n\n"),
          "## Verdict\n\n```json\n", json.dumps(v, indent=1), "\n```\n\n",
+         ("" if thr is not None else "No threshold of the grid keeps the false positives at or below 2 per scan: there is no "
+          "operating point, so strata, binding agreement and records are not produced.\n\n"),
          f"Scans {result['n_scans']}; ground-truth lesions counted {result['n_gt']}; ignored (< {MIN_MM3:g} mm3) "
          f"{result['n_ignored']}.\n\n",
          "Scores are mean foreground probabilities over components of the argmax map, so they exceed 0.5 by construction: "
@@ -1991,7 +2010,8 @@ def main(argv=None):
         f"{r['thr']:.2f},{r['n_hit']},{r['sensitivity']:.6f},{r['fp_per_scan']:.6f}\n" for r in result["rows"]))
     out = [f"Disease: {a.disease}; folds {sorted(a.folds)}; kind {v['kind']}\n",
            f"Scans: {result['n_scans']}; lesions counted: {result['n_gt']}; ignored: {result['n_ignored']}\n",
-           f"Sensitivity {v['sensitivity']:.4f} at threshold {thr} with {v['fp_per_scan']} FP per scan\n",
+           (f"Sensitivity {v['sensitivity']:.4f} at threshold {thr} with {v['fp_per_scan']} FP per scan\n" if thr is not None
+            else "No threshold keeps the false positives at or below 2 per scan: no operating point\n"),
            f"Pass: {v['pass']}; stop remaining folds: {v['stop_remaining_folds']}\n",
            f"Dice mean {dice['mean']} over {dice['n_cases']} cases\n"]
     (a.out / "output.txt").write_text("".join(out))
@@ -2007,7 +2027,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** `tests/test_brain_disease_eval_script.py tests/test_brain_disease_eval.py` → all pass (2 new).
+- [ ] **Step 4: Run** `tests/test_brain_disease_eval_script.py tests/test_brain_disease_eval.py` → all pass (3 new).
 
 - [ ] **Step 5: Commit** — `git add scripts/eval_brain_disease.py tests/test_brain_disease_eval_script.py && git commit -m "Brain disease evaluation script: verdict, FROC, strata, Dice, binding agreement and per-study records"`
 
@@ -2215,7 +2235,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 800 passed, 1 skipped.
+- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 801 passed, 1 skipped.
 
 - [ ] **Step 5: Commit** — `git add scripts/brain_disease_crossrun.py tests/test_brain_disease_crossrun.py && git commit -m "Brain disease cross runs: one disease's detector on another disease's data, report only"`
 
