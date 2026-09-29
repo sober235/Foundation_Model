@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions M1–M14). Read it before any task.
 
-**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 54 new tests pass, the full suite gives 801 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
+**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 56 new tests pass, the full suite gives 803 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
 
 ## Global Constraints
 
@@ -572,7 +572,7 @@ Expected cases per fold: glioma `[(0, 100), (1, 101), (2, 100), (3, 99), (4, 101
 
 **Interfaces:**
 - Consumes: `scripts/brain_detector_train.py::{idle_gpus, query_nvidia_smi, query_busy_pids}`; Task 1's `CONFIG, DISEASES, TRAINER, fold_dir`; `anatobind.infer.knee.NNUNET_ROOT`.
-- Produces: `job_list(diseases, folds)`, `log_path(log_dir, job, trainer)`, `refusal(results_root, log_dir, job, trainer)`, `command(job, gpu, trainer, log, env_sh, n_proc_da=6)`, `skipped_diseases(log_dir)`, `plan_launches(pending, running_gpus, idle, max_jobs)`, `main(argv=None)`; constants `LOG_DIR`, `MAX_JOBS = 6`, `N_PROC_DA = 6`, `POLL_SECONDS = 60`.
+- Produces: `job_list(diseases, folds)`, `log_path(log_dir, job, trainer)`, `refusal(results_root, log_dir, job, trainer)`, `command(job, gpu, trainer, log, env_sh, n_proc_da=6)` (one brace group, the redirect on the group), `skipped_diseases(log_dir)`, `plan_launches(pending, running_gpus, idle, max_jobs)`, `idle_now(gpus) -> [gpu] | None` (None when nvidia-smi cannot be queried: nothing starts in that round), `main(argv=None)`; constants `LOG_DIR`, `MAX_JOBS = 6`, `N_PROC_DA = 6`, `POLL_SECONDS = 60`.
 
 **Scope for the implementer: Steps 1–5 only.** Never run the queue for real and never start anything on a GPU; the controller launches it (Steps 6–7) after the reviews of Tasks 1–3.
 
@@ -581,6 +581,7 @@ Expected cases per fold: glioma `[(0, 100), (1, 101), (2, 100), (3, 99), (4, 101
 ````python
 # tests/test_gpu_queue.py
 import importlib.util
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -628,8 +629,9 @@ def test_refusal_names_existing_outputs(tmp_path):
 def test_command_pins_the_gpu_sets_the_workers_and_quotes_the_log():
     cmd = _load().command(("glioma", 3), 5, "nnUNetTrainer_250epochs", Path("/tmp/a b/x.log"), Path("/r/scripts/nnunet_env.sh"))
     assert cmd[:2] == ["bash", "-c"]
-    assert cmd[2] == ("source /r/scripts/nnunet_env.sh && export nnUNet_n_proc_DA=6 && CUDA_VISIBLE_DEVICES=5 nice -n 19 "
-                      "nnUNetv2_train 904 3d_fullres 3 -tr nnUNetTrainer_250epochs --npz > '/tmp/a b/x.log' 2>&1")
+    # the redirect covers the whole group, so a failing `source` is written to the job's log too
+    assert cmd[2] == ("{ source /r/scripts/nnunet_env.sh && export nnUNet_n_proc_DA=6 && CUDA_VISIBLE_DEVICES=5 nice -n 19 "
+                      "nnUNetv2_train 904 3d_fullres 3 -tr nnUNetTrainer_250epochs --npz; } > '/tmp/a b/x.log' 2>&1")
 
 
 def test_skip_files_name_diseases_by_dataset_id(tmp_path):
@@ -650,6 +652,37 @@ def test_dry_run_prints_the_first_round_and_launches_nothing(tmp_path, monkeypat
     out = capsys.readouterr().out
     assert "would launch ('glioma', 0) on GPU 1" in out and "would launch ('metastasis', 0) on GPU 2" in out
     assert "('infarct', 0) on GPU" not in out                   # GPUs 0 and 3 are busy: no card for the third job
+
+
+def test_a_failing_gpu_query_costs_one_round_not_the_queue(tmp_path, monkeypatch, capsys):
+    q = _load()
+
+    def boom():
+        raise subprocess.CalledProcessError(9, ["nvidia-smi"])
+
+    monkeypatch.setattr(q, "query_nvidia_smi", boom)
+    monkeypatch.setattr(q, "query_busy_pids", lambda: {})
+    assert q.idle_now([0, 1]) is None
+    assert "GPU query failed (CalledProcessError" in capsys.readouterr().out
+    monkeypatch.setattr(q, "query_nvidia_smi", lambda: "0, 14\n1, not-a-number\n")
+    assert q.idle_now([0, 1]) is None and "GPU query failed (ValueError" in capsys.readouterr().out
+    monkeypatch.setattr(q, "query_nvidia_smi", lambda: "0, 14\n1, 30000\n")
+    assert q.idle_now([0, 1]) == [0]
+    # the loop itself: a failing query starts nothing and does not raise
+    monkeypatch.setattr(q, "query_nvidia_smi", boom)
+    monkeypatch.setattr(q, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setenv("nnUNet_results", str(tmp_path / "res"))
+    assert q.main(["--diseases", "infarct", "--folds", "0", "--dry-run"]) == 0
+    out = capsys.readouterr().out
+    assert "nothing starts in this round" in out and "would launch" not in out
+
+
+def test_the_job_log_receives_a_failure_of_the_environment_script(tmp_path):
+    q = _load()
+    log = tmp_path / "job.log"
+    cmd = q.command(("infarct", 0), 0, "nnUNetTrainer_250epochs", log, tmp_path / "no_such_env.sh")
+    done = subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    assert done.returncode != 0 and "no_such_env.sh" in log.read_text()
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_gpu_queue.py -q -p no:cacheprovider` → FileNotFoundError on the script path.
@@ -712,8 +745,8 @@ def refusal(results_root, log_dir, job, trainer):
 
 def command(job, gpu, trainer, log, env_sh, n_proc_da=N_PROC_DA):
     cmd = ["nnUNetv2_train", str(DISEASES[job[0]]["id"]), CONFIG, str(int(job[1])), "-tr", trainer, "--npz"]
-    inner = (f"source {shlex.quote(str(env_sh))} && export nnUNet_n_proc_DA={int(n_proc_da)} && "
-             f"CUDA_VISIBLE_DEVICES={int(gpu)} nice -n 19 {' '.join(shlex.quote(c) for c in cmd)} "
+    inner = (f"{{ source {shlex.quote(str(env_sh))} && export nnUNet_n_proc_DA={int(n_proc_da)} && "
+             f"CUDA_VISIBLE_DEVICES={int(gpu)} nice -n 19 {' '.join(shlex.quote(c) for c in cmd)}; }} "
              f"> {shlex.quote(str(log))} 2>&1")
     return ["bash", "-c", inner]
 
@@ -732,6 +765,16 @@ def plan_launches(pending, running_gpus, idle, max_jobs):
 
 def say(msg):
     print(f"{datetime.now():%Y-%m-%d %H:%M:%S} {msg}", flush=True)
+
+
+def idle_now(gpus):
+    """Idle GPUs among gpus, or None when nvidia-smi cannot be queried or read right now: the queue then starts
+    nothing in this round and asks again at the next poll."""
+    try:
+        return idle_gpus(query_nvidia_smi(), gpus, query_busy_pids())
+    except (subprocess.SubprocessError, OSError, ValueError) as e:
+        say(f"GPU query failed ({type(e).__name__}: {e}); nothing starts in this round")
+        return None
 
 
 def main(argv=None):
@@ -764,8 +807,7 @@ def main(argv=None):
             say("queue empty, nothing running: done")
             return 0
         if pending and len(running) < a.max_jobs:
-            idle = idle_gpus(query_nvidia_smi(), a.gpus, query_busy_pids())
-            for job, gpu in plan_launches(pending, set(running), idle, a.max_jobs):
+            for job, gpu in plan_launches(pending, set(running), idle_now(a.gpus) or [], a.max_jobs):
                 pending.remove(job)
                 why = refusal(results_root, LOG_DIR, job, a.trainer)
                 if why:
@@ -788,7 +830,7 @@ if __name__ == "__main__":
     sys.exit(main())
 ````
 
-- [ ] **Step 4: Run** `tests/test_gpu_queue.py tests/test_brain_detector_train.py tests/test_nndet_train.py` → all pass (6 new).
+- [ ] **Step 4: Run** `tests/test_gpu_queue.py tests/test_brain_detector_train.py tests/test_nndet_train.py` → all pass (8 new; two of them were added after the task review of 2026-09-29: a failing GPU query costs one round, and the job log receives a failure of the environment script).
 
 - [ ] **Step 5: Commit** — `git add scripts/gpu_queue.py tests/test_gpu_queue.py && git commit -m "GPU queue: start the brain disease trainings fold by fold on idle cards, one per card, with skip and stop files"`
 
@@ -2235,7 +2277,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 801 passed, 1 skipped.
+- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 803 passed, 1 skipped.
 
 - [ ] **Step 5: Commit** — `git add scripts/brain_disease_crossrun.py tests/test_brain_disease_crossrun.py && git commit -m "Brain disease cross runs: one disease's detector on another disease's data, report only"`
 
