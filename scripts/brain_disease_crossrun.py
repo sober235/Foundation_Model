@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities  # noqa: E402
 from anatobind.eval.lesion_components import component_mask, component_rows, components  # noqa: E402
 from anatobind.infer.brain_disease import detections, run_nnunet  # noqa: E402
-from anatobind.nnunet.brain_disease import DISEASES, FM, channel_path  # noqa: E402
+from anatobind.nnunet.brain_disease import DISEASES, FM, channel_path, fold_dir  # noqa: E402
 
 NNUNET = FM / "derived/nnunet"
 CROSS = {("infarct", "glioma"): ("DWI", "ADC"),
@@ -34,7 +34,10 @@ NOTES = {("glioma", "metastasis"): "channel 2 (T2) is BMSR's synthetic T2"}
 
 def overlap_counts(dets, det_comp, gt_rows, gt_comp, thr):
     """Detections at thr against another disease's ground truth: how many detections touch any ground-truth voxel, and
-    how many counted ground-truth lesions are touched by any detection."""
+    how many counted ground-truth lesions are touched by any detection.
+
+    A labelled fragment under the volume floor is lesion tissue: a detection on it is on ground truth. It is no counted
+    lesion, so it is never in n_gt and cannot be claimed."""
     kept = [d for d in dets if d["score"] >= thr]
     gt_any = gt_comp > 0
     det_any = np.zeros(gt_comp.shape, bool)
@@ -75,15 +78,21 @@ def main(argv=None):
     for p in (a.work, a.out):
         if p.exists():
             raise FileExistsError(f"{p} already exists")
+    for f in a.folds:
+        ckpt = fold_dir(NNUNET / "results", a.model, f) / "checkpoint_final.pth"
+        if not ckpt.is_file():
+            raise FileNotFoundError(f"the {a.model} model has no trained fold {f}: missing {ckpt}")
     host = DISEASES[a.data]["name"]
     info = json.loads((NNUNET / "raw" / host / "cases.json").read_text())
     cases = json.loads((NNUNET / "preprocessed" / host / "splits_final.json").read_text())[0]["val"]
-    (a.work / "input").mkdir(parents=True)
-    for case in cases:
-        for k, ch in enumerate(CROSS[(a.model, a.data)]):
-            src = channel_path(a.data, case, ch, FM)
+    srcs = {case: [channel_path(a.data, case, ch, FM) for ch in CROSS[(a.model, a.data)]] for case in cases}
+    for case, paths in srcs.items():
+        for src in paths:
             if not src.is_file():
                 raise FileNotFoundError(f"{case}: missing {src}")
+    (a.work / "input").mkdir(parents=True)
+    for case, paths in srcs.items():
+        for k, src in enumerate(paths):
             os.symlink(src.resolve(), a.work / "input" / f"{case}_{k:04d}.nii.gz")
     run_nnunet(DISEASES[a.model]["id"], a.work / "input", a.work / "pred", a.folds, a.gpu)
     per_case = {}
@@ -96,14 +105,19 @@ def main(argv=None):
         dets, det_comp = detections(pred, load_nnunet_probabilities(a.work / "pred" / f"{case}.npz", pred), vox, DISEASES[a.model]["type"])
         gt_comp, n = components(gt)
         per_case[case] = overlap_counts(dets, det_comp, component_rows(gt_comp, n, vox, DISEASES[a.data]["type"]), gt_comp, a.threshold)
-    s = {"model": a.model, "data": a.data, "channels": list(CROSS[(a.model, a.data)]), "note": NOTES.get((a.model, a.data)),
+    s = {"model": a.model, "data": a.data, "cases": f"fold 0 validation cases of {host}",
+         "channels": list(CROSS[(a.model, a.data)]), "note": NOTES.get((a.model, a.data)),
          "threshold": a.threshold, "model_folds": sorted(a.folds), **summarise(per_case)}
     a.out.mkdir(parents=True)
     (a.out / "crossrun.json").write_text(json.dumps({"summary": s, "per_case": per_case}, indent=1))
     (a.out / "REPORT.md").write_text("".join([
         f"# Cross false-alarm check: {a.model} model on {a.data} data (report only, spec M11)\n\n",
         "The model never saw this dataset. Resolution, preprocessing and scanners differ from its training data, so these "
-        "numbers describe this pair of datasets, not the diseases in general.\n\n```json\n", json.dumps(s, indent=1),
+        "numbers describe this pair of datasets, not the diseases in general.\n\n",
+        "Counting: a detection is on ground truth when it shares a voxel with any labelled voxel, fragments under "
+        "10 mm3 included; a ground-truth lesion is claimed when a detection shares a voxel with it, and only lesions of "
+        "at least 10 mm3 are counted. These are counts of overlap, not a sensitivity and not a false-positive rate.\n\n"
+        "```json\n", json.dumps(s, indent=1),
         "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]))
     print(json.dumps(s))
 
