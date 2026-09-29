@@ -67,11 +67,16 @@ def test_record_and_sentence_for_one_large_tumour():
 
 
 def test_sentence_lists_five_lesions_and_counts_the_rest():
-    rows = [_row(0.9 - 0.01 * i, 100.0, host="cortex", side="left") for i in range(7)]
+    # seven lesions; the smaller a lesion, the higher its score, as on real outputs
+    rows = [_row(0.9 - 0.01 * i, 100.0 * (i + 1), host="cortex", side="left") for i in range(7)]
     rec = B.study_record("s2", "metastasis", 0.5, rows)
     assert len(rec["lesions"]) == 7 and [l["score"] for l in rec["lesions"]] == sorted((l["score"] for l in rec["lesions"]), reverse=True)
     assert rec["sentence"].count("左侧大脑皮层存在转移瘤样异常") == 5
     assert rec["sentence"].endswith("；另有 2 处同类异常。疑似脑转移瘤。")
+    # the sentence names the five largest, largest first; the two it leaves out are the smallest
+    assert [c.split("体积")[1] for c in rec["sentence"].split("；")[:5]] == [
+        "约 700 mm³", "约 600 mm³", "约 500 mm³", "约 400 mm³", "约 300 mm³"]
+    assert [l["volume_mm3"] for l in rec["lesions"][:2]] == [100.0, 200.0]      # the record stays in the order of the scores
 
 
 def test_midline_unlocated_and_empty_records():
@@ -189,23 +194,31 @@ def test_the_sentence_says_next_to_for_the_nearest_rule_and_no_side_for_the_brai
     stem = _row(0.7, 300.0, host="brainstem", side="left", host_side="midline",
                 fractions={"brainstem": 0.9, "cerebellum": 0.1}, sides={"cerebellum": "left"})
     rec = B.study_record("s5", "metastasis", 0.5, [near, stem], folds=[3, 1])
-    assert rec["sentence"] == ("邻近左侧大脑白质（未与任何结构重叠）存在转移瘤样异常，体积约 64 mm³；"
-                               "脑干存在转移瘤样异常，体积约 300 mm³，累及左侧小脑。疑似脑转移瘤。")
+    # the larger lesion comes first in the sentence, the higher score first in the record
+    assert rec["sentence"] == ("脑干存在转移瘤样异常，体积约 300 mm³，累及左侧小脑；"
+                               "邻近左侧大脑白质（未与任何结构重叠）存在转移瘤样异常，体积约 64 mm³。疑似脑转移瘤。")
+    assert [l["score"] for l in rec["lesions"]] == [0.8, 0.7]
     assert rec["lesions"][1]["side"] == "left" and rec["lesions"][1]["host_side"] == "midline"   # the record keeps both
     assert rec["model_folds"] == [1, 3] and "NOT_EVIDENCE" in rec["anatomy_source"]
 
 
 def test_the_side_before_the_structure_is_the_structure_s_own_and_a_far_lesion_is_not_located():
     across = _row(0.9, 900.0, host="thalamus", side="right", host_side="left",
-                  fractions={"thalamus": 0.38, "white_matter": 0.31, "cortex": 0.21, "basal_ganglia": 0.10},
-                  sides={"white_matter": "right", "cortex": "bilateral"})
+                  fractions={"thalamus": 0.38, "white_matter": 0.21, "cortex": 0.21, "basal_ganglia": 0.10, "brainstem": 0.10},
+                  sides={"white_matter": "right", "cortex": "bilateral", "brainstem": "midline"})
     far = dict(_row(0.8, 64.0, side="right"), host_rule="nearest", host_fractions={}, host_distance_mm=10.01)
     rec = B.study_record("s7", "glioma", 0.5, [across, far])
-    # the side of an involved structure is written when it is not the main structure's: the basal ganglia are on the left
-    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及右侧大脑白质、双侧大脑皮层、基底节；"
+    # one involved structure lies on another side: every one gets its side, the basal ganglia on the main structure's
+    # side too, and the brainstem, which has none, comes first so that no side word is read on to it
+    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及脑干、右侧大脑白质、双侧大脑皮层、左侧基底节；"
                                "未能定位的区域存在肿瘤样异常，体积约 64 mm³。疑似胶质瘤。")
     assert rec["lesions"][0]["host_sides"] == {"thalamus": "left", "white_matter": "right", "cortex": "bilateral",
-                                               "basal_ganglia": "left"}
+                                               "basal_ganglia": "left", "brainstem": "midline"}
+    # every involved structure on the main structure's side, or without a side: the short form
+    same = _row(0.9, 900.0, host="cerebellum", side="left", fractions={"cerebellum": 0.6, "white_matter": 0.2, "brainstem": 0.2},
+                sides={"brainstem": "midline"})
+    assert B.lesion_clause(B.study_record("s8", "infarct", 0.5, [same])["lesions"][0]) == (
+        "左侧小脑存在梗死样异常，体积约 900 mm³，累及大脑白质、脑干")
     assert rec["lesions"][1]["host"] == "white_matter" and rec["lesions"][1]["host_distance_mm"] == 10.01
     assert B.NEAR_MM == 10.0
 

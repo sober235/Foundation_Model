@@ -66,26 +66,35 @@ def volume_text(mm3):
 
 def lesion_clause(lesion):
     """One lesion in words. The side written before the main structure is the side of the lesion's voxels inside
-    that structure (none for the brainstem). An involved structure gets its side only when it differs from the main
-    structure's, so that a lesion across the midline reads as one. A lesion that overlaps no structure is said to lie
-    next to the nearest one when that is at most NEAR_MM away (user, 2026-09-29), else it is not located."""
+    that structure (none for the brainstem). When every involved structure lies on the main structure's side, no side
+    is written after "累及"; when one does not, every involved structure gets its side, so that a lesion across the
+    midline reads as one and no side word is read on to the next structure; the brainstem, which has no side, then
+    comes first. A lesion that overlaps no structure is said to lie next to the nearest one when that is at most
+    NEAR_MM away (user, 2026-09-29), else it is not located."""
     if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
         where = NOWHERE_ZH
     else:
         where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
         if lesion["host_rule"] == "nearest":
             where = f"邻近{where}（未与任何结构重叠）"
-    involved = [(SIDE_ZH[lesion["host_sides"][h]] if lesion["host_sides"][h] != lesion["host_side"] else "") + HOST_ZH[h]
-                for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
+    sides = lesion["host_sides"]
+    involved = [h for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
                 if h != lesion["host"] and f >= INVOLVED_MIN]
+    if any(sides[h] not in ("midline", lesion["host_side"]) for h in involved):
+        involved = [h for h in involved if sides[h] == "midline"] + [h for h in involved if sides[h] != "midline"]
+        words = [SIDE_ZH[sides[h]] + HOST_ZH[h] for h in involved]
+    else:
+        words = [HOST_ZH[h] for h in involved]
     text = f"{where}存在{TYPE_ZH[lesion['type']]}，体积{volume_text(lesion['volume_mm3'])}"
-    return text + (f"，累及{'、'.join(involved)}" if involved else "")
+    return text + (f"，累及{'、'.join(words)}" if words else "")
 
 
 def study_record(study, disease, threshold, rows, folds=None):
-    """rows: bound detections (any score); only those at or above the threshold enter the record. folds: the folds of
-    the model that predicted. Without a lesion the sentence says that this model detected nothing at this threshold;
-    that is no negative finding."""
+    """rows: bound detections (any score); only those at or above the threshold enter the record, highest score
+    first. The sentence names the MAX_SENTENCE_LESIONS largest lesions, largest first: the score is a mean
+    probability, which is highest for the smallest components, and a reader looks for the largest lesion first.
+    folds: the folds of the model that predicted. Without a lesion the sentence says that this model detected nothing
+    at this threshold; that is no negative finding."""
     spec = DISEASES[disease]
     lesions = [{"type": spec["type"], "score": round(float(r["score"]), 4), "box": [int(v) for v in r["box"]],
                 "volume_mm3": round(float(r["mm3"]), 1), "host": r["host"], "host_rule": r["host_rule"],
@@ -94,7 +103,8 @@ def study_record(study, disease, threshold, rows, folds=None):
                for r in sorted(rows, key=lambda r: -r["score"]) if r["score"] >= threshold]
     if lesions:
         rest = len(lesions) - MAX_SENTENCE_LESIONS
-        sentence = "；".join(lesion_clause(l) for l in lesions[:MAX_SENTENCE_LESIONS])
+        largest = sorted(lesions, key=lambda l: -l["volume_mm3"])[:MAX_SENTENCE_LESIONS]
+        sentence = "；".join(lesion_clause(l) for l in largest)
         sentence += (f"；另有 {rest} 处同类异常" if rest > 0 else "") + f"。{spec['impression']}。"
         impression = spec["impression"]
     else:
