@@ -82,8 +82,8 @@ def test_evaluate_counts_by_hand(tmp_path):
 
 def test_verdict_is_a_gate_only_with_five_folds(tmp_path):
     r = evaluate(_scans(tmp_path))
-    assert verdict(r, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "sensitivity": 0.5, "thr": 0.85,
-                               "fp_per_scan": 0.0, "stop_remaining_folds": False}
+    assert verdict(r, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": True,
+                               "sensitivity": 0.5, "thr": 0.85, "fp_per_scan": 0.0, "stop_remaining_folds": False}
     assert verdict(r, [4, 3, 2, 1, 0])["kind"] == "gate" and verdict(r, [0, 1, 2, 3, 4])["pass"] is True
     low = {"gate": {"pass": False, "thr": 0.55, "sensitivity_family": 0.29, "fp_per_scan": 1.0}}
     assert verdict(low, [0])["stop_remaining_folds"] is True and verdict(low, [0, 1, 2, 3, 4])["stop_remaining_folds"] is False
@@ -121,3 +121,20 @@ def test_dice_summary_skips_cases_without_ground_truth(tmp_path):
         (v / "summary.json").write_text(json.dumps({"metric_per_case": [{"metrics": {"1": {"Dice": d, "n_ref": n}}} for d, n in cases]}))
     assert dice_summary(tmp_path, "infarct", [0, 1]) == {"n_cases": 2, "mean": pytest.approx(0.7), "median": pytest.approx(0.7)}
     assert dice_summary(tmp_path, "infarct", [1])["n_cases"] == 1
+
+
+def test_verdict_without_an_operating_point_measures_nothing_and_stops_nothing():
+    none = {"gate": {"pass": False, "thr": None, "sensitivity_family": 0.0, "fp_per_scan": None}}   # what gate() returns
+    assert verdict(none, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": False,
+                                  "sensitivity": None, "thr": None, "fp_per_scan": None, "stop_remaining_folds": False}
+    full = verdict(none, [0, 1, 2, 3, 4])
+    assert full["kind"] == "gate" and full["pass"] is False and full["sensitivity"] is None
+    edge = {"gate": {"pass": False, "thr": 0.9, "sensitivity_family": 0.3, "fp_per_scan": 2.0}}
+    assert verdict(edge, [0])["stop_remaining_folds"] is False      # the rule is "below 0.3"
+
+
+def test_jobs_refuse_folds_given_twice_or_out_of_range(tmp_path):
+    splits = [{"train": [], "val": ["a"]}] * 5
+    for folds in ([0, 0], [5], [-1, 0]):
+        with pytest.raises(ValueError, match="folds must be distinct and within 0..4"):
+            jobs(tmp_path / "res", tmp_path / "raw", "glioma", splits, folds, {}, lambda c: tmp_path / c)

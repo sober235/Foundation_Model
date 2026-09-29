@@ -35,6 +35,8 @@ def case_scan(job):
 
 
 def jobs(results_root, raw_root, disease, splits, folds, info, anatomy_of):
+    if len(set(folds)) != len(folds) or not set(folds) <= set(range(N_FOLDS)):
+        raise ValueError(f"folds must be distinct and within 0..{N_FOLDS - 1}: {list(folds)}")
     out = []
     for f in folds:
         d = fold_dir(results_root, disease, f) / "validation"
@@ -55,12 +57,17 @@ def evaluate(scans):
 
 
 def verdict(result, folds):
-    """The gate when all five folds were scored; otherwise an early reading with the early-stop flag (spec M4)."""
+    """The gate when all five folds were scored; otherwise an early reading with the early-stop flag (spec M4).
+
+    Without an operating point (no threshold keeps the false positives within the budget) no sensitivity was measured:
+    it is None, the gate fails, and an early reading does not stop the remaining folds by itself."""
     full = sorted(folds) == list(range(N_FOLDS))
-    sens = result["gate"]["sensitivity_family"]
-    return {"kind": "gate" if full else "early_reading", "folds": sorted(folds), "pass": result["gate"]["pass"] if full else None,
-            "sensitivity": sens, "thr": result["gate"]["thr"], "fp_per_scan": result["gate"]["fp_per_scan"],
-            "stop_remaining_folds": bool(not full and sens < EARLY_STOP)}
+    g = result["gate"]
+    found = g["thr"] is not None
+    sens = g["sensitivity_family"] if found else None
+    return {"kind": "gate" if full else "early_reading", "folds": sorted(folds), "pass": g["pass"] if full else None,
+            "operating_point": found, "sensitivity": sens, "thr": g["thr"], "fp_per_scan": g["fp_per_scan"],
+            "stop_remaining_folds": bool(not full and found and sens < EARLY_STOP)}
 
 
 def strata(scans, thr, key):
