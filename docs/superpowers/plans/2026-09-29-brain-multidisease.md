@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions M1–M14). Read it before any task.
 
-**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 60 new tests pass, the full suite gives 807 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
+**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 65 new tests pass, the full suite gives 812 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
 
 ## Global Constraints
 
@@ -1667,7 +1667,7 @@ if __name__ == "__main__":
 
 **Interfaces:**
 - Consumes: Tasks 1, 4, 5, 6, 7.
-- Produces: `EARLY_STOP = 0.3`, `N_FOLDS = 5`, `case_scan(job) -> {"case", "gt", "dets"}` with `job = (case, disease, label path, prediction nii, prediction npz, anatomy path, voxel_mm3)`, `jobs(results_root, raw_root, disease, splits, folds, info, anatomy_of) -> [job]`, `evaluate(scans) -> {"rows", "gate", "n_scans", "n_gt", "n_ignored"}`, `verdict(result, folds) -> {"kind", "folds", "pass", "sensitivity", "thr", "fp_per_scan", "stop_remaining_folds"}`, `strata(scans, thr, key)`, `binding_agreement(scans, thr)`, `dice_summary(results_root, disease, folds)`.
+- Produces: `EARLY_STOP = 0.3`, `N_FOLDS = 5`, `case_scan(job) -> {"case", "gt", "dets"}` with `job = (case, disease, label path, prediction nii, prediction npz, anatomy path, voxel_mm3)`, `jobs(results_root, raw_root, disease, splits, folds, info, anatomy_of) -> [job]`, `evaluate(scans) -> {"rows", "gate", "n_scans", "n_gt", "n_ignored"}`, `verdict(result, folds) -> {"kind", "folds", "pass", "operating_point", "sensitivity", "thr", "fp_per_scan", "stop_remaining_folds"}` (without an operating point `sensitivity` is None and `stop_remaining_folds` is False), `strata(scans, thr, key)`, `binding_agreement(scans, thr)`, `dice_summary(results_root, disease, folds)`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1756,8 +1756,8 @@ def test_evaluate_counts_by_hand(tmp_path):
 
 def test_verdict_is_a_gate_only_with_five_folds(tmp_path):
     r = evaluate(_scans(tmp_path))
-    assert verdict(r, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "sensitivity": 0.5, "thr": 0.85,
-                               "fp_per_scan": 0.0, "stop_remaining_folds": False}
+    assert verdict(r, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": True,
+                               "sensitivity": 0.5, "thr": 0.85, "fp_per_scan": 0.0, "stop_remaining_folds": False}
     assert verdict(r, [4, 3, 2, 1, 0])["kind"] == "gate" and verdict(r, [0, 1, 2, 3, 4])["pass"] is True
     low = {"gate": {"pass": False, "thr": 0.55, "sensitivity_family": 0.29, "fp_per_scan": 1.0}}
     assert verdict(low, [0])["stop_remaining_folds"] is True and verdict(low, [0, 1, 2, 3, 4])["stop_remaining_folds"] is False
@@ -1795,6 +1795,23 @@ def test_dice_summary_skips_cases_without_ground_truth(tmp_path):
         (v / "summary.json").write_text(json.dumps({"metric_per_case": [{"metrics": {"1": {"Dice": d, "n_ref": n}}} for d, n in cases]}))
     assert dice_summary(tmp_path, "infarct", [0, 1]) == {"n_cases": 2, "mean": pytest.approx(0.7), "median": pytest.approx(0.7)}
     assert dice_summary(tmp_path, "infarct", [1])["n_cases"] == 1
+
+
+def test_verdict_without_an_operating_point_measures_nothing_and_stops_nothing():
+    none = {"gate": {"pass": False, "thr": None, "sensitivity_family": 0.0, "fp_per_scan": None}}   # what gate() returns
+    assert verdict(none, [0]) == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": False,
+                                  "sensitivity": None, "thr": None, "fp_per_scan": None, "stop_remaining_folds": False}
+    full = verdict(none, [0, 1, 2, 3, 4])
+    assert full["kind"] == "gate" and full["pass"] is False and full["sensitivity"] is None
+    edge = {"gate": {"pass": False, "thr": 0.9, "sensitivity_family": 0.3, "fp_per_scan": 2.0}}
+    assert verdict(edge, [0])["stop_remaining_folds"] is False      # the rule is "below 0.3"
+
+
+def test_jobs_refuse_folds_given_twice_or_out_of_range(tmp_path):
+    splits = [{"train": [], "val": ["a"]}] * 5
+    for folds in ([0, 0], [5], [-1, 0]):
+        with pytest.raises(ValueError, match="folds must be distinct and within 0..4"):
+            jobs(tmp_path / "res", tmp_path / "raw", "glioma", splits, folds, {}, lambda c: tmp_path / c)
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_brain_disease_eval.py -q -p no:cacheprovider` → `ModuleNotFoundError: No module named 'anatobind.eval.brain_disease'`.
@@ -1839,6 +1856,8 @@ def case_scan(job):
 
 
 def jobs(results_root, raw_root, disease, splits, folds, info, anatomy_of):
+    if len(set(folds)) != len(folds) or not set(folds) <= set(range(N_FOLDS)):
+        raise ValueError(f"folds must be distinct and within 0..{N_FOLDS - 1}: {list(folds)}")
     out = []
     for f in folds:
         d = fold_dir(results_root, disease, f) / "validation"
@@ -1859,12 +1878,17 @@ def evaluate(scans):
 
 
 def verdict(result, folds):
-    """The gate when all five folds were scored; otherwise an early reading with the early-stop flag (spec M4)."""
+    """The gate when all five folds were scored; otherwise an early reading with the early-stop flag (spec M4).
+
+    Without an operating point (no threshold keeps the false positives within the budget) no sensitivity was measured:
+    it is None, the gate fails, and an early reading does not stop the remaining folds by itself."""
     full = sorted(folds) == list(range(N_FOLDS))
-    sens = result["gate"]["sensitivity_family"]
-    return {"kind": "gate" if full else "early_reading", "folds": sorted(folds), "pass": result["gate"]["pass"] if full else None,
-            "sensitivity": sens, "thr": result["gate"]["thr"], "fp_per_scan": result["gate"]["fp_per_scan"],
-            "stop_remaining_folds": bool(not full and sens < EARLY_STOP)}
+    g = result["gate"]
+    found = g["thr"] is not None
+    sens = g["sensitivity_family"] if found else None
+    return {"kind": "gate" if full else "early_reading", "folds": sorted(folds), "pass": g["pass"] if full else None,
+            "operating_point": found, "sensitivity": sens, "thr": g["thr"], "fp_per_scan": g["fp_per_scan"],
+            "stop_remaining_folds": bool(not full and found and sens < EARLY_STOP)}
 
 
 def strata(scans, thr, key):
@@ -1909,7 +1933,7 @@ def dice_summary(results_root, disease, folds):
             "median": float(np.median(vals)) if vals else None}
 ````
 
-- [ ] **Step 4: Run** the test → 7 passed. The probabilities in the fixtures are binary fractions (0.875, 0.75, 0.625) on purpose: float32 means of other values land a hair above or below the threshold grid.
+- [ ] **Step 4: Run** the test → 9 passed (the verdict's `operating_point`, the rule that a reading without an operating point stops no folds, and the check of the folds in `jobs` were added after the task review of 2026-09-29: `gate()` fills sensitivity 0.0 when no threshold keeps the false positives within budget, and the early reading took that filler for a measurement). The probabilities in the fixtures are binary fractions (0.875, 0.75, 0.625) on purpose: float32 means of other values land a hair above or below the threshold grid.
 
 - [ ] **Step 5: Commit** — `git add anatobind/eval/brain_disease.py tests/test_brain_disease_eval.py && git commit -m "Brain disease evaluation: bound ground truth and detections per case, gate or early reading, strata, Dice and binding agreement"`
 
@@ -1999,8 +2023,8 @@ def test_fold_report_records_and_refusals(tmp_path):
         mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--records", str(rec), "--workers", "1"])
         v = json.loads((out / "verdict.json").read_text())
         # fold 0: two lesions, BIG found (score 0.875) up to threshold 0.85, no false positive
-        assert v == {"kind": "early_reading", "folds": [0], "pass": None, "sensitivity": 0.5, "thr": 0.85, "fp_per_scan": 0.0,
-                     "stop_remaining_folds": False}
+        assert v == {"kind": "early_reading", "folds": [0], "pass": None, "operating_point": True, "sensitivity": 0.5,
+                     "thr": 0.85, "fp_per_scan": 0.0, "stop_remaining_folds": False}
         rep = (out / "REPORT.md").read_text()
         assert "NOT the gate" in rep and "NOT_EVIDENCE" in rep
         assert "| <5 | 2 | 1 | 0.5000 |" in rep                                   # 48 mm3 is a 4.5 mm sphere
@@ -2042,9 +2066,10 @@ def test_no_operating_point_is_said_plainly_and_writes_no_records(tmp_path):
         out, rec = tmp_path / "rep", tmp_path / "records"
         mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--records", str(rec), "--workers", "1"])
     assert json.loads((out / "verdict.json").read_text()) == {
-        "kind": "early_reading", "folds": [0], "pass": None, "sensitivity": 0.0, "thr": None, "fp_per_scan": None,
-        "stop_remaining_folds": True}
-    assert "there is no operating point" in (out / "REPORT.md").read_text()
+        "kind": "early_reading", "folds": [0], "pass": None, "operating_point": False, "sensitivity": None, "thr": None,
+        "fp_per_scan": None, "stop_remaining_folds": False}
+    rep = (out / "REPORT.md").read_text()
+    assert "there is no operating point" in rep and "does not stop the remaining folds" in rep
     assert "no operating point" in (out / "output.txt").read_text() and not rec.exists()
     assert (out / "froc.csv").read_text().splitlines()[19] == "0.95,0,0.000000,3.000000"
 ````
@@ -2121,7 +2146,9 @@ def main(argv=None):
           "Fold subset: an early reading, NOT the gate (spec M4).\n\n"),
          "## Verdict\n\n```json\n", json.dumps(v, indent=1), "\n```\n\n",
          ("" if thr is not None else "No threshold of the grid keeps the false positives at or below 2 per scan: there is no "
-          "operating point, so strata, binding agreement and records are not produced.\n\n"),
+          "operating point, so no sensitivity was measured and strata, binding agreement and records are not produced. "
+          "With all five folds this fails the gate; an early reading without an operating point does not stop the "
+          "remaining folds by itself (the rule of spec M4 needs a measured sensitivity): that decision is the user's.\n\n"),
          f"Scans {result['n_scans']}; ground-truth lesions counted {result['n_gt']}; ignored (< {MIN_MM3:g} mm3) "
          f"{result['n_ignored']}.\n\n",
          "Scores are mean foreground probabilities over components of the argmax map, so they exceed 0.5 by construction: "
@@ -2175,20 +2202,23 @@ if __name__ == "__main__":
 
 **Interfaces:**
 - Consumes: Tasks 1, 4, 7.
-- Produces: `CROSS = {(model, data): channels}` (three pairs), `NOTES`, `overlap_counts(dets, det_comp, gt_rows, gt_comp, thr) -> {"n_det", "n_det_on_gt", "n_gt", "n_gt_claimed"}`, `summarise(per_case)`, `main(argv=None)`.
+- Produces: `CROSS = {(model, data): channels}` (three pairs), `NOTES`, `overlap_counts(dets, det_comp, gt_rows, gt_comp, thr) -> {"n_det", "n_det_on_gt", "n_gt", "n_gt_claimed"}`, `summarise(per_case)`, `main(argv=None)` (checks the model folds' `checkpoint_final.pth` and every channel file before it creates `--work`; the summary names its cases).
 
 - [ ] **Step 1: Write the failing test**
 
 ````python
 # tests/test_brain_disease_crossrun.py
 import importlib.util
+import json
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 
 from anatobind.eval.lesion_components import component_rows, components
 from anatobind.infer.brain_disease import detections
+from anatobind.nnunet.brain_disease import DISEASES, fold_dir
 
 
 def _load():
@@ -2235,7 +2265,8 @@ def test_summary_rates_and_empty_inputs():
                      "b": {"n_det": 0, "n_det_on_gt": 0, "n_gt": 1, "n_gt_claimed": 0}})
     assert s == {"n_scans": 2, "n_det": 2, "n_det_on_gt": 1, "n_gt": 3, "n_gt_claimed": 1, "det_per_scan": 1.0,
                  "scans_with_any_detection": 1, "share_of_detections_on_gt": 0.5, "share_of_gt_claimed": pytest.approx(1 / 3)}
-    assert c.summarise({"a": {"n_det": 0, "n_det_on_gt": 0, "n_gt": 0, "n_gt_claimed": 0}})["share_of_detections_on_gt"] is None
+    empty = c.summarise({"a": {"n_det": 0, "n_det_on_gt": 0, "n_gt": 0, "n_gt_claimed": 0}})
+    assert empty["share_of_detections_on_gt"] is None and empty["share_of_gt_claimed"] is None
 
 
 def test_an_impossible_pair_and_an_existing_output_are_refused(tmp_path):
@@ -2248,6 +2279,62 @@ def test_an_impossible_pair_and_an_existing_output_are_refused(tmp_path):
         c.main(["--model", "infarct", "--data", "glioma", "--threshold", "0.5", "--gpu", "0",
                 "--work", str(tmp_path / "w"), "--out", str(tmp_path / "o")])
     assert not (tmp_path / "w").exists()
+
+
+def test_the_channels_of_each_pair_follow_the_model_by_meaning():
+    c = _load()
+    assert DISEASES["infarct"]["channels"] == ("DWI", "ADC") and c.CROSS[("infarct", "glioma")] == ("DWI", "ADC")
+    assert DISEASES["metastasis"]["channels"] == ("T1pre", "T1post", "FLAIR")
+    assert c.CROSS[("metastasis", "glioma")] == ("T1", "T1c", "FLAIR")                  # glioma's names for the same three
+    assert DISEASES["glioma"]["channels"] == ("T1", "T1c", "T2", "FLAIR")
+    assert c.CROSS[("glioma", "metastasis")] == ("T1pre", "T1post", "T2Synth", "FLAIR")   # the T2 is synthetic
+    assert set(c.NOTES) == {("glioma", "metastasis")}
+
+
+def test_overlap_counts_each_object_once_and_a_fragment_is_lesion_tissue():
+    c = _load()
+    gt = np.zeros((24, 20, 6), np.uint8)
+    gt[2:6, 2:6, 1:4] = 1                 # lesion A, 48 voxels
+    gt[2:6, 10:14, 1:4] = 1               # lesion B, 48 voxels
+    gt[20, 16, 4] = 1                     # a fragment of 1 voxel: ignored
+    pred = np.zeros((24, 20, 6), np.uint8)
+    probs = np.zeros((2, 24, 20, 6), np.float32)
+    for sl, p in (((slice(2, 4), slice(2, 4), slice(1, 4)), 0.875),       # on A
+                  ((slice(5, 8), slice(4, 8), slice(1, 4)), 0.875),       # on A again (touches its corner)
+                  ((slice(19, 22), slice(15, 18), slice(3, 6)), 0.75)):   # on the fragment only
+        pred[sl] = 1
+        probs[1][sl] = p
+    dets, det_comp = detections(pred, probs, 1.0, "infarct")
+    gt_comp, n = components(gt)
+    rows = component_rows(gt_comp, n, 1.0, "tumor")
+    assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.5) == {"n_det": 3, "n_det_on_gt": 3, "n_gt": 2, "n_gt_claimed": 1}
+    wide = np.zeros((24, 20, 6), np.uint8)
+    wide[3:5, 3:12, 1:4] = 1              # one detection across A and B
+    wp = np.zeros((2, 24, 20, 6), np.float32)
+    wp[1][wide == 1] = 0.875
+    dets, det_comp = detections(wide, wp, 1.0, "infarct")
+    assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.5) == {"n_det": 1, "n_det_on_gt": 1, "n_gt": 2, "n_gt_claimed": 2}
+
+
+def test_nothing_is_written_when_a_model_fold_or_a_channel_is_missing(tmp_path):
+    c = _load()
+    nn = tmp_path / "derived/nnunet"
+    args = ["--model", "infarct", "--data", "glioma", "--threshold", "0.5", "--gpu", "0", "--folds", "0",
+            "--work", str(tmp_path / "w"), "--out", str(tmp_path / "o")]
+    with patch.object(c, "FM", tmp_path), patch.object(c, "NNUNET", nn):
+        with pytest.raises(FileNotFoundError, match="the infarct model has no trained fold 0"):
+            c.main(args)
+        ckpt = fold_dir(nn / "results", "infarct", 0) / "checkpoint_final.pth"
+        ckpt.parent.mkdir(parents=True)
+        ckpt.write_text("")
+        host = DISEASES["glioma"]["name"]
+        for sub in ("raw", "preprocessed"):
+            (nn / sub / host).mkdir(parents=True)
+        (nn / "raw" / host / "cases.json").write_text(json.dumps({"UCSF-PDGM-0004": {"voxel_mm3": 1.0}}))
+        (nn / "preprocessed" / host / "splits_final.json").write_text(json.dumps([{"train": [], "val": ["UCSF-PDGM-0004"]}]))
+        with pytest.raises(FileNotFoundError, match="UCSF-PDGM-0004: missing .*DWI"):
+            c.main(args)
+    assert not (tmp_path / "w").exists() and not (tmp_path / "o").exists()
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_brain_disease_crossrun.py -q -p no:cacheprovider` → FileNotFoundError on the script path.
@@ -2280,7 +2367,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities  # noqa: E402
 from anatobind.eval.lesion_components import component_mask, component_rows, components  # noqa: E402
 from anatobind.infer.brain_disease import detections, run_nnunet  # noqa: E402
-from anatobind.nnunet.brain_disease import DISEASES, FM, channel_path  # noqa: E402
+from anatobind.nnunet.brain_disease import DISEASES, FM, channel_path, fold_dir  # noqa: E402
 
 NNUNET = FM / "derived/nnunet"
 CROSS = {("infarct", "glioma"): ("DWI", "ADC"),
@@ -2291,7 +2378,10 @@ NOTES = {("glioma", "metastasis"): "channel 2 (T2) is BMSR's synthetic T2"}
 
 def overlap_counts(dets, det_comp, gt_rows, gt_comp, thr):
     """Detections at thr against another disease's ground truth: how many detections touch any ground-truth voxel, and
-    how many counted ground-truth lesions are touched by any detection."""
+    how many counted ground-truth lesions are touched by any detection.
+
+    A labelled fragment under the volume floor is lesion tissue: a detection on it is on ground truth. It is no counted
+    lesion, so it is never in n_gt and cannot be claimed."""
     kept = [d for d in dets if d["score"] >= thr]
     gt_any = gt_comp > 0
     det_any = np.zeros(gt_comp.shape, bool)
@@ -2332,15 +2422,21 @@ def main(argv=None):
     for p in (a.work, a.out):
         if p.exists():
             raise FileExistsError(f"{p} already exists")
+    for f in a.folds:
+        ckpt = fold_dir(NNUNET / "results", a.model, f) / "checkpoint_final.pth"
+        if not ckpt.is_file():
+            raise FileNotFoundError(f"the {a.model} model has no trained fold {f}: missing {ckpt}")
     host = DISEASES[a.data]["name"]
     info = json.loads((NNUNET / "raw" / host / "cases.json").read_text())
     cases = json.loads((NNUNET / "preprocessed" / host / "splits_final.json").read_text())[0]["val"]
-    (a.work / "input").mkdir(parents=True)
-    for case in cases:
-        for k, ch in enumerate(CROSS[(a.model, a.data)]):
-            src = channel_path(a.data, case, ch, FM)
+    srcs = {case: [channel_path(a.data, case, ch, FM) for ch in CROSS[(a.model, a.data)]] for case in cases}
+    for case, paths in srcs.items():
+        for src in paths:
             if not src.is_file():
                 raise FileNotFoundError(f"{case}: missing {src}")
+    (a.work / "input").mkdir(parents=True)
+    for case, paths in srcs.items():
+        for k, src in enumerate(paths):
             os.symlink(src.resolve(), a.work / "input" / f"{case}_{k:04d}.nii.gz")
     run_nnunet(DISEASES[a.model]["id"], a.work / "input", a.work / "pred", a.folds, a.gpu)
     per_case = {}
@@ -2353,14 +2449,19 @@ def main(argv=None):
         dets, det_comp = detections(pred, load_nnunet_probabilities(a.work / "pred" / f"{case}.npz", pred), vox, DISEASES[a.model]["type"])
         gt_comp, n = components(gt)
         per_case[case] = overlap_counts(dets, det_comp, component_rows(gt_comp, n, vox, DISEASES[a.data]["type"]), gt_comp, a.threshold)
-    s = {"model": a.model, "data": a.data, "channels": list(CROSS[(a.model, a.data)]), "note": NOTES.get((a.model, a.data)),
+    s = {"model": a.model, "data": a.data, "cases": f"fold 0 validation cases of {host}",
+         "channels": list(CROSS[(a.model, a.data)]), "note": NOTES.get((a.model, a.data)),
          "threshold": a.threshold, "model_folds": sorted(a.folds), **summarise(per_case)}
     a.out.mkdir(parents=True)
     (a.out / "crossrun.json").write_text(json.dumps({"summary": s, "per_case": per_case}, indent=1))
     (a.out / "REPORT.md").write_text("".join([
         f"# Cross false-alarm check: {a.model} model on {a.data} data (report only, spec M11)\n\n",
         "The model never saw this dataset. Resolution, preprocessing and scanners differ from its training data, so these "
-        "numbers describe this pair of datasets, not the diseases in general.\n\n```json\n", json.dumps(s, indent=1),
+        "numbers describe this pair of datasets, not the diseases in general.\n\n",
+        "Counting: a detection is on ground truth when it shares a voxel with any labelled voxel, fragments under "
+        "10 mm3 included; a ground-truth lesion is claimed when a detection shares a voxel with it, and only lesions of "
+        "at least 10 mm3 are counted. These are counts of overlap, not a sensitivity and not a false-positive rate.\n\n"
+        "```json\n", json.dumps(s, indent=1),
         "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]))
     print(json.dumps(s))
 
@@ -2369,7 +2470,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** the test → 4 passed; then the full suite → 807 passed, 1 skipped.
+- [ ] **Step 4: Run** the test → 7 passed; then the full suite → 812 passed, 1 skipped. (After the task review of 2026-09-29: the channel tuples are pinned by a test, the report states its counting rule and its cases, and every check comes before the first `mkdir`, because a partial folder cannot be deleted here.)
 
 - [ ] **Step 5: Commit** — `git add scripts/brain_disease_crossrun.py tests/test_brain_disease_crossrun.py && git commit -m "Brain disease cross runs: one disease's detector on another disease's data, report only"`
 
@@ -2380,7 +2481,7 @@ if __name__ == "__main__":
 **Precondition:** the disease's fold 0 has finished: `<results>/<Dataset>/nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres/fold_0/validation/summary.json` exists and the queue log shows `finished ('<disease>', 0) … exit code 0`.
 
 - [ ] **Step 1:** `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/eval_brain_disease.py --disease <disease> --folds 0 --out docs/verification/2026-09-29/brain_multidisease/<disease>_fold0`
-- [ ] **Step 2:** read `verdict.json`. If `stop_remaining_folds` is true: `test ! -e logs/brain_disease/skip_<id> && echo "fold 0 sensitivity <value> < 0.3 ($(date '+%F %T'))" > logs/brain_disease/skip_<id>`; folds of that disease already running are left to finish (nobody's process is signalled, ours included, unless the user says so).
+- [ ] **Step 2:** read `verdict.json`. If `operating_point` is false, write no skip file: report the FROC table to the user, who decides whether the remaining folds go on (they go on meanwhile). If `stop_remaining_folds` is true: `test ! -e logs/brain_disease/skip_<id> && echo "fold 0 sensitivity <value> < 0.3 ($(date '+%F %T'))" > logs/brain_disease/skip_<id>`; folds of that disease already running are left to finish (nobody's process is signalled, ours included, unless the user says so).
 - [ ] **Step 3:** commit the reading — `git add docs/verification/2026-09-29/brain_multidisease/<disease>_fold0 && git commit -m "Brain disease <disease>: fold 0 early reading (not the gate)"` — and report it to the user: sensitivity, threshold, false positives per scan, Dice, the size strata, and the line "this is an early reading, not the gate".
 
 ---
