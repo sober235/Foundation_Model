@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions M1–M14). Read it before any task.
 
-**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 81 new tests pass, the full suite gives 828 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
+**Plan dry run (2026-09-29, throwaway):** every code and test file of Tasks 1–10 was written verbatim into a scratch export of this branch (22d5127) and run: the 83 new tests pass, the full suite gives 830 passed, 1 skipped. The dataset module was run read-only against the real sources (501 / 495, 461 / 314, 250 / 250 scans / patients; every channel, label and SynthSeg file present). Mini datasets of six real cases per disease passed `nnUNetv2_plan_and_preprocess --verify_dataset_integrity` (symlinked images, rewritten labels), and the queue ran 5-epoch trainings on them on the two cards that were idle (the third job waited for a card, as designed). Epoch times on an A800: glioma 67–73 s, metastasis 62–67 s, infarct 23 s (the first epoch of each is slower), so 250 epochs come to about 4.7 h, 4.5 h and 1.6 h plus validation. The evaluation script then read those real nnU-Net outputs end to end (axis order, grids, binding, records). With such undertrained models the infarct reading had no operating point at all, which is why the script states that case plainly (Task 9). Implementers still run every step themselves; these numbers are a hint, not evidence.
 
 ## Global Constraints
 
@@ -1532,11 +1532,16 @@ def test_record_and_sentence_for_one_large_tumour():
 
 
 def test_sentence_lists_five_lesions_and_counts_the_rest():
-    rows = [_row(0.9 - 0.01 * i, 100.0, host="cortex", side="left") for i in range(7)]
+    # seven lesions; the smaller a lesion, the higher its score, as on real outputs
+    rows = [_row(0.9 - 0.01 * i, 100.0 * (i + 1), host="cortex", side="left") for i in range(7)]
     rec = B.study_record("s2", "metastasis", 0.5, rows)
     assert len(rec["lesions"]) == 7 and [l["score"] for l in rec["lesions"]] == sorted((l["score"] for l in rec["lesions"]), reverse=True)
     assert rec["sentence"].count("左侧大脑皮层存在转移瘤样异常") == 5
     assert rec["sentence"].endswith("；另有 2 处同类异常。疑似脑转移瘤。")
+    # the sentence names the five largest, largest first; the two it leaves out are the smallest
+    assert [c.split("体积")[1] for c in rec["sentence"].split("；")[:5]] == [
+        "约 700 mm³", "约 600 mm³", "约 500 mm³", "约 400 mm³", "约 300 mm³"]
+    assert [l["volume_mm3"] for l in rec["lesions"][:2]] == [100.0, 200.0]      # the record stays in the order of the scores
 
 
 def test_midline_unlocated_and_empty_records():
@@ -1654,23 +1659,31 @@ def test_the_sentence_says_next_to_for_the_nearest_rule_and_no_side_for_the_brai
     stem = _row(0.7, 300.0, host="brainstem", side="left", host_side="midline",
                 fractions={"brainstem": 0.9, "cerebellum": 0.1}, sides={"cerebellum": "left"})
     rec = B.study_record("s5", "metastasis", 0.5, [near, stem], folds=[3, 1])
-    assert rec["sentence"] == ("邻近左侧大脑白质（未与任何结构重叠）存在转移瘤样异常，体积约 64 mm³；"
-                               "脑干存在转移瘤样异常，体积约 300 mm³，累及左侧小脑。疑似脑转移瘤。")
+    # the larger lesion comes first in the sentence, the higher score first in the record
+    assert rec["sentence"] == ("脑干存在转移瘤样异常，体积约 300 mm³，累及左侧小脑；"
+                               "邻近左侧大脑白质（未与任何结构重叠）存在转移瘤样异常，体积约 64 mm³。疑似脑转移瘤。")
+    assert [l["score"] for l in rec["lesions"]] == [0.8, 0.7]
     assert rec["lesions"][1]["side"] == "left" and rec["lesions"][1]["host_side"] == "midline"   # the record keeps both
     assert rec["model_folds"] == [1, 3] and "NOT_EVIDENCE" in rec["anatomy_source"]
 
 
 def test_the_side_before_the_structure_is_the_structure_s_own_and_a_far_lesion_is_not_located():
     across = _row(0.9, 900.0, host="thalamus", side="right", host_side="left",
-                  fractions={"thalamus": 0.38, "white_matter": 0.31, "cortex": 0.21, "basal_ganglia": 0.10},
-                  sides={"white_matter": "right", "cortex": "bilateral"})
+                  fractions={"thalamus": 0.38, "white_matter": 0.21, "cortex": 0.21, "basal_ganglia": 0.10, "brainstem": 0.10},
+                  sides={"white_matter": "right", "cortex": "bilateral", "brainstem": "midline"})
     far = dict(_row(0.8, 64.0, side="right"), host_rule="nearest", host_fractions={}, host_distance_mm=10.01)
     rec = B.study_record("s7", "glioma", 0.5, [across, far])
-    # the side of an involved structure is written when it is not the main structure's: the basal ganglia are on the left
-    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及右侧大脑白质、双侧大脑皮层、基底节；"
+    # one involved structure lies on another side: every one gets its side, the basal ganglia on the main structure's
+    # side too, and the brainstem, which has none, comes first so that no side word is read on to it
+    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及脑干、右侧大脑白质、双侧大脑皮层、左侧基底节；"
                                "未能定位的区域存在肿瘤样异常，体积约 64 mm³。疑似胶质瘤。")
     assert rec["lesions"][0]["host_sides"] == {"thalamus": "left", "white_matter": "right", "cortex": "bilateral",
-                                               "basal_ganglia": "left"}
+                                               "basal_ganglia": "left", "brainstem": "midline"}
+    # every involved structure on the main structure's side, or without a side: the short form
+    same = _row(0.9, 900.0, host="cerebellum", side="left", fractions={"cerebellum": 0.6, "white_matter": 0.2, "brainstem": 0.2},
+                sides={"brainstem": "midline"})
+    assert B.lesion_clause(B.study_record("s8", "infarct", 0.5, [same])["lesions"][0]) == (
+        "左侧小脑存在梗死样异常，体积约 900 mm³，累及大脑白质、脑干")
     assert rec["lesions"][1]["host"] == "white_matter" and rec["lesions"][1]["host_distance_mm"] == 10.01
     assert B.NEAR_MM == 10.0
 
@@ -1753,26 +1766,35 @@ def volume_text(mm3):
 
 def lesion_clause(lesion):
     """One lesion in words. The side written before the main structure is the side of the lesion's voxels inside
-    that structure (none for the brainstem). An involved structure gets its side only when it differs from the main
-    structure's, so that a lesion across the midline reads as one. A lesion that overlaps no structure is said to lie
-    next to the nearest one when that is at most NEAR_MM away (user, 2026-09-29), else it is not located."""
+    that structure (none for the brainstem). When every involved structure lies on the main structure's side, no side
+    is written after "累及"; when one does not, every involved structure gets its side, so that a lesion across the
+    midline reads as one and no side word is read on to the next structure; the brainstem, which has no side, then
+    comes first. A lesion that overlaps no structure is said to lie next to the nearest one when that is at most
+    NEAR_MM away (user, 2026-09-29), else it is not located."""
     if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
         where = NOWHERE_ZH
     else:
         where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
         if lesion["host_rule"] == "nearest":
             where = f"邻近{where}（未与任何结构重叠）"
-    involved = [(SIDE_ZH[lesion["host_sides"][h]] if lesion["host_sides"][h] != lesion["host_side"] else "") + HOST_ZH[h]
-                for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
+    sides = lesion["host_sides"]
+    involved = [h for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
                 if h != lesion["host"] and f >= INVOLVED_MIN]
+    if any(sides[h] not in ("midline", lesion["host_side"]) for h in involved):
+        involved = [h for h in involved if sides[h] == "midline"] + [h for h in involved if sides[h] != "midline"]
+        words = [SIDE_ZH[sides[h]] + HOST_ZH[h] for h in involved]
+    else:
+        words = [HOST_ZH[h] for h in involved]
     text = f"{where}存在{TYPE_ZH[lesion['type']]}，体积{volume_text(lesion['volume_mm3'])}"
-    return text + (f"，累及{'、'.join(involved)}" if involved else "")
+    return text + (f"，累及{'、'.join(words)}" if words else "")
 
 
 def study_record(study, disease, threshold, rows, folds=None):
-    """rows: bound detections (any score); only those at or above the threshold enter the record. folds: the folds of
-    the model that predicted. Without a lesion the sentence says that this model detected nothing at this threshold;
-    that is no negative finding."""
+    """rows: bound detections (any score); only those at or above the threshold enter the record, highest score
+    first. The sentence names the MAX_SENTENCE_LESIONS largest lesions, largest first: the score is a mean
+    probability, which is highest for the smallest components, and a reader looks for the largest lesion first.
+    folds: the folds of the model that predicted. Without a lesion the sentence says that this model detected nothing
+    at this threshold; that is no negative finding."""
     spec = DISEASES[disease]
     lesions = [{"type": spec["type"], "score": round(float(r["score"]), 4), "box": [int(v) for v in r["box"]],
                 "volume_mm3": round(float(r["mm3"]), 1), "host": r["host"], "host_rule": r["host_rule"],
@@ -1781,7 +1803,8 @@ def study_record(study, disease, threshold, rows, folds=None):
                for r in sorted(rows, key=lambda r: -r["score"]) if r["score"] >= threshold]
     if lesions:
         rest = len(lesions) - MAX_SENTENCE_LESIONS
-        sentence = "；".join(lesion_clause(l) for l in lesions[:MAX_SENTENCE_LESIONS])
+        largest = sorted(lesions, key=lambda l: -l["volume_mm3"])[:MAX_SENTENCE_LESIONS]
+        sentence = "；".join(lesion_clause(l) for l in largest)
         sentence += (f"；另有 {rest} 处同类异常" if rest > 0 else "") + f"。{spec['impression']}。"
         impression = spec["impression"]
     else:
@@ -1882,7 +1905,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** `tests/test_brain_disease_record.py tests/test_brain_detector_infer.py` → all pass (14 new). Do not run the CLI for real (the smoke run is Task 12). The side written before a structure is `host_side`; an involved structure gets its side (`host_sides`) only when it differs from the main structure's, so that a lesion across the midline reads as one; a lesion bound by the nearest rule farther than `NEAR_MM = 10` mm from every structure is written as not located (user, 2026-09-29). After the whole-branch review of 2026-09-29: a lesion that overlaps no structure is written as next to the nearest one; the side is written only before structures with a left and a right half; an empty record says that this model detected nothing at this threshold; records name their folds and the anatomy's source; `detections` refuses a probability map that does not belong to the label map. `check_grid`, the file check of `link_inputs` before its `mkdir` and the last two tests were added after the task review of 2026-09-29: `run()` compared only array shapes, so an anatomy of the same shape on another grid gave a wrong volume, structure and side without an error, and a mistyped image path left a partial output folder that blocked the next try. On the real data all 3887 channel files have exactly the affine of their case's SynthSeg map.
+- [ ] **Step 4: Run** `tests/test_brain_disease_record.py tests/test_brain_detector_infer.py` → all pass (14 new). Do not run the CLI for real (the smoke run is Task 12). The side written before a structure is `host_side`; when an involved structure lies on another side than the main structure, every involved structure gets its side (`host_sides`) and the brainstem comes first, else none is written; the sentence names the five largest lesions, largest first (the record keeps the order of the scores; recommended to the user on 2026-09-29, open until confirmed); a lesion bound by the nearest rule farther than `NEAR_MM = 10` mm from every structure is written as not located (user, 2026-09-29). After the whole-branch review of 2026-09-29: a lesion that overlaps no structure is written as next to the nearest one; the side is written only before structures with a left and a right half; an empty record says that this model detected nothing at this threshold; records name their folds and the anatomy's source; `detections` refuses a probability map that does not belong to the label map. `check_grid`, the file check of `link_inputs` before its `mkdir` and the last two tests were added after the task review of 2026-09-29: `run()` compared only array shapes, so an anatomy of the same shape on another grid gave a wrong volume, structure and side without an error, and a mistyped image path left a partial output folder that blocked the next try. On the real data all 3887 channel files have exactly the affine of their case's SynthSeg map.
 
 - [ ] **Step 5: Commit** — `git add anatobind/infer/brain_disease.py scripts/infer_brain_disease.py tests/test_brain_disease_record.py && git commit -m "Brain disease inference: scored components, binding, structured record and sentence per study"`
 
@@ -1909,7 +1932,8 @@ import numpy as np
 import pytest
 
 from anatobind.eval.brain_disease import (
-    beyond_budget, binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
+    beyond_budget, binding_agreement, case_scan, code_version, dice_summary, evaluate, false_positive_spread, jobs, strata,
+    verdict,
 )
 from anatobind.eval.lesion_components import size_stratum
 from anatobind.nnunet.brain_disease import fold_dir
@@ -2107,6 +2131,33 @@ def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_pat
     assert far["host_distance_mm"] == 5.0 and far["host_sides"] == {"white_matter": "right"}
     # one of the two detections is bound by the nearest rule, 5 mm away: near enough to be located
     assert binding_agreement([s], 0.5)["nearest_rate"] == 0.5 and binding_agreement([s], 0.5)["unlocated_rate"] == 0.0
+
+
+def test_the_two_side_agreements_are_counted_apart():
+    box = (2, 2, 2, 6, 6, 5)
+    gt = {"box": box, "family": "tumor", "host": "thalamus", "side": "right", "host_side": "left"}
+    det = {"box": box, "family": "tumor", "score": 0.875, "host": "thalamus", "host_rule": "overlap", "side": "right",
+           "host_side": "right", "host_distance_mm": 0.0}
+    out = binding_agreement([{"case": "c", "gt": [gt], "dets": [det]}], 0.5)
+    assert (out["n_pairs"], out["side_agreement"], out["host_side_agreement"]) == (1, 1.0, 0.0)
+
+
+def test_the_code_version_names_the_commit_and_marks_changed_files(tmp_path):
+    import subprocess
+    assert code_version(tmp_path / "no_such_folder") == "unknown"
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@example.org", "-c", "commit.gpgsign=false"]
+    subprocess.run(git + ["init", "-q"], cwd=repo, check=True)
+    (repo / "a.txt").write_text("one\n")
+    subprocess.run(git + ["add", "a.txt"], cwd=repo, check=True)
+    subprocess.run(git + ["commit", "-q", "-m", "one"], cwd=repo, check=True)
+    clean = code_version(repo)
+    assert len(clean) >= 7 and not clean.endswith("+")
+    (repo / "untracked.txt").write_text("x\n")
+    assert code_version(repo) == clean                         # files git does not track do not count
+    (repo / "a.txt").write_text("two\n")
+    assert code_version(repo) == clean + "+"
 ````
 
 - [ ] **Step 2: Run to verify it fails** — `… -m pytest tests/test_brain_disease_eval.py -q -p no:cacheprovider` → `ModuleNotFoundError: No module named 'anatobind.eval.brain_disease'`.
@@ -2118,6 +2169,7 @@ def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_pat
 components with their binding, the D1-style gate per disease, size strata, nnU-Net's Dice, and the agreement of the
 binding between matched pairs (NOT_EVIDENCE)."""
 import json
+import subprocess
 from pathlib import Path
 
 import nibabel as nib
@@ -2133,6 +2185,18 @@ from anatobind.nnunet.brain_disease import DISEASES, fold_dir
 EARLY_STOP = 0.3
 REACH_LESIONS = 2
 N_FOLDS = 5
+
+
+def code_version(repo):
+    """The commit a report was made with: the short hash, with "+" when tracked files differ from it; "unknown"
+    where git cannot tell."""
+    try:
+        head = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=str(repo), capture_output=True, text=True, check=True)
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=str(repo), capture_output=True,
+                               text=True, check=True)
+    except (OSError, subprocess.CalledProcessError):
+        return "unknown"
+    return head.stdout.strip() + ("+" if dirty.stdout.strip() else "")
 
 
 def case_scan(job):
@@ -2268,7 +2332,7 @@ def dice_summary(results_root, disease, folds):
             "median": float(np.median(vals)) if vals else None}
 ````
 
-- [ ] **Step 4: Run** the test → 11 passed (after the whole-branch review of 2026-09-29 the early stop also needs the row just beyond the budget to be under 0.3, every other low reading is `early_stop_undecided`; `false_positive_spread` and `nearest_rate` are report-only; the verdict's `operating_point`, the rule that a reading without an operating point stops no folds, and the check of the folds in `jobs` were added after the task review of 2026-09-29: `gate()` fills sensitivity 0.0 when no threshold keeps the false positives within budget, and the early reading took that filler for a measurement). The probabilities in the fixtures are binary fractions (0.875, 0.75, 0.625) on purpose: float32 means of other values land a hair above or below the threshold grid.
+- [ ] **Step 4: Run** the test → 13 passed (after the whole-branch review of 2026-09-29 the early stop also needs the row just beyond the budget to be under 0.3, every other low reading is `early_stop_undecided`; `false_positive_spread` and `nearest_rate` are report-only; the verdict's `operating_point`, the rule that a reading without an operating point stops no folds, and the check of the folds in `jobs` were added after the task review of 2026-09-29: `gate()` fills sensitivity 0.0 when no threshold keeps the false positives within budget, and the early reading took that filler for a measurement). The probabilities in the fixtures are binary fractions (0.875, 0.75, 0.625) on purpose: float32 means of other values land a hair above or below the threshold grid.
 
 - [ ] **Step 5: Commit** — `git add anatobind/eval/brain_disease.py tests/test_brain_disease_eval.py && git commit -m "Brain disease evaluation: bound ground truth and detections per case, gate or early reading, strata, Dice and binding agreement"`
 
@@ -2375,6 +2439,7 @@ def test_fold_report_records_and_refusals(tmp_path):
         assert json.loads((rec / "100101B.json").read_text())["impression"] == "未检出相关异常"
         assert '"n_scans_over_budget": 0' in rep and '"nearest_rate": 0.0' in rep
         assert '"host_side_agreement": 1.0' in rep and '"unlocated_rate": 0.0' in rep
+        assert rep.rstrip().splitlines()[-1].startswith("Code: commit ")
         assert a["lesions"][0]["host_side"] == "left" and a["lesions"][0]["host_sides"] == {"white_matter": "left"}
         assert sorted(p.name for p in rec.iterdir()) == ["100101A.json", "100101B.json"]
         with pytest.raises(FileExistsError):
@@ -2478,7 +2543,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.eval.brain_disease import (  # noqa: E402
-    binding_agreement, case_scan, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
+    binding_agreement, case_scan, code_version, dice_summary, evaluate, false_positive_spread, jobs, strata, verdict,
 )
 from anatobind.eval.lesion_components import MIN_MM3, STRATA, size_stratum  # noqa: E402
 from anatobind.infer.brain_disease import study_record  # noqa: E402
@@ -2559,7 +2624,7 @@ def main(argv=None):
                        strata(scans, thr, lambda s, r: "yes" if info[s["case"]].get("prior_surgery") else "no"), ("no", "yes"))
         L += ["## Binding agreement (NOT_EVIDENCE: the anatomy is a SynthSeg pseudo-label)\n\n```json\n",
               json.dumps(binding_agreement(scans, thr), indent=1), "\n```\n\n"]
-    L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]
+    L += ["## Command\n\n```\n", " ".join(sys.argv), "\n```\n\nCode: commit ", code_version(Path(__file__).resolve().parents[1]), "\n"]
     fold_of = {c: f for f in a.folds for c in splits[f]["val"]}
     records = {}
     if a.records is not None and thr is not None:
@@ -2768,6 +2833,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from anatobind.eval.brain_disease import code_version  # noqa: E402
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities  # noqa: E402
 from anatobind.eval.lesion_components import component_mask, component_rows, components  # noqa: E402
 from anatobind.infer.brain_disease import detections, run_nnunet  # noqa: E402
@@ -2870,7 +2936,8 @@ def main(argv=None):
         "fold that held it out). Here the model's folds are averaged; the behaviour of the averaged model at this "
         "threshold was not measured on its own data.\n\n"
         "```json\n", json.dumps(s, indent=1),
-        "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n"]))
+        "\n```\n\n## Command\n\n```\n", " ".join(sys.argv), "\n```\n\nCode: commit ",
+        code_version(Path(__file__).resolve().parents[1]), "\n"]))
     print(json.dumps(s))
 
 
@@ -2878,7 +2945,7 @@ if __name__ == "__main__":
     main()
 ````
 
-- [ ] **Step 4: Run** the test → 7 passed; then the full suite → 828 passed, 1 skipped. (After the task review of 2026-09-29: the channel tuples are pinned by a test, the report states its counting rule and its cases, and every check comes before the first `mkdir`, because a partial folder cannot be deleted here.)
+- [ ] **Step 4: Run** the test → 7 passed; then the full suite → 830 passed, 1 skipped. (After the task review of 2026-09-29: the channel tuples are pinned by a test, the report states its counting rule and its cases, and every check comes before the first `mkdir`, because a partial folder cannot be deleted here.)
 
 - [ ] **Step 5: Commit** — `git add scripts/brain_disease_crossrun.py tests/test_brain_disease_crossrun.py && git commit -m "Brain disease cross runs: one disease's detector on another disease's data, report only"`
 
