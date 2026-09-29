@@ -1,0 +1,4 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/host_voxels.py   # 2026-09-29 15:31:09
+glioma: 501 maps; without any host voxel 0; with fewer than 1000 host voxels 0; host voxels min 907612 median 1299616
+metastasis: 461 maps; without any host voxel 0; with fewer than 1000 host voxels 0; host voxels min 436980 median 1059863
+infarct: 250 maps; without any host voxel 0; with fewer than 1000 host voxels 0; host voxels min 57647 median 136185

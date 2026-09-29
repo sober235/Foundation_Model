@@ -1,0 +1,4 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/anatomy_grid.py   # 2026-09-29 15:30:53
+glioma: 501 cases; anatomy missing 0; shape differs 0; affine differs by > 1e-3 in 0 (largest deviation 0.00e+00)
+metastasis: 461 cases; anatomy missing 0; shape differs 0; affine differs by > 1e-3 in 0 (largest deviation 0.00e+00)
+infarct: 250 cases; anatomy missing 0; shape differs 0; affine differs by > 1e-3 in 0 (largest deviation 0.00e+00)
