@@ -7,8 +7,16 @@ process and almost no memory in use, and starts the next jobs there, one per GPU
 A card somebody else uses is never touched. Control files in the log directory: `skip_<dataset id>` drops the jobs of
 that dataset that have not started; `stop` lets the running jobs finish and starts nothing new.
 
+A training that fails within FAST_FAILURE_SECONDS of its start points at a fault that would hit every start (the
+environment, a card that another job filled at the same moment): the queue then starts nothing new, because every
+failed start leaves a log that blocks the job's next start. The last line counts what succeeded, failed, was refused
+and never started; the return code is 1 unless every job succeeded.
+
+Every launch writes its own log, so that the record of an earlier launch is never overwritten:
+
   cd <worktree> && PYTHONNOUSERSITE=1 PYTHONPATH=. setsid nohup ~/anaconda3/envs/nvgen/bin/python scripts/gpu_queue.py \
-      --diseases glioma metastasis infarct --folds 0 1 2 3 4 > logs/brain_disease/queue.log 2>&1 < /dev/null &
+      --diseases glioma metastasis infarct --folds 0 1 2 3 4 \
+      > logs/brain_disease/queue_$(date +%Y%m%d_%H%M%S).log 2>&1 < /dev/null &
 """
 import argparse
 import os
@@ -30,6 +38,7 @@ LOG_DIR = REPO / "logs" / "brain_disease"
 MAX_JOBS = 6
 N_PROC_DA = 6
 POLL_SECONDS = 60
+FAST_FAILURE_SECONDS = 600
 
 
 def job_list(diseases, folds):
@@ -98,28 +107,38 @@ def main(argv=None):
     results_root = Path(os.environ.get("nnUNet_results") or NNUNET_ROOT / "results")
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     pending, running = job_list(a.diseases, a.folds), {}
+    succeeded, failed, refused, dropped = [], [], [], []
     say(f"queue of {len(pending)} jobs: {pending}")
     while True:
-        for gpu, (job, proc) in list(running.items()):
+        for gpu, (job, proc, started) in list(running.items()):
             if proc.poll() is not None:
-                say(f"finished {job} on GPU {gpu} with exit code {proc.returncode}")
+                took = time.time() - started
+                say(f"finished {job} on GPU {gpu} with exit code {proc.returncode} after {took / 60:.1f} min")
+                (succeeded if proc.returncode == 0 else failed).append(job)
                 del running[gpu]
+                if proc.returncode != 0 and took < FAST_FAILURE_SECONDS and pending:
+                    say(f"{job} failed within {FAST_FAILURE_SECONDS // 60} min of its start: nothing new starts; "
+                        f"{len(pending)} jobs will not start: {pending}")
+                    dropped, pending = dropped + pending, []
         if (LOG_DIR / "stop").exists() and pending:
             say(f"stop file found: {len(pending)} jobs will not start: {pending}")
-            pending = []
+            dropped, pending = dropped + pending, []
         skip = skipped_diseases(LOG_DIR)
         if any(j[0] in skip for j in pending):
             say(f"skip file found: dropping {[j for j in pending if j[0] in skip]}")
+            dropped += [j for j in pending if j[0] in skip]
             pending = [j for j in pending if j[0] not in skip]
         if not pending and not running:
-            say("queue empty, nothing running: done")
-            return 0
+            say(f"queue empty, nothing running: done; succeeded {len(succeeded)}, failed {len(failed)} {failed}, "
+                f"refused {len(refused)} {refused}, never started {len(dropped)} {dropped}")
+            return 0 if a.dry_run or not (failed or refused or dropped) else 1
         if pending and len(running) < a.max_jobs:
             for job, gpu in plan_launches(pending, set(running), idle_now(a.gpus) or [], a.max_jobs):
                 pending.remove(job)
                 why = refusal(results_root, LOG_DIR, job, a.trainer)
                 if why:
                     say(f"refused {job}: {why}")
+                    refused.append(job)
                     continue
                 cmd = command(job, gpu, a.trainer, log_path(LOG_DIR, job, a.trainer), REPO / "scripts/nnunet_env.sh")
                 if a.dry_run:
@@ -127,7 +146,7 @@ def main(argv=None):
                     continue
                 proc = subprocess.Popen(cmd, cwd=str(REPO), start_new_session=True, stdin=subprocess.DEVNULL,
                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                running[gpu] = (job, proc)
+                running[gpu] = (job, proc, time.time())
                 say(f"launched {job} on GPU {gpu} (pid {proc.pid})")
         if a.dry_run:
             return 0
