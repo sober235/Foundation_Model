@@ -145,25 +145,36 @@ def test_jobs_refuse_folds_given_twice_or_out_of_range(tmp_path):
             jobs(tmp_path / "res", tmp_path / "raw", "glioma", splits, folds, {}, lambda c: tmp_path / c)
 
 
-def _rows(*triples):
-    return [{"thr": t, "sensitivity_family": s, "fp_per_scan": f} for t, s, f in triples]
+def _rows(*triples, n_gt=100):
+    """(threshold, lesions found, false positives per scan) of a fold with n_gt counted lesions."""
+    return [{"thr": t, "n_gt": n_gt, "n_hit_family": h, "sensitivity_family": h / n_gt, "fp_per_scan": f} for t, h, f in triples]
 
 
-def test_an_early_stop_needs_the_row_beyond_the_budget_to_be_low_too():
+def test_an_early_stop_needs_the_row_beyond_the_budget_to_be_out_of_reach_too():
     low = {"pass": False, "thr": 0.95, "sensitivity_family": 0.27, "fp_per_scan": 1.6}
-    # 0.90 exceeds the budget with sensitivity 0.34: a threshold between the two rows may reach 0.3
-    near = verdict({"gate": low, "rows": _rows((0.85, 0.40, 3.1), (0.90, 0.34, 2.4), (0.95, 0.27, 1.6))}, [0])
-    assert near["beyond_budget"] == {"thr": 0.90, "sensitivity": 0.34, "fp_per_scan": 2.4}
+    # 0.90 exceeds the budget and finds 34 of 100: a threshold between the two rows may reach 0.3
+    near = verdict({"gate": low, "rows": _rows((0.85, 40, 3.1), (0.90, 34, 2.4), (0.95, 27, 1.6))}, [0])
+    assert near["beyond_budget"] == {"thr": 0.90, "sensitivity": 0.34, "fp_per_scan": 2.4, "n_hit": 34, "n_gt": 100,
+                                     "out_of_reach": False}
     assert near["stop_remaining_folds"] is False and near["early_stop_undecided"] is True
-    # 0.90 exceeds the budget with sensitivity 0.29: no threshold reaches 0.3
-    far = verdict({"gate": low, "rows": _rows((0.90, 0.29, 2.4), (0.95, 0.27, 1.6))}, [0])
+    # 28 of 100 is two lesions short of 0.3: the matching is redone per threshold, so this is still within reach
+    close = verdict({"gate": low, "rows": _rows((0.90, 28, 2.4), (0.95, 27, 1.6))}, [0])
+    assert close["stop_remaining_folds"] is False and close["early_stop_undecided"] is True
+    # 27 of 100 is three lesions short: out of reach, the reading is clear
+    far = verdict({"gate": low, "rows": _rows((0.90, 27, 2.4), (0.95, 27, 1.6))}, [0])
+    assert far["beyond_budget"]["out_of_reach"] is True
     assert far["stop_remaining_folds"] is True and far["early_stop_undecided"] is False
     # the budget is never exceeded: the operating point is the lowest threshold, nothing lies beyond it
-    alone = verdict({"gate": dict(low, thr=0.05), "rows": _rows((0.05, 0.27, 1.6), (0.95, 0.20, 0.4))}, [0])
+    alone = verdict({"gate": dict(low, thr=0.05), "rows": _rows((0.05, 27, 1.6), (0.95, 20, 0.4))}, [0])
     assert alone["beyond_budget"] is None and alone["stop_remaining_folds"] is True
-    full = verdict({"gate": low, "rows": _rows((0.90, 0.34, 2.4), (0.95, 0.27, 1.6))}, [0, 1, 2, 3, 4])
+    full = verdict({"gate": low, "rows": _rows((0.90, 34, 2.4), (0.95, 27, 1.6))}, [0, 1, 2, 3, 4])
     assert full["stop_remaining_folds"] is False and full["early_stop_undecided"] is False and full["pass"] is False
-    assert beyond_budget(_rows((0.5, 0.9, 2.0))) is None        # exactly the budget is within the budget
+    assert beyond_budget(_rows((0.5, 90, 2.0))) is None         # exactly the budget is within the budget
+    # no operating point: always undecided; out_of_reach tells whether the reading is decisive in substance
+    none = {"pass": False, "thr": None, "sensitivity_family": 0.0, "fp_per_scan": None}
+    flood = verdict({"gate": none, "rows": _rows((0.90, 30, 4.0), (0.95, 20, 2.5))}, [0])
+    assert flood["early_stop_undecided"] is True and flood["stop_remaining_folds"] is False
+    assert flood["beyond_budget"]["thr"] == 0.95 and flood["beyond_budget"]["out_of_reach"] is True
 
 
 def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_path):

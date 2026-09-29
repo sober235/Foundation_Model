@@ -67,11 +67,17 @@ def main(argv=None):
           "operating point, so no sensitivity was measured and strata, binding agreement and records are not produced. "
           "With all five folds this fails the gate; an early reading without an operating point does not stop the "
           "remaining folds by itself (the rule of spec M4 needs a measured sensitivity): that decision is the user's.\n\n"),
+         ("" if not (thr is None and v["beyond_budget"] and v["beyond_budget"]["out_of_reach"]) else
+          f"In substance this reading is decisive all the same: the row at threshold {v['beyond_budget']['thr']:.2f} still "
+          f"exceeds the budget ({v['beyond_budget']['fp_per_scan']:.4f} false positives per scan) and finds "
+          f"{v['beyond_budget']['n_hit']} of {v['beyond_budget']['n_gt']} lesions; a threshold that meets the budget lies "
+          "above it and is not expected to find more.\n\n"),
          ("" if not (v["early_stop_undecided"] and thr is not None) else
           f"The sensitivity at the operating point is under 0.3, but the row just beyond the budget (threshold "
-          f"{v['beyond_budget']['thr']:.2f}: sensitivity {v['beyond_budget']['sensitivity']:.4f} at "
-          f"{v['beyond_budget']['fp_per_scan']:.4f} false positives per scan) is not: a threshold between the two rows of "
-          "the grid may reach 0.3. The early stop is undecided, the remaining folds go on, the decision is the user's.\n\n"),
+          f"{v['beyond_budget']['thr']:.2f}: {v['beyond_budget']['n_hit']} of {v['beyond_budget']['n_gt']} lesions at "
+          f"{v['beyond_budget']['fp_per_scan']:.4f} false positives per scan) reaches 0.3 or misses it by at most two "
+          "lesions, and the matching is redone at every threshold: a threshold between the two rows of the grid may reach "
+          "0.3. The early stop is undecided, the remaining folds go on, the decision is the user's.\n\n"),
          f"Scans {result['n_scans']}; ground-truth lesions counted {result['n_gt']}; ignored (< {MIN_MM3:g} mm3) "
          f"{result['n_ignored']}.\n\n",
          "Scores are mean foreground probabilities over components of the argmax map, so they exceed 0.5 by construction: "

@@ -15,6 +15,7 @@ from anatobind.infer.brain_disease import bind_rows, detections
 from anatobind.nnunet.brain_disease import DISEASES, fold_dir
 
 EARLY_STOP = 0.3
+REACH_LESIONS = 2
 N_FOLDS = 5
 
 
@@ -63,27 +64,35 @@ def beyond_budget(rows, fp_max=FP_MAX):
     return max(over, key=lambda r: r["thr"]) if over else None
 
 
+def within_reach(row):
+    """Could a threshold near this row reach EARLY_STOP? Yes when the row reaches it or misses it by at most
+    REACH_LESIONS lesions: the matching is redone at every threshold, so the hits need not fall as the threshold
+    rises, and a threshold between two rows of the grid can find a lesion or two more than the lower row."""
+    return row["n_hit_family"] + REACH_LESIONS >= EARLY_STOP * row["n_gt"]
+
+
 def verdict(result, folds):
     """The gate when all five folds were scored; otherwise an early reading with the early-stop flag (spec M4).
 
     Without an operating point (no threshold keeps the false positives within the budget) no sensitivity was measured:
     it is None and the gate fails. An early reading stops the remaining folds only when it is clear: the sensitivity
-    at the operating point is under EARLY_STOP, and so is the sensitivity of the row just beyond the budget (a
-    threshold between the two rows cannot reach more than that row). Every other low reading is undecided: the
-    remaining folds go on and the user decides."""
+    at the operating point is under EARLY_STOP, and the row just beyond the budget is out of reach of it too (see
+    within_reach). Every other low reading is undecided: the remaining folds go on and the user decides. A reading
+    without an operating point is always undecided; out_of_reach then says whether it is decisive in substance."""
     full = sorted(folds) == list(range(N_FOLDS))
     g = result["gate"]
     found = g["thr"] is not None
     sens = g["sensitivity_family"] if found else None
     b = beyond_budget(result.get("rows", []))
     low = found and sens < EARLY_STOP
-    within_reach = b is not None and b["sensitivity_family"] >= EARLY_STOP
+    reach = b is not None and within_reach(b)
     return {"kind": "gate" if full else "early_reading", "folds": sorted(folds), "pass": g["pass"] if full else None,
             "operating_point": found, "sensitivity": sens, "thr": g["thr"], "fp_per_scan": g["fp_per_scan"],
             "beyond_budget": None if b is None else {"thr": b["thr"], "sensitivity": b["sensitivity_family"],
-                                                     "fp_per_scan": b["fp_per_scan"]},
-            "stop_remaining_folds": bool(not full and low and not within_reach),
-            "early_stop_undecided": bool(not full and (not found or (low and within_reach)))}
+                                                     "fp_per_scan": b["fp_per_scan"], "n_hit": b["n_hit_family"],
+                                                     "n_gt": b["n_gt"], "out_of_reach": not reach},
+            "stop_remaining_folds": bool(not full and low and not reach),
+            "early_stop_undecided": bool(not full and (not found or (low and reach)))}
 
 
 def strata(scans, thr, key):
