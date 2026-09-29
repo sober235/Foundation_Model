@@ -1,0 +1,21 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/sentence_preview.py infarct 0 0.60 3   # 2026-09-29 18:01:53, code 71947c5
+infarct fold 0, threshold 0.60: 50 studies; lesions per study min 0, median 5, max 32; studies without a lesion 2, with more than five 22; places named after the count: in 13 studies, at most 4; longest sentence 220 characters
+
+## most lesions
+- sub-strokecase0178 (32 lesions, largest 11712 mm3): 左侧大脑白质存在梗死样异常，体积约 12 mL，累及大脑皮层；左侧大脑白质存在梗死样异常，体积约 704 mm³；左侧基底节存在梗死样异常，体积约 176 mm³；左侧基底节存在梗死样异常，体积约 144 mm³，累及大脑白质；左侧大脑皮层存在梗死样异常，体积约 120 mm³；另有 27 处同类异常（还见于左侧深部灰质（海马、杏仁核等）、右侧大脑皮层、右侧大脑白质）。疑似缺血性梗死。
+- sub-strokecase0001 (26 lesions, largest 744 mm3): 左侧大脑白质存在梗死样异常，体积约 744 mm³，累及大脑皮层；右侧大脑白质存在梗死样异常，体积约 696 mm³，累及大脑皮层；左侧基底节存在梗死样异常，体积约 384 mm³；左侧大脑皮层存在梗死样异常，体积约 280 mm³；左侧大脑皮层存在梗死样异常，体积约 272 mm³，累及大脑白质；另有 21 处同类异常（还见于右侧大脑皮层、左侧小脑、左侧丘脑）。疑似缺血性梗死。
+- sub-strokecase0033 (16 lesions, largest 30992 mm3): 左侧大脑皮层存在梗死样异常，体积约 31 mL，累及大脑白质；左侧大脑皮层存在梗死样异常，体积约 1.4 mL；左侧大脑皮层存在梗死样异常，体积约 1.1 mL，累及大脑白质；左侧大脑皮层存在梗死样异常，体积约 880 mm³；左侧大脑皮层存在梗死样异常，体积约 368 mm³；另有 11 处同类异常（还见于左侧大脑白质）。疑似缺血性梗死。
+
+## two to five lesions
+- sub-strokecase0023 (5 lesions, largest 220488 mm3): 左侧大脑皮层存在梗死样异常，体积约 220 mL，累及大脑白质；右侧大脑白质存在梗死样异常，体积约 64 mm³，累及大脑皮层；右侧大脑白质存在梗死样异常，体积约 24 mm³；右侧大脑白质存在梗死样异常，体积约 16 mm³；左侧大脑皮层存在梗死样异常，体积约 16 mm³。疑似缺血性梗死。
+- sub-strokecase0130 (5 lesions, largest 4568 mm3): 右侧小脑存在梗死样异常，体积约 4.6 mL；右侧小脑存在梗死样异常，体积约 1.1 mL；右侧小脑存在梗死样异常，体积约 192 mm³；左侧丘脑存在梗死样异常，体积约 88 mm³；右侧小脑存在梗死样异常，体积约 16 mm³。疑似缺血性梗死。
+- sub-strokecase0173 (5 lesions, largest 32768 mm3): 双侧小脑存在梗死样异常，体积约 33 mL；脑干存在梗死样异常，体积约 1.6 mL；右侧大脑皮层存在梗死样异常，体积约 96 mm³，累及大脑白质；脑干存在梗死样异常，体积约 56 mm³；左侧小脑存在梗死样异常，体积约 40 mm³。疑似缺血性梗死。
+
+## one lesion
+- sub-strokecase0002 (1 lesions, largest 968 mm3): 右侧丘脑存在梗死样异常，体积约 968 mm³，累及大脑白质。疑似缺血性梗死。
+- sub-strokecase0035 (1 lesions, largest 112 mm3): 左侧大脑白质存在梗死样异常，体积约 112 mm³。疑似缺血性梗死。
+- sub-strokecase0112 (1 lesions, largest 408 mm3): 右侧大脑白质存在梗死样异常，体积约 408 mm³。疑似缺血性梗死。
+
+## no lesion
+- sub-strokecase0144 (0 lesions): 本模型未检出梗死样异常（阈值 0.60）。
+- sub-strokecase0170 (0 lesions): 本模型未检出梗死样异常（阈值 0.60）。
