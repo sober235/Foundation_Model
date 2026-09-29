@@ -20,6 +20,7 @@ from anatobind.nnunet.brain_disease import CONFIG, DISEASES, TRAINER
 SIDE_ZH = {"left": "左侧", "right": "右侧", "bilateral": "双侧", "midline": ""}
 HOST_ZH = {"white_matter": "大脑白质", "cortex": "大脑皮层", "thalamus": "丘脑", "basal_ganglia": "基底节",
            "brainstem": "脑干", "cerebellum": "小脑", "other_deep_grey": "深部灰质（海马、杏仁核等）"}
+HOST_SHORT_ZH = {**HOST_ZH, "other_deep_grey": "深部灰质"}       # inside a bracket: no bracket of its own
 TYPE_ZH = {"tumor": "肿瘤样异常", "metastasis": "转移瘤样异常", "infarct": "梗死样异常"}
 NOWHERE_ZH = "未能定位的区域"
 NEAR_MM = 10.0
@@ -64,12 +65,12 @@ def volume_text(mm3):
     return f"约 {mm3:.0f} mm³"
 
 
-def place(lesion):
+def place(lesion, names=HOST_ZH):
     """Where a lesion lies, in words: side and main structure, "邻近…" for the nearest rule within NEAR_MM, not
     located beyond it or without any structure."""
     if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
         return NOWHERE_ZH
-    where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
+    where = SIDE_ZH[lesion["host_side"]] + names[lesion["host"]]
     return f"邻近{where}" if lesion["host_rule"] == "nearest" else where
 
 
@@ -110,8 +111,8 @@ def study_record(study, disease, threshold, rows, folds=None):
         rest = len(lesions) - MAX_SENTENCE_LESIONS
         by_volume = sorted(lesions, key=lambda l: -l["volume_mm3"])
         largest, others = by_volume[:MAX_SENTENCE_LESIONS], by_volume[MAX_SENTENCE_LESIONS:]
-        named = {place(l) for l in largest}
-        also = list(dict.fromkeys(place(l) for l in others if place(l) not in named))
+        named = {place(l, HOST_SHORT_ZH) for l in largest}
+        also = list(dict.fromkeys(p for p in (place(l, HOST_SHORT_ZH) for l in others) if p not in named))
         sentence = "；".join(lesion_clause(l) for l in largest)
         if rest > 0:
             sentence += f"；另有 {rest} 处同类异常" + (f"（还见于{'、'.join(also)}）" if also else "")

@@ -233,8 +233,13 @@ def test_the_lesions_that_are_only_counted_still_name_their_places():
     rest = [_row(0.9, 90.0, host="cortex", side="right"), _row(0.9, 80.0, host="thalamus", side="left"),
             _row(0.9, 70.0, host="cortex", side="left"), _row(0.9, 60.0, host="cortex", side="right"),
             dict(_row(0.9, 50.0, side="left"), host_rule="nearest", host_fractions={}, host_distance_mm=3.0),
-            _row(0.9, 40.0, host=None, side="midline", fractions={})]
+            _row(0.9, 40.0, host=None, side="midline", fractions={}),
+            _row(0.9, 30.0, host="other_deep_grey", side="left")]
     rec = B.study_record("s9", "infarct", 0.5, big + rest)
-    assert rec["sentence"].endswith("；另有 6 处同类异常（还见于右侧大脑皮层、左侧丘脑、邻近左侧大脑白质、未能定位的区域）。疑似缺血性梗死。")
+    # inside the bracket the deep grey matter is written without its own bracket
+    assert rec["sentence"].endswith(
+        "；另有 7 处同类异常（还见于右侧大脑皮层、左侧丘脑、邻近左侧大脑白质、未能定位的区域、左侧深部灰质）。疑似缺血性梗死。")
+    alone = B.study_record("s11", "infarct", 0.5, [_row(0.9, 30.0, host="other_deep_grey", side="left")])
+    assert alone["sentence"] == "左侧深部灰质（海马、杏仁核等）存在梗死样异常，体积约 30 mm³。疑似缺血性梗死。"
     same = B.study_record("s10", "infarct", 0.5, big + [_row(0.9, 70.0, host="cortex", side="left")])
     assert same["sentence"].endswith("；另有 1 处同类异常。疑似缺血性梗死。")          # nothing new to name
