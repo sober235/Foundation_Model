@@ -98,7 +98,8 @@ def test_strata_and_binding_agreement(tmp_path):
     by_case = strata(scans, 0.5, lambda s, r: s["case"])
     assert by_case == {"a": {"n_gt": 1, "n_hit": 1, "sensitivity": 1.0}, "b": {"n_gt": 1, "n_hit": 0, "sensitivity": 0.0}}
     assert binding_agreement(scans, 0.5) == {"n_pairs": 1, "host_agreement": 1.0, "side_agreement": 1.0,
-                                             "n_detections": 3, "no_host_rate": 0.0, "nearest_rate": 0.0}
+                                             "host_side_agreement": 1.0, "n_detections": 3, "no_host_rate": 0.0,
+                                             "nearest_rate": 0.0, "unlocated_rate": 0.0}
     assert false_positive_spread(scans, 0.5) == {"n_scans": 3, "median": 1.0, "max": 1, "n_scans_over_budget": 0}
     assert false_positive_spread(scans, 0.7) == {"n_scans": 3, "median": 0.0, "max": 1, "n_scans_over_budget": 0}
     assert binding_agreement(scans, 0.95)["host_agreement"] is None
@@ -199,3 +200,7 @@ def test_case_scan_counts_in_millimetres_on_a_grid_that_is_not_isotropic(tmp_pat
     assert [(r["n_voxels"], r["mm3"], r["ignore"]) for r in s["gt"]] == [(5, 12.5, False), (3, 7.5, True)]
     assert sorted((r["n_voxels"], r["mm3"], r["host"], r["host_rule"], r["side"]) for r in s["dets"]) == [
         (4, 10.0, "white_matter", "nearest", "right"), (5, 12.5, "white_matter", "overlap", "left")]
+    far = next(r for r in s["dets"] if r["host_rule"] == "nearest")
+    assert far["host_distance_mm"] == 5.0 and far["host_sides"] == {"white_matter": "right"}
+    # one of the two detections is bound by the nearest rule, 5 mm away: near enough to be located
+    assert binding_agreement([s], 0.5)["nearest_rate"] == 0.5 and binding_agreement([s], 0.5)["unlocated_rate"] == 0.0

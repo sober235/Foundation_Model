@@ -39,9 +39,11 @@ class BrainBinder:
     def bind(self, sl, mask):
         """sl: the lesion box as slices; mask: the lesion's voxels inside that box.
 
-        side is counted over the whole lesion, host_side over the lesion's voxels inside the main structure: a lesion
-        of the left thalamus that reaches into the right white matter is bilateral, its main structure is the left
-        thalamus. host_distance_mm is 0 when the lesion overlaps a structure, else the distance to the nearest one."""
+        side is counted over the whole lesion, host_side over the lesion's voxels inside the main structure, and
+        host_sides likewise for every structure of host_fractions: a lesion of the left thalamus that reaches into
+        the right white matter is bilateral, its main structure is the left thalamus, the white matter it involves is
+        the right one. host_distance_mm is 0 when the lesion overlaps a structure, else the distance to the nearest
+        one."""
         if self.seg[sl].shape != mask.shape:
             raise ValueError(f"lesion mask {mask.shape} does not fit the anatomy grid {self.seg.shape}")
         labels = self.seg[sl][mask]
@@ -49,15 +51,15 @@ class BrainBinder:
         if counts.sum() > 0:
             host, rule, distance = CLASS_NAMES[int(np.argmax(counts))], "overlap", 0.0
             fractions = {CLASS_NAMES[i]: round(float(c) / float(counts.sum()), 4) for i, c in enumerate(counts) if c}
-            of_host = labels[np.isin(labels, HOST_CLASSES[host])]
+            sides = {name: side_of(labels[np.isin(labels, HOST_CLASSES[name])]) for name in fractions}
         else:
             dist, near = self._nearest_host()
             if dist is None:
                 return {"host": None, "host_rule": None, "host_fractions": {}, "side": "midline", "host_side": "midline",
-                        "host_distance_mm": None}
+                        "host_sides": {}, "host_distance_mm": None}
             j = int(np.argmin(dist[sl][mask]))
-            labels = of_host = near[sl][mask][j:j + 1]
+            labels = near[sl][mask][j:j + 1]
             host, rule, fractions = CLASS_NAMES[int(host_class_map(labels)[0]) - 1], "nearest", {}
-            distance = round(float(dist[sl][mask][j]), 2)
+            sides, distance = {host: side_of(labels)}, round(float(dist[sl][mask][j]), 2)
         return {"host": host, "host_rule": rule, "host_fractions": fractions, "side": side_of(labels),
-                "host_side": side_of(of_host), "host_distance_mm": distance}
+                "host_side": sides[host], "host_sides": sides, "host_distance_mm": distance}

@@ -49,8 +49,8 @@ def detections(pred, probs, voxel_mm3, family):
 
 
 def bind_rows(rows, comp, binder):
-    """Attach the binder's fields (host, host_rule, host_fractions, side, host_side, host_distance_mm) to every row,
-    in place; returns rows."""
+    """Attach the binder's fields (host, host_rule, host_fractions, side, host_side, host_sides, host_distance_mm) to
+    every row, in place; returns rows."""
     for r in rows:
         r.update(binder.bind(*component_mask(comp, r)))
     return rows
@@ -66,15 +66,17 @@ def volume_text(mm3):
 
 def lesion_clause(lesion):
     """One lesion in words. The side written before the main structure is the side of the lesion's voxels inside
-    that structure (none for the brainstem). A lesion that overlaps no structure is said to lie next to the nearest
-    one when that is at most NEAR_MM away (user, 2026-09-29), else it is not located."""
+    that structure (none for the brainstem). An involved structure gets its side only when it differs from the main
+    structure's, so that a lesion across the midline reads as one. A lesion that overlaps no structure is said to lie
+    next to the nearest one when that is at most NEAR_MM away (user, 2026-09-29), else it is not located."""
     if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
         where = NOWHERE_ZH
     else:
         where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
         if lesion["host_rule"] == "nearest":
             where = f"邻近{where}（未与任何结构重叠）"
-    involved = [HOST_ZH[h] for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
+    involved = [(SIDE_ZH[lesion["host_sides"][h]] if lesion["host_sides"][h] != lesion["host_side"] else "") + HOST_ZH[h]
+                for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
                 if h != lesion["host"] and f >= INVOLVED_MIN]
     text = f"{where}存在{TYPE_ZH[lesion['type']]}，体积{volume_text(lesion['volume_mm3'])}"
     return text + (f"，累及{'、'.join(involved)}" if involved else "")
@@ -88,7 +90,7 @@ def study_record(study, disease, threshold, rows, folds=None):
     lesions = [{"type": spec["type"], "score": round(float(r["score"]), 4), "box": [int(v) for v in r["box"]],
                 "volume_mm3": round(float(r["mm3"]), 1), "host": r["host"], "host_rule": r["host_rule"],
                 "host_fractions": r["host_fractions"], "side": r["side"], "host_side": r["host_side"],
-                "host_distance_mm": r["host_distance_mm"]}
+                "host_sides": r["host_sides"], "host_distance_mm": r["host_distance_mm"]}
                for r in sorted(rows, key=lambda r: -r["score"]) if r["score"] >= threshold]
     if lesions:
         rest = len(lesions) - MAX_SENTENCE_LESIONS

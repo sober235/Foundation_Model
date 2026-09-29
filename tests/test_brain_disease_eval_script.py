@@ -85,6 +85,8 @@ def test_fold_report_records_and_refusals(tmp_path):
         assert a["threshold"] == 0.85 and a["model_folds"] == [0] and "NOT_EVIDENCE" in a["anatomy_source"]
         assert json.loads((rec / "100101B.json").read_text())["impression"] == "未检出相关异常"
         assert '"n_scans_over_budget": 0' in rep and '"nearest_rate": 0.0' in rep
+        assert '"host_side_agreement": 1.0' in rep and '"unlocated_rate": 0.0' in rep
+        assert a["lesions"][0]["host_side"] == "left" and a["lesions"][0]["host_sides"] == {"white_matter": "left"}
         assert sorted(p.name for p in rec.iterdir()) == ["100101A.json", "100101B.json"]
         with pytest.raises(FileExistsError):
             mod.main(["--disease", "metastasis", "--folds", "0", "--out", str(out), "--workers", "1"])

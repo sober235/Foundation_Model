@@ -9,10 +9,13 @@ import anatobind.infer.brain_disease as B
 from anatobind.bind.brain_lookup import BrainBinder
 
 
-def _row(score, mm3, host="white_matter", side="right", fractions=None, box=(1, 2, 3, 4, 5, 6), host_side=None):
+def _row(score, mm3, host="white_matter", side="right", fractions=None, box=(1, 2, 3, 4, 5, 6), host_side=None, sides=None):
+    """sides: the side of the involved structures that differ from the main structure's side."""
+    fractions = fractions if fractions is not None else {host: 1.0}
+    host_side = side if host_side is None else host_side
     return {"component": 1, "family": "tumor", "box": box, "n_voxels": 1, "mm3": mm3, "score": score, "host": host,
-            "host_rule": "overlap" if host else None, "host_fractions": fractions if fractions is not None else {host: 1.0},
-            "side": side, "host_side": side if host_side is None else host_side, "host_distance_mm": 0.0 if host else None}
+            "host_rule": "overlap" if host else None, "host_fractions": fractions, "side": side, "host_side": host_side,
+            "host_sides": {h: (sides or {}).get(h, host_side) for h in fractions}, "host_distance_mm": 0.0 if host else None}
 
 
 def test_detections_drop_small_components_and_score_by_mean_probability():
@@ -57,7 +60,8 @@ def test_record_and_sentence_for_one_large_tumour():
     assert len(rec["lesions"]) == 1 and rec["lesions"][0] == {
         "type": "tumor", "score": 0.93, "box": [1, 2, 3, 4, 5, 6], "volume_mm3": 81750.0, "host": "white_matter",
         "host_rule": "overlap", "host_fractions": {"white_matter": 0.61, "cortex": 0.30, "basal_ganglia": 0.09}, "side": "right",
-        "host_side": "right", "host_distance_mm": 0.0}
+        "host_side": "right", "host_sides": {"white_matter": "right", "cortex": "right", "basal_ganglia": "right"},
+        "host_distance_mm": 0.0}
     assert rec["sentence"] == "右侧大脑白质存在肿瘤样异常，体积约 82 mL，累及大脑皮层。疑似胶质瘤。"
     json.dumps(rec)
 
@@ -183,21 +187,25 @@ def test_the_score_is_the_mean_and_a_foreign_probability_map_is_refused():
 def test_the_sentence_says_next_to_for_the_nearest_rule_and_no_side_for_the_brainstem():
     near = dict(_row(0.8, 64.0, side="left"), host_rule="nearest", host_fractions={}, host_distance_mm=10.0)
     stem = _row(0.7, 300.0, host="brainstem", side="left", host_side="midline",
-                fractions={"brainstem": 0.9, "cerebellum": 0.1})
+                fractions={"brainstem": 0.9, "cerebellum": 0.1}, sides={"cerebellum": "left"})
     rec = B.study_record("s5", "metastasis", 0.5, [near, stem], folds=[3, 1])
     assert rec["sentence"] == ("邻近左侧大脑白质（未与任何结构重叠）存在转移瘤样异常，体积约 64 mm³；"
-                               "脑干存在转移瘤样异常，体积约 300 mm³，累及小脑。疑似脑转移瘤。")
+                               "脑干存在转移瘤样异常，体积约 300 mm³，累及左侧小脑。疑似脑转移瘤。")
     assert rec["lesions"][1]["side"] == "left" and rec["lesions"][1]["host_side"] == "midline"   # the record keeps both
     assert rec["model_folds"] == [1, 3] and "NOT_EVIDENCE" in rec["anatomy_source"]
 
 
 def test_the_side_before_the_structure_is_the_structure_s_own_and_a_far_lesion_is_not_located():
-    across = _row(0.9, 900.0, host="thalamus", side="bilateral", host_side="left",
-                  fractions={"thalamus": 0.55, "white_matter": 0.45})
+    across = _row(0.9, 900.0, host="thalamus", side="right", host_side="left",
+                  fractions={"thalamus": 0.38, "white_matter": 0.31, "cortex": 0.21, "basal_ganglia": 0.10},
+                  sides={"white_matter": "right", "cortex": "bilateral"})
     far = dict(_row(0.8, 64.0, side="right"), host_rule="nearest", host_fractions={}, host_distance_mm=10.01)
     rec = B.study_record("s7", "glioma", 0.5, [across, far])
-    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及大脑白质；"
+    # the side of an involved structure is written when it is not the main structure's: the basal ganglia are on the left
+    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及右侧大脑白质、双侧大脑皮层、基底节；"
                                "未能定位的区域存在肿瘤样异常，体积约 64 mm³。疑似胶质瘤。")
+    assert rec["lesions"][0]["host_sides"] == {"thalamus": "left", "white_matter": "right", "cortex": "bilateral",
+                                               "basal_ganglia": "left"}
     assert rec["lesions"][1]["host"] == "white_matter" and rec["lesions"][1]["host_distance_mm"] == 10.01
     assert B.NEAR_MM == 10.0
 

@@ -11,7 +11,7 @@ from anatobind.bind.brain_lookup import BrainBinder
 from anatobind.eval.detection_metrics import FP_MAX, gate, scan_matches, sweep
 from anatobind.eval.lesion_boxes import load_label_map, load_nnunet_probabilities
 from anatobind.eval.lesion_components import component_rows, components
-from anatobind.infer.brain_disease import bind_rows, detections
+from anatobind.infer.brain_disease import NEAR_MM, bind_rows, detections
 from anatobind.nnunet.brain_disease import DISEASES, fold_dir
 
 EARLY_STOP = 0.3
@@ -119,22 +119,27 @@ def false_positive_spread(scans, thr):
 
 
 def binding_agreement(scans, thr):
-    """NOT_EVIDENCE. Over matched (ground truth, detection) pairs: the share with the same main structure and the
-    share with the same side; over all detections at thr: the share without any host, and the share that overlaps no
-    structure and was bound to the nearest one."""
-    n = same_host = same_side = n_det = no_host = nearest = 0
+    """NOT_EVIDENCE. Over matched (ground truth, detection) pairs: the share with the same main structure, with the
+    same side of the whole lesion and with the same side of the main structure (the one the sentence writes); over all
+    detections at thr: the share without any host, the share that overlaps no structure and was bound to the nearest
+    one, and the share that the sentence calls not located (no host, or the nearest one beyond NEAR_MM)."""
+    n = same_host = same_side = same_host_side = n_det = no_host = nearest = unlocated = 0
     for s in scans:
         hits, _, dets = scan_matches(s, thr)
         n_det += len(dets)
         no_host += sum(1 for d in dets if d["host"] is None)
         nearest += sum(1 for d in dets if d["host_rule"] == "nearest")
+        unlocated += sum(1 for d in dets if d["host"] is None
+                         or (d["host_rule"] == "nearest" and d["host_distance_mm"] > NEAR_MM))
         for g, p in hits.items():
             n += 1
             same_host += int(s["gt"][g]["host"] == dets[p]["host"])
             same_side += int(s["gt"][g]["side"] == dets[p]["side"])
+            same_host_side += int(s["gt"][g]["host_side"] == dets[p]["host_side"])
     return {"n_pairs": n, "host_agreement": same_host / n if n else None, "side_agreement": same_side / n if n else None,
+            "host_side_agreement": same_host_side / n if n else None,
             "n_detections": n_det, "no_host_rate": no_host / n_det if n_det else None,
-            "nearest_rate": nearest / n_det if n_det else None}
+            "nearest_rate": nearest / n_det if n_det else None, "unlocated_rate": unlocated / n_det if n_det else None}
 
 
 def dice_summary(results_root, disease, folds):
