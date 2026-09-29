@@ -21,15 +21,30 @@ def match_scan(gt, dets, iou=IOU):
     return match(g, p, iou)
 
 
+def scan_matches(s, thr, iou=IOU):
+    """Matches of one scan at a score threshold: (hits {gt index: detection index}, false positives, detections kept).
+
+    Ground-truth rows flagged "ignore" (spec 2026-09-29 M7) never count: the other rows are matched first; detections
+    left over are then matched against the ignored rows and excused. Without any flag this is plain matching."""
+    dets = [d for d in s["dets"] if d["score"] >= thr]
+    real = [g for g, r in enumerate(s["gt"]) if not r.get("ignore")]
+    ignored = [g for g, r in enumerate(s["gt"]) if r.get("ignore")]
+    pairs = match_scan([s["gt"][g] for g in real], dets, iou)
+    hits = {real[g]: p for g, p in pairs.items()}
+    used = set(pairs.values())
+    rest = [d for i, d in enumerate(dets) if i not in used]
+    excused = match_scan([s["gt"][g] for g in ignored], rest, iou) if ignored and rest else {}
+    return hits, len(dets) - len(pairs) - len(excused), dets
+
+
 def _count(scans, thr, iou):
     n_gt = n_hit = n_fam = n_fp = 0
     for s in scans:
-        dets = [d for d in s["dets"] if d["score"] >= thr]
-        pairs = match_scan(s["gt"], dets, iou)
-        n_gt += len(s["gt"])
-        n_hit += len(pairs)
-        n_fam += sum(1 for g, p in pairs.items() if dets[p]["family"] == s["gt"][g]["family"])
-        n_fp += len(dets) - len(pairs)
+        hits, fp, dets = scan_matches(s, thr, iou)
+        n_gt += sum(1 for r in s["gt"] if not r.get("ignore"))
+        n_hit += len(hits)
+        n_fam += sum(1 for g, p in hits.items() if dets[p]["family"] == s["gt"][g]["family"])
+        n_fp += fp
     return n_gt, n_hit, n_fam, n_fp
 
 
