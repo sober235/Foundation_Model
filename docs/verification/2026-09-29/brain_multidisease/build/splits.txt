@@ -1,0 +1,3 @@
+wrote /data2/congcong/data/FM_data/derived/nnunet/preprocessed/Dataset904_PDGMGlioma/splits_final.json: cases per fold [(0, 100), (1, 101), (2, 100), (3, 99), (4, 101)]
+wrote /data2/congcong/data/FM_data/derived/nnunet/preprocessed/Dataset905_BMSRMetastasis/splits_final.json: cases per fold [(0, 105), (1, 86), (2, 87), (3, 106), (4, 77)]
+wrote /data2/congcong/data/FM_data/derived/nnunet/preprocessed/Dataset906_ISLESInfarct/splits_final.json: cases per fold [(0, 50), (1, 50), (2, 50), (3, 50), (4, 50)]
