@@ -226,3 +226,15 @@ def test_the_side_before_the_structure_is_the_structure_s_own_and_a_far_lesion_i
 def test_a_score_equal_to_the_threshold_enters_the_record():
     rec = B.study_record("s6", "glioma", 0.75, [_row(0.75, 100.0), _row(0.7499, 100.0)])
     assert [l["score"] for l in rec["lesions"]] == [0.75] and rec["model_folds"] is None
+
+
+def test_the_lesions_that_are_only_counted_still_name_their_places():
+    big = [_row(0.6, 1000.0 - i, host="cortex", side="left") for i in range(5)]
+    rest = [_row(0.9, 90.0, host="cortex", side="right"), _row(0.9, 80.0, host="thalamus", side="left"),
+            _row(0.9, 70.0, host="cortex", side="left"), _row(0.9, 60.0, host="cortex", side="right"),
+            dict(_row(0.9, 50.0, side="left"), host_rule="nearest", host_fractions={}, host_distance_mm=3.0),
+            _row(0.9, 40.0, host=None, side="midline", fractions={})]
+    rec = B.study_record("s9", "infarct", 0.5, big + rest)
+    assert rec["sentence"].endswith("；另有 6 处同类异常（还见于右侧大脑皮层、左侧丘脑、邻近左侧大脑白质、未能定位的区域）。疑似缺血性梗死。")
+    same = B.study_record("s10", "infarct", 0.5, big + [_row(0.9, 70.0, host="cortex", side="left")])
+    assert same["sentence"].endswith("；另有 1 处同类异常。疑似缺血性梗死。")          # nothing new to name

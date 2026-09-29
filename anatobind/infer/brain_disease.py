@@ -64,6 +64,15 @@ def volume_text(mm3):
     return f"约 {mm3:.0f} mm³"
 
 
+def place(lesion):
+    """Where a lesion lies, in words: side and main structure, "邻近…" for the nearest rule within NEAR_MM, not
+    located beyond it or without any structure."""
+    if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
+        return NOWHERE_ZH
+    where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
+    return f"邻近{where}" if lesion["host_rule"] == "nearest" else where
+
+
 def lesion_clause(lesion):
     """One lesion in words. The side written before the main structure is the side of the lesion's voxels inside
     that structure (none for the brainstem). When every involved structure lies on the main structure's side, no side
@@ -71,12 +80,7 @@ def lesion_clause(lesion):
     midline reads as one and no side word is read on to the next structure; the brainstem, which has no side, then
     comes first. A lesion that overlaps no structure is said to lie next to the nearest one when that is at most
     NEAR_MM away (user, 2026-09-29), else it is not located."""
-    if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
-        where = NOWHERE_ZH
-    else:
-        where = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
-        if lesion["host_rule"] == "nearest":
-            where = f"邻近{where}（未与任何结构重叠）"
+    where = place(lesion) + ("（未与任何结构重叠）" if lesion["host_rule"] == "nearest" and place(lesion) != NOWHERE_ZH else "")
     sides = lesion["host_sides"]
     involved = [h for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
                 if h != lesion["host"] and f >= INVOLVED_MIN]
@@ -93,6 +97,7 @@ def study_record(study, disease, threshold, rows, folds=None):
     """rows: bound detections (any score); only those at or above the threshold enter the record, highest score
     first. The sentence names the MAX_SENTENCE_LESIONS largest lesions, largest first: the score is a mean
     probability, which is highest for the smallest components, and a reader looks for the largest lesion first.
+    The others are counted, and their places are named where no named lesion lies there.
     folds: the folds of the model that predicted. Without a lesion the sentence says that this model detected nothing
     at this threshold; that is no negative finding."""
     spec = DISEASES[disease]
@@ -103,9 +108,14 @@ def study_record(study, disease, threshold, rows, folds=None):
                for r in sorted(rows, key=lambda r: -r["score"]) if r["score"] >= threshold]
     if lesions:
         rest = len(lesions) - MAX_SENTENCE_LESIONS
-        largest = sorted(lesions, key=lambda l: -l["volume_mm3"])[:MAX_SENTENCE_LESIONS]
+        by_volume = sorted(lesions, key=lambda l: -l["volume_mm3"])
+        largest, others = by_volume[:MAX_SENTENCE_LESIONS], by_volume[MAX_SENTENCE_LESIONS:]
+        named = {place(l) for l in largest}
+        also = list(dict.fromkeys(place(l) for l in others if place(l) not in named))
         sentence = "；".join(lesion_clause(l) for l in largest)
-        sentence += (f"；另有 {rest} 处同类异常" if rest > 0 else "") + f"。{spec['impression']}。"
+        if rest > 0:
+            sentence += f"；另有 {rest} 处同类异常" + (f"（还见于{'、'.join(also)}）" if also else "")
+        sentence += f"。{spec['impression']}。"
         impression = spec["impression"]
     else:
         sentence, impression = f"本模型未检出{TYPE_ZH[spec['type']]}（阈值 {float(threshold):.2f}）。", "未检出相关异常"
