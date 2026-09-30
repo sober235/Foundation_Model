@@ -1,0 +1,663 @@
+{
+ "summary": {
+  "model": "glioma",
+  "data": "metastasis",
+  "cases": "fold 0 validation cases of Dataset905_BMSRMetastasis",
+  "channels": [
+   "T1pre",
+   "T1post",
+   "T2Synth",
+   "FLAIR"
+  ],
+  "note": "channel 2 (T2) is BMSR's synthetic T2",
+  "threshold": 0.6,
+  "model_folds": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "n_scans": 105,
+  "n_det": 378,
+  "n_det_on_gt": 164,
+  "n_gt": 729,
+  "n_gt_claimed": 222,
+  "det_per_scan": 3.6,
+  "scans_with_any_detection": 105,
+  "share_of_detections_on_gt": 0.43386243386243384,
+  "share_of_gt_claimed": 0.3045267489711934
+ },
+ "per_case": {
+  "100101A": {
+   "n_det": 5,
+   "n_det_on_gt": 4,
+   "n_gt": 9,
+   "n_gt_claimed": 4
+  },
+  "100103A": {
+   "n_det": 8,
+   "n_det_on_gt": 2,
+   "n_gt": 8,
+   "n_gt_claimed": 4
+  },
+  "100105A": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 6,
+   "n_gt_claimed": 3
+  },
+  "100108A": {
+   "n_det": 8,
+   "n_det_on_gt": 2,
+   "n_gt": 8,
+   "n_gt_claimed": 2
+  },
+  "100108B": {
+   "n_det": 4,
+   "n_det_on_gt": 0,
+   "n_gt": 6,
+   "n_gt_claimed": 0
+  },
+  "100108C": {
+   "n_det": 6,
+   "n_det_on_gt": 0,
+   "n_gt": 2,
+   "n_gt_claimed": 0
+  },
+  "100108D": {
+   "n_det": 4,
+   "n_det_on_gt": 0,
+   "n_gt": 3,
+   "n_gt_claimed": 0
+  },
+  "100108E": {
+   "n_det": 6,
+   "n_det_on_gt": 3,
+   "n_gt": 12,
+   "n_gt_claimed": 3
+  },
+  "100111A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 5,
+   "n_gt_claimed": 1
+  },
+  "100111B": {
+   "n_det": 3,
+   "n_det_on_gt": 2,
+   "n_gt": 13,
+   "n_gt_claimed": 2
+  },
+  "100111C": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 5,
+   "n_gt_claimed": 1
+  },
+  "100117A": {
+   "n_det": 6,
+   "n_det_on_gt": 2,
+   "n_gt": 9,
+   "n_gt_claimed": 2
+  },
+  "100123A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100124A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100130A": {
+   "n_det": 7,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100134A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100134B": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 4,
+   "n_gt_claimed": 4
+  },
+  "100141A": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 11,
+   "n_gt_claimed": 5
+  },
+  "100148A": {
+   "n_det": 3,
+   "n_det_on_gt": 2,
+   "n_gt": 6,
+   "n_gt_claimed": 2
+  },
+  "100154A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 11,
+   "n_gt_claimed": 1
+  },
+  "100154B": {
+   "n_det": 5,
+   "n_det_on_gt": 1,
+   "n_gt": 13,
+   "n_gt_claimed": 1
+  },
+  "100154C": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 8,
+   "n_gt_claimed": 2
+  },
+  "100154D": {
+   "n_det": 3,
+   "n_det_on_gt": 3,
+   "n_gt": 10,
+   "n_gt_claimed": 6
+  },
+  "100155A": {
+   "n_det": 2,
+   "n_det_on_gt": 0,
+   "n_gt": 9,
+   "n_gt_claimed": 0
+  },
+  "100155B": {
+   "n_det": 4,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "100177A": {
+   "n_det": 6,
+   "n_det_on_gt": 1,
+   "n_gt": 3,
+   "n_gt_claimed": 1
+  },
+  "100177B": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 3,
+   "n_gt_claimed": 2
+  },
+  "100184A": {
+   "n_det": 8,
+   "n_det_on_gt": 1,
+   "n_gt": 3,
+   "n_gt_claimed": 1
+  },
+  "100191A": {
+   "n_det": 6,
+   "n_det_on_gt": 1,
+   "n_gt": 4,
+   "n_gt_claimed": 1
+  },
+  "100192A": {
+   "n_det": 5,
+   "n_det_on_gt": 0,
+   "n_gt": 2,
+   "n_gt_claimed": 0
+  },
+  "100202A": {
+   "n_det": 4,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100202B": {
+   "n_det": 2,
+   "n_det_on_gt": 0,
+   "n_gt": 2,
+   "n_gt_claimed": 0
+  },
+  "100202C": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 2,
+   "n_gt_claimed": 2
+  },
+  "100207A": {
+   "n_det": 4,
+   "n_det_on_gt": 2,
+   "n_gt": 7,
+   "n_gt_claimed": 4
+  },
+  "100210A": {
+   "n_det": 6,
+   "n_det_on_gt": 2,
+   "n_gt": 9,
+   "n_gt_claimed": 2
+  },
+  "100210B": {
+   "n_det": 5,
+   "n_det_on_gt": 2,
+   "n_gt": 15,
+   "n_gt_claimed": 2
+  },
+  "100213A": {
+   "n_det": 5,
+   "n_det_on_gt": 2,
+   "n_gt": 3,
+   "n_gt_claimed": 2
+  },
+  "100214A": {
+   "n_det": 9,
+   "n_det_on_gt": 2,
+   "n_gt": 14,
+   "n_gt_claimed": 2
+  },
+  "100214B": {
+   "n_det": 1,
+   "n_det_on_gt": 0,
+   "n_gt": 7,
+   "n_gt_claimed": 0
+  },
+  "100214C": {
+   "n_det": 1,
+   "n_det_on_gt": 0,
+   "n_gt": 26,
+   "n_gt_claimed": 0
+  },
+  "100214D": {
+   "n_det": 2,
+   "n_det_on_gt": 0,
+   "n_gt": 15,
+   "n_gt_claimed": 0
+  },
+  "100216A": {
+   "n_det": 5,
+   "n_det_on_gt": 0,
+   "n_gt": 4,
+   "n_gt_claimed": 0
+  },
+  "100216B": {
+   "n_det": 5,
+   "n_det_on_gt": 2,
+   "n_gt": 4,
+   "n_gt_claimed": 2
+  },
+  "100222A": {
+   "n_det": 3,
+   "n_det_on_gt": 2,
+   "n_gt": 10,
+   "n_gt_claimed": 4
+  },
+  "100222B": {
+   "n_det": 4,
+   "n_det_on_gt": 2,
+   "n_gt": 6,
+   "n_gt_claimed": 2
+  },
+  "100223A": {
+   "n_det": 5,
+   "n_det_on_gt": 1,
+   "n_gt": 12,
+   "n_gt_claimed": 4
+  },
+  "100224A": {
+   "n_det": 9,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100234A": {
+   "n_det": 3,
+   "n_det_on_gt": 1,
+   "n_gt": 4,
+   "n_gt_claimed": 1
+  },
+  "100234B": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100267A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100270A": {
+   "n_det": 5,
+   "n_det_on_gt": 3,
+   "n_gt": 8,
+   "n_gt_claimed": 3
+  },
+  "100271A": {
+   "n_det": 4,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 2
+  },
+  "100271B": {
+   "n_det": 5,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100279A": {
+   "n_det": 5,
+   "n_det_on_gt": 2,
+   "n_gt": 12,
+   "n_gt_claimed": 4
+  },
+  "100279B": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 14,
+   "n_gt_claimed": 8
+  },
+  "100281A": {
+   "n_det": 3,
+   "n_det_on_gt": 2,
+   "n_gt": 3,
+   "n_gt_claimed": 2
+  },
+  "100282A": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 6,
+   "n_gt_claimed": 3
+  },
+  "100283A": {
+   "n_det": 3,
+   "n_det_on_gt": 3,
+   "n_gt": 49,
+   "n_gt_claimed": 5
+  },
+  "100283B": {
+   "n_det": 6,
+   "n_det_on_gt": 4,
+   "n_gt": 50,
+   "n_gt_claimed": 6
+  },
+  "100284A": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 4,
+   "n_gt_claimed": 1
+  },
+  "100287A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 2
+  },
+  "100287B": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 17,
+   "n_gt_claimed": 3
+  },
+  "100289A": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100301A": {
+   "n_det": 5,
+   "n_det_on_gt": 2,
+   "n_gt": 9,
+   "n_gt_claimed": 2
+  },
+  "100301B": {
+   "n_det": 7,
+   "n_det_on_gt": 1,
+   "n_gt": 16,
+   "n_gt_claimed": 1
+  },
+  "100302A": {
+   "n_det": 6,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100302B": {
+   "n_det": 3,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "100302C": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 3,
+   "n_gt_claimed": 3
+  },
+  "100303A": {
+   "n_det": 1,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "100304A": {
+   "n_det": 3,
+   "n_det_on_gt": 3,
+   "n_gt": 4,
+   "n_gt_claimed": 3
+  },
+  "100304B": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 3,
+   "n_gt_claimed": 3
+  },
+  "100310A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 4,
+   "n_gt_claimed": 1
+  },
+  "100310B": {
+   "n_det": 6,
+   "n_det_on_gt": 2,
+   "n_gt": 13,
+   "n_gt_claimed": 6
+  },
+  "100310C": {
+   "n_det": 7,
+   "n_det_on_gt": 3,
+   "n_gt": 46,
+   "n_gt_claimed": 19
+  },
+  "100313A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100323A": {
+   "n_det": 7,
+   "n_det_on_gt": 3,
+   "n_gt": 5,
+   "n_gt_claimed": 3
+  },
+  "100323B": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 3,
+   "n_gt_claimed": 2
+  },
+  "100331A": {
+   "n_det": 11,
+   "n_det_on_gt": 0,
+   "n_gt": 4,
+   "n_gt_claimed": 0
+  },
+  "100335A": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100335B": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100335C": {
+   "n_det": 6,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100345A": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 3,
+   "n_gt_claimed": 2
+  },
+  "100345B": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100346A": {
+   "n_det": 5,
+   "n_det_on_gt": 3,
+   "n_gt": 8,
+   "n_gt_claimed": 5
+  },
+  "100353A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100356A": {
+   "n_det": 3,
+   "n_det_on_gt": 0,
+   "n_gt": 3,
+   "n_gt_claimed": 0
+  },
+  "100356B": {
+   "n_det": 4,
+   "n_det_on_gt": 2,
+   "n_gt": 4,
+   "n_gt_claimed": 2
+  },
+  "100362A": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 2,
+   "n_gt_claimed": 2
+  },
+  "100363A": {
+   "n_det": 3,
+   "n_det_on_gt": 0,
+   "n_gt": 4,
+   "n_gt_claimed": 0
+  },
+  "100363B": {
+   "n_det": 2,
+   "n_det_on_gt": 0,
+   "n_gt": 7,
+   "n_gt_claimed": 0
+  },
+  "100370A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "100374A": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 6,
+   "n_gt_claimed": 2
+  },
+  "100375A": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 13,
+   "n_gt_claimed": 5
+  },
+  "100379A": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 6,
+   "n_gt_claimed": 2
+  },
+  "100379B": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 8,
+   "n_gt_claimed": 3
+  },
+  "100386A": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 5,
+   "n_gt_claimed": 2
+  },
+  "100386B": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 4,
+   "n_gt_claimed": 2
+  },
+  "100386C": {
+   "n_det": 3,
+   "n_det_on_gt": 2,
+   "n_gt": 3,
+   "n_gt_claimed": 2
+  },
+  "100386D": {
+   "n_det": 3,
+   "n_det_on_gt": 3,
+   "n_gt": 4,
+   "n_gt_claimed": 3
+  },
+  "100387A": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 10,
+   "n_gt_claimed": 5
+  },
+  "100387B": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 9,
+   "n_gt_claimed": 5
+  },
+  "100389A": {
+   "n_det": 3,
+   "n_det_on_gt": 3,
+   "n_gt": 3,
+   "n_gt_claimed": 3
+  },
+  "100397A": {
+   "n_det": 6,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "100407A": {
+   "n_det": 4,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "100411A": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 3,
+   "n_gt_claimed": 1
+  }
+ }
+}

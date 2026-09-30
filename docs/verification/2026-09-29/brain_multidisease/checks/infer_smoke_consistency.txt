@@ -1,0 +1,29 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-09-29/brain_multidisease/checks/infer_smoke_consistency.py
+## glioma: smoke study 'UCSF-PDGM-0008_T1.nii.gz', out-of-fold record UCSF-PDGM-0008.json
+smoke: threshold 0.6, model_folds [0], 1 lesions
+out-of-fold record: threshold 0.6, model_folds [0], 1 lesions
+largest box difference 0 voxels, largest score difference 1.0e-04, host fields that differ 0
+not gated: largest relative volume difference 4.57e-04, largest host-fraction difference 0.0e+00
+sentence equal: True; impression equal: True
+smoke sentence: 右侧大脑白质存在肿瘤样异常，体积约 173 mL，累及大脑皮层。疑似胶质瘤。
+boxes and scores within 0.0001, host fields equal: True
+
+## metastasis: smoke study '100101A_T1pre.nii.gz', out-of-fold record 100101A.json
+smoke: threshold 0.65, model_folds [0], 11 lesions
+out-of-fold record: threshold 0.65, model_folds [0], 11 lesions
+largest box difference 0 voxels, largest score difference 0.0e+00, host fields that differ 0
+not gated: largest relative volume difference 0.00e+00, largest host-fraction difference 0.0e+00
+sentence equal: True; impression equal: True
+smoke sentence: 左侧大脑皮层存在转移瘤样异常，体积约 1.7 mL；右侧大脑皮层存在转移瘤样异常，体积约 1.2 mL；右侧大脑皮层存在转移瘤样异常，体积约 605 mm³，累及大脑白质；左侧大脑皮层存在转移瘤样异常，体积约 372 mm³，累及大脑白质；左侧大脑白质存在转移瘤样异常，体积约 277 mm³；另有 6 处同类异常（还见于左侧小脑）。疑似脑转移瘤。
+boxes and scores within 0.0001, host fields equal: True
+
+## infarct: smoke study 'sub-strokecase0001_ses-0001_dwi.nii.gz', out-of-fold record sub-strokecase0001.json
+smoke: threshold 0.5, model_folds [0], 26 lesions
+out-of-fold record: threshold 0.5, model_folds [0], 26 lesions
+largest box difference 0 voxels, largest score difference 0.0e+00, host fields that differ 0
+not gated: largest relative volume difference 0.00e+00, largest host-fraction difference 0.0e+00
+sentence equal: True; impression equal: True
+smoke sentence: 左侧大脑白质存在梗死样异常，体积约 744 mm³，累及大脑皮层；右侧大脑白质存在梗死样异常，体积约 696 mm³，累及大脑皮层；左侧基底节存在梗死样异常，体积约 384 mm³；左侧大脑皮层存在梗死样异常，体积约 280 mm³；左侧大脑皮层存在梗死样异常，体积约 272 mm³，累及大脑白质；另有 21 处同类异常（还见于右侧大脑皮层、左侧小脑、左侧丘脑）。疑似缺血性梗死。
+boxes and scores within 0.0001, host fields equal: True
+
+ALL AGREE

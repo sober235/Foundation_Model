@@ -1,0 +1,5 @@
+Disease: glioma; folds [0, 1, 2, 3, 4]; kind gate
+Scans: 501; lesions counted: 677; ignored: 259
+Sensitivity 0.8109 at threshold 0.6 with 0.34930139720558884 FP per scan
+Pass: True; stop remaining folds: False; early stop undecided: False
+Dice mean 0.9279037878225983 over 501 cases
