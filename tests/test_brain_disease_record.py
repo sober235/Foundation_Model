@@ -285,3 +285,7 @@ def test_a_far_lesion_names_its_distance_to_the_nearest_structure():
     lesion = B.study_record("s16", "infarct", 0.5, [far])["lesions"][0]
     assert B.lesion_clause(lesion) == "未能定位的区域（距最近的左侧小脑约 29 mm）存在梗死样异常，体积约 3.5 mL"
     assert B.place(lesion) == B.NOWHERE_ZH
+    deep = dict(_row(0.9, 300.0, host="other_deep_grey", side="right"), host_rule="nearest", host_fractions={}, host_distance_mm=12.0)
+    # inside the bracket the deep grey matter keeps its short name: no bracket within the bracket
+    assert B.lesion_clause(B.study_record("s17", "metastasis", 0.5, [deep])["lesions"][0]) == (
+        "未能定位的区域（距最近的右侧深部灰质约 12 mm）存在转移瘤样异常，体积约 300 mm³")

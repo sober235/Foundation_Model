@@ -1,0 +1,5 @@
+Disease: infarct; folds [0, 1, 2, 3, 4]; kind gate
+Scans: 250; lesions counted: 2111; ignored: 238
+Sensitivity 0.5722 at threshold 0.5 with 1.556 FP per scan
+Pass: True; stop remaining folds: False; early stop undecided: False
+Dice mean 0.7847471491920139 over 247 cases

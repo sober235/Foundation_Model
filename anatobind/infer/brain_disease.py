@@ -107,7 +107,7 @@ def lesion_clause(lesion):
         return f"跨{side}多个结构（{'、'.join(words)}）{finding}"
     where = place(lesion)
     if lesion["host_rule"] == "nearest":
-        nearest = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
+        nearest = SIDE_ZH[lesion["host_side"]] + HOST_SHORT_ZH[lesion["host"]]      # inside a bracket: the short name
         where += "（未与任何结构重叠）" if where != NOWHERE_ZH else f"（距最近的{nearest}约 {lesion['host_distance_mm']:.0f} mm）"
     _, words = _sided([h for h in ranked if h != lesion["host"]], sides, lesion["host_side"], HOST_ZH)
     return f"{where}{finding}" + (f"，累及{'、'.join(words)}" if words else "")

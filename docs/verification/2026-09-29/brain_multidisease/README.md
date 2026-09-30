@@ -101,6 +101,31 @@ counts below from the 1212 files):
 | metastasis | 0 / 4 / 69 | 3 | 174 | 127 (8) | 221 chars | 9 of 3156 |
 | infarct | 0 / 4 / 48 | 5 | 101 | 62 (6) | 220 chars | 20 of 1601 |
 
+### Records v2 (2026-09-30, user-approved wording rules; `records_v2/`, reports `<disease>_v2/`, code c8b1a11)
+
+The user confirmed the two rules marked 待用户确认 (largest five by volume; "还见于") and approved four wording rules from
+review 2: (1) no structure holding ≥ 40 % of the lesion → "跨<侧>多个结构（…）存在…" instead of a main structure;
+(2) "双侧" only when the smaller side holds ≥ 40 % of the sided voxels and ≥ 10 mm³ (`brain_lookup.side_of`; a few
+voxels across the pseudo-label's midline are no second side); (3) "还见于" ignores the "邻近" prefix when it removes
+places already named; (4) beyond 10 mm from any structure: "未能定位的区域（距最近的<侧><结构>约 N mm）存在…". The
+inference entry gained `--study`. The evaluations were re-run into `<disease>_v2/` and `records_v2/` (the v1 folders
+stay: nothing is deleted here). Against v1: verdicts and `froc.csv` identical; every lesion's box, score and host
+identical in all 1212 records; sentences changed in 5 / 8 / 13 records; "跨多个结构" in 5 / 2 / 6 sentences;
+"距最近的" in 0 / 2 / 0; the side fields changed for 5 lesions: three small cerebellar lesions that straddled the
+midline by a few voxels (100196A 14 mm³ and 100196B 18 mm³ → 左侧; sub-strokecase0244 16 mm³ → 右侧, a one-voxel tie) and
+two `host_sides` entries of structures with under 3 % share that no sentence writes (100241A, sub-strokecase0003); the
+side agreement of the metastasis binding block moved from 0.9972 to 0.9968 and nothing else in the reports.
+Record statistics of v2: lesions per record 1/1/10, 0/4/69, 0/4/48 (unchanged); records with 还见于 1 (2) / 127 (8) /
+59 (5) (infarct 62 → 59 by rule 3); longest sentence 183 / 221 / 220 characters; nearest rule 6 / 9 / 20; unlocated
+0 / 3 / 0. **The delivered records are `records_v2/`**; v1 is kept as the record of what review 2 read. A third review (most
+capable model, 2026-09-30, `reviews/final-review-3-records-v2.md`) rebuilt all 1212 v2 sentences from the record fields
+with its own implementation of the rules (0 mismatches), confirmed the 26 changes and the byte-identical verdict files,
+and found no defect; its six wording judgement calls (the 10 mm boundary written as "约 10 mm", the common side word
+before a bracket that holds the brainstem, "跨多个结构" for lesions under 1 mL, the de-duplication key of a spanning
+lesion, ties on the midline recorded as 右侧, two brackets back to back) are listed in `STATUS.md` §2 for the user;
+the one latent code path it named (the long name of the deep grey matter inside the distance bracket) was fixed
+afterwards without affecting any record.
+
 ## Inference smoke
 
 `infer_smoke.md`: the entry `scripts/infer_brain_disease.py` on the first fold 0 validation case of each disease with the
@@ -126,7 +151,7 @@ fold 0 model; 1 / 11 / 26 lesions; boxes and scores agree with the out-of-fold r
 7. **The early-stop rule (M4) never fired**: every fold of every disease trained and was evaluated; the queue log holds
    `finished … with exit code 0` for all 15 jobs and ends with `queue empty, nothing running: done`.
 8. **The inference entry names the study after its first image file** (`infer_smoke.md`); the evaluation's records use
-   the case id.
+   the case id. Since c8b1a11 `--study` sets the name; the default is unchanged.
 9. **Other sessions' jobs shared the cards** from the afternoon of 2026-09-29; the per-fold hours below vary for that
    reason (glioma 4.95–11.08 h), not because of the data.
 
@@ -154,6 +179,7 @@ done 10:04:31, metastasis → glioma 10:15:06, glioma → metastasis 10:32:51. I
 | `checks/` | read-only checks on the real data with their outputs, `sentence_preview.py`, `infer_smoke_consistency.py` | controller (see `checks/README.md`) |
 | `infarct_fold0/`, `metastasis_fold1_preliminary/` | single-fold early readings (not verdicts) | `scripts/eval_brain_disease.py --folds <f>` |
 | `glioma/`, `metastasis/`, `infarct/` | five-fold verdicts: `REPORT.md`, `verdict.json`, `froc.csv`, `output.txt` | `scripts/eval_brain_disease.py --disease <d> --folds 0 1 2 3 4 --workers 8 --records …` (Task 12 Step 1) |
+| `glioma_v2/`, `metastasis_v2/`, `infarct_v2/` | the same evaluations re-run at c8b1a11 with the v2 sentence rules (records `records_v2/`); numbers identical to v1 except the binding block's side agreement | `scripts/eval_brain_disease.py … --out <d>_v2 --records …/records_v2` (2026-09-30) |
 | `crossrun/<model>_on_<data>/` | cross false-alarm runs: `REPORT.md`, `crossrun.json` | `scripts/brain_disease_crossrun.py` (Task 12 Step 2) |
 | `infer_smoke.md` | inference entry on one case per disease | `scripts/infer_brain_disease.py` (Task 12 Step 3) |
 | `reviews/` | the two whole-branch review reports: review 1 at a22da8b (before any training finished, six round trips), review 2 at 1e2e95f (after the verdicts; independent recount of all 1212 scans, records and cross runs; mergeable as is, minor findings only) | most capable model, dispatched by the controller (Task 13) |
