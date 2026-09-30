@@ -1,0 +1,5 @@
+Folds: [0]; scans 51; lesions 280
+Rule A pass: False
+nnDetection operating threshold 0.50: hits 17, sensitivity 0.0607, FP per volume 0.7255
+Normal FP per volume at 0.50: 0.0000
+nnU-Net 2d operating threshold 0.60: hits 92, sensitivity 0.3286, FP per volume 1.5490

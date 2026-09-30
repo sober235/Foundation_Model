@@ -1,0 +1,50 @@
+config_resolved.yaml
+config.yaml
+meta.json
+mlruns
+model_best.ckpt
+model_last.ckpt
+network.txt
+plan_debug.json
+plan_inference.pkl
+plan.pkl
+requirements.txt
+splits.pkl
+sweep
+sweep_predictions
+train.log
+val_analysis
+val_analysis_preprocessed
+val_predictions
+val_predictions_preprocessed
+val_results
+val_results_preprocessed
+51
+2026-09-29 04:24:50.277 | INFO     | scripts.train:_train:213 - Log file at /data2/congcong/data/FM_data/derived/nndet_models/Task903_FastMRIBrainSmallLesion/RetinaUNetV001_D3V001_3d/fold0/train.log
+2026-09-29 04:24:50.292 | ERROR    | nndet.utils.info:log_git:219 - Was not able to read git information, trying to continue without.
+2026-09-29 04:24:50.966 | INFO     | nndet.io.datamodule.base:do_split:94 - Using splits /data2/congcong/data/FM_data/derived/nndet/Task903_FastMRIBrainSmallLesion/preprocessed/splits_final.pkl with fold 0
+2026-09-29 20:00:07.660 | WARNING  | nndet.utils.info:wrapper:97 - This feature (run_analysis_suite) is experimental! It might not implement all features or is only a simplification!
+2026-09-29 20:00:07.661 | INFO     | nndet.utils.analysis:run_analysis_suite:376 - Found 51 predictions for analysis
+2026-09-29 20:00:09.069 | INFO     | nndet.utils.analysis:run_analysis_suite:376 - Found 51 predictions for analysis
+2026-09-29 20:00:10.767 | INFO     | nndet.utils.analysis:run_analysis_suite:376 - Found 51 predictions for analysis
+2026-09-29 20:00:12.218 | INFO     | nndet.utils.analysis:run_analysis_suite:376 - Found 51 predictions for analysis
+bootstrap_inner
+    self.run()
+  File "/home/congcongliu/anaconda3/envs/nndet/lib/python3.8/threading.py", line 870, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/congcongliu/anaconda3/envs/nndet/lib/python3.8/site-packages/batchgenerators/dataloading/multi_threaded_augmenter.py", line 98, in results_loop
+    raise RuntimeError("One or more background workers are no longer alive. Exiting. Please check the print"
+RuntimeError: One or more background workers are no longer alive. Exiting. Please check the print statements above for the actual error message
+Exception ignored in: <function MultiThreadedAugmenter.__del__ at 0x749ce805ef70>
+Traceback (most recent call last):
+  File "/home/congcongliu/anaconda3/envs/nndet/lib/python3.8/site-packages/batchgenerators/dataloading/multi_threaded_augmenter.py", line 354, in __del__
+    self._finish(timeout=2, force=True)
+  File "/home/congcongliu/anaconda3/envs/nndet/lib/python3.8/site-packages/batchgenerators/dataloading/multi_threaded_augmenter.py", line 335, in _finish
+    q.close()
+  File "/home/congcongliu/anaconda3/envs/nndet/lib/python3.8/multiprocessing/queues.py", line 137, in close
+    self._reader.close()
+  File "/home/congcongliu/anaconda3/envs/nndet/lib/python3.8/multiprocessing/connection.py", line 177, in close
+    self._close()
+  File "/home/congcongliu/anaconda3/envs/nndet/lib/python3.8/multiprocessing/connection.py", line 361, in _close
+    _close(self._handle)
+OSError: [Errno 9] Bad file descriptor

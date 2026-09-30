@@ -1,0 +1,10 @@
+{
+ "pass": false,
+ "nndet_hits": 17,
+ "baseline_hits": 92,
+ "required": 106,
+ "n_gt": 280,
+ "margin": 0.05,
+ "nndet_thr": 0.5,
+ "baseline_thr": 0.6
+}
