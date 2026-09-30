@@ -64,6 +64,14 @@ def test_paired_table_counts_the_four_groups():
         paired_table(a, 0.5, [_scan("A", [0, 1], [])], 0.5)
 
 
+def test_paired_table_applies_each_threshold_to_its_own_model():
+    a = [_scan("A", [0, 1, 2, 3], [0, 1], thr_score=0.9)]
+    b = [_scan("A", [0, 1, 2, 3], [1, 2], thr_score=0.3)]
+    assert paired_table(a, 0.5, b, 0.2) == {"both": 1, "only_a": 1, "only_b": 1, "neither": 1, "n_gt": 4}
+    # the thresholds swapped: b's detections (0.3) fall under 0.5 and nothing of b is found
+    assert paired_table(a, 0.2, b, 0.5) == {"both": 0, "only_a": 2, "only_b": 0, "neither": 2, "n_gt": 4}
+
+
 def test_gt_check_reports_iou_lost_and_below_threshold_instances():
     gt_of_case = {"A": [{"lesion_id": 10, "family": "small_lesion", "box": (5, 6, 1, 9, 10, 2)},
                         {"lesion_id": 11, "family": "small_lesion", "box": (20, 20, 0, 24, 24, 1)},

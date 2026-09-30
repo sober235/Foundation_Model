@@ -32,6 +32,10 @@ EXPECTED_N_GT = 1297
 EXPECTED_N_SCANS = 253
 BASELINE = "2d"
 REPORT_ONLY = ("3d_fullres",)
+# Of the instances that return from the coordinate chain, at least this share must come back with IoU >= 0.99. A margin
+# error (the +-1 expansion not undone, or undone on the wrong ends) keeps every IoU above 0.1 (a 4x4x1 lesion gives 0.32,
+# or 0.148) but pushes almost all of them under 0.99, so IoU >= 0.1 alone cannot fail for it (review of 2026-09-30).
+EXACT_SHARE = 0.8
 STRATA_ORDER = {"band": list(BANDS), "n_slices": ["1", ">1"], "inplane_tertile": ["tertile_1", "tertile_2", "tertile_3"]}
 
 
@@ -45,9 +49,12 @@ def run_gt_check(a, gt_of_case, info):
     scans = nndet_scans(cases, sorted(info), gt_of_case)
     row = evaluate(scans, {c for c, v in info.items() if v["kind"] == "normal"})["rows"][0]
     ious = sorted(res["iou"].values())
-    summary = {"pass": not res["below_iou"] and row["n_fp"] == 0, "n_gt": row["n_gt"], "n_present": len(ious),
+    n_exact = sum(i >= 0.99 for i in ious)
+    summary = {"pass": not res["below_iou"] and row["n_fp"] == 0 and n_exact >= EXACT_SHARE * len(ious),
+               "n_gt": row["n_gt"], "n_present": len(ious),
                "lost": res["lost"], "below_iou": res["below_iou"], "min_iou": ious[0] if ious else None,
-               "median_iou": ious[len(ious) // 2] if ious else None, "n_iou_ge_0_99": sum(i >= 0.99 for i in ious),
+               "median_iou": ious[len(ious) // 2] if ious else None, "n_iou_ge_0_99": n_exact,
+               "exact_share_required": EXACT_SHARE,
                "n_hit_at_0_05": row["n_hit"], "n_fp": row["n_fp"], "input": str(a.gt_check),
                "input_sha256": sha256(a.gt_check)}
     a.out.mkdir(parents=True)

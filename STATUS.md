@@ -1,4 +1,4 @@
-# STATUS：2026-09-30（nnDetection 第二臂收尾：fold 0 训完，规则 A 不过，臂到此停止；本轮结束时合入 main 并打 tag `handoff/2026-09-30-brain-nndet-fold0`，未 push）
+# STATUS：2026-09-30（nnDetection 第二臂收尾：fold 0 训完，规则 A 不过，臂到此停止；全分支终审已过并修补；合入 main 并打 tag `handoff/2026-09-30-brain-nndet-fold0`，未 push）
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 同日并行的 S7 脑多病种检测器（分支 `build/brain-multidisease`，工作树 `../foundation_model-multidisease`）有自己的 STATUS；两条线合回 main 时以合并后的 STATUS 为准。
@@ -7,12 +7,12 @@
 
 **本轮：S2 的第二臂 nnDetection（Retina U-Net）全部 10 个任务做完。** 规格 `docs/superpowers/specs/2026-09-28-brain-nndet-design.md`（决定 N1–N14），计划 `docs/superpowers/plans/2026-09-28-brain-nndet.md`。分支 `build/brain-nndet`。任务 1–8 由子代理逐任务实现并评审（台账 `.superpowers/sdd/2026-09-28-brain-nndet/progress.md`，gitignore），任务 9–10 由控制方执行。记录索引 `docs/verification/2026-09-29/brain_nndet/README.md`（每个文件是什么、哪条命令产生、已知偏差、实测耗时）。
 
-- **测试**（代码 3a8a431）：
+- **测试**（终审修补后的代码）：
   ```
   PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
-  747 passed, 1 skipped in 88.77s
-  bash -c 'source scripts/nndet_env.sh && python -m pytest tests/test_nndet_runner.py -q -p no:cacheprovider'
-  2 passed, 5 warnings in 4.94s
+  749 passed, 1 skipped in 81.80s
+  bash -c 'source scripts/nndet_env.sh && python -m pytest tests/test_nndet_runner.py -q -p no:cacheprovider --noconftest'
+  2 passed, 5 warnings
   ```
 - **fold 0 训练**（`launch.md`、`training.txt`、README 的 Timing 表）：2026-09-29 04:24:50 在 GPU 3 启动，60 epoch 到 19:39:01（`model_last.ckpt`），51 例验证集默认参数预测到 19:55:59，sweep 与分析到 20:00:12，共 15 h 35 min（预估 13 h；下午起别的会话的任务与它同卡）。进程自己退出，只在启动器日志尾部打了 batchgenerators 的 teardown 错误（与玩具训练一样，不是失败），没有 kill 任何进程。
 - **提取**（`scripts/nndet_runner.py extract`，nndet 环境，CPU）：默认后处理 25881 个框、sweep 调参版 1696 个框，各 51 例；写在 `/data2/congcong/data/FM_data/derived/nndet_runs/fold0_{default,swept}.json`。
@@ -28,7 +28,8 @@
   ```
   要求 ≥ 106（92 + 0.05 × 280）。nnU-Net 2d 的同折数字与探针完全一致。FROC：阈值 0.05 找到 178/280（0.636）但每卷 29.9 个假阳，0.35 处 92 个命中要付每卷 5.0 个假阳；每卷 ≤ 2 的预算里最好的一行就是 0.50 的 17 个。配对表（各自工作点）：两者都中 11、只 nnDetection 6、只 nnU-Net 2d 81、都漏 182。分层：单层病灶 7/222、多层 10/58；面内最大三分位 11/91。sweep 调参版（参数在这 51 例上调的，NOT_GATE）：0.2429 @ 每卷 1.8431，阈值 0.85。
 - **推理冒烟**（`infer_smoke.md`）：S2 冒烟同一卷 `file_brain_AXFLAIR_201_6002917.h5`，fold 0 模型、默认后处理、GPU 7 空卡：156 行，11 行 ≥ 0.50，每行恰好 `boxes, score, z0, z1` 四个键，退出码 0（该卷无真值，行数不是证据）。
-- **已知偏差**（README）：病灶 815 的框被覆盖改变（唯一一个）；8 个病灶在重采样到 5 mm 后消失（1001、1004、1011、1042、1061、1063、1080、1104，全是 3 mm 层厚卷里的单层病灶），永远算分母；61 个卷里 819 个未填进标签的 fastMRI+ 框在训练里是背景（S2 D10）；阈值与 sweep 参数都在验证例上选的。
+- **已知偏差**（README）：病灶 815 的框被覆盖改变（唯一一个）；8 个病灶在重采样到 5 mm 后消失（1001、1004、1011、1042、1061、1063、1080、1104；7 个有病灶的 3 mm 层厚卷共 43 个病灶、其中单层 20 个，丢的就是这 8 个单层的），训练标签里没有它们、真值检查里也不回来，但预测仍可能碰到（fold 0 的 1042、1104 在阈值 0.05 下被碰到，0.50 下没有），永远算分母；61 个卷里 819 个未填进标签的 fastMRI+ 框在训练里是背景（S2 D10）；阈值与 sweep 参数都在验证例上选的。
+- **全分支终审（最强模型，2026-09-30）**：无代码缺陷；审阅者用自己的代码（自写 IoU、匈牙利匹配、nnU-Net 基线的连通块解码）复现了规则 A 的全部数字（17/280、92/280、配对表 11/6/81/182、各分层、真值检查 1289/8/0.3156/1151）；坐标链逐段核对：1175 个在目标间距卷里的病灶中 1133 个回来 IoU 正好 1.0，其余 42 个都有解释（病灶 815 的覆盖、列间距 0.6858–0.6898 mm 被 nnDetection 按 0.6875 缩放）。要改的两条已改：README 里“八个丢失病灶永远不可能被命中”是错话（fold 0 的 1042、1104 在阈值 0.05 下已被预测框碰到），改成事实；真值检查的判据挡不住 N8 说的 ±1 外扩错误（外扩不撤销 IoU 0.32、撤到错误一端 0.148 都 ≥ 0.1），加了“回来的实例里 ≥ 0.99 的占比 ≥ 0.8”（`EXACT_SHARE`，本轮 0.893，规格 §5 已同步）与测试 `test_gt_check_fails_when_the_margin_is_not_undone`；另加 `paired_table` 两阈值各归各的测试。小项：sweep 时长 4 min 12 s、安装日志位置、`--noconftest` 统一、CLAUDE 日期、README 补阈值网格的影响（0.005 步长下预算内最好 40 个命中 @ 1.76，35 个框分数恰好 0.5；结论不变）与 patch 大于数据的警告。审阅者列的未加测试：runner `extract_cases` 的桩测试（T3）、SimpleITK/nibabel 轴序只能靠真值检查（T4）。
 - **用户本轮拍板**（沿用）：第二臂 nnDetection；先只训 fold 0 + 规则 A；主线 97a58f3 + 独立 py3.8/torch 1.11 环境；只分一类；执行 = 子代理逐任务。
 
 **之前（保留）**：S2 nnU-Net 检测器在 main（tag `handoff/2026-09-29-brain-detector`）：D1 门不过（2d 五折 0.3662 @ 1.636 FP/卷，主因漏检），记录索引 `docs/verification/2026-09-28/brain_detector/README.md`。S1 关系基线（tag `handoff/2026-09-28-relation-baselines`，NOT_EVIDENCE）、Level R 读片工具（冒烟服务 8791，浏览器验收仍 USER_REPORTED）同前。
@@ -42,7 +43,7 @@
 
 ## 3. 下一步
 
-1. 本轮收尾：全分支终审（最强模型）→ 修 → 合回 main（`--no-ff`）→ tag `handoff/2026-09-30-brain-nndet-fold0`，不 push。
+1. 本轮收尾：终审修补已提交 → 合回 main（`--no-ff`）→ tag `handoff/2026-09-30-brain-nndet-fold0`，不 push。
 2. S7 脑多病种检测器（另一工作树）正在做计划 Task 12/13（五折判门已过：胶质瘤 0.811 @ 0.35、转移瘤 0.747 @ 0.57、梗死 0.572 @ 1.56 FP/例，交叉误报与冒烟进行中），其 CLAUDE/STATUS 与本分支都改了同一处，合 main 时手工合并。
 3. 之后按用户对第 2 段第一条的决定；S4（脑侧解剖层，设计概览待点头）、S5（疾病印象 + 整句：S7 的记录已带整句）、S6（膝侧 nnDetection：可复用本臂工具，但本臂结果不支持优先做）顺序同前。
 
