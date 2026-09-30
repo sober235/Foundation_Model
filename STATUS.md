@@ -52,6 +52,7 @@
 - **nndet 环境**：只经 `bash -c 'source scripts/nndet_env.sh && …'`；本机 `conda activate` 不把环境放到 PATH 最前，裸 `pip`/`python` 会落到系统 python 3.10 与 `~/.local`。不与 `scripts/nnunet_env.sh` 同 shell。
 - **nnDetection 结束判据**：`train.log` 出现 `Found 51 predictions for analysis`、`plan_inference.pkl` 存在、`sweep_predictions/` 有 51 个 `*_boxes.pt`。本次进程自己退出了（玩具训练卡过），别为了 teardown 错误去 kill 别人的进程。
 - **nnDetection 的约定**：框每边外扩 1 格，runner 在预处理空间把低端加 1 再恢复；`splits_final.pkl` 缺失时它会自己按 KFold 新建折（启动器拒绝不同的折）；默认 `train.mode=overwrite` 会复用已有训练目录（启动器拒绝）；验证集预测只在 `--sweep` 时生成；门只读默认后处理那份，sweep 版是 NOT_GATE。默认后处理留下大量低分框（fold 0：25881 个），工作点因此落在 0.50。
+- **真值检查的 `EXACT_SHARE = 0.8` 依赖数据集**：Task903 只有 10.7% 的病灶在被重采样的卷里，所以 ≥ 0.99 的占比是 0.893；换一个重采样比例超过约 20% 的任务（如膝侧）会误判失败。复用前要么重看常数，要么只在未重采样的例上算占比（需要把 nnDetection 的病例属性读到仓库这边）。
 - **推理入口的病例名**取 h5 文件名；表格是 Level R 框格式（每层 `[row0, row1, col0, col1]`，RSS 帧）。
 - **pytest `-q -q`** 不打 "N passed" 行，数测试要用单个 `-q`。
 - **下载**：代理下 1.6 GB 会断；阿里云 PyTorch 镜像拦 aria2c 默认 User-Agent（`-U curl/7.81.0` 可过）；大包用官方 sha256 核验。
