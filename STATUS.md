@@ -1,56 +1,66 @@
-# STATUS：2026-09-29（nnDetection 第二臂：计划 10 个任务中 1–8 已实现并逐个评审；fold 0 于 04:24 在 GPU 3 开训，约 13 h，预计 17:30 前结束；本轮中途交接，合入 main 并打 tag `handoff/2026-09-29-nndet-fold0-training`，未 push）
+# STATUS：2026-09-30（nnDetection 第二臂收尾：fold 0 训完，规则 A 不过，臂到此停止；本轮结束时合入 main 并打 tag `handoff/2026-09-30-brain-nndet-fold0`，未 push）
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
+同日并行的 S7 脑多病种检测器（分支 `build/brain-multidisease`，工作树 `../foundation_model-multidisease`）有自己的 STATUS；两条线合回 main 时以合并后的 STATUS 为准。
 
 ## 1. 已完成且已验证
 
-**本轮：S2 的第二臂 nnDetection（Retina U-Net）。** 规格 `docs/superpowers/specs/2026-09-28-brain-nndet-design.md`（决定 N1–N14），计划 `docs/superpowers/plans/2026-09-28-brain-nndet.md`（10 个任务）。分支 `build/brain-nndet`（工作树 `../foundation_model-nndet`）。执行 = 子代理逐任务（全部用 sonnet），每个任务控制方重跑测试、检查提交信息、与计划代码逐字节比对，再由独立审阅者评审；逐任务裁定都在台账 `../foundation_model-nndet/.superpowers/sdd/2026-09-28-brain-nndet/progress.md`（gitignore，不入库）。
+**本轮：S2 的第二臂 nnDetection（Retina U-Net）全部 10 个任务做完。** 规格 `docs/superpowers/specs/2026-09-28-brain-nndet-design.md`（决定 N1–N14），计划 `docs/superpowers/plans/2026-09-28-brain-nndet.md`。分支 `build/brain-nndet`。任务 1–8 由子代理逐任务实现并评审（台账 `.superpowers/sdd/2026-09-28-brain-nndet/progress.md`，gitignore），任务 9–10 由控制方执行。记录索引 `docs/verification/2026-09-29/brain_nndet/README.md`（每个文件是什么、哪条命令产生、已知偏差、实测耗时）。
 
-- **测试**：
+- **测试**（代码 3a8a431）：
   ```
   PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
-  747 passed, 1 skipped
-  bash -c 'source scripts/nndet_env.sh && python -m pytest tests/test_nndet_runner.py -q -p no:cacheprovider --noconftest'
-  2 passed, 5 warnings（batchgenerators/nnunet 自身的 scipy 弃用警告）
+  747 passed, 1 skipped in 88.77s
+  bash -c 'source scripts/nndet_env.sh && python -m pytest tests/test_nndet_runner.py -q -p no:cacheprovider'
+  2 passed, 5 warnings in 4.94s
   ```
-- **环境 `nndet`**（Task 1）：python 3.8.20、torch 1.11.0+cu113、nvcc 11.3.122、PyTorch Lightning 1.4.2、SimpleITK 2.0.2、numpy 1.24.4、setuptools 59.5.0；nnDetection 97a58f3 的扩展用系统 gcc-10 编译。装了七次才成，每次原因与脚本在 `docs/nndet_install.md` 与 `~/logs/nndet_install/`。玩具数据 smoke + sweep 跑通（验证集预测生成、sweep 60 s、`plan.pkl` 不含 `inference_plan`）。
-- **坐标链**（Task 3）：runner 在玩具数据上与 nnDetection 自己的 `val_predictions` 逐框对账：高端相等、低端恰好差撤销掉的 1 格；"真值当预测" 10/10 精确；单卷推理日志 `Found inference plan: {} for prediction`（默认参数）。
-- **Task903 真实数据**（Task 6，`docs/verification/2026-09-29/brain_nndet/`）：253 例、1297 个实例（只有病灶 815 的框被覆盖改变）；规划：目标间距 [5, 0.6875, 0.6875] mm、不转置、块 [12, 256, 224]、batch 4；折 51/51/51/50/50，与 Dataset903 相同；**开训前坐标检查通过**：1289/1297 预处理后仍在，全部与自己的注册表框 IoU ≥ 0.1（最小 0.316、中位 1.0、≥ 0.99 的 1151 个），假阳 0；丢失的 8 个（1001、1004、1011、1042、1061、1063、1080、1104）全是 3 mm 层厚卷里的单层病灶，重采样到 5 mm 时消失，仍算分母。审阅者对 253 卷全量核查了实例图、类别 json、与 Dataset903 的标签和图像逐字节一致。
-- **fold 0 训练**（Task 7，`launch.md`）：2026-09-29 04:24:44 启动，GPU 3（当时八卡全空），wrapper pid 3334387、训练 pid 3334388；3.64 it/s，每 epoch 2600 步 ≈ 11.9 min，60 epoch ≈ 11.9 h，加 sweep ≈ 13 h（< 24 h，按 N9 无需问用户）。日志 `../foundation_model-nndet/logs/brain_nndet/fold0.log`，训练目录 `/data2/congcong/data/FM_data/derived/nndet_models/Task903_FastMRIBrainSmallLesion/RetinaUNetV001_D3V001_3d/fold0`。
-- **代码**：`anatobind/nndet/{brain_task,boxes}.py`、`anatobind/eval/brain_nndet.py`（+ `brain_detector.strata_maps`）、`anatobind/infer/brain_nndet.py`；脚本 `scripts/nndet_{env.sh,prepare,runner,train}.py`、`eval_brain_nndet.py`、`infer_brain_lesions_nndet.py`。
-- **用户本轮拍板**：第二臂 nnDetection（按推荐）；先只训 fold 0 + 规则 A（fold 0 命中 ≥ nnU-Net 2d 同折 92 + 14 = 106/280 才补五折）；方案 1（主线 97a58f3 + 独立 py3.8/torch 1.11 环境）；只分一类；四段设计；规格与计划（执行 = 子代理逐任务）。
+- **fold 0 训练**（`launch.md`、`training.txt`、README 的 Timing 表）：2026-09-29 04:24:50 在 GPU 3 启动，60 epoch 到 19:39:01（`model_last.ckpt`），51 例验证集默认参数预测到 19:55:59，sweep 与分析到 20:00:12，共 15 h 35 min（预估 13 h；下午起别的会话的任务与它同卡）。进程自己退出，只在启动器日志尾部打了 batchgenerators 的 teardown 错误（与玩具训练一样，不是失败），没有 kill 任何进程。
+- **提取**（`scripts/nndet_runner.py extract`，nndet 环境，CPU）：默认后处理 25881 个框、sweep 调参版 1696 个框，各 51 例；写在 `/data2/congcong/data/FM_data/derived/nndet_runs/fold0_{default,swept}.json`。
+- **规则 A 不过**（`fold0/rule_a.json`、`fold0/REPORT.md`）：
+  ```
+  PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python scripts/eval_brain_nndet.py \
+    --dets /data2/congcong/data/FM_data/derived/nndet_runs/fold0_default.json \
+    --swept /data2/congcong/data/FM_data/derived/nndet_runs/fold0_swept.json --folds 0 --out docs/verification/2026-09-29/brain_nndet/fold0
+  Folds: [0]; scans 51; lesions 280
+  Rule A pass: False
+  nnDetection operating threshold 0.50: hits 17, sensitivity 0.0607, FP per volume 0.7255
+  nnU-Net 2d operating threshold 0.60: hits 92, sensitivity 0.3286, FP per volume 1.5490
+  ```
+  要求 ≥ 106（92 + 0.05 × 280）。nnU-Net 2d 的同折数字与探针完全一致。FROC：阈值 0.05 找到 178/280（0.636）但每卷 29.9 个假阳，0.35 处 92 个命中要付每卷 5.0 个假阳；每卷 ≤ 2 的预算里最好的一行就是 0.50 的 17 个。配对表（各自工作点）：两者都中 11、只 nnDetection 6、只 nnU-Net 2d 81、都漏 182。分层：单层病灶 7/222、多层 10/58；面内最大三分位 11/91。sweep 调参版（参数在这 51 例上调的，NOT_GATE）：0.2429 @ 每卷 1.8431，阈值 0.85。
+- **推理冒烟**（`infer_smoke.md`）：S2 冒烟同一卷 `file_brain_AXFLAIR_201_6002917.h5`，fold 0 模型、默认后处理、GPU 7 空卡：156 行，11 行 ≥ 0.50，每行恰好 `boxes, score, z0, z1` 四个键，退出码 0（该卷无真值，行数不是证据）。
+- **已知偏差**（README）：病灶 815 的框被覆盖改变（唯一一个）；8 个病灶在重采样到 5 mm 后消失（1001、1004、1011、1042、1061、1063、1080、1104，全是 3 mm 层厚卷里的单层病灶），永远算分母；61 个卷里 819 个未填进标签的 fastMRI+ 框在训练里是背景（S2 D10）；阈值与 sweep 参数都在验证例上选的。
+- **用户本轮拍板**（沿用）：第二臂 nnDetection；先只训 fold 0 + 规则 A；主线 97a58f3 + 独立 py3.8/torch 1.11 环境；只分一类；执行 = 子代理逐任务。
 
-**之前（保留）**：S2 nnU-Net 检测器已在 main（tag `handoff/2026-09-29-brain-detector`）：D1 门不过（2d 五折 0.3662 @ 1.636 FP/卷，主因漏检，解码范围只碰到 0.497），记录索引 `docs/verification/2026-09-28/brain_detector/README.md`。S1 关系基线（tag `handoff/2026-09-28-relation-baselines`，NOT_EVIDENCE）、Level R 读片工具（冒烟服务 8791，浏览器验收仍 USER_REPORTED）同前。
+**之前（保留）**：S2 nnU-Net 检测器在 main（tag `handoff/2026-09-29-brain-detector`）：D1 门不过（2d 五折 0.3662 @ 1.636 FP/卷，主因漏检），记录索引 `docs/verification/2026-09-28/brain_detector/README.md`。S1 关系基线（tag `handoff/2026-09-28-relation-baselines`，NOT_EVIDENCE）、Level R 读片工具（冒烟服务 8791，浏览器验收仍 USER_REPORTED）同前。
 
 ## 2. 待用户拍板
 
-- **push**：main 自 afe641e 起所有提交与 tag（09-26 两个、09-28 一个、09-29 两个）都只在本地。
-- **fold 0 出结果后**：规则 A 通过就要补五折，墙钟约一天以上，开跑前问；不通过就停，交用户决定（不调参救门）。
-- **读片人**、Level R 读片说明里 "other" 的定义、伦理备案：同前。
-- **可删清单（只列，不删；删除由用户执行）**：S2 工作树 `../foundation_model-detector` 与分支 `build/brain-detector`（已合并）；玩具冒烟根 `/data2/congcong/data/FM_data/derived/nndet_smoke/`；`~/logs/nndet_install/wheels/` 里 1.6 GB 的 torch 安装包（环境已装好）；会话 scratch 里的计划预演副本。
-- 旧遗留：Q9 删除授权、其余 4850 卷 SynthSeg、Redivis token、两条远端评审分支去留、RSS 左右手性换算规则。
+- **规则 A 不过，臂停止（S2 的 D9：不调参救门）。** 小病灶检测下一步走哪条由用户定：a）接受 S2 与本臂的结论，小病灶检测暂放，转 S4/S5；b）换思路（如 2D 检测器、或先解决 3 mm/5 mm 层厚下单层病灶的表示）——都要新规格，不在本计划内。不建议用 sweep 版或降阈值救门。
+- **push**：main 上所有提交与 tag（09-26 起）只在本地。
+- **可删清单（只列，不删；删除由用户执行）**：S2 工作树 `../foundation_model-detector` 与分支 `build/brain-detector`（已合并）；本轮合并后的工作树 `../foundation_model-nndet` 与分支 `build/brain-nndet`；玩具冒烟根 `/data2/congcong/data/FM_data/derived/nndet_smoke/`；`~/logs/nndet_install/wheels/` 里 1.6 GB 的 torch 安装包；会话 scratch 里的计划预演副本。fold 0 训练目录与 `nndet_runs/` 是结果，留着。
+- 旧遗留：读片人、Level R 说明里 "other" 的定义、伦理备案、Q9 删除授权、其余 4850 卷 SynthSeg、Redivis token、两条远端评审分支去留、RSS 左右手性换算规则。
 
 ## 3. 下一步
 
-1. **等 fold 0 训练与 sweep 结束**：判据是训练目录的 `train.log` 出现 `Found 51 predictions for analysis`、`plan_inference.pkl` 存在、`sweep_predictions/` 有 51 个 `*_boxes.pt`。nnDetection 结束时会打 batchgenerators 的 teardown `RuntimeError`，并可能卡在退出（玩具训练见过）：输出齐了就 `kill -TERM 3334388`，把进程号、时间、退出码记进 `training.txt`（计划 Task 9 Step 1）。
-2. **计划 Task 9**：runner 按默认参数与调参参数提取 → `scripts/eval_brain_nndet.py --folds 0` 出 fold 0 报告与规则 A；推理冒烟用 `file_brain_AXFLAIR_201_6002917.h5`（S2 冒烟同一卷），核对病例名 `case` 与 nndet 解释器；写记录索引 README（已知偏差、实测耗时）。
-3. **计划 Task 10**：CLAUDE.md 代码地图、STATUS.md、两套测试、全分支终审（最强模型）、合回 main、tag `handoff/<日期>-brain-nndet-fold0`，不 push。
-4. 之后按规则 A 结论：通过 → 报告五折时长并问用户；不通过 → 停。其余子项目 S3（B3/B4）、S4（脑侧解剖层，可与检测并行）、S5（疾病印象 + 整句）、S6（膝侧 nnDetection，可复用本臂工具）顺序同前。
+1. 本轮收尾：全分支终审（最强模型）→ 修 → 合回 main（`--no-ff`）→ tag `handoff/2026-09-30-brain-nndet-fold0`，不 push。
+2. S7 脑多病种检测器（另一工作树）正在做计划 Task 12/13（五折判门已过：胶质瘤 0.811 @ 0.35、转移瘤 0.747 @ 0.57、梗死 0.572 @ 1.56 FP/例，交叉误报与冒烟进行中），其 CLAUDE/STATUS 与本分支都改了同一处，合 main 时手工合并。
+3. 之后按用户对第 2 段第一条的决定；S4（脑侧解剖层，设计概览待点头）、S5（疾病印象 + 整句：S7 的记录已带整句）、S6（膝侧 nnDetection：可复用本臂工具，但本臂结果不支持优先做）顺序同前。
 
 ## 4. 坑与别重做
 
-- **nndet 环境**：只经 `bash -c 'source scripts/nndet_env.sh && …'`（它把环境 bin 显式放到 PATH 最前）；本机 `conda activate` 不会这样做，裸 `pip`/`python` 会落到系统 python 3.10 与 `~/.local`（本轮在下载阶段拦住，未装入任何东西）。不与 `scripts/nnunet_env.sh` 同 shell。
-- **nnDetection 的约定**：框每边外扩 1 格（`[min−1, max+1]`），runner 在预处理空间把低端加 1 再恢复；`splits_final.pkl` 缺失时它会自己按 KFold 新建折（启动器会拒绝不同的折）；默认 `train.mode=overwrite` 会复用已有训练目录（启动器会拒绝）；验证集预测只在 `--sweep` 时生成；门只读默认后处理参数那份（sweep 调参版是 NOT_GATE）。
-- **下载**：代理下 1.6 GB 会断；阿里云 PyTorch 镜像拦 aria2c 默认 User-Agent（`-U curl/7.81.0` 可过）；大包下载后用官方 sha256 核验。
-- **zsh**：`echo ======` 会报错；`pgrep -f` 会匹配到执行命令的 shell 自己（本轮误杀过一次自己的 shell），等待循环用 `ps -p <pid>`。
-- 记录文件是证据：不要往会被提交的记录里追加监控行（实现者说明已写入）。
-- S2 与 S1 的坑同上一版：别在 nnU-Net 上调参救门（D9）；C1 上的数字都不是证据。
+- **nndet 环境**：只经 `bash -c 'source scripts/nndet_env.sh && …'`；本机 `conda activate` 不把环境放到 PATH 最前，裸 `pip`/`python` 会落到系统 python 3.10 与 `~/.local`。不与 `scripts/nnunet_env.sh` 同 shell。
+- **nnDetection 结束判据**：`train.log` 出现 `Found 51 predictions for analysis`、`plan_inference.pkl` 存在、`sweep_predictions/` 有 51 个 `*_boxes.pt`。本次进程自己退出了（玩具训练卡过），别为了 teardown 错误去 kill 别人的进程。
+- **nnDetection 的约定**：框每边外扩 1 格，runner 在预处理空间把低端加 1 再恢复；`splits_final.pkl` 缺失时它会自己按 KFold 新建折（启动器拒绝不同的折）；默认 `train.mode=overwrite` 会复用已有训练目录（启动器拒绝）；验证集预测只在 `--sweep` 时生成；门只读默认后处理那份，sweep 版是 NOT_GATE。默认后处理留下大量低分框（fold 0：25881 个），工作点因此落在 0.50。
+- **推理入口的病例名**取 h5 文件名；表格是 Level R 框格式（每层 `[row0, row1, col0, col1]`，RSS 帧）。
+- **pytest `-q -q`** 不打 "N passed" 行，数测试要用单个 `-q`。
+- **下载**：代理下 1.6 GB 会断；阿里云 PyTorch 镜像拦 aria2c 默认 User-Agent（`-U curl/7.81.0` 可过）；大包用官方 sha256 核验。
+- **zsh**：`echo ======` 会报错；`pgrep -f` 会匹配到执行命令的 shell 自己，等待循环用 `ps -p <pid>`。
+- 记录文件是证据：不往会被提交的记录里追加监控行。S2 与 S1 的坑同前：别在 nnU-Net 上调参救门（D9）；C1 上的数字都不是证据。
 
 ## 5. 关键决定的为什么
 
-- **nnDetection 第二臂（N1）**：直接学"一个病灶一个框"；但 S2 主因是漏检，所以它必须多找回漏检才可能过门。
-- **先只训 fold 0 + 规则 A（N2、N3）**：官方默认每折约一天；单折 51 卷，直接卡 0.5 会误杀或误放，同折配对比较才看得出有没有用；0.05 是判断线，不是显著性检验。
-- **主线 97a58f3 + 独立 py3.8/torch 1.11 环境（N4）**：主线要求 PyTorch 1.X；nextrelease 未发布。
-- **只分一类（N5）**：腔隙性梗死只有 57 个；NMS 按类别分开做，两类会重复出框。
-- **默认参数判门（N7）**、**撤销外扩（N8）**、**两环境只用 JSON 交接（N10）**、**推理与门同一条链（N11）**：见规格。
-- **中途交接合入 main**：训练要 13 小时，协作者只读 main，最新状态不能只停在侧分支；计划 Task 10 结束时再合一次。
+- **nnDetection 第二臂（N1）**：直接学"一个病灶一个框"；S2 主因是漏检，它必须多找回漏检才可能过门。结果：它只额外找回 nnU-Net 2d 漏掉的 6 个，却漏掉 2d 找到的 81 个。
+- **先只训 fold 0 + 规则 A（N2、N3）**：单折 51 卷直接卡 0.5 会误杀或误放，同折配对比较才看得出有没有用；0.05 是判断线，不是显著性检验。规则 A 不过就停，不补五折，是用户开跑前拍的板。
+- **默认参数判门（N7）**：sweep 在验证例上调参，同一批例子再判门就是自证。
+- **主线 97a58f3 + 独立 py3.8/torch 1.11 环境（N4）**、**只分一类（N5）**、**撤销外扩（N8）**、**两环境只用 JSON 交接（N10）**、**推理与门同一条链（N11）**：见规格。
+- **为什么不救门**：D9。fold 0 的 FROC 说明问题在检出而不在阈值：0.05 处才找到 178/280，代价是每卷 29.9 个假阳，任何阈值都到不了 0.5 @ 2。
