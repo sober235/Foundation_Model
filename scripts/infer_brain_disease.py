@@ -23,9 +23,10 @@ def main():
     ap.add_argument("--out", type=Path, required=True, help="output directory (must not exist)")
     ap.add_argument("--folds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
     ap.add_argument("--gpu", type=int, required=True)
+    ap.add_argument("--study", help="study name written into the record (default: the first image's file name)")
     a = ap.parse_args()
     print(f"channels expected: {DISEASES[a.disease]['channels']}")
-    rec = run(a.disease, a.images, a.anatomy, a.out, a.folds, a.gpu, a.threshold)
+    rec = run(a.disease, a.images, a.anatomy, a.out, a.folds, a.gpu, a.threshold, study=a.study)
     print(f"{len(rec['lesions'])} lesions -> {a.out / 'record.json'}")
     print(rec["sentence"])
 

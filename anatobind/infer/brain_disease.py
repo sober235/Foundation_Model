@@ -27,6 +27,8 @@ NEAR_MM = 10.0
 ANATOMY_SOURCE = "SynthSeg pseudo-label, lookup by voxel count (NOT_EVIDENCE)"
 MAX_SENTENCE_LESIONS = 5
 INVOLVED_MIN = 0.10
+MAIN_SHARE_MIN = 0.4        # under this share of the lesion's voxels no structure is the main one: the lesion spans several
+NEARBY_ZH = "邻近"
 GRID_TOL = 1e-3
 PROB_TOL = 1e-3
 
@@ -71,7 +73,21 @@ def place(lesion, names=HOST_ZH):
     if not lesion["host"] or (lesion["host_rule"] == "nearest" and lesion["host_distance_mm"] > NEAR_MM):
         return NOWHERE_ZH
     where = SIDE_ZH[lesion["host_side"]] + names[lesion["host"]]
-    return f"邻近{where}" if lesion["host_rule"] == "nearest" else where
+    return f"{NEARBY_ZH}{where}" if lesion["host_rule"] == "nearest" else where
+
+
+def place_key(lesion):
+    """The place without the \"邻近\" prefix: a lesion next to a structure names the same place as one inside it."""
+    return place(lesion, HOST_SHORT_ZH).removeprefix(NEARBY_ZH)
+
+
+def _sided(structures, sides, main_side, names):
+    """(side word for all, names) when every structure lies on main_side or has no side; else ("", names each with
+    its own side, the sideless brainstem first), so that no side word is read on to the next structure."""
+    if any(sides[h] not in ("midline", main_side) for h in structures):
+        ordered = [h for h in structures if sides[h] == "midline"] + [h for h in structures if sides[h] != "midline"]
+        return "", [SIDE_ZH[sides[h]] + names[h] for h in ordered]
+    return SIDE_ZH[main_side], [names[h] for h in structures]
 
 
 def lesion_clause(lesion):
@@ -79,26 +95,30 @@ def lesion_clause(lesion):
     that structure (none for the brainstem). When every involved structure lies on the main structure's side, no side
     is written after "累及"; when one does not, every involved structure gets its side, so that a lesion across the
     midline reads as one and no side word is read on to the next structure; the brainstem, which has no side, then
-    comes first. A lesion that overlaps no structure is said to lie next to the nearest one when that is at most
-    NEAR_MM away (user, 2026-09-29), else it is not located."""
-    where = place(lesion) + ("（未与任何结构重叠）" if lesion["host_rule"] == "nearest" and place(lesion) != NOWHERE_ZH else "")
-    sides = lesion["host_sides"]
-    involved = [h for h, f in sorted(lesion["host_fractions"].items(), key=lambda kv: -kv[1])
-                if h != lesion["host"] and f >= INVOLVED_MIN]
-    if any(sides[h] not in ("midline", lesion["host_side"]) for h in involved):
-        involved = [h for h in involved if sides[h] == "midline"] + [h for h in involved if sides[h] != "midline"]
-        words = [SIDE_ZH[sides[h]] + HOST_ZH[h] for h in involved]
-    else:
-        words = [HOST_ZH[h] for h in involved]
-    text = f"{where}存在{TYPE_ZH[lesion['type']]}，体积{volume_text(lesion['volume_mm3'])}"
-    return text + (f"，累及{'、'.join(words)}" if words else "")
+    comes first. When no structure holds MAIN_SHARE_MIN of the lesion (a large tumour spread over several), the lesion
+    is written as spanning the structures it involves, largest share first, instead of being given a main structure.
+    A lesion that overlaps no structure is said to lie next to the nearest one when that is at most NEAR_MM away
+    (user, 2026-09-29), else it is not located and the distance to the nearest structure is given (user, 2026-09-30)."""
+    fractions, sides = lesion["host_fractions"], lesion["host_sides"]
+    ranked = [h for h, f in sorted(fractions.items(), key=lambda kv: -kv[1]) if f >= INVOLVED_MIN]
+    finding = f"存在{TYPE_ZH[lesion['type']]}，体积{volume_text(lesion['volume_mm3'])}"
+    if lesion["host_rule"] == "overlap" and max(fractions.values()) < MAIN_SHARE_MIN:
+        side, words = _sided(ranked, sides, lesion["host_side"], HOST_SHORT_ZH)
+        return f"跨{side}多个结构（{'、'.join(words)}）{finding}"
+    where = place(lesion)
+    if lesion["host_rule"] == "nearest":
+        nearest = SIDE_ZH[lesion["host_side"]] + HOST_ZH[lesion["host"]]
+        where += "（未与任何结构重叠）" if where != NOWHERE_ZH else f"（距最近的{nearest}约 {lesion['host_distance_mm']:.0f} mm）"
+    _, words = _sided([h for h in ranked if h != lesion["host"]], sides, lesion["host_side"], HOST_ZH)
+    return f"{where}{finding}" + (f"，累及{'、'.join(words)}" if words else "")
 
 
 def study_record(study, disease, threshold, rows, folds=None):
     """rows: bound detections (any score); only those at or above the threshold enter the record, highest score
     first. The sentence names the MAX_SENTENCE_LESIONS largest lesions, largest first: the score is a mean
     probability, which is highest for the smallest components, and a reader looks for the largest lesion first.
-    The others are counted, and their places are named where no named lesion lies there.
+    The others are counted, and their places are named where no named lesion lies there (a place next to a structure
+    counts as that structure's place).
     folds: the folds of the model that predicted. Without a lesion the sentence says that this model detected nothing
     at this threshold; that is no negative finding."""
     spec = DISEASES[disease]
@@ -111,8 +131,11 @@ def study_record(study, disease, threshold, rows, folds=None):
         rest = len(lesions) - MAX_SENTENCE_LESIONS
         by_volume = sorted(lesions, key=lambda l: -l["volume_mm3"])
         largest, others = by_volume[:MAX_SENTENCE_LESIONS], by_volume[MAX_SENTENCE_LESIONS:]
-        named = {place(l, HOST_SHORT_ZH) for l in largest}
-        also = list(dict.fromkeys(p for p in (place(l, HOST_SHORT_ZH) for l in others) if p not in named))
+        named, also = {place_key(l) for l in largest}, []
+        for l in others:
+            if place_key(l) not in named:
+                named.add(place_key(l))
+                also.append(place(l, HOST_SHORT_ZH))
         sentence = "；".join(lesion_clause(l) for l in largest)
         if rest > 0:
             sentence += f"；另有 {rest} 处同类异常" + (f"（还见于{'、'.join(also)}）" if also else "")
@@ -156,8 +179,9 @@ def link_inputs(in_dir, case, images, n_channels):
         os.symlink(Path(p).resolve(), Path(in_dir) / f"{case}_{k:04d}.nii.gz")
 
 
-def run(disease, images, anatomy, out_dir, folds, gpu, threshold, predict=run_nnunet):
-    """images: one NIfTI per channel, in the order of DISEASES[disease]["channels"], all on the anatomy's grid."""
+def run(disease, images, anatomy, out_dir, folds, gpu, threshold, predict=run_nnunet, study=None):
+    """images: one NIfTI per channel, in the order of DISEASES[disease]["channels"], all on the anatomy's grid.
+    study: the name written into the record; the first image's file name when not given."""
     out = Path(out_dir)
     if out.exists():
         raise FileExistsError(f"{out} exists")
@@ -172,6 +196,6 @@ def run(disease, images, anatomy, out_dir, folds, gpu, threshold, predict=run_nn
     zooms = tuple(float(z) for z in seg_img.header.get_zooms()[:3])
     rows, comp = detections(pred, load_nnunet_probabilities(out / "pred" / "case.npz", pred), float(np.prod(zooms)), spec["type"])
     bind_rows(rows, comp, BrainBinder(np.asarray(seg_img.dataobj), zooms))
-    record = study_record(Path(images[0]).name, disease, threshold, rows, folds)
+    record = study_record(study or Path(images[0]).name, disease, threshold, rows, folds)
     (out / "record.json").write_text(json.dumps(record, ensure_ascii=False, indent=1))
     return record

@@ -36,8 +36,15 @@ def test_main_structure_fractions_and_side_by_overlap():
 
 def test_both_sides_above_forty_percent_is_bilateral():
     b = BrainBinder(_seg(), (1.0, 1.0, 1.0))
-    assert b.bind(*_box(8, 12, 0, 2, 0, 1))["side"] == "bilateral"        # 4 left + 4 right voxels
+    assert b.bind(*_box(6, 14, 0, 4, 0, 1))["side"] == "bilateral"        # 16 left + 16 right voxels of 1 mm3
     assert b.bind(*_box(5, 12, 0, 1, 0, 1))["side"] == "left"             # 5 left + 2 right: 2 / 7 < 0.4
+
+
+def test_a_second_side_under_ten_cubic_millimetres_does_not_make_a_lesion_bilateral():
+    # 6 left + 4 right voxels: 40 % on the right, but 4 mm3 at 1 mm3 per voxel is under the lesion floor -> left;
+    # the same voxels at 4 mm3 each hold 16 mm3 on the right -> bilateral
+    assert BrainBinder(_seg(), (1.0, 1.0, 1.0)).bind(*_box(7, 12, 0, 2, 0, 1))["side"] == "left"
+    assert BrainBinder(_seg(), (2.0, 2.0, 1.0)).bind(*_box(7, 12, 0, 2, 0, 1))["side"] == "bilateral"
 
 
 def test_a_structure_without_a_side_is_midline():
@@ -75,7 +82,7 @@ def test_the_side_of_the_main_structure_is_counted_on_its_own_voxels():
     seg[0:10] = 10                  # left thalamus
     seg[10:20] = 41                 # right white matter
     seg[9:11, 8:10, :] = 16         # brainstem
-    b = BrainBinder(seg, (1.0, 1.0, 1.0))
+    b = BrainBinder(seg, (1.0, 1.0, 3.0))               # 3 mm3 voxels: 4 voxels on a side are 12 mm3, above the floor
     out = b.bind(*_box(5, 14, 0, 1, 0, 1))            # 5 voxels of the left thalamus, 4 of the right white matter
     assert out["host"] == "thalamus" and out["side"] == "bilateral" and out["host_side"] == "left"
     assert out["host_sides"] == {"white_matter": "right", "thalamus": "left"}

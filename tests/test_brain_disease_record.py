@@ -119,6 +119,8 @@ def test_run_predicts_binds_and_refuses_an_existing_out(tmp_path):
     assert rec["impression"] == "疑似缺血性梗死" and len(rec["lesions"]) == 1
     assert rec["lesions"][0]["volume_mm3"] == 64.0 and rec["lesions"][0]["side"] == "right" and rec["lesions"][0]["score"] == 0.75
     assert json.loads((tmp_path / "out" / "record.json").read_text()) == rec
+    assert rec["study"] == "dwi.nii.gz"
+    assert B.run("infarct", images, anatomy, tmp_path / "out_named", [0], 3, 0.5, predict=fake_predict, study="case-7")["study"] == "case-7"
     with pytest.raises(FileExistsError):
         B.run("infarct", images, anatomy, tmp_path / "out", [0], 3, 0.5, predict=fake_predict)
     with pytest.raises(ValueError, match="2 channels are needed, 1 given"):
@@ -204,14 +206,14 @@ def test_the_sentence_says_next_to_for_the_nearest_rule_and_no_side_for_the_brai
 
 def test_the_side_before_the_structure_is_the_structure_s_own_and_a_far_lesion_is_not_located():
     across = _row(0.9, 900.0, host="thalamus", side="right", host_side="left",
-                  fractions={"thalamus": 0.38, "white_matter": 0.21, "cortex": 0.21, "basal_ganglia": 0.10, "brainstem": 0.10},
+                  fractions={"thalamus": 0.48, "white_matter": 0.11, "cortex": 0.21, "basal_ganglia": 0.10, "brainstem": 0.10},
                   sides={"white_matter": "right", "cortex": "bilateral", "brainstem": "midline"})
     far = dict(_row(0.8, 64.0, side="right"), host_rule="nearest", host_fractions={}, host_distance_mm=10.01)
     rec = B.study_record("s7", "glioma", 0.5, [across, far])
     # one involved structure lies on another side: every one gets its side, the basal ganglia on the main structure's
     # side too, and the brainstem, which has none, comes first so that no side word is read on to it
-    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及脑干、右侧大脑白质、双侧大脑皮层、左侧基底节；"
-                               "未能定位的区域存在肿瘤样异常，体积约 64 mm³。疑似胶质瘤。")
+    assert rec["sentence"] == ("左侧丘脑存在肿瘤样异常，体积约 900 mm³，累及脑干、双侧大脑皮层、右侧大脑白质、左侧基底节；"
+                               "未能定位的区域（距最近的右侧大脑白质约 10 mm）存在肿瘤样异常，体积约 64 mm³。疑似胶质瘤。")
     assert rec["lesions"][0]["host_sides"] == {"thalamus": "left", "white_matter": "right", "cortex": "bilateral",
                                                "basal_ganglia": "left", "brainstem": "midline"}
     # every involved structure on the main structure's side, or without a side: the short form
@@ -251,3 +253,35 @@ def test_the_places_of_the_named_lesions_are_compared_in_their_short_form():
     big = [_row(0.6, 1000.0 - i, host="cortex", side="left") for i in range(4)] + [_row(0.6, 900.0, host="other_deep_grey", side="left")]
     rec = B.study_record("s12", "infarct", 0.5, big + [_row(0.9, 30.0, host="other_deep_grey", side="left")])
     assert rec["sentence"].endswith("；另有 1 处同类异常。疑似缺血性梗死。") and "还见于" not in rec["sentence"]
+
+
+def test_a_lesion_without_a_main_structure_is_written_across_its_structures():
+    def clause(row, disease):
+        return B.lesion_clause(B.study_record("s15", disease, 0.5, [row])["lesions"][0])
+
+    fr = {"thalamus": 0.29, "white_matter": 0.27, "cortex": 0.22, "basal_ganglia": 0.16, "other_deep_grey": 0.06}
+    across = _row(0.9, 115908.0, host="thalamus", side="bilateral", fractions=fr, host_side="bilateral",
+                  sides={"white_matter": "left", "cortex": "left", "basal_ganglia": "left", "other_deep_grey": "left"})
+    assert clause(across, "glioma") == "跨多个结构（双侧丘脑、左侧大脑白质、左侧大脑皮层、左侧基底节）存在肿瘤样异常，体积约 116 mL"
+    one_side = _row(0.9, 58600.0, host="cortex", side="right",
+                    fractions={"cortex": 0.35, "white_matter": 0.29, "basal_ganglia": 0.21, "other_deep_grey": 0.10, "thalamus": 0.05})
+    assert clause(one_side, "glioma") == "跨右侧多个结构（大脑皮层、大脑白质、基底节、深部灰质）存在肿瘤样异常，体积约 59 mL"
+    # a share of exactly 0.4 still makes a main structure
+    main = _row(0.9, 100.0, fractions={"white_matter": 0.4, "cortex": 0.35, "thalamus": 0.25})
+    assert clause(main, "glioma").startswith("右侧大脑白质存在")
+
+
+def test_a_nearby_place_already_named_is_not_repeated_after_the_count():
+    big = [_row(0.6, 1000.0 - i, host="cortex", side="left") for i in range(5)]
+    near = dict(_row(0.9, 50.0, host="cortex", side="left"), host_rule="nearest", host_fractions={}, host_distance_mm=3.0)
+    assert B.study_record("s13", "infarct", 0.5, big + [near])["sentence"].endswith("；另有 1 处同类异常。疑似缺血性梗死。")
+    other = dict(_row(0.9, 50.0, host="thalamus", side="left"), host_rule="nearest", host_fractions={}, host_distance_mm=3.0)
+    rec = B.study_record("s14", "infarct", 0.5, big + [other, _row(0.9, 40.0, host="thalamus", side="left")])
+    assert rec["sentence"].endswith("；另有 2 处同类异常（还见于邻近左侧丘脑）。疑似缺血性梗死。")
+
+
+def test_a_far_lesion_names_its_distance_to_the_nearest_structure():
+    far = dict(_row(0.9, 3508.0, host="cerebellum", side="left"), host_rule="nearest", host_fractions={}, host_distance_mm=29.39)
+    lesion = B.study_record("s16", "infarct", 0.5, [far])["lesions"][0]
+    assert B.lesion_clause(lesion) == "未能定位的区域（距最近的左侧小脑约 29 mm）存在梗死样异常，体积约 3.5 mL"
+    assert B.place(lesion) == B.NOWHERE_ZH
