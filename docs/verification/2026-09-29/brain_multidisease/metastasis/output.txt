@@ -1,0 +1,5 @@
+Disease: metastasis; folds [0, 1, 2, 3, 4]; kind gate
+Scans: 461; lesions counted: 3809; ignored: 531
+Sensitivity 0.7474 at threshold 0.65 with 0.5748373101952278 FP per scan
+Pass: True; stop remaining folds: False; early stop undecided: False
+Dice mean 0.8071727177852703 over 461 cases

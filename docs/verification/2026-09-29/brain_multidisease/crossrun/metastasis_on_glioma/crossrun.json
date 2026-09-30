@@ -1,0 +1,632 @@
+{
+ "summary": {
+  "model": "metastasis",
+  "data": "glioma",
+  "cases": "fold 0 validation cases of Dataset904_PDGMGlioma",
+  "channels": [
+   "T1",
+   "T1c",
+   "FLAIR"
+  ],
+  "note": null,
+  "threshold": 0.65,
+  "model_folds": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "n_scans": 100,
+  "n_det": 167,
+  "n_det_on_gt": 153,
+  "n_gt": 144,
+  "n_gt_claimed": 95,
+  "det_per_scan": 1.67,
+  "scans_with_any_detection": 88,
+  "share_of_detections_on_gt": 0.9161676646706587,
+  "share_of_gt_claimed": 0.6597222222222222
+ },
+ "per_case": {
+  "UCSF-PDGM-0008": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0017": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0021": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0023": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 3,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0025": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0034": {
+   "n_det": 3,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0038": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0042": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0044": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0049": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0057": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0059": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0068": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0072": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0074": {
+   "n_det": 5,
+   "n_det_on_gt": 5,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0078": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0082": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0086": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0090": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0103": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0123": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0134": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0140": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0147": {
+   "n_det": 5,
+   "n_det_on_gt": 5,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0153": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0163": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0185": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0190": {
+   "n_det": 3,
+   "n_det_on_gt": 3,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0200": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0201": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 6,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0202": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0229": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0240": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0243": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0244": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0253": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0254": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 3,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0267": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0277": {
+   "n_det": 1,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0281": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0282": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0287": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0298": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0300": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0306": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 3,
+   "n_gt_claimed": 2
+  },
+  "UCSF-PDGM-0308": {
+   "n_det": 3,
+   "n_det_on_gt": 3,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0313": {
+   "n_det": 5,
+   "n_det_on_gt": 5,
+   "n_gt": 5,
+   "n_gt_claimed": 3
+  },
+  "UCSF-PDGM-0318": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0321": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0330": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0344": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0345": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0355": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0356": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0358": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0360": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0365": {
+   "n_det": 5,
+   "n_det_on_gt": 5,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0369": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0375": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0377": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0391": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0391_FU016d": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 2,
+   "n_gt_claimed": 2
+  },
+  "UCSF-PDGM-0392": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0397": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0400": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0403": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0404": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 3,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0407": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0410": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0419": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0425": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0427": {
+   "n_det": 6,
+   "n_det_on_gt": 6,
+   "n_gt": 4,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0430": {
+   "n_det": 4,
+   "n_det_on_gt": 3,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0432": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0434": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0435": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0436": {
+   "n_det": 1,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0449": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 2,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0452": {
+   "n_det": 7,
+   "n_det_on_gt": 7,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0453": {
+   "n_det": 4,
+   "n_det_on_gt": 3,
+   "n_gt": 3,
+   "n_gt_claimed": 3
+  },
+  "UCSF-PDGM-0455": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0461": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 4,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0462": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0463": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0464": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 4,
+   "n_gt_claimed": 4
+  },
+  "UCSF-PDGM-0465": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0467": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0468": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0471": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 3,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0472": {
+   "n_det": 9,
+   "n_det_on_gt": 5,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0478": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0482": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 1,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0490": {
+   "n_det": 0,
+   "n_det_on_gt": 0,
+   "n_gt": 2,
+   "n_gt_claimed": 0
+  },
+  "UCSF-PDGM-0507": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0508": {
+   "n_det": 2,
+   "n_det_on_gt": 2,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0523": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 2,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0525": {
+   "n_det": 2,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0530": {
+   "n_det": 6,
+   "n_det_on_gt": 6,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0531": {
+   "n_det": 4,
+   "n_det_on_gt": 4,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  },
+  "UCSF-PDGM-0539": {
+   "n_det": 1,
+   "n_det_on_gt": 1,
+   "n_gt": 1,
+   "n_gt_claimed": 1
+  }
+ }
+}

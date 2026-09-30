@@ -110,6 +110,25 @@ def test_overlap_counts_each_object_once_and_a_fragment_is_lesion_tissue():
     assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.5) == {"n_det": 1, "n_det_on_gt": 1, "n_gt": 2, "n_gt_claimed": 2}
 
 
+def test_a_later_detection_whose_box_covers_an_earlier_one_does_not_erase_its_claim():
+    c = _load()
+    gt = np.zeros((12, 12, 6), np.uint8)
+    gt[2:6, 2:6, 1:4] = 1                 # lesion A, 48 voxels
+    pred = np.zeros((12, 12, 6), np.uint8)
+    probs = np.zeros((2, 12, 12, 6), np.float32)
+    pred[2:4, 2:4, 1:4] = 1               # detection on A
+    probs[1][2:4, 2:4, 1:4] = 0.875
+    pred[7, 2:8, 1:4] = 1                 # an L-shaped detection off A whose box [2:8, 2:8, 1:4] contains A's box;
+    pred[2:8, 7, 1:4] = 1                 # it comes after the first one in label order and in score order
+    probs[1][7, 2:8, 1:4] = 0.75
+    probs[1][2:8, 7, 1:4] = 0.75
+    dets, det_comp = detections(pred, probs, 1.0, "infarct")
+    assert len(dets) == 2
+    gt_comp, n = components(gt)
+    rows = component_rows(gt_comp, n, 1.0, "tumor")
+    assert c.overlap_counts(dets, det_comp, rows, gt_comp, 0.5) == {"n_det": 2, "n_det_on_gt": 1, "n_gt": 1, "n_gt_claimed": 1}
+
+
 def test_nothing_is_written_when_a_model_fold_or_a_channel_is_missing(tmp_path):
     c = _load()
     nn = tmp_path / "derived/nnunet"

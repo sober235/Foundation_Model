@@ -100,8 +100,11 @@ def test_both_folds_count_the_stray_and_a_missing_prediction_is_named(tmp_path):
     mod = _load()
     _tree(tmp_path)
     with patch.object(mod, "FM", tmp_path), patch.object(mod, "NNUNET", tmp_path / "derived/nnunet"):
-        mod.main(["--disease", "metastasis", "--folds", "0", "1", "--out", str(tmp_path / "rep"), "--workers", "1"])
+        mod.main(["--disease", "metastasis", "--folds", "0", "1", "--out", str(tmp_path / "rep"), "--records", str(tmp_path / "records"), "--workers", "1"])
         lines = (tmp_path / "rep" / "froc.csv").read_text().splitlines()
+        # each record names the one fold that held its case out
+        assert json.loads((tmp_path / "records" / "100102A.json").read_text())["model_folds"] == [1]
+        assert json.loads((tmp_path / "records" / "100101A.json").read_text())["model_folds"] == [0]
         assert lines[15] == "0.75,1,0.500000,0.333333" and lines[16] == "0.80,1,0.500000,0.000000"
         (fold_dir(tmp_path / "derived/nnunet/results", "metastasis", 1) / "validation" / "100102A.npz").rename(tmp_path / "moved.npz")
         with pytest.raises(FileNotFoundError, match="fold 1 case 100102A"):
