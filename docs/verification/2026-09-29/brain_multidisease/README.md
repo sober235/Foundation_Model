@@ -6,7 +6,8 @@ Spec `docs/superpowers/specs/2026-09-29-brain-multidisease-design.md` (decisions
 dataset's native channels; lesions are the 26-connected components of the argmax foreground, scored by the mean foreground
 probability; a SynthSeg pseudo-label map on the same grid gives every lesion a host structure and a side; each study gets a
 record with a sentence "在xxx解剖上存在xxx异常，疑似xxx疾病". Every number below is copied from the file named beside it;
-all evaluation reports carry `Code: commit 9a89ff1`.
+the three verdict reports and the three cross-run reports carry `Code: commit 9a89ff1` (the two single-fold readings
+were made earlier: the infarct fold 0 reading before the stamp existed, the metastasis fold 1 reading at 7c4ae27).
 
 | disease | nnU-Net dataset | source | channels | scans | patients |
 |---|---|---|---|---|---|
@@ -115,7 +116,7 @@ fold 0 model; 1 / 11 / 26 lesions; boxes and scores agree with the out-of-fold r
 3. **Synthetic T2** in the glioma → metastasis cross run (channel 2 is BMSR's synthetic T2; `crossrun.json` `note`).
 4. **Matching rule** as in S2: the assignment with the largest total IoU is taken and pairs under 0.1 are dropped
    afterwards; in 47 of 20 000 random crowded scans this gives fewer hits than the best one-to-one matching, never more
-   (whole-branch review, `.superpowers/sdd/2026-09-29-brain-multidisease/final-review-1-report.md`). Kept for
+   (whole-branch review 1, `reviews/final-review-1-report.md`). Kept for
    comparability with S2.
 5. **Thresholds are measured on single-fold models** (each case predicted by the fold that held it out) and applied to
    the five-fold average in the cross runs and, by default, in the inference entry; the averaged model's behaviour at
@@ -155,6 +156,7 @@ done 10:04:31, metastasis → glioma 10:15:06, glioma → metastasis 10:32:51. I
 | `glioma/`, `metastasis/`, `infarct/` | five-fold verdicts: `REPORT.md`, `verdict.json`, `froc.csv`, `output.txt` | `scripts/eval_brain_disease.py --disease <d> --folds 0 1 2 3 4 --workers 8 --records …` (Task 12 Step 1) |
 | `crossrun/<model>_on_<data>/` | cross false-alarm runs: `REPORT.md`, `crossrun.json` | `scripts/brain_disease_crossrun.py` (Task 12 Step 2) |
 | `infer_smoke.md` | inference entry on one case per disease | `scripts/infer_brain_disease.py` (Task 12 Step 3) |
+| `reviews/` | the two whole-branch review reports: review 1 at a22da8b (before any training finished, six round trips), review 2 at 1e2e95f (after the verdicts; independent recount of all 1212 scans, records and cross runs; mergeable as is, minor findings only) | most capable model, dispatched by the controller (Task 13) |
 | `README.md` | this index | Task 12 Step 4 |
 
 Outside the repository: nnU-Net raw/preprocessed/results under `/data2/congcong/data/FM_data/derived/nnunet/` (Dataset904–906),

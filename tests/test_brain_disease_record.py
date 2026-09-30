@@ -243,3 +243,11 @@ def test_the_lesions_that_are_only_counted_still_name_their_places():
     assert alone["sentence"] == "左侧深部灰质（海马、杏仁核等）存在梗死样异常，体积约 30 mm³。疑似缺血性梗死。"
     same = B.study_record("s10", "infarct", 0.5, big + [_row(0.9, 70.0, host="cortex", side="left")])
     assert same["sentence"].endswith("；另有 1 处同类异常。疑似缺血性梗死。")          # nothing new to name
+
+
+def test_the_places_of_the_named_lesions_are_compared_in_their_short_form():
+    # the fifth-named lesion is deep grey matter; a smaller deep-grey lesion on the same side adds no new place, so the
+    # count must come without a bracket (the long name "左侧深部灰质（海马、杏仁核等）" must not be compared with the short one)
+    big = [_row(0.6, 1000.0 - i, host="cortex", side="left") for i in range(4)] + [_row(0.6, 900.0, host="other_deep_grey", side="left")]
+    rec = B.study_record("s12", "infarct", 0.5, big + [_row(0.9, 30.0, host="other_deep_grey", side="left")])
+    assert rec["sentence"].endswith("；另有 1 处同类异常。疑似缺血性梗死。") and "还见于" not in rec["sentence"]
