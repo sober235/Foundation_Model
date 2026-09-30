@@ -57,7 +57,7 @@
 ## 3. 下一步
 
 1. 用户对 §2 第 3 条（六条措辞）拍板 → 改 `anatobind/infer/brain_disease.py`（及 `side_of` 的平局）→ 测试 → 三个病种重跑到 `<病种>_v3/` 与 `records_v3/`（各约 3 分钟，`--workers 8`）→ 审阅者读句子 → README 记一笔。不重训。
-2. **S4 脑部解剖层（用户已点头概览）**：数据第一步已在跑——SibBMS 解压到 `/data2/congcong/data/FM_data/SibBMS_ms/sibbms/Output/{MS,Norm,Annotation}`（1425 个 NIfTI，11 GB；非增强 T1w 371 个：MS 271、健康 100），经 `derived/synthseg/sibbms/inputs/` 的 `MS_`/`Norm_` 前缀软链（两个队列都从 sub-001 编号，直接用会撞名）跑 SynthSeg（`scripts/run_synthseg_fastmri_brain.py --glob … --workers 3 --threads 12`，CPU，输出 `derived/synthseg/sibbms/seg_native/`，日志 `derived/synthseg/sibbms/run_sibbms_*.log`，断点续跑自动跳过已有输出）。接下来按段确认设计：数据 → 仿真（把 1 mm FLAIR 处理成 fastMRI 的样子）→ 去颅骨（自训脑轮廓模型，备选 HD-BET）→ 验证与达标线 → 推理，然后写规格与计划。
+2. **S4 脑部解剖层（用户已点头概览）**：数据第一步已在跑——SibBMS 解压到 `/data2/congcong/data/FM_data/SibBMS_ms/sibbms/Output/{MS,Norm,Annotation}`（1425 个 NIfTI，11 GB；非增强 T1w 371 个：MS 271、健康 100），经 `derived/synthseg/sibbms/inputs/` 的 `MS_`/`Norm_` 前缀软链（两个队列都从 sub-001 编号，直接用会撞名）跑 SynthSeg 已完成（`scripts/run_synthseg_fastmri_brain.py --glob … --workers 3 --threads 12`，CPU，93 分钟，370/371 ok；记录 `docs/verification/2026-09-30/s4_sibbms_synthseg/`）：可用老师标签 362 张（MS 265 次检查 / 91 人 + 健康 97），排除 8 张失败图（输入几乎全零或 SynthSeg 找不到脑）和 1 个二维文件（MS sub-057 ses-001 的 T1w 是 256×256 的 2D 图）。接下来按段确认设计：数据 → 仿真（把 1 mm FLAIR 处理成 fastMRI 的样子）→ 去颅骨（自训脑轮廓模型，备选 HD-BET）→ 验证与达标线 → 推理，然后写规格与计划。
 3. **小病灶线先停**（用户批准；收尾说明 `docs/verification/2026-09-30/small_lesion_line/README.md`）。再捡起来要新规格：标签处理（819 个未填的框）、按原生层厚分开训、或等 Level R 医生标签。
 4. S5 疾病印象 + 整句：S7 的记录已带整句；剩下的是把 S2/S4 的输出接进同一记录格式，等 S4。阶段 B（只吃 FLAIR 的统一模型）等用户看过阶段 A 的数后再设计。
 5. 医生标签（Level R）在训练结束后，同前。
