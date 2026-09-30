@@ -134,3 +134,28 @@ def test_gt_check_passes_on_exact_boxes_and_fails_on_a_displaced_one(tmp_path):
         assert json.loads((tmp_path / "no" / "gt_check.json").read_text())["below_iou"] == [2]
     finally:
         _exit(ps)
+
+
+def test_gt_check_fails_when_the_margin_is_not_undone(tmp_path):
+    """Every box one voxel larger at its low ends (the +-1 expansion left in): IoU stays above 0.1 for all three
+    lesions (25 / 72 = 0.35 for a 5x5x1 box), so the old criterion passed; the exact-IoU share must fail it."""
+    mod = _load()
+
+    def grown(b):
+        return [b[0] - 1, b[1] - 1, b[2], b[3], b[4] - 1, b[5]]
+
+    big = _runner_json(tmp_path / "big.json", {
+        "A": {"boxes": [grown(BOX0), grown(BOX1)], "scores": [1.0, 1.0], "instances": [1, 2]},
+        "B": {"boxes": [grown(BOX2)], "scores": [1.0], "instances": [1]},
+        "N": {"boxes": [], "scores": [], "instances": []}})
+    ps = _patched(mod, tmp_path)
+    _enter(ps)
+    try:
+        with pytest.raises(SystemExit):
+            mod.main(["--gt-check", str(big), "--out", str(tmp_path / "big")])
+        res = json.loads((tmp_path / "big" / "gt_check.json").read_text())
+        assert res["pass"] is False and res["below_iou"] == [] and res["n_fp"] == 0
+        assert res["n_present"] == 3 and res["n_iou_ge_0_99"] == 0 and res["exact_share_required"] == 0.8
+        assert 0.1 < res["min_iou"] < 0.99
+    finally:
+        _exit(ps)
