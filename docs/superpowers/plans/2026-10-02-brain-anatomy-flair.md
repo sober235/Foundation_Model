@@ -20,7 +20,7 @@
 - Array frame: the student is trained and applied in the fastMRI RSS array frame of `anatobind.data_engine.fastmri.rss_h5_to_nifti` (axis 0 towards the patient's left, axis 1 with the cerebellum at low indices, axis 2 upwards); a RAS array enters it by flipping axis 0 only (`s4_probe3_frame`). Left/right follow the headers (spec M10).
 - Label space: `anatobind.anatomy.labels.STUDENT` (16 compact classes) is the single source of truth; inference writes SynthSeg representative values so that `BrainBinder` and `host_class_map` read the output like a SynthSeg map.
 - Gates (A11): host agreement ≥ 0.90, mean sided-host Dice ≥ 0.80 on the reliable fastMRI slices, outline Dice ≥ 0.97 on the outline model's test stacks; no tuning to pass them; the lowest two slices are reported, not judged; the final judgement waits for Level R (A12). Every record carries the command and `Code: commit <hash>`.
-- Tests: `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider` (839 passed, 1 skipped before this plan; 870 after it); unit tests never read `/data2`.
+- Tests: `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider` (839 passed, 1 skipped before this plan; 872 after it); unit tests never read `/data2`.
 
 ## Review Focus
 
@@ -1145,7 +1145,7 @@ git commit -m "S4 anatomy: evaluation (Dice on reliable slices, box host agreeme
 
 **Interfaces:**
 - Consumes: Task 1 (`NAMES`, `to_synthseg`), Task 4 (`postprocess`), Task 5 (`reliable_slices`), `anatobind.bind.brain_lookup.BrainBinder`, `anatobind.data_engine.fastmri.rss_h5_to_nifti`, `anatobind.eval.lesion_boxes.load_label_map`, `anatobind.infer.knee.nnunet_env`.
-- Produces: `OUTLINE = {id: 908, config: '2d'}`, `STUDENT = {id: 907, config: '3d_fullres'}`, `TRAINER`, `FOLDS = [0]`, `run_nnunet(dataset_id, config, in_dir, out_dir, folds, gpu)`, `stage_input`, `run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet) -> record`.
+- Produces: `OUTLINE = {id: 908, config: '2d'}`, `STUDENT = {id: 907, config: '3d_fullres'}`, `TRAINER`, `FOLDS = [0]`, `run_nnunet(dataset_id, config, in_dir, out_dir, folds, gpu)`, `stage_input` (float32 staging), `check_box(box, shape)`, `run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet) -> record` (a missing input is refused before anything is created; a stage that fails raises `RuntimeError` naming the stage and the directory that keeps the partial output).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1205,10 +1205,46 @@ def test_the_chain_strips_the_skull_binds_a_box_and_refuses_an_existing_out(tmp_
     assert rec["binding"]["host"] == "thalamus" and rec["binding"]["host_rule"] == "overlap" and rec["box"] == [14, 14, 3, 16, 16, 5]
     assert rec["reliable_slices"] == [2, 6] and "NOT_EVIDENCE" in rec["anatomy_source"]
     assert json.loads((tmp_path / "out" / "record.json").read_text())["brain_ml"] == rec["brain_ml"]
-    with pytest.raises(FileExistsError):
+    with pytest.raises(FileExistsError, match="use a new output directory"):
         I.run(tmp_path / "out", 2, nifti=p, predict=_fake_predict(calls))
     with pytest.raises(ValueError, match="exactly one"):
         I.run(tmp_path / "out2", 2, predict=_fake_predict(calls))
+
+
+def test_nothing_is_created_for_a_missing_input_and_a_failed_stage_names_itself(tmp_path):
+    p = _stack(tmp_path)
+    with pytest.raises(FileNotFoundError, match="is missing"):
+        I.run(tmp_path / "a", 0, nifti=tmp_path / "nope.nii.gz", predict=_fake_predict([]))
+    with pytest.raises(FileNotFoundError):
+        I.run(tmp_path / "a", 0, h5=tmp_path / "nope.h5", predict=_fake_predict([]))
+    assert not (tmp_path / "a").exists()                            # nothing staged: the corrected rerun may use the same name
+
+    def broken(dataset_id, config, in_dir, out_dir, folds, gpu):
+        if dataset_id == 907:
+            raise OSError("no GPU")
+        _fake_predict([])(dataset_id, config, in_dir, out_dir, folds, gpu)
+
+    with pytest.raises(RuntimeError, match="the student prediction failed; the partial output stays in .*rerun into a new output directory"):
+        I.run(tmp_path / "b", 0, nifti=p, predict=broken)
+    assert (tmp_path / "b" / "brain_mask.nii.gz").exists() and not (tmp_path / "b" / "anatomy.nii.gz").exists()
+    with pytest.raises(RuntimeError, match="checking the box failed"):
+        I.run(tmp_path / "c", 0, nifti=p, box=(5, 5, 0, 5, 9, 2), predict=_fake_predict([]))        # empty along x
+    assert I.check_box((0, 0, 0, 40, 40, 8), (40, 40, 8)) == (0, 0, 0, 40, 40, 8)
+    with pytest.raises(ValueError, match="outside the grid"):
+        I.check_box((0, 0, 0, 41, 40, 8), (40, 40, 8))
+
+
+def test_the_nnunet_command_line_and_the_float32_staging(tmp_path, monkeypatch):
+    seen = {}
+    monkeypatch.setattr(I.subprocess, "run", lambda cmd, check, env: seen.update(cmd=cmd, check=check, gpu=env["CUDA_VISIBLE_DEVICES"]))
+    I.run_nnunet(908, "2d", tmp_path / "in", tmp_path / "o", [0], 3)
+    assert seen["cmd"] == ["nice", "-n", "19", "nnUNetv2_predict", "-i", str(tmp_path / "in"), "-o", str(tmp_path / "o"), "-d", "908", "-c", "2d",
+                           "-tr", "nnUNetTrainer_250epochs", "-f", "0", "-npp", "2", "-nps", "2", "--disable_progress_bar"]
+    assert seen["check"] is True and seen["gpu"] == "3"
+    ints = tmp_path / "int16.nii.gz"
+    nib.save(nib.Nifti1Image(np.full((4, 4, 4), 7, np.int16), np.eye(4)), str(ints))
+    img = I.stage_input(None, ints, tmp_path / "staged")
+    assert img.get_data_dtype() == np.float32 and float(np.asarray(img.dataobj).max()) == 7.0
 ```
 
 - [ ] **Step 2: Run it to see it fail**
@@ -1223,10 +1259,11 @@ Expected: errors at import or collection (the module does not exist yet).
 anatomy -> a label map in SynthSeg values that BrainBinder reads like a SynthSeg map; optional binding of one box.
 
 Inputs: a fastMRI h5 (RSS reconstruction, the frame of S2's `rss_h5_to_nifti`) or a NIfTI stack already in that frame.
-The output directory must not exist. Everything downstream of the two nnU-Net models is a pseudo-label: NOT_EVIDENCE."""
+The output directory must not exist, and a run that fails half-way leaves its partial output there (nothing is ever
+deleted): the error says so and the rerun takes a new directory. The student sees the stack with everything outside
+the outline set to zero; its labels are not clipped to the outline afterwards. Everything downstream of the two nnU-Net
+models is a pseudo-label: NOT_EVIDENCE."""
 import json
-import os
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -1254,34 +1291,59 @@ def run_nnunet(dataset_id, config, in_dir, out_dir, folds, gpu):
 
 
 def stage_input(h5, nifti, out):
-    """The RSS stack as <out>/input_outline/case_0000.nii.gz; returns the loaded image."""
+    """The RSS stack as float32 in <out>/input_outline/case_0000.nii.gz; returns the loaded image."""
     d = out / "input_outline"
     d.mkdir(parents=True)
     if h5 is not None:
         rss_h5_to_nifti(h5, d / "case_0000.nii.gz", pad_to_slices=0)
     else:
-        shutil.copyfile(nifti, d / "case_0000.nii.gz")
+        src = nib.load(str(nifti))
+        nib.save(nib.Nifti1Image(np.asarray(src.dataobj).astype(np.float32), src.affine), str(d / "case_0000.nii.gz"))
     return nib.load(str(d / "case_0000.nii.gz"))
+
+
+def _stage(name, out, fn):
+    """Run one stage; a failure is re-raised with the stage's name and the fact that the partial output stays."""
+    try:
+        return fn()
+    except Exception as e:
+        raise RuntimeError(f"{name} failed; the partial output stays in {out} (nothing is deleted here): "
+                           f"rerun into a new output directory") from e
+
+
+def check_box(box, shape):
+    """(x0, y0, z0, x1, y1, z1) as ints; refuses a box that is empty or leaves the grid."""
+    x0, y0, z0, x1, y1, z1 = [int(v) for v in box]
+    if not (0 <= x0 < x1 <= shape[0] and 0 <= y0 < y1 <= shape[1] and 0 <= z0 < z1 <= shape[2]):
+        raise ValueError(f"box {[x0, y0, z0, x1, y1, z1]} is empty or outside the grid {tuple(shape)}")
+    return x0, y0, z0, x1, y1, z1
 
 
 def run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet):
     """box: (x0, y0, z0, x1, y1, z1), half-open, on the stack's (col, row, slice) grid; bound with BrainBinder."""
     if (h5 is None) == (nifti is None):
         raise ValueError("give exactly one of h5 and nifti")
+    source = Path(h5 if h5 is not None else nifti)
+    if not source.is_file():
+        raise FileNotFoundError(f"{source} is missing")
     out = Path(out_dir)
     if out.exists():
-        raise FileExistsError(f"{out} exists")
-    img = stage_input(h5, nifti, out)
+        raise FileExistsError(f"{out} exists; nothing is deleted or overwritten here, use a new output directory")
+    img = _stage("staging the input", out, lambda: stage_input(h5, nifti, out))
     data = np.asarray(img.dataobj).astype(np.float32)
     zooms = tuple(float(z) for z in img.header.get_zooms()[:3])
-    predict(OUTLINE["id"], OUTLINE["config"], out / "input_outline", out / "pred_outline", FOLDS, gpu)
+    if box is not None:
+        box = _stage("checking the box", out, lambda: check_box(box, data.shape))
+    _stage("the outline prediction", out,
+           lambda: predict(OUTLINE["id"], OUTLINE["config"], out / "input_outline", out / "pred_outline", FOLDS, gpu))
     mask = postprocess(load_label_map(out / "pred_outline" / "case.nii.gz"))
     if mask.shape != data.shape:
         raise ValueError(f"outline {mask.shape} and stack {data.shape} differ")
     nib.save(nib.Nifti1Image(mask, img.affine), str(out / "brain_mask.nii.gz"))
     (out / "input_student").mkdir()
     nib.save(nib.Nifti1Image(data * mask, img.affine), str(out / "input_student" / "case_0000.nii.gz"))
-    predict(STUDENT["id"], STUDENT["config"], out / "input_student", out / "pred_student", FOLDS, gpu)
+    _stage("the student prediction", out,
+           lambda: predict(STUDENT["id"], STUDENT["config"], out / "input_student", out / "pred_student", FOLDS, gpu))
     student = load_label_map(out / "pred_student" / "case.nii.gz")
     if student.shape != data.shape:
         raise ValueError(f"student {student.shape} and stack {data.shape} differ")
@@ -1296,7 +1358,7 @@ def run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet):
               "anatomy": str(out / "anatomy.nii.gz"), "brain_mask": str(out / "brain_mask.nii.gz"),
               "anatomy_source": "S4 student on FLAIR, trained on SynthSeg pseudo-labels (NOT_EVIDENCE)"}
     if box is not None:
-        x0, y0, z0, x1, y1, z1 = [int(v) for v in box]
+        x0, y0, z0, x1, y1, z1 = box
         sl = (slice(x0, x1), slice(y0, y1), slice(z0, z1))
         record["box"] = [x0, y0, z0, x1, y1, z1]
         record["binding"] = BrainBinder(anatomy, zooms).bind(sl, np.ones((x1 - x0, y1 - y0, z1 - z0), bool))
@@ -1307,7 +1369,7 @@ def run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet):
 - [ ] **Step 4: Run the test to see it pass**
 
 Run: `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/test_brain_anatomy_infer.py -q -p no:cacheprovider`
-Expected: `1 passed`.
+Expected: `3 passed`.
 
 - [ ] **Step 5: Commit**
 
@@ -2589,7 +2651,7 @@ git commit -m "S4 anatomy: evaluation records, montages and inference smoke"
 - Modify: `CLAUDE.md` (code-map line for `anatobind/anatomy/`, status sentence, test count), `STATUS.md` (full rewrite, five sections)
 
 - [ ] **Step 1: `docs/verification/2026-10-02/brain_anatomy_flair/README.md`** — one line per record in the folder (what it is, the command that made it); the verdict table (the A11 numbers beside the gates, the simulated test Dice, the outline Dice); "Known deviations": the SibBMS exclusions (9), the fastMRI stacks excluded from the outline model (`excluded.json`), BMSR resampled from 1.5 mm, SibBMS lesions not ignored (no same-grid masks), 3D FLAIR training versus 2D FLAIR target (A7), the lowest two slices unjudged (A12), left/right by the headers; "Timing" from `launch.md`, `training.txt` and the build logs. Every number copied from a file.
-- [ ] **Step 2: Tests** — `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`; record the count (expected 870 passed, 1 skipped).
+- [ ] **Step 2: Tests** — `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`; record the count (expected 872 passed, 1 skipped).
 - [ ] **Step 3: `CLAUDE.md`** — add to the code map: `anatobind/anatomy/{labels,sources,simulate,outline}.py`, `anatobind/eval/brain_anatomy.py`, `anatobind/infer/brain_anatomy.py`, `scripts/brain_anatomy_{prepare,train}.py`, `eval_brain_anatomy.py`, `infer_brain_anatomy.py`, the spec, the plan, the records folder; update the status sentence (S4 verdict and where it is) and the test count. Change nothing else.
 - [ ] **Step 4: `STATUS.md`** — rewritten with the five fixed sections (verified, with commands and raw outputs; decisions for the user: the A11 outcome and whether S4 waits for Level R or iterates on A7, push, the deletable list; next steps: the Level R reader, S5 integration, stage B; pitfalls: array frame, ignore label ids, scripts without deletion, template-space brains; the why of A1–A16).
 - [ ] **Step 5: Commit** — `git add docs/verification/2026-10-02/brain_anatomy_flair/README.md CLAUDE.md STATUS.md && git commit -m "Docs: S4 brain anatomy on fastMRI FLAIR, records index, status and code map"`.
