@@ -2333,6 +2333,7 @@ def test_stem_metrics_and_summary(tmp_path):
     mod.report(s, per_stem, out, "cmd", "abc1234")
     text = (out / "REPORT.md").read_text()
     assert "**fail**" in text and "Code: commit abc1234" in text and "Level R" in text and "thalamus_left" in text
+    assert "host agreement 0.5, mean host Dice" in text and "outline Dice 1.0 (gates 0.9 / 0.8 / 0.97)" in text     # the numbers, not the pass flags
     assert json.loads((out / "verdict.json").read_text())["verdict"]["pass"] is False
     assert (out / "per_stem.csv").read_text().splitlines()[1].startswith("a,test,2,5,")
 
@@ -2508,8 +2509,8 @@ def summarize(per_stem, per_sample):
 def report(summary, per_stem, out, command, code):
     v, d, a, o, s = summary["verdict"], summary["fastmri_dice"], summary["host_agreement"], summary["outline"], summary["simulated_test"]
     L = ["# S4 brain anatomy on fastMRI FLAIR: evaluation (NOT_EVIDENCE: agreement with SynthSeg pseudo-labels)\n\n",
-         f"Verdict (spec A11): **{'pass' if v['pass'] else 'fail'}** — host agreement {v['host_agreement']}, mean host Dice {v['mean_host_dice']}, "
-         f"outline Dice {v['outline_dice']} (gates {GATES['host_agreement']} / {GATES['mean_host_dice']} / {GATES['outline_dice']}).\n\n",
+         f"Verdict (spec A11): **{'pass' if v['pass'] else 'fail'}** — host agreement {v['values']['host_agreement']}, mean host Dice {v['values']['mean_host_dice']}, "
+         f"outline Dice {v['values']['outline_dice']} (gates {GATES['host_agreement']} / {GATES['mean_host_dice']} / {GATES['outline_dice']}).\n\n",
          "The final judgement of S4 waits for the Level R reader labels (A12); the lowest two slices are reported, not judged.\n\n",
          "## fastMRI stacks (reliable slices only)\n\n", "```json\n", json.dumps({"n_stacks": summary["n_stacks"], "host_agreement": a, "mean_host_dice": d["mean_host_dice"]}, indent=1), "\n```\n\n",
          "| class | mean Dice over stacks |\n|---|---|\n"]
