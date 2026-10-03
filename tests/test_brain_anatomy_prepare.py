@@ -139,6 +139,14 @@ def test_dataset908_places_usable_stacks_by_patient_and_lists_the_unusable(tmp_p
     assert meta["labels"] == {"background": 0, "brain": 1, "ignore": 2} and meta["numTraining"] == sum(1 for v in info.values() if v["split"] == "train")
     lab = np.asarray(nib.load(str(base / "labelsTr" / f"{[s for s, v in info.items() if v['split'] == 'train'][0]}.nii.gz")).dataobj)
     assert (lab[:, :, 0] == 2).all() and set(np.unique(lab[:, :, 5])) == {0, 1}
+    # an RSS image that is not on its SynthSeg map's grid stops the stage (same shape, shifted affine)
+    def shifted(stem, out):
+        aff = np.diag([5.0, 5.0, 5.0, 1.0])
+        aff[1, 3] = 10.0
+        nib.save(nib.Nifti1Image(np.ones((40, 40, 16), np.float32), aff), str(out))
+
+    with pytest.raises(ValueError, match="not on the grid of its SynthSeg map"):
+        mod.stage_dataset908(tmp_path / "raw_shifted", tmp_path / "work", seg_dir=seg_dir, convert=shifted, patient=patient)
 
 
 def test_patient_splits_and_split_files(tmp_path):
@@ -155,3 +163,16 @@ def test_patient_splits_and_split_files(tmp_path):
         mod.write_splits(tmp_path / "pre", "Dataset907_BrainAnatomyFLAIR", fold)
     with pytest.raises(FileNotFoundError):
         mod.write_splits(tmp_path / "pre", "Dataset908_FastMRIBrainOutline", fold)
+    # the stage writes no split file unless both datasets are preprocessed
+    raw, pre = tmp_path / "raw_s", tmp_path / "pre_s"
+    for d in ("Dataset907_BrainAnatomyFLAIR", "Dataset908_FastMRIBrainOutline"):
+        (raw / d).mkdir(parents=True)
+        (raw / d / "cases.json").write_text(json.dumps({f"c{i}": {"patient": f"p{i}", "split": "train" if i else "test"} for i in range(11)}))
+    (pre / "Dataset907_BrainAnatomyFLAIR").mkdir(parents=True)
+    with pytest.raises(FileNotFoundError, match="Dataset908"):
+        mod.stage_splits(raw, pre)
+    assert not (pre / "Dataset907_BrainAnatomyFLAIR" / "splits_final.json").exists()
+    (pre / "Dataset908_FastMRIBrainOutline").mkdir()
+    mod.stage_splits(raw, pre)
+    s907 = json.loads((pre / "Dataset907_BrainAnatomyFLAIR" / "splits_final.json").read_text())
+    assert sum(len(f["val"]) for f in s907) == 10 and "c0" not in {c for f in s907 for c in f["val"]}        # the test case is in no fold

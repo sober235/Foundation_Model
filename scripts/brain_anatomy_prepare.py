@@ -184,16 +184,16 @@ def outline_from_seg(seg_path):
     return label, info, seg
 
 
-def write_outline_case(stem, image_path, seg_path, base, split):
-    """Place one usable stack: image (and label when training) into the dataset; refuses a grid mismatch. image_path
-    is the RSS NIfTI already written into the dataset folder."""
-    label, info, seg = outline_from_seg(seg_path)
+def write_outline_case(stem, image_path, label, seg, base, split):
+    """Place one usable stack's label (training stacks only). image_path is the RSS NIfTI already written into the
+    dataset folder; it must lie on the grid of the SynthSeg map the label was made from (shape and affine), else the
+    stage stops: a label is never carried between grids."""
     img = nib.load(str(image_path))
-    if img.shape != seg.shape:
-        raise ValueError(f"{stem}: image {img.shape} and SynthSeg map {seg.shape} differ")
+    if img.shape != seg.shape or float(np.abs(img.affine - seg.affine).max()) > GRID_TOL:
+        raise ValueError(f"{stem}: the RSS image is not on the grid of its SynthSeg map (shape {img.shape} against {seg.shape}, or the "
+                         f"affines differ); the half-built dataset stays in {base} and is not reused")
     if split == "train":
         nib.save(nib.Nifti1Image(label, img.affine), str(Path(base) / "labelsTr" / f"{stem}.nii.gz"))
-    return info
 
 
 def stage_dataset908(raw_root, work, seg_dir=FASTMRI_SEG, convert=None, patient=None):
@@ -215,14 +215,15 @@ def build_dataset908(base, stems, patient, seg_dir, convert):
     split = split_by_patient({s: {"source": "fastmri", "patient": patient[s]} for s in stems}, TEST_SHARE, seed=0)
     info, excluded = {}, {}
     for i, s in enumerate(stems, start=1):
-        _, res, _ = outline_from_seg(Path(seg_dir) / f"{s}_seg.nii.gz")
-        if not res["usable"]:
+        label, res, seg = outline_from_seg(Path(seg_dir) / f"{s}_seg.nii.gz")
+        if res["usable"]:
+            folder = "imagesTr" if split[s] == "train" else "imagesTs"
+            img_path = base / folder / f"{s}_0000.nii.gz"
+            convert(s, img_path)
+            write_outline_case(s, img_path, label, seg, base, split[s])
+            info[s] = {"patient": patient[s], "split": split[s], **res}
+        else:
             excluded[s] = {**res, "patient": patient[s]}
-            continue
-        folder = "imagesTr" if split[s] == "train" else "imagesTs"
-        img_path = base / folder / f"{s}_0000.nii.gz"
-        convert(s, img_path)
-        info[s] = {"patient": patient[s], "split": split[s], **write_outline_case(s, img_path, Path(seg_dir) / f"{s}_seg.nii.gz", base, split[s])}
         if i % 50 == 0 or i == len(stems):
             print(f"{i}/{len(stems)} stacks", flush=True)
     n_tr = sum(1 for v in info.values() if v["split"] == "train")
@@ -252,10 +253,16 @@ def write_splits(preprocessed_root, dataset, case_fold, k=5):
 
 
 def stage_splits(raw_root, preprocessed_root):
-    for dataset in (DATASET907, DATASET908):
+    todo = []
+    for dataset in (DATASET907, DATASET908):                 # every check first: no split file is written unless both can be
+        d = Path(preprocessed_root) / dataset
+        if not d.is_dir():
+            raise FileNotFoundError(f"{d} missing: run nnUNetv2_plan_and_preprocess first")
+        _refuse(d / "splits_final.json")
         info = json.loads((Path(raw_root) / dataset / "cases.json").read_text())
-        train = {c: v for c, v in info.items() if v["split"] == "train"}
-        p, sizes = write_splits(preprocessed_root, dataset, patient_splits(train))
+        todo.append((dataset, patient_splits({c: v for c, v in info.items() if v["split"] == "train"})))
+    for dataset, case_fold in todo:
+        p, sizes = write_splits(preprocessed_root, dataset, case_fold)
         print(f"wrote {p}: validation cases per fold {sizes}")
 
 
