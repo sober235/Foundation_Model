@@ -1145,7 +1145,7 @@ git commit -m "S4 anatomy: evaluation (Dice on reliable slices, box host agreeme
 
 **Interfaces:**
 - Consumes: Task 1 (`NAMES`, `to_synthseg`), Task 4 (`postprocess`), Task 5 (`reliable_slices`), `anatobind.bind.brain_lookup.BrainBinder`, `anatobind.data_engine.fastmri.rss_h5_to_nifti`, `anatobind.eval.lesion_boxes.load_label_map`, `anatobind.infer.knee.nnunet_env`.
-- Produces: `OUTLINE = {id: 908, config: '2d'}`, `STUDENT = {id: 907, config: '3d_fullres'}`, `TRAINER`, `FOLDS = [0]`, `run_nnunet(dataset_id, config, in_dir, out_dir, folds, gpu)`, `stage_input` (float32 staging), `check_box(box, shape)`, `run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet) -> record` (a missing input is refused before anything is created; a stage that fails raises `RuntimeError` naming the stage and the directory that keeps the partial output).
+- Produces: `OUTLINE = {id: 908, config: '2d', trainer: 'nnUNetTrainer_250epochs'}`, `STUDENT = {id: 907, config: '3d_fullres', trainer: 'nnUNetTrainer_250epochs_NoMirroring'}` (spec A17), `TRAINERS` (by dataset id), `FOLDS = [0]`, `run_nnunet(dataset_id, config, in_dir, out_dir, folds, gpu)`, `stage_input` (float32 staging), `check_box(box, shape)`, `run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet) -> record` (a missing input is refused before anything is created; a stage that fails raises `RuntimeError` naming the stage and the directory that keeps the partial output).
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1241,6 +1241,8 @@ def test_the_nnunet_command_line_and_the_float32_staging(tmp_path, monkeypatch):
     assert seen["cmd"] == ["nice", "-n", "19", "nnUNetv2_predict", "-i", str(tmp_path / "in"), "-o", str(tmp_path / "o"), "-d", "908", "-c", "2d",
                            "-tr", "nnUNetTrainer_250epochs", "-f", "0", "-npp", "2", "-nps", "2", "--disable_progress_bar"]
     assert seen["check"] is True and seen["gpu"] == "3"
+    I.run_nnunet(907, "3d_fullres", tmp_path / "in", tmp_path / "o", [0], 3)       # sided classes: the trainer without mirroring
+    assert seen["cmd"][seen["cmd"].index("-tr") + 1] == "nnUNetTrainer_250epochs_NoMirroring"
     ints = tmp_path / "int16.nii.gz"
     nib.save(nib.Nifti1Image(np.full((4, 4, 4), 7, np.int16), np.eye(4)), str(ints))
     img = I.stage_input(None, ints, tmp_path / "staged")
@@ -1278,14 +1280,17 @@ from anatobind.eval.brain_anatomy import reliable_slices
 from anatobind.eval.lesion_boxes import load_label_map
 from anatobind.infer.knee import nnunet_env
 
-OUTLINE = {"id": 908, "config": "2d"}
-STUDENT = {"id": 907, "config": "3d_fullres"}
-TRAINER = "nnUNetTrainer_250epochs"
+OUTLINE = {"id": 908, "config": "2d", "trainer": "nnUNetTrainer_250epochs"}
+# The student's classes have a side. nnU-Net's default mirroring flips the image and the labels together, so a left
+# structure appears on either side under the same label and the sides cannot be learned: the student is trained and
+# run without mirroring (spec A17). The outline has no side and keeps the default.
+STUDENT = {"id": 907, "config": "3d_fullres", "trainer": "nnUNetTrainer_250epochs_NoMirroring"}
+TRAINERS = {m["id"]: m["trainer"] for m in (OUTLINE, STUDENT)}
 FOLDS = [0]
 
 
 def run_nnunet(dataset_id, config, in_dir, out_dir, folds, gpu):
-    cmd = ["nnUNetv2_predict", "-i", str(in_dir), "-o", str(out_dir), "-d", str(dataset_id), "-c", config, "-tr", TRAINER,
+    cmd = ["nnUNetv2_predict", "-i", str(in_dir), "-o", str(out_dir), "-d", str(dataset_id), "-c", config, "-tr", TRAINERS[dataset_id],
            "-f", *[str(f) for f in folds], "-npp", "2", "-nps", "2", "--disable_progress_bar"]
     subprocess.run(["nice", "-n", "19", *cmd], check=True, env=nnunet_env(gpu))
 
@@ -2055,12 +2060,15 @@ def test_train_launcher_refuses_existing_outputs_and_pins_one_job_per_card(tmp_p
     starts, reasons = t.plan(["student", "outline"], [3, 5], results, logs)
     assert starts == [] and "log" in reasons["outline"]
     assert t.plan(["outline"], [], tmp_path / "r2", tmp_path / "l2") == ([], {"outline": "no idle GPU left"})
-    assert t.train_command("student") == ["nnUNetv2_train", "907", "3d_fullres", "0", "-tr", "nnUNetTrainer_250epochs"]
+    # the student's classes have a side: no mirroring (spec A17); the outline keeps the default trainer
+    assert t.train_command("student") == ["nnUNetv2_train", "907", "3d_fullres", "0", "-tr", "nnUNetTrainer_250epochs_NoMirroring"]
     assert t.train_command("outline") == ["nnUNetv2_train", "908", "2d", "0", "-tr", "nnUNetTrainer_250epochs"]
     cmd = t.launch_command("outline", 5, tmp_path, logs)
     assert cmd[:3] == ["setsid", "bash", "-c"] and "CUDA_VISIBLE_DEVICES=5 nice -n 19 nnUNetv2_train 908 2d 0" in cmd[3]
     assert "scripts/nnunet_env.sh" in cmd[3] and str(t.log_path(logs, "outline")) in cmd[3]
     assert t.result_dir(results, "outline").name == "fold_0" and "nnUNetTrainer_250epochs__nnUNetPlans__2d" in str(t.result_dir(results, "outline"))
+    assert "nnUNetTrainer_250epochs_NoMirroring__nnUNetPlans__3d_fullres" in str(t.result_dir(results, "student"))
+    assert "nnUNetTrainer_250epochs_NoMirroring" in t.log_path(logs, "student").name
 
 
 def test_infer_entry_passes_the_arguments_through(tmp_path, capsys):
@@ -2091,7 +2099,8 @@ Expected: errors at import or collection (the module does not exist yet).
 #!/usr/bin/env python
 # scripts/brain_anatomy_train.py
 """Launch the two S4 trainings on idle GPUs, one job per card (spec 2026-10-02 A9, A10, A15):
-Dataset907 3d_fullres fold 0 (student) and Dataset908 2d fold 0 (brain outline), nnUNetTrainer_250epochs.
+Dataset907 3d_fullres fold 0 (student, nnUNetTrainer_250epochs_NoMirroring: its classes have a side, spec A17) and
+Dataset908 2d fold 0 (brain outline, nnUNetTrainer_250epochs).
 
   PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_train.py --jobs student outline --gpus 0 1 2 3 4 5 6 7
 
@@ -2106,22 +2115,24 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from brain_detector_train import idle_gpus, query_busy_pids, query_nvidia_smi  # noqa: E402
+from anatobind.infer.brain_anatomy import OUTLINE, STUDENT  # noqa: E402
 from anatobind.infer.knee import NNUNET_ROOT  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
 LOG_DIR = REPO / "logs" / "brain_anatomy"
-TRAINER = "nnUNetTrainer_250epochs"
-JOBS = {"student": {"id": 907, "name": "Dataset907_BrainAnatomyFLAIR", "config": "3d_fullres"},
-        "outline": {"id": 908, "name": "Dataset908_FastMRIBrainOutline", "config": "2d"}}
+JOBS = {"student": {**STUDENT, "name": "Dataset907_BrainAnatomyFLAIR"},       # id, config and trainer: the inference chain's
+        "outline": {**OUTLINE, "name": "Dataset908_FastMRIBrainOutline"}}
 FOLD = 0
 
 
-def result_dir(results_root, job, trainer=TRAINER, fold=FOLD):
-    return Path(results_root) / JOBS[job]["name"] / f"{trainer}__nnUNetPlans__{JOBS[job]['config']}" / f"fold_{fold}"
+def result_dir(results_root, job, fold=FOLD):
+    j = JOBS[job]
+    return Path(results_root) / j["name"] / f"{j['trainer']}__nnUNetPlans__{j['config']}" / f"fold_{fold}"
 
 
-def log_path(log_dir, job, trainer=TRAINER, fold=FOLD):
-    return Path(log_dir) / f"{JOBS[job]['name']}_{JOBS[job]['config']}_{trainer}_fold{fold}.log"
+def log_path(log_dir, job, fold=FOLD):
+    j = JOBS[job]
+    return Path(log_dir) / f"{j['name']}_{j['config']}_{j['trainer']}_fold{fold}.log"
 
 
 def refusal(results_root, log_dir, job):
@@ -2133,8 +2144,9 @@ def refusal(results_root, log_dir, job):
     return None
 
 
-def train_command(job, trainer=TRAINER, fold=FOLD):
-    return ["nnUNetv2_train", str(JOBS[job]["id"]), JOBS[job]["config"], str(fold), "-tr", trainer]
+def train_command(job, fold=FOLD):
+    j = JOBS[job]
+    return ["nnUNetv2_train", str(j["id"]), j["config"], str(fold), "-tr", j["trainer"]]
 
 
 def launch_command(job, gpu, repo_root, log_dir):
