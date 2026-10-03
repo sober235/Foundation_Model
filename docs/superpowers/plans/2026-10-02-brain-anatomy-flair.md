@@ -20,7 +20,7 @@
 - Array frame: the student is trained and applied in the fastMRI RSS array frame of `anatobind.data_engine.fastmri.rss_h5_to_nifti` (axis 0 towards the patient's left, axis 1 with the cerebellum at low indices, axis 2 upwards); a RAS array enters it by flipping axis 0 only (`s4_probe3_frame`). Left/right follow the headers (spec M10).
 - Label space: `anatobind.anatomy.labels.STUDENT` (16 compact classes) is the single source of truth; inference writes SynthSeg representative values so that `BrainBinder` and `host_class_map` read the output like a SynthSeg map.
 - Gates (A11): host agreement ≥ 0.90, mean sided-host Dice ≥ 0.80 on the reliable fastMRI slices, outline Dice ≥ 0.97 on the outline model's test stacks; no tuning to pass them; the lowest two slices are reported, not judged; the final judgement waits for Level R (A12). Every record carries the command and `Code: commit <hash>`.
-- Tests: `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider` (839 passed, 1 skipped before this plan; 874 after it); unit tests never read `/data2`.
+- Tests: `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider` (839 passed, 1 skipped before this plan; 870 after it); unit tests never read `/data2`.
 
 ## Review Focus
 
@@ -1126,7 +1126,7 @@ def verdict(host_rate, mean_host_dice, outline):
 - [ ] **Step 4: Run the test to see it pass**
 
 Run: `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/test_brain_anatomy_eval.py -q -p no:cacheprovider`
-Expected: `8 passed`.
+Expected: `4 passed`.
 
 - [ ] **Step 5: Commit**
 
@@ -2485,7 +2485,7 @@ import numpy as np
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[4]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[5]))
 from anatobind.anatomy.labels import to_student  # noqa: E402
 from anatobind.eval.brain_anatomy import reliable_slices  # noqa: E402
 
@@ -2573,7 +2573,7 @@ git commit -m "S4 anatomy: evaluation records, montages and inference smoke"
 - Modify: `CLAUDE.md` (code-map line for `anatobind/anatomy/`, status sentence, test count), `STATUS.md` (full rewrite, five sections)
 
 - [ ] **Step 1: `docs/verification/2026-10-02/brain_anatomy_flair/README.md`** — one line per record in the folder (what it is, the command that made it); the verdict table (the A11 numbers beside the gates, the simulated test Dice, the outline Dice); "Known deviations": the SibBMS exclusions (9), the fastMRI stacks excluded from the outline model (`excluded.json`), BMSR resampled from 1.5 mm, SibBMS lesions not ignored (no same-grid masks), 3D FLAIR training versus 2D FLAIR target (A7), the lowest two slices unjudged (A12), left/right by the headers; "Timing" from `launch.md`, `training.txt` and the build logs. Every number copied from a file.
-- [ ] **Step 2: Tests** — `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`; record the count (expected 874 passed, 1 skipped).
+- [ ] **Step 2: Tests** — `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`; record the count (expected 870 passed, 1 skipped).
 - [ ] **Step 3: `CLAUDE.md`** — add to the code map: `anatobind/anatomy/{labels,sources,simulate,outline}.py`, `anatobind/eval/brain_anatomy.py`, `anatobind/infer/brain_anatomy.py`, `scripts/brain_anatomy_{prepare,train}.py`, `eval_brain_anatomy.py`, `infer_brain_anatomy.py`, the spec, the plan, the records folder; update the status sentence (S4 verdict and where it is) and the test count. Change nothing else.
 - [ ] **Step 4: `STATUS.md`** — rewritten with the five fixed sections (verified, with commands and raw outputs; decisions for the user: the A11 outcome and whether S4 waits for Level R or iterates on A7, push, the deletable list; next steps: the Level R reader, S5 integration, stage B; pitfalls: array frame, ignore label ids, scripts without deletion, template-space brains; the why of A1–A16).
 - [ ] **Step 5: Commit** — `git add docs/verification/2026-10-02/brain_anatomy_flair/README.md CLAUDE.md STATUS.md && git commit -m "Docs: S4 brain anatomy on fastMRI FLAIR, records index, status and code map"`.
