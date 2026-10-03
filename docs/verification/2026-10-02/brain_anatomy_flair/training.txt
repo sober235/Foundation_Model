@@ -1,0 +1,111 @@
+# S4 trainings: how they ended (plan Task 8 Step 9). Written 2026-10-04 02:33:30. Raw lines from the result folders.
+# Root: /data2/congcong/data/FM_data/derived/nnunet/results
+
+== Dataset908_FastMRIBrainOutline/nnUNetTrainer_250epochs__nnUNetPlans__2d/fold_0   [brain outline]
+   total 524288
+   drwx------ 3 congcongliu congcongliu      4096 2026-10-04 01:21 .
+   drwx------ 3 congcongliu congcongliu      4096 2026-10-03 22:22 ..
+   -rw------- 1 congcongliu congcongliu 267949702 2026-10-03 23:48 checkpoint_best.pth
+   -rw------- 1 congcongliu congcongliu 267993288 2026-10-04 01:21 checkpoint_final.pth
+   -rw------- 1 congcongliu congcongliu     16008 2026-10-03 22:22 debug.json
+   -rw------- 1 congcongliu congcongliu    779478 2026-10-04 01:21 progress.png
+   -rw------- 1 congcongliu congcongliu    103490 2026-10-04 01:22 training_log_2026_10_3_22_22_42.txt
+   drwx------ 2 congcongliu congcongliu      4096 2026-10-04 01:22 validation
+   epochs with an 'Epoch time' line: 250
+   first epoch line: 2026-10-03 22:22:44.450315: Epoch 0 
+   mean epoch time: 41.4 s over 250 epochs
+   last epoch and the end of the log:
+     2026-10-04 01:20:38.308449: Epoch 249 
+     2026-10-04 01:21:19.320238: train_loss -0.9758 
+     2026-10-04 01:21:19.320481: val_loss -0.9089 
+     2026-10-04 01:21:19.320544: Pseudo dice [0.9747] 
+     2026-10-04 01:21:19.320609: Epoch time: 41.01 s 
+     2026-10-04 01:21:20.905769: Training done. 
+     2026-10-04 01:22:18.497694: Validation complete 
+     2026-10-04 01:22:18.497900: Mean Validation Dice:  0.9703563171741258 
+   files in validation/: 70
+
+== Dataset907_BrainAnatomyFLAIR/nnUNetTrainer_250epochs_NoMirroring__nnUNetPlans__3d_fullres/fold_0   [student, the model that is used (spec A17)]
+   total 698480
+   drwx------ 3 congcongliu congcongliu      4096 2026-10-04 02:30 .
+   drwx------ 3 congcongliu congcongliu      4096 2026-10-03 22:56 ..
+   -rw------- 1 congcongliu congcongliu 357126854 2026-10-04 02:26 checkpoint_best.pth
+   -rw------- 1 congcongliu congcongliu 357132616 2026-10-04 02:30 checkpoint_final.pth
+   -rw------- 1 congcongliu congcongliu     16910 2026-10-03 22:56 debug.json
+   -rw------- 1 congcongliu congcongliu    617776 2026-10-04 02:30 progress.png
+   -rw------- 1 congcongliu congcongliu    290352 2026-10-04 02:32 training_log_2026_10_3_22_56_51.txt
+   drwx------ 2 congcongliu congcongliu     36864 2026-10-04 02:32 validation
+   epochs with an 'Epoch time' line: 250
+   first epoch line: 2026-10-03 22:56:54.291726: Epoch 0 
+   mean epoch time: 49.0 s over 250 epochs
+   last epoch and the end of the log:
+     2026-10-04 02:30:09.504070: Epoch 249 
+     2026-10-04 02:30:56.857344: train_loss -0.4448 
+     2026-10-04 02:30:56.857596: val_loss -0.4458 
+     2026-10-04 02:30:56.857794: Pseudo dice [0.8781, 0.8795, 0.8035, 0.811, 0.8997, 0.8991, 0.8574, 0.8581, 0.6452, 0.6554, 0.6427, 0.681, 0.6526, 0.905] 
+     2026-10-04 02:30:56.857875: Epoch time: 47.35 s 
+     2026-10-04 02:30:58.756114: Training done. 
+     2026-10-04 02:32:53.742776: Validation complete 
+     2026-10-04 02:32:53.742901: Mean Validation Dice:  0.7004205164182558 
+   files in validation/: 873
+
+== Dataset907_BrainAnatomyFLAIR/nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres/fold_0   [student with mirroring: NOT USED, kept only as the record of the defect (launch.md)]
+   total 698748
+   drwx------ 3 congcongliu congcongliu      4096 2026-10-04 02:15 .
+   drwx------ 3 congcongliu congcongliu      4096 2026-10-03 22:44 ..
+   -rw------- 1 congcongliu congcongliu 357132614 2026-10-04 02:15 checkpoint_best.pth
+   -rw------- 1 congcongliu congcongliu 357132872 2026-10-04 02:15 checkpoint_final.pth
+   -rw------- 1 congcongliu congcongliu     16924 2026-10-03 22:44 debug.json
+   -rw------- 1 congcongliu congcongliu    887969 2026-10-04 02:15 progress.png
+   -rw------- 1 congcongliu congcongliu    287011 2026-10-04 02:21 training_log_2026_10_3_22_44_28.txt
+   drwx------ 2 congcongliu congcongliu     36864 2026-10-04 02:21 validation
+   epochs with an 'Epoch time' line: 250
+   first epoch line: 2026-10-03 22:44:30.438163: Epoch 0 
+   mean epoch time: 48.5 s over 250 epochs
+   last epoch and the end of the log:
+     2026-10-04 02:14:24.583700: Epoch 249 
+     2026-10-04 02:15:13.200123: train_loss -0.3056 
+     2026-10-04 02:15:13.200324: val_loss -0.354 
+     2026-10-04 02:15:13.200457: Pseudo dice [0.8161, 0.8145, 0.7513, 0.7514, 0.8692, 0.8718, 0.8178, 0.8228, 0.5313, 0.0, 0.0, 0.615, 0.6637, 0.8905] 
+     2026-10-04 02:15:13.200549: Epoch time: 48.62 s 
+     2026-10-04 02:15:16.886446: Training done. 
+     2026-10-04 02:21:53.027785: Validation complete 
+     2026-10-04 02:21:53.027891: Mean Validation Dice:  0.5587007320437313 
+   files in validation/: 873
+
+== per-class validation Dice (validation/summary.json, 'mean' = mean over the fold's validation cases)
+-- outline: 69 cases, foreground mean Dice 0.9704
+    1 brain                  0.9704
+-- student without mirroring (used): 872 cases, foreground mean Dice 0.7004
+    1 white_matter_left      0.8768
+    2 white_matter_right     0.8776
+    3 cortex_left            0.8101
+    4 cortex_right           0.8146
+    5 thalamus_left          0.8330
+    6 thalamus_right         0.8454
+    7 basal_ganglia_left     0.8234
+    8 basal_ganglia_right    0.8330
+    9 brainstem              0.3853
+   10 cerebellum_left        0.4182
+   11 cerebellum_right       0.3985
+   12 other_deep_grey_left   0.5394
+   13 other_deep_grey_right  0.4739
+   14 ventricles             0.8766
+-- student with mirroring (not used): 872 cases, foreground mean Dice 0.5587
+    1 white_matter_left      0.7638
+    2 white_matter_right     0.7728
+    3 cortex_left            0.7023
+    4 cortex_right           0.7139
+    5 thalamus_left          0.7435
+    6 thalamus_right         0.7582
+    7 basal_ganglia_left     0.7203
+    8 basal_ganglia_right    0.7343
+    9 brainstem              0.3106
+   10 cerebellum_left        0.0000
+   11 cerebellum_right       0.0000
+   12 other_deep_grey_left   0.3840
+   13 other_deep_grey_right  0.3563
+   14 ventricles             0.8617
+
+The student's validation cases are simulated stacks (fold 0 of Dataset907: 872 samples of patients not in its training part).
+They are not the judgement of S4: that is the evaluation on real fastMRI stacks (eval/REPORT.md, spec A11).
