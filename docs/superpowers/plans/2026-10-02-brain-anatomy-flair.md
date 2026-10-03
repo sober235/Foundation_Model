@@ -24,7 +24,7 @@
 
 ## Review Focus
 
-1. A source case whose FLAIR and teacher map are not on one grid after the 1 mm resampling (BMSR has 1.5 mm slices): `case_arrays` must refuse it with the file name, never silently vote labels onto the wrong voxels — pinned by the grid check in `test_simulate_case_writes_stacks_labels_and_params_deterministically` (Task 7) and by `test_simulate_end_to_end_gives_a_fastmri_shaped_stack` (`ValueError: differ`, Task 3).
+1. A source case whose FLAIR and teacher map are not on one grid after the 1 mm resampling (BMSR has 1.5 mm slices): `case_arrays` must refuse it with the file name, never silently vote labels onto the wrong voxels — pinned by the two `not on the grid` cases of `test_simulate_case_writes_stacks_labels_and_params_deterministically` (Task 7; `check_one_grid` compares shape and affine from the headers) and by `test_simulate_end_to_end_gives_a_fastmri_shaped_stack` (`ValueError: differ`, Task 3).
 2. A brain shorter than the 80 mm stack, or a stack whose top lies above the volume: the bottom clamps to 0 and the slabs above the volume come out empty (background), never an index error — `test_bottom_slice_and_slab_groups` (clamping, empty groups, Task 3).
 3. A fastMRI stack whose SynthSeg map is empty or holds under 300 mL (14 of 447): it must not train the outline model, it is listed in `excluded.json`, and the evaluation must not count it as agreement — `test_dataset908_places_usable_stacks_by_patient_and_lists_the_unusable` (Task 7) and `test_reliable_slices_follow_the_outline_rule` (empty map, no reliable slice, Task 5).
 4. A toy geometry (2 mm pixels, 8 slices) or a real one of 14 or 12 slices at 0.86 mm: the reliable-slice rule and the outline rule must apply by area in mm², not by voxel count — `test_reliable_slices_follow_the_outline_rule` (Task 5), `test_supervised_slices_leave_out_the_lowest_two_and_the_top` (Task 4).
@@ -1327,7 +1327,7 @@ git commit -m "S4 anatomy: inference chain (RSS, outline, stripped stack, studen
 
 **Interfaces:**
 - Consumes: Tasks 1–4, `anatobind.nnunet.brain_disease.{FM, binary_label}`, `anatobind.nnunet.brain_lesion.{assign_normal_folds, make_splits}`, `anatobind.data_engine.fastmri.rss_h5_to_nifti`, `anatobind.data_engine.fastmri_knee.volume_geometry`, `anatobind.infer.knee.NNUNET_ROOT`.
-- Produces: `scripts/brain_anatomy_prepare.py --stage sources | simulate | dataset907 | dataset908 | splits [--work] [--workers]`; functions `load_1mm_ras`, `case_arrays`, `sample_seed`, `simulate_case`, `stage_sources`, `stage_simulate`, `stage_dataset907`, `h5_of`, `fastmri_stems`, `outline_from_seg`, `write_outline_case`, `stage_dataset908(raw_root, work, seg_dir, convert=None, patient=None)`, `build_dataset908`, `patient_splits`, `write_splits`, `stage_splits`; constants `WORK`, `K_TRAIN = 4`, `DATASET907`, `DATASET908`.
+- Produces: `scripts/brain_anatomy_prepare.py --stage sources | simulate | dataset907 | dataset908 | splits [--work] [--workers]`; functions `load_1mm_ras`, `check_one_grid`, `case_arrays`, `sample_seed`, `simulate_case`, `stage_sources`, `stage_simulate`, `stage_dataset907`, `h5_of`, `fastmri_stems`, `outline_from_seg`, `write_outline_case`, `stage_dataset908(raw_root, work, seg_dir, convert=None, patient=None)`, `build_dataset908`, `patient_splits`, `write_splits`, `stage_splits`; constants `WORK`, `K_TRAIN = 4`, `DATASET907`, `DATASET908`.
 - Data layout produced: `<work>/cases.json`; `<work>/sim/{train,test}/<case>_s<k>_0000.nii.gz`, `<case>_s<k>.nii.gz`, `<case>_s<k>.json`; `<work>/sim/manifest.json`; nnU-Net raw `Dataset907_BrainAnatomyFLAIR/{imagesTr, labelsTr, imagesTs, dataset.json, cases.json}` and `Dataset908_FastMRIBrainOutline/{imagesTr, labelsTr, imagesTs, dataset.json, cases.json, excluded.json}`; `splits_final.json` of both.
 
 The controller runs the data build after the task review (Steps 8–13); the implementer stops after Step 7.
@@ -1413,6 +1413,15 @@ def test_simulate_case_writes_stacks_labels_and_params_deterministically(tmp_pat
     bad = dict(rec, lesion=str(_write(tmp_path / "bad.nii.gz", np.full(seg.shape, 7, np.int16))))
     with pytest.raises(ValueError, match="unexpected values"):
         mod.simulate_case(("CASE", bad, again, [1]))
+    # a teacher map or a lesion mask on another grid is refused before anything is resampled
+    shifted = tmp_path / "shifted.nii.gz"
+    aff = np.diag([1.0, 1.0, 1.0, 1.0])
+    aff[0, 3] = 2.0
+    nib.save(nib.Nifti1Image(seg, aff), str(shifted))
+    with pytest.raises(ValueError, match="not on the grid"):
+        mod.simulate_case(("CASE", dict(rec, anatomy=str(shifted)), again, [2]))
+    with pytest.raises(ValueError, match="not on the grid"):
+        mod.simulate_case(("CASE", dict(rec, lesion=str(_write(tmp_path / "small.nii.gz", lesion[:-1]))), again, [2]))
 
 
 def test_dataset907_links_training_samples_and_test_images_and_refuses_a_rebuild(tmp_path):
@@ -1536,6 +1545,7 @@ DATASET908 = "Dataset908_FastMRIBrainOutline"
 FASTMRI_SEG = FM / "derived/synthseg/fastmri_brain/seg_native"
 KROOT = FM / "fastMRI_lh_brain_knee/kspace/brain"
 TEST_SHARE = 0.2
+GRID_TOL = 1e-3
 
 
 def load_1mm_ras(path, order):
@@ -1548,17 +1558,23 @@ def load_1mm_ras(path, order):
     return (data.astype(np.float32) if order else data), zooms
 
 
+def check_one_grid(path, ref_path, tol=GRID_TOL):
+    """Refuse a file that is not on the reference file's grid: same shape, affines within tol (read from the headers)."""
+    a, b = nib.load(str(path)), nib.load(str(ref_path))
+    if a.shape != b.shape or float(np.abs(a.affine - b.affine).max()) > tol:
+        raise ValueError(f"{path} is not on the grid of {ref_path} (shape {a.shape} against {b.shape}, or the affines differ)")
+
+
 def case_arrays(rec):
-    """(flair, student labels, lesion mask or None) at 1 mm RAS for one case record."""
+    """(flair, student labels, lesion mask or None) at 1 mm RAS for one case record. The teacher map and the lesion
+    mask must lie on the FLAIR's grid; labels are never carried between grids."""
+    check_one_grid(rec["anatomy"], rec["flair"])
     flair, _ = load_1mm_ras(rec["flair"], 1)
     seg, _ = load_1mm_ras(rec["anatomy"], 0)
-    if flair.shape != seg.shape:
-        raise ValueError(f"{rec['flair']}: FLAIR {flair.shape} and teacher map {seg.shape} differ at 1 mm")
     lesion = None
     if rec.get("lesion"):
+        check_one_grid(rec["lesion"], rec["flair"])
         raw, _ = load_1mm_ras(rec["lesion"], 0)
-        if raw.shape != seg.shape:
-            raise ValueError(f"{rec['lesion']}: lesion mask {raw.shape} is not on the teacher map's grid")
         lesion = binary_label(raw, tuple(rec["lesion_values"]), str(rec["lesion"]))
     return flair, to_student(seg), lesion
 
@@ -1839,7 +1855,7 @@ mkdir -p docs/verification/2026-10-02/brain_anatomy_flair/build
 PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_prepare.py --stage sources 2>&1 | tee docs/verification/2026-10-02/brain_anatomy_flair/build/sources.txt
 ```
 
-Expected: sibbms 362 cases (MS 265 + Norm 97, 188 patients), pdgm 501 (495 patients), bmsr 461 (314 patients); about 20 % of each source's patients in `test`. A `FileNotFoundError` names a session without a teacher map: stop and report (the exclusion list is not edited without the user).
+Expected: sibbms 358 cases (MS 261 + Norm 97, 185 patients; four MS sessions with a teacher map have no FLAIR), pdgm 501 (495 patients), bmsr 461 (314 patients), 1320 in total; about 20 % of each source's patients in `test`. A `FileNotFoundError` names a session without a teacher map: stop and report (the exclusion list is not edited without the user).
 
 - [ ] **Step 9 (controller): simulate** (CPU, 8 workers under nice; about 5 500 samples at 2–4 s each; run in the background and poll the log)
 
