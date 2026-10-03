@@ -87,6 +87,8 @@ def test_the_nnunet_command_line_and_the_float32_staging(tmp_path, monkeypatch):
     assert seen["cmd"] == ["nice", "-n", "19", "nnUNetv2_predict", "-i", str(tmp_path / "in"), "-o", str(tmp_path / "o"), "-d", "908", "-c", "2d",
                            "-tr", "nnUNetTrainer_250epochs", "-f", "0", "-npp", "2", "-nps", "2", "--disable_progress_bar"]
     assert seen["check"] is True and seen["gpu"] == "3"
+    I.run_nnunet(907, "3d_fullres", tmp_path / "in", tmp_path / "o", [0], 3)       # sided classes: the trainer without mirroring
+    assert seen["cmd"][seen["cmd"].index("-tr") + 1] == "nnUNetTrainer_250epochs_NoMirroring"
     ints = tmp_path / "int16.nii.gz"
     nib.save(nib.Nifti1Image(np.full((4, 4, 4), 7, np.int16), np.eye(4)), str(ints))
     img = I.stage_input(None, ints, tmp_path / "staged")

@@ -21,14 +21,17 @@ from anatobind.eval.brain_anatomy import reliable_slices
 from anatobind.eval.lesion_boxes import load_label_map
 from anatobind.infer.knee import nnunet_env
 
-OUTLINE = {"id": 908, "config": "2d"}
-STUDENT = {"id": 907, "config": "3d_fullres"}
-TRAINER = "nnUNetTrainer_250epochs"
+OUTLINE = {"id": 908, "config": "2d", "trainer": "nnUNetTrainer_250epochs"}
+# The student's classes have a side. nnU-Net's default mirroring flips the image and the labels together, so a left
+# structure appears on either side under the same label and the sides cannot be learned: the student is trained and
+# run without mirroring (spec A17). The outline has no side and keeps the default.
+STUDENT = {"id": 907, "config": "3d_fullres", "trainer": "nnUNetTrainer_250epochs_NoMirroring"}
+TRAINERS = {m["id"]: m["trainer"] for m in (OUTLINE, STUDENT)}
 FOLDS = [0]
 
 
 def run_nnunet(dataset_id, config, in_dir, out_dir, folds, gpu):
-    cmd = ["nnUNetv2_predict", "-i", str(in_dir), "-o", str(out_dir), "-d", str(dataset_id), "-c", config, "-tr", TRAINER,
+    cmd = ["nnUNetv2_predict", "-i", str(in_dir), "-o", str(out_dir), "-d", str(dataset_id), "-c", config, "-tr", TRAINERS[dataset_id],
            "-f", *[str(f) for f in folds], "-npp", "2", "-nps", "2", "--disable_progress_bar"]
     subprocess.run(["nice", "-n", "19", *cmd], check=True, env=nnunet_env(gpu))
 

@@ -26,12 +26,15 @@ def test_train_launcher_refuses_existing_outputs_and_pins_one_job_per_card(tmp_p
     starts, reasons = t.plan(["student", "outline"], [3, 5], results, logs)
     assert starts == [] and "log" in reasons["outline"]
     assert t.plan(["outline"], [], tmp_path / "r2", tmp_path / "l2") == ([], {"outline": "no idle GPU left"})
-    assert t.train_command("student") == ["nnUNetv2_train", "907", "3d_fullres", "0", "-tr", "nnUNetTrainer_250epochs"]
+    # the student's classes have a side: no mirroring (spec A17); the outline keeps the default trainer
+    assert t.train_command("student") == ["nnUNetv2_train", "907", "3d_fullres", "0", "-tr", "nnUNetTrainer_250epochs_NoMirroring"]
     assert t.train_command("outline") == ["nnUNetv2_train", "908", "2d", "0", "-tr", "nnUNetTrainer_250epochs"]
     cmd = t.launch_command("outline", 5, tmp_path, logs)
     assert cmd[:3] == ["setsid", "bash", "-c"] and "CUDA_VISIBLE_DEVICES=5 nice -n 19 nnUNetv2_train 908 2d 0" in cmd[3]
     assert "scripts/nnunet_env.sh" in cmd[3] and str(t.log_path(logs, "outline")) in cmd[3]
     assert t.result_dir(results, "outline").name == "fold_0" and "nnUNetTrainer_250epochs__nnUNetPlans__2d" in str(t.result_dir(results, "outline"))
+    assert "nnUNetTrainer_250epochs_NoMirroring__nnUNetPlans__3d_fullres" in str(t.result_dir(results, "student"))
+    assert "nnUNetTrainer_250epochs_NoMirroring" in t.log_path(logs, "student").name
 
 
 def test_infer_entry_passes_the_arguments_through(tmp_path, capsys):

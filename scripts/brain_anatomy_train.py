@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # scripts/brain_anatomy_train.py
 """Launch the two S4 trainings on idle GPUs, one job per card (spec 2026-10-02 A9, A10, A15):
-Dataset907 3d_fullres fold 0 (student) and Dataset908 2d fold 0 (brain outline), nnUNetTrainer_250epochs.
+Dataset907 3d_fullres fold 0 (student, nnUNetTrainer_250epochs_NoMirroring: its classes have a side, spec A17) and
+Dataset908 2d fold 0 (brain outline, nnUNetTrainer_250epochs).
 
   PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_train.py --jobs student outline --gpus 0 1 2 3 4 5 6 7
 
@@ -16,22 +17,24 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from brain_detector_train import idle_gpus, query_busy_pids, query_nvidia_smi  # noqa: E402
+from anatobind.infer.brain_anatomy import OUTLINE, STUDENT  # noqa: E402
 from anatobind.infer.knee import NNUNET_ROOT  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[1]
 LOG_DIR = REPO / "logs" / "brain_anatomy"
-TRAINER = "nnUNetTrainer_250epochs"
-JOBS = {"student": {"id": 907, "name": "Dataset907_BrainAnatomyFLAIR", "config": "3d_fullres"},
-        "outline": {"id": 908, "name": "Dataset908_FastMRIBrainOutline", "config": "2d"}}
+JOBS = {"student": {**STUDENT, "name": "Dataset907_BrainAnatomyFLAIR"},       # id, config and trainer: the inference chain's
+        "outline": {**OUTLINE, "name": "Dataset908_FastMRIBrainOutline"}}
 FOLD = 0
 
 
-def result_dir(results_root, job, trainer=TRAINER, fold=FOLD):
-    return Path(results_root) / JOBS[job]["name"] / f"{trainer}__nnUNetPlans__{JOBS[job]['config']}" / f"fold_{fold}"
+def result_dir(results_root, job, fold=FOLD):
+    j = JOBS[job]
+    return Path(results_root) / j["name"] / f"{j['trainer']}__nnUNetPlans__{j['config']}" / f"fold_{fold}"
 
 
-def log_path(log_dir, job, trainer=TRAINER, fold=FOLD):
-    return Path(log_dir) / f"{JOBS[job]['name']}_{JOBS[job]['config']}_{trainer}_fold{fold}.log"
+def log_path(log_dir, job, fold=FOLD):
+    j = JOBS[job]
+    return Path(log_dir) / f"{j['name']}_{j['config']}_{j['trainer']}_fold{fold}.log"
 
 
 def refusal(results_root, log_dir, job):
@@ -43,8 +46,9 @@ def refusal(results_root, log_dir, job):
     return None
 
 
-def train_command(job, trainer=TRAINER, fold=FOLD):
-    return ["nnUNetv2_train", str(JOBS[job]["id"]), JOBS[job]["config"], str(fold), "-tr", trainer]
+def train_command(job, fold=FOLD):
+    j = JOBS[job]
+    return ["nnUNetv2_train", str(j["id"]), j["config"], str(fold), "-tr", j["trainer"]]
 
 
 def launch_command(job, gpu, repo_root, log_dir):
