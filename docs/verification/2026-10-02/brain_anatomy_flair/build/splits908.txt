@@ -1,0 +1,2 @@
+$ (controller, 2026-10-03 22:22:18, code bd167b1) the Dataset908 half of --stage splits, through the script's own functions: Dataset907 is not preprocessed yet and the stage writes nothing unless both are
+wrote /data2/congcong/data/FM_data/derived/nnunet/preprocessed/Dataset908_FastMRIBrainOutline/splits_final.json: validation cases per fold [69, 69, 69, 69, 69]

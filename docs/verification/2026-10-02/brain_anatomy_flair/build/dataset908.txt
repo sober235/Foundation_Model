@@ -1,0 +1,12 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_prepare.py --stage dataset908   # start 2026-10-03 22:17:31, code bd167b1
+50/447 stacks
+100/447 stacks
+150/447 stacks
+200/447 stacks
+250/447 stacks
+300/447 stacks
+350/447 stacks
+400/447 stacks
+447/447 stacks
+wrote /data2/congcong/data/FM_data/derived/nnunet/raw/Dataset908_FastMRIBrainOutline: 345 training stacks, 88 test stacks, 14 excluded
+EXIT 0 2026-10-03 22:20:39

@@ -1,0 +1,5 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_prepare.py --stage sources   # 2026-10-03 22:08:01, code 5e26cac
+bmsr: train 359 cases / 251 patients, test 102 cases / 63 patients
+pdgm: train 400 cases / 396 patients, test 101 cases / 99 patients
+sibbms: train 276 cases / 148 patients, test 82 cases / 37 patients
+wrote /data2/congcong/data/FM_data/derived/brain_anatomy/cases.json: 1320 cases

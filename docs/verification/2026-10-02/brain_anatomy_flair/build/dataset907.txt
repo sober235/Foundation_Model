@@ -1,0 +1,2 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_prepare.py --stage dataset907   # 2026-10-03 22:36:55, code bd167b1
+wrote /data2/congcong/data/FM_data/derived/nnunet/raw/Dataset907_BrainAnatomyFLAIR: 4140 training samples, 285 test samples

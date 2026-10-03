@@ -1,0 +1,3 @@
+$ (controller, 2026-10-03 22:44:04, code bd167b1) the Dataset907 half of --stage splits through the script's own functions (Dataset908's split was written at 22:22, so the stage would refuse)
+wrote /data2/congcong/data/FM_data/derived/nnunet/preprocessed/Dataset907_BrainAnatomyFLAIR/splits_final.json: validation cases per fold [872, 856, 836, 788, 788]
+patients 795 | patients in more than one fold: 0

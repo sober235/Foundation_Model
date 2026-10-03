@@ -1,0 +1,7 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-10-02/brain_anatomy_flair/checks/sim_montage.py /data2/congcong/data/FM_data/derived/brain_anatomy docs/verification/2026-10-02/brain_anatomy_flair/simulation   # 2026-10-03 22:34:57
+wrote docs/verification/2026-10-02/brain_anatomy_flair/simulation/sim_bmsr_100101A_s0.png
+wrote docs/verification/2026-10-02/brain_anatomy_flair/simulation/sim_bmsr_100102A_s0.png
+wrote docs/verification/2026-10-02/brain_anatomy_flair/simulation/sim_pdgm_UCSF-PDGM-0004_s0.png
+wrote docs/verification/2026-10-02/brain_anatomy_flair/simulation/sim_pdgm_UCSF-PDGM-0005_s0.png
+wrote docs/verification/2026-10-02/brain_anatomy_flair/simulation/sim_sibbms_MS_sub-001_ses-001_s0.png
+wrote docs/verification/2026-10-02/brain_anatomy_flair/simulation/sim_sibbms_MS_sub-002_ses-001_s0.png

@@ -1,0 +1,30 @@
+$ OMP_NUM_THREADS=1 PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_prepare.py --stage simulate --workers 8   # start 2026-10-03 22:08:11, code 5e26cac
+50/1320 cases simulated
+100/1320 cases simulated
+150/1320 cases simulated
+200/1320 cases simulated
+250/1320 cases simulated
+300/1320 cases simulated
+350/1320 cases simulated
+400/1320 cases simulated
+450/1320 cases simulated
+500/1320 cases simulated
+550/1320 cases simulated
+600/1320 cases simulated
+650/1320 cases simulated
+700/1320 cases simulated
+750/1320 cases simulated
+800/1320 cases simulated
+850/1320 cases simulated
+900/1320 cases simulated
+950/1320 cases simulated
+1000/1320 cases simulated
+1050/1320 cases simulated
+1100/1320 cases simulated
+1150/1320 cases simulated
+1200/1320 cases simulated
+1250/1320 cases simulated
+1300/1320 cases simulated
+1320/1320 cases simulated
+wrote /data2/congcong/data/FM_data/derived/brain_anatomy/sim: 4140 training samples, 285 test samples
+EXIT 0 2026-10-03 22:34:44

@@ -1,0 +1,4 @@
+Dataset907_BrainAnatomyFLAIR 3d_fullres spacing [5.0, 0.6875, 0.6875] patch [16, 320, 320] batch 2
+Dataset907_BrainAnatomyFLAIR 2d spacing [0.6875, 0.6875] patch [320, 320] batch 30
+Dataset908_FastMRIBrainOutline 3d_fullres spacing [5.0, 0.6875, 0.6875] patch [16, 320, 320] batch 2
+Dataset908_FastMRIBrainOutline 2d spacing [0.6875, 0.6875] patch [320, 320] batch 32
