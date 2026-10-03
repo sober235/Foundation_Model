@@ -56,6 +56,7 @@ def test_stem_metrics_and_summary(tmp_path):
     mod.report(s, per_stem, out, "cmd", "abc1234")
     text = (out / "REPORT.md").read_text()
     assert "**fail**" in text and "Code: commit abc1234" in text and "Level R" in text and "thalamus_left" in text
+    assert "host agreement 0.5, mean host Dice" in text and "outline Dice 1.0 (gates 0.9 / 0.8 / 0.97)" in text     # the numbers, not the pass flags
     assert json.loads((out / "verdict.json").read_text())["verdict"]["pass"] is False
     assert (out / "per_stem.csv").read_text().splitlines()[1].startswith("a,test,2,5,")
 
