@@ -47,3 +47,21 @@ GPU snapshot right before the launch (2026-10-03 22:44:23); cards 4, 5 and 6 had
 PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python scripts/brain_anatomy_train.py --jobs student
 launched student on GPU 4 (pid 1036131); log /data0/congcong/code/Project_Doing/foundation_model/logs/brain_anatomy/Dataset907_BrainAnatomyFLAIR_3d_fullres_nnUNetTrainer_250epochs_fold0.log; results /data2/congcong/data/FM_data/derived/nnunet/results/Dataset907_BrainAnatomyFLAIR/nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres/fold_0
 ```
+
+Rate after the first epochs (2026-10-03 22:48, from `training_log_2026_10_3_22_44_28.txt` in the result folder): epochs 0–3
+took 49.0, 47.2, 47.1 and 48.4 s (3268 training and 872 validation samples in fold 0) → 250 epochs ≈ 3.3 h, expected end
+around 02:05 on 2026-10-04. Under 24 h: no question to the user. The outline model was at epoch 34 at the same moment,
+42 s per epoch, pseudo Dice 0.973.
+
+## The processes to watch
+
+The pid the script prints is the `setsid` wrapper, which exits at once (the process is already a session leader, so
+`setsid` forks). The processes that stay are one above it:
+
+| job | printed pid | shell (`bash -c …`) | trainer (`nnUNetv2_train`, holds the GPU) | GPU |
+|---|---|---|---|---|
+| outline | 894550 | 894551 | 894553 | 7 |
+| student | 1036131 | 1036132 | 1036133 | 4 |
+
+`ps -p 894553,1036133` tells whether the trainings are alive; `checkpoint_final.pth` in the two `fold_0` folders tells
+that they ended normally.

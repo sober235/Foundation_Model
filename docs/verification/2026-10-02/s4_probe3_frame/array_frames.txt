@@ -1,0 +1,8 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-10-02/s4_probe3_frame/array_frames.py   # 2026-10-02 22:25:41
+fastMRI RSS NIfTI (18 maps used, native arrays): axcodes ('L', 'P', 'S'), affine diagonal [-0.688, -0.688, 5.0]
+  LEFT - RIGHT along axis 0: +69.9 voxels | cerebellum - thalamus along axis 1: -48.2 | along axis 2: -0.7
+sibbms (12 maps): native axcodes ('R', 'A', 'S'), zooms (1.0, 1.0, 1.0); after as_closest_canonical (RAS): LEFT - RIGHT axis 0 -57.5 | cerebellum - thalamus axis 1 -42.3 | axis 2 -43.7
+pdgm (12 maps): native axcodes ('L', 'P', 'S'), zooms (1.0, 1.0, 1.0); after as_closest_canonical (RAS): LEFT - RIGHT axis 0 -51.6 | cerebellum - thalamus axis 1 -32.1 | axis 2 -42.8
+bmsr (12 maps): native axcodes ('R', 'A', 'S'), zooms (0.86, 0.86, 1.5); after as_closest_canonical (RAS): LEFT - RIGHT axis 0 -65.7 | cerebellum - thalamus axis 1 -38.2 | axis 2 -32.6
+reading: fastMRI arrays have LEFT at higher axis-0 indices and the cerebellum at lower axis-1 indices than the thalamus;
+RAS arrays have LEFT at lower axis-0 indices and the same axis-1/axis-2 signs -> flip axis 0 only to enter the fastMRI frame.
