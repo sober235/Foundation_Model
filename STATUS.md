@@ -40,7 +40,7 @@
 1. **S4 的结论怎么用**（`eval/README.md` 末尾三条路）：(1) 按字面接受"不过"，回头改仿真（A6 定位 / A7 对比度）；(2) 深部类只在有参照的地方判，即 Level R 读片（A12 原本就定它是终审），我倾向这条——失败的数衡量的是参照缺结构，不是学生可见的缺陷；(3) 把 Dice 门限定到这些卷真正含有的类（白质+皮层四类均值 0.807，皮层本身没到 0.80）。(2)(3) 都是事后口径，要先写进规格增补才能引用任何"过"的数字。
 2. **push**：本会话推送被权限分类器拒绝，main 与全部 tag 仍只在本地。请你自己执行：`git -C /data0/congcong/code/Project_Doing/foundation_model push origin main --tags`。
 3. **可删清单（只列，不删；删除由你执行）**：
-   - 第一次带镜像的学生训练：`/data2/congcong/data/FM_data/derived/nnunet/results/Dataset907_BrainAnatomyFLAIR/nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres/`（约 1.4 GB）与 `logs/brain_anatomy/Dataset907_BrainAnatomyFLAIR_3d_fullres_nnUNetTrainer_250epochs_fold0.log`（证据已抄进 `launch.md`/`training.txt`，删了也不丢）；
+   - 第一次带镜像的学生训练：`/data2/congcong/data/FM_data/derived/nnunet/results/Dataset907_BrainAnatomyFLAIR/nnUNetTrainer_250epochs__nnUNetPlans__3d_fullres/`（712 MB）与 `logs/brain_anatomy/Dataset907_BrainAnatomyFLAIR_3d_fullres_nnUNetTrainer_250epochs_fold0.log`（证据已抄进 `launch.md`/`training.txt`，删了也不丢）；
    - 链路探针 `/data2/congcong/data/FM_data/derived/brain_anatomy/preflight_best_20261003_2249/`；
    - 评估中间预测 `/data2/congcong/data/FM_data/derived/brain_anatomy/eval_20261004_0233/`（507 MB；重跑 16 分钟）；
    - SDD 工作区 `.superpowers/sdd/2026-10-02-brain-anatomy-flair/`（gitignore；台账也在里面，想留就留）；误写到 `~/.claude/docs/` 的探针副本（`rm -r ~/.claude/docs`）；
