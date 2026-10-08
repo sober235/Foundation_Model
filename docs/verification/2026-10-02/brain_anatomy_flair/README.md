@@ -22,6 +22,7 @@ Everything that compares two pseudo-label maps is NOT_EVIDENCE; the final judgem
 | `eval/montage/*.png`, `eval/low_slices/*.png` | six stacks: slices 0, 1 and the two above the reliable range; the same six, slices 0–5 (stack / student / SynthSeg) | `checks/eval_montage.py`, `checks/eval_low_slices.py` |
 | `eval/ref_vs_student.txt`, `eval/ref_vs_student_rows.json` | per structure group, what the SynthSeg reference and the student hold on the real stacks | `checks/eval_ref_vs_student.py` |
 | `infer_smoke.md` | the inference chain on S2's smoke volume and on a registry lesion with its box, beside the SynthSeg map | `scripts/infer_brain_anatomy.py` |
+| `reviews/final-review-1.md`, `reviews/re-review-1.md` | the whole-branch final review (most capable model; 0 Critical / 1 Important / 12 Minor, every number traced; rulings on 27 deferred minors) and the scoped re-review of the fix commit | reviewers (copied from the SDD workspace) |
 
 Data: `/data2/congcong/data/FM_data/derived/brain_anatomy/` (`cases.json`, `sim/` 23 GB, `eval_20261004_0233/` 507 MB,
 `infer_smoke/`, `preflight_best_20261003_2249/` — a probe, deletable); nnU-Net raw / preprocessed / results for

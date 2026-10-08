@@ -70,6 +70,7 @@
 - **三个训练同时跑时 CPU 48 线程是上限**（每个 nnU-Net 训练 13 个进程）；评估等训练结束再跑。
 - **训练日志滞后**，看结果夹的 `training_log_*.txt`；别的会话会把任务放到空卡上，不是自己启动的进程一律不动。
 - **`pytest -q -q` 不打 "N passed" 行**；zsh 里 `echo ====` 会报 "=== not found"。
+- **终审挂起的 13 条小项**（`docs/verification/2026-10-02/brain_anatomy_flair/reviews/final-review-1.md` 末尾的表）下次碰到相应文件时顺手改：`--jobs` 去重、去掉多余的 `setsid`、`eval_brain_anatomy.py` 把 `_mask.nii.gz` 挪出学生的 nnU-Net 输入夹、`check_consistency` 的 `assert` 改 `raise`、重新仿真时 `ndimage.zoom(grid_mode=True)`、评估加 `n_both_none` 计数。推理记录新加的 `box_in_reliable_slices`：绑定本身不限层，S5 接入时要按这个旗标把最低两层的框标出来。
 - 沿用：记录版本不覆盖（v1/v2/v3 各自目录）；别在 nnU-Net 上调参救线；绑定一致率不是证据；"疑似 X"不是鉴别；匹配规则与 S2 相同。
 
 ## 5. 关键决定的为什么
