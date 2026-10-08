@@ -1,0 +1,25 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python docs/verification/2026-10-02/brain_anatomy_flair/checks/eval_ref_vs_student.py /data2/congcong/data/FM_data/derived/brain_anatomy/eval_20261004_0233 docs/verification/2026-10-02/brain_anatomy_flair/eval/ref_vs_student_rows.json   # 2026-10-08 09:49:18, code f220389 + the check script (committed with this file)
+433 stacks; volumes inside the reliable slices, mean mL per stack; stacks that hold the group at all
+group              ref mL student mL  ref has student has
+white_matter       212.76     236.20      433         433
+cortex             252.23     247.45      433         433
+thalamus             0.06       1.05       79         233
+basal_ganglia        1.30       3.38      370         408
+brainstem            0.03       0.00      140           0
+cerebellum           0.02       0.00      132           2
+other_deep_grey      0.04       0.00      198           2
+ventricles           7.03      15.21      367         417
+
+mean mL per stack by slice index (0 = lowest), all slices
+thalamus
+  ref      0.03  0.09  0.05  0.01  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+  student  3.65  2.34  0.87  0.17  0.01  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.01  0.00
+basal_ganglia
+  ref      0.79  0.77  0.65  0.45  0.16  0.03  0.01  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+  student  4.12  2.94  1.96  1.07  0.32  0.03  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+ventricles
+  ref      0.53  1.39  2.26  2.29  1.52  0.67  0.24  0.06  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+  student  4.11  5.69  6.40  4.99  2.57  0.92  0.27  0.06  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+
+first reliable slice: counts {2: 433}
+wrote docs/verification/2026-10-02/brain_anatomy_flair/eval/ref_vs_student_rows.json
