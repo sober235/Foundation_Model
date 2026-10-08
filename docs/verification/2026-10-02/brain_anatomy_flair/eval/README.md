@@ -18,12 +18,14 @@ Definitions, so that the numbers can be re-derived (`anatobind/eval/brain_anatom
 
 - *Reliable slices*: the slices of a stack that the outline rule trusts on the SynthSeg map (`supervised_slices` of the
   filled largest component: area ≥ 500 mm², from slice 2 up to one below the top). Here every stack starts at slice 2; the
-  top is 11 (183 stacks), 12 (141), 10 (70), 9 (19), 13 (15) or 8 (4).
+  top is 11 (183 stacks), 12 (141), 10 (70), 9 (19), 13 (15), 8 (4) or 14 (1).
 - *mean sided-host Dice*: for each stack and each of the 13 host classes (sided white matter, cortex, thalamus, basal
   ganglia, cerebellum, other deep grey; unsided brainstem), the Dice between the student's labels and the SynthSeg labels
   mapped to the same 16 classes, over the reliable slices only; a class empty in both maps is skipped for that stack. The
   per-class mean is over the stacks where the class occurs in either map; the gate value is the mean of the 13 per-class
-  means. Ventricles are reported but are not a host.
+  means. Ventricles are not a host and not in the gate: their Dice is reported for the simulated test set only, their
+  volumes on the real stacks in `ref_vs_student.txt`. (Had they been a 14th class, the mean could be at most
+  (0.2665 × 13 + 1) / 14 = 0.319 — still a fail.)
 - *Host agreement denominator*: the registry holds 1297 lesions in 165 stacks; 30 lie in the 14 stacks the outline model
   excluded (`excluded.json`, SynthSeg outline under 300 mL) → 1267; 311 have a slice outside the reliable range (slices 0, 1
   or above the top) and are counted but not evaluated → 956 evaluated, 881 agree. Host = `BrainLookup` with
@@ -75,7 +77,8 @@ equal weight. For the two classes that both maps hold in every stack the Dice is
   slice 14 shows a larger lobulated blob with a smaller round one beside it, which does not look like scalp above the
   vertex. It may be that the last slices of some fastMRI stacks wrap to the other end of the head (then the student's
   few brainstem / cerebellum voxels there would be right). Not examined further: these slices are outside every gate and
-  outside the reliable range the binder uses. Worth a look when the Level R reader sees these stacks.
+  outside the reliable range (which the inference record reports; the binder itself is not restricted to it). Worth a
+  look when the Level R reader sees these stacks.
 - Lesion 201_6002981 (a large mass with oedema): the student keeps the ventricle, thalamus and basal ganglia of the
   healthy side and labels the oedema as white matter; the reference labels part of the oedema as cortex. Consistent with
   the 65 cortex → white matter disagreements, where the reference calls a juxtacortical white matter lesion cortex.

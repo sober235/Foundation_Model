@@ -20,7 +20,7 @@ S4 产出两个模型和一条推理链：
 | 编号 | 决定 |
 |---|---|
 | A1 | 老师 = SynthSeg robust 2.0 在同病人 1 mm T1 上的标签（已有 `derived/synthseg/{pdgm,bmsr,sibbms}/seg_native`），搬到同空间的 FLAIR 上；不新跑 SynthSeg，不手工标注。 |
-| A2 | 训练来源三个都用：SibBMS（362 张可用老师图：MS 265 次检查 / 91 人 + 健康 97）、UCSF-PDGM（501）、UCSF-BMSR（461）。排除名单：`s4_sibbms_synthseg/README.md` 的 8 张失败图与 1 个二维文件。fastMRI 的 447 卷只做验证，不进训练（半监督留给以后）。 |
+| A2 | 训练来源三个都用：SibBMS（358 例 / 185 人；2026-10-08 更正：可用老师图 362 张里有 4 次 MS 检查没有 FLAIR，实际入组 358，见 `build/sources.txt`）、UCSF-PDGM（501）、UCSF-BMSR（461）。排除名单：`s4_sibbms_synthseg/README.md` 的 8 张失败图与 1 个二维文件（`sources.py::EXCLUDED_SIBBMS`）。fastMRI 的 447 卷只做验证，不进训练（半监督留给以后）。 |
 | A3 | 划分按病人：每个来源各留 20% 病人做测试（SibBMS 的多次检查不跨集；PDGM 的随访 `_FU` 跟基线同人；BMSR 字母后缀同人），其余 80% 给 nnU-Net（它自己再分五折，只训 fold 0）。测试病人不进 nnU-Net 的数据集目录。 |
 | A4 | 学生标签空间 16 类（§4）：背景、7 类宿主 × 左右（脑干一类，不分侧）、脑室。训练用紧凑编号 0–15，推理时映射回 SynthSeg 标签值，`BrainBinder` 不改。 |
 | A5 | 仿真离线预生成（nnU-Net 从预处理数据训练，不改它的数据加载）：每个训练卷生成 K = 4 个随机样板，测试卷各 1 个（固定种子）。 |
@@ -29,7 +29,7 @@ S4 产出两个模型和一条推理链：
 | A8 | 标签同步变换：几何与图像相同；1 mm → 5 mm 用每 5 层多数票（平局取靠近样板中心的那层），面内最近邻；病灶区（PDGM 整瘤标注含水肿、BMSR 转移瘤标注）标为 nnU-Net 的 `ignore` 标签（编号 16，最高），不计损失；SibBMS 的 MS 病灶没有同网格标注（`Output/Annotation` 只有 10 个掩膜且在另一网格上），不做忽略。 |
 | A9 | 学生模型 = nnU-Net v2 `3d_fullres`，`nnUNetTrainer_250epochs`，patch 由规划决定（预期 [16, 320, 320]，与 Dataset903 同），只训 fold 0；数据集 `Dataset907_BrainAnatomyFLAIR`。 |
 | A10 | 脑轮廓模型 = nnU-Net v2 `2d`，`nnUNetTrainer_250epochs`，fold 0；数据集 `Dataset908_FastMRIBrainOutline`：fastMRI 447 卷里排除 14 卷失败卷（`s4_probe` 的"轮廓不到 300 mL"名单）后的 433 卷，标签 = SynthSeg 标签 > 0 填实取最大连通块；每卷第 2 层到"面积 > 5 cm² 的最高层减 1"之间的层是监督层，其余层整层标 `ignore`；按 fastMRI 的 `patient_id` 分，留 20% 病人测试。 |
-| A11 | 达标线（写死，不调参救线，M5/D9 同理）：在 fastMRI 的 447 卷、第 2 层到颅顶下一层：① 用 fastMRI+ 的 1297 个框查表，学生 A 与 SynthSeg A 的主结构一致率 ≥ 0.90；② 14 个分侧宿主类对 SynthSeg 的平均 Dice ≥ 0.80；③ 脑轮廓模型在监督层对 SynthSeg 轮廓的 Dice ≥ 0.97。三条都过才算过；不过就报告并停。最低两层与颅顶只报告（输出的体积分布 + 蒙太奇，USER_REPORTED），不判。 |
+| A11 | 达标线（写死，不调参救线，M5/D9 同理）：在 fastMRI 的 447 卷（2026-10-08 注：实际是其中轮廓可用的 433 卷，14 卷 SynthSeg 轮廓 < 300 mL 的失败卷没有可用参照，其 30 个框不入分母）、第 2 层到颅顶下一层：① 用 fastMRI+ 的 1297 个框查表，学生 A 与 SynthSeg A 的主结构一致率 ≥ 0.90；② 13 个宿主类（6 对分侧 + 脑干；脑室是地标，不入门；原文误写 14）对 SynthSeg 的平均 Dice ≥ 0.80；③ 脑轮廓模型在监督层对 SynthSeg 轮廓的 Dice ≥ 0.97。三条都过才算过；不过就报告并停。最低两层与颅顶只报告（输出的体积分布 + 蒙太奇，USER_REPORTED），不判。 |
 | A12 | S4 的最终判定推迟到 Level R 医生标签可用时：到时比较"学生 A 查表的主结构"与"医生标的主结构"在最低两层上的一致率，与现在的伪标签 A 对照。本规格只到 A11。 |
 | A13 | 仿真域测试集（三来源各 20% 病人，各 1 个样板）只报告 Dice，不设线：它只证明学生学会了老师。 |
 | A14 | 去颅骨不装 HD-BET 进主链；HD-BET 只作可选抽查（20 卷）对照，装不装、何时装由控制方在计划里定。 |
@@ -41,7 +41,7 @@ S4 产出两个模型和一条推理链：
 
 | 来源 | 配对 FLAIR | 老师图 | 网格 | 病灶忽略区 | 病人键 |
 |---|---|---|---|---|---|
-| SibBMS（`SibBMS_ms/sibbms/Output/{MS,Norm}`） | 362 | `derived/synthseg/sibbms/seg_native/<Cohort>_sub-XXX_ses-YYY_T1w_seg.nii.gz` | 197×233×189，1 mm，RAS，已去颅骨，模板空间 | 无 | `<Cohort>_sub-XXX` |
+| SibBMS（`SibBMS_ms/sibbms/Output/{MS,Norm}`） | 358（老师图 362 张，4 次检查无 FLAIR） | `derived/synthseg/sibbms/seg_native/<Cohort>_sub-XXX_ses-YYY_T1w_seg.nii.gz` | 197×233×189，1 mm，RAS，已去颅骨，模板空间 | 无 | `<Cohort>_sub-XXX` |
 | UCSF-PDGM（`UCSF-PDGM_lh/…/UCSF-PDGM-XXXX_nifti/*_FLAIR.nii.gz`） | 501 | `derived/synthseg/pdgm/seg_native/UCSF-PDGM-XXXX_T1_seg.nii.gz` | 1 mm 各向同性 | 整瘤标注（`anatobind.nnunet.brain_disease.label_path("glioma", case)`，值 1/2/4） | `UCSF-PDGM-XXXX`（随访同人） |
 | UCSF-BMSR（`UCSF-BMSR_cbb/…/<case>/<case>_FLAIR.nii.gz`） | 461 | `derived/synthseg/bmsr/seg_native/<case>_T1pre_seg.nii.gz` | 1.5 × 0.86 × 0.86 mm | 转移瘤标注（`label_path("metastasis", case)`） | 数字前缀（字母后缀同人） |
 
@@ -71,8 +71,8 @@ S4 产出两个模型和一条推理链：
 3. 栈的位置：算每个轴向 1 mm 层的脑截面积（老师图 > 0 且非忽略），找最高的 > 5 cm² 的层 z_top；抽空层数 e（A6 的分布）；栈顶 = z_top + 1 + 5e，底层 z0 = 栈顶 − 5n（n = 层数），不低于 0。底层截面占最大截面的比例记进样板参数（`bottom_area_share`），与 `s4_probe2` 的 0.83 对照。
 4. 层数 n = 16（概率 0.9）或 14（0.1）；从底层起每 5 层合一层，共 n 层；超出体积顶部的层填零。
 5. 图像：5 层平均 → 面内重采样到目标间距 s ∈ {0.6875（0.82）, 0.86（0.18）} → 放进目标矩阵（{320×320（0.6），260×320（0.2），276×276（0.2）}；FOV 以脑质心为中心，超出裁掉、不足补零）。
-6. 标签：每 5 层多数票（忽略背景之外的平局按靠近样板中心的层）→ 最近邻到同一网格；病灶掩膜任一层命中即该体素 = ignore（15）。
-7. 强度：乘以低频偏置场（3 阶多项式，幅度 ±20%）、伽马 ∈ [0.7, 1.4]、高斯模糊 σ ∈ [0, 0.7] 像素、Rician 噪声（σ = 1–4% 的脑内中位数）；最后按脑内 1–99 分位线性拉到 [0, 1000]（nnU-Net 再做自己的 z-score）。
+6. 标签：每 5 层多数票（任何平局，背景也算在内，取靠近样板中心的那层的标签；2026-10-08 按代码 `simulate.py::vote_labels` 把原来含糊的一句写清）→ 最近邻到同一网格；病灶掩膜任一层命中即该体素 = ignore（15）。
+7. 强度：乘以低频偏置场（2 阶多项式六项 X、Y、Z、X²、Y²、XY，幅度 ±20%；2026-10-08 更正：原文写 3 阶，代码 `simulate.py::bias_field` 实现的是 2 阶，只是增广，不改）、伽马 ∈ [0.7, 1.4]、高斯模糊 σ ∈ [0, 0.7] 像素、Rician 噪声（σ = 1–4% 的脑内中位数）；最后按脑内 1–99 分位线性拉到 [0, 1000]（nnU-Net 再做自己的 z-score）。
 8. 输出 `<case>_s<k>_0000.nii.gz` 与标签，仿射写成轴向 5 mm 栈（与 fastMRI 的 RSS NIfTI 同约定：(col, row, slice)，层间距 5 mm）。
 
 记录：每来源各 2 个样板的蒙太奇（图像 + 标签叠加，16 层）进 `docs/verification/2026-10-02/brain_anatomy_flair/simulation/`，人眼看一遍（USER_REPORTED）。
@@ -86,7 +86,7 @@ S4 产出两个模型和一条推理链：
 
 ## 7. 评估（`scripts/eval_brain_anatomy.py`）
 
-1. **fastMRI 目标域**（447 卷，学生 + 轮廓模型的完整推理链）：按层取"可靠层"（第 2 层到顶层减 1）；14 个分侧宿主类对 SynthSeg 的 Dice（逐卷再平均，类在两边都空的卷跳过）；1297 个框的主结构一致率（`anatobind.eval.lookup.BrainLookup(seg, spacing, BRAIN_PARENCHYMA).host(rects)` 对学生 A 与 SynthSeg A 各查一次，比较宿主类；只算框完全在可靠层内的病灶，其余单列）；最低两层：学生输出各类体积分布与蒙太奇。
+1. **fastMRI 目标域**（447 卷，学生 + 轮廓模型的完整推理链）：按层取"可靠层"（第 2 层到顶层减 1）；13 个宿主类（6 对分侧 + 脑干，见 A11）对 SynthSeg 的 Dice（逐卷再平均，类在两边都空的卷跳过）；1297 个框的主结构一致率（`anatobind.eval.lookup.BrainLookup(seg, spacing, BRAIN_PARENCHYMA).host(rects)` 对学生 A 与 SynthSeg A 各查一次，比较宿主类；只算框完全在可靠层内的病灶，其余单列）；最低两层：学生输出各类体积分布与蒙太奇。
 2. **仿真域测试**（A13）：16 类 Dice。
 3. **轮廓模型**：监督层 Dice；蒙太奇。
 4. 报告 `REPORT.md` + `verdict.json`（三条线各自通过与否、总判定），命令与代码版本写进报告。

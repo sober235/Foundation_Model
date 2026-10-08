@@ -62,8 +62,10 @@ cerebellum 0.4521 / 0.4079, other deep grey 0.4389 / 0.4588, ventricles 0.8486);
   in them are outside the host-agreement denominator.
 - The student is trained on simulated stacks from 3D FLAIR and judged on real 2D FLAIR (A7); the simulation's calibration
   against the real stacks is an open question (`simulation/README.md`).
-- The lowest two slices and the slices above the reliable range are reported, not judged (A12); the binder uses the
-  reliable range. In the montages, slice 14 of some stacks shows brain tissue that does not look like the vertex (possibly
+- The lowest two slices and the slices above the reliable range are reported, not judged (A12). The inference record
+  reports the reliable range of the student's own outline (`reliable_slices`) and whether a given box lies inside it
+  (`box_in_reliable_slices`); the binder itself is not restricted to it — a box in slices 0–1 is bound on labels nobody
+  has judged, and a caller must gate on the flag. In the montages, slice 14 of some stacks shows brain tissue that does not look like the vertex (possibly
   slices wrapping to the other end of the head) — not examined.
 - HD-BET (the spec's fallback for skull-stripping) was not run: the own outline model passed its gate.
 - Left / right follow the NIfTI headers of the sources and the fastMRI RSS frame convention (`s4_probe3_frame`).
@@ -83,5 +85,5 @@ cerebellum 0.4521 / 0.4079, other deep grey 0.4389 / 0.4588, ventricles 0.8486);
 | outline training, 250 epochs, GPU 7 | 22:22:42 → 01:22:18 (validation included) | 3.0 h, 41.4 s / epoch | `training.txt` |
 | student without mirroring, 250 epochs, GPU 5 | 22:56:51 → 02:32:53 (validation included) | 3.6 h, 49.0 s / epoch | `training.txt` |
 | first student run (mirroring, unused), GPU 4 | 22:44:28 → 02:21:53 | 3.6 h, 48.5 s / epoch | `training.txt` |
-| evaluation (433 + 433 + 285 predictions), GPU 7 | 02:33 → 02:49 | 16 min | `eval_output.txt` |
+| evaluation (433 + 433 + 285 predictions), GPU 7 | 02:33 → 02:49 | 16 min | start = the work directory's stamp `eval_20261004_0233`, end = mtime of `eval/per_stem.json` (`eval_output.txt` has no timestamps) |
 | montages, diagnosis, inference smoke | 2026-10-08 09:46 → 09:50 | 4 min | `eval/`, `infer_smoke.md` |

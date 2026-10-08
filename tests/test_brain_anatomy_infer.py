@@ -50,6 +50,7 @@ def test_the_chain_strips_the_skull_binds_a_box_and_refuses_an_existing_out(tmp_
     assert rec["class_volumes_ml"]["thalamus_left"] == pytest.approx(8 * 2.0 * 2.0 * 5 / 1000, abs=1e-3)
     assert rec["binding"]["host"] == "thalamus" and rec["binding"]["host_rule"] == "overlap" and rec["box"] == [14, 14, 3, 16, 16, 5]
     assert rec["reliable_slices"] == [2, 6] and "NOT_EVIDENCE" in rec["anatomy_source"]
+    assert rec["box_in_reliable_slices"] is True                       # slices 3-4 lie inside 2..6
     assert json.loads((tmp_path / "out" / "record.json").read_text())["brain_ml"] == rec["brain_ml"]
     with pytest.raises(FileExistsError, match="use a new output directory"):
         I.run(tmp_path / "out", 2, nifti=p, predict=_fake_predict(calls))

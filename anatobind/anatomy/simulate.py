@@ -14,7 +14,7 @@ from anatobind.anatomy.labels import IGNORE, N_CLASSES
 from anatobind.data_engine.fastmri import rss_affine
 
 SLICE_MM = 5.0
-# empty 5 mm slices above the brain in the fastMRI stacks (s4_probe2: 1 / 19 / 157 / 191 / 63 / 14 of 447 stacks have 0 / 1 / 2 / 3 / 4 / 5+)
+# empty 5 mm slices above the brain in the fastMRI stacks (s4_probe2: 1 / 19 / 157 / 191 / 63 / 15 of 447 stacks have 0 / 1 / 2 / 3 / 4 / 5+)
 EMPTY_TOP = ((1, 0.045), (2, 0.35), (3, 0.43), (4, 0.14), (5, 0.035))
 N_SLICES = ((16, 0.9), (14, 0.1))
 INPLANE_MM = ((0.6875, 0.82), (0.86, 0.18))

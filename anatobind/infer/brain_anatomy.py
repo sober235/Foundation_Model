@@ -107,6 +107,8 @@ def run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet):
         x0, y0, z0, x1, y1, z1 = box
         sl = (slice(x0, x1), slice(y0, y1), slice(z0, z1))
         record["box"] = [x0, y0, z0, x1, y1, z1]
+        # the binder is not restricted to the reliable slices; this flag lets a caller gate on them
+        record["box_in_reliable_slices"] = bool(len(reliable) and reliable.start <= z0 and z1 <= reliable.stop)
         record["binding"] = BrainBinder(anatomy, zooms).bind(sl, np.ones((x1 - x0, y1 - y0, z1 - z0), bool))
     (out / "record.json").write_text(json.dumps(record, ensure_ascii=False, indent=1))
     return record

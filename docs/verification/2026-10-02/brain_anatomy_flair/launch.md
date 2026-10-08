@@ -51,7 +51,7 @@ launched student on GPU 4 (pid 1036131); log /data0/congcong/code/Project_Doing/
 Rate after the first epochs (2026-10-03 22:48, from `training_log_2026_10_3_22_44_28.txt` in the result folder): epochs 0–3
 took 49.0, 47.2, 47.1 and 48.4 s (3268 training and 872 validation samples in fold 0) → 250 epochs ≈ 3.3 h, expected end
 around 02:05 on 2026-10-04. Under 24 h: no question to the user. The outline model was at epoch 34 at the same moment,
-42 s per epoch, pseudo Dice 0.973.
+42 s per epoch, pseudo Dice 0.9742.
 
 ## The processes to watch
 

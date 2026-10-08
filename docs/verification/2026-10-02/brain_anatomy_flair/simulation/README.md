@@ -28,6 +28,12 @@ resampling artefact.
 | cerebellum present (slice 0 → 2) | 0.59 0.21 0.18 | 0.14 0.03 0.00 |
 | bottom slice area / largest slice area | 0.83 (median) | 0.98 (median) |
 
+The fastMRI column traces to `../../s4_probe2/fastmri_flair_coverage.txt`. The simulated column was the controller's ad-hoc
+count over 240 simulated 16-slice stacks; no script or output was kept, so it is not reproducible as written. The final
+review (2026-10-08) recounted on the first 240 16-slice test samples and agreed within 1–3 units (median area
+159 159 158 153 146 136 123 107 92 74 56 37 15 2; basal ganglia 1.00 .98 .88 .72 .47 .22; thalamus .95 .81 .59 .33;
+cerebellum .15 .03 .01; bottom share 1.00; height 65 mm).
+
 **Open calibration question (not resolved, reported as is).** The two columns cannot be reconciled by pseudo-label
 statistics alone, because the fastMRI pseudo-labels are unreliable in the lowest slices and at the vertex — the very
 reason S4 exists. From slice 4 upwards the fastMRI area profile equals the simulated one shifted by one slice

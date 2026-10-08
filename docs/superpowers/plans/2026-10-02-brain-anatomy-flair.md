@@ -557,7 +557,7 @@ from anatobind.anatomy.labels import IGNORE, N_CLASSES
 from anatobind.data_engine.fastmri import rss_affine
 
 SLICE_MM = 5.0
-# empty 5 mm slices above the brain in the fastMRI stacks (s4_probe2: 1 / 19 / 157 / 191 / 63 / 14 of 447 stacks have 0 / 1 / 2 / 3 / 4 / 5+)
+# empty 5 mm slices above the brain in the fastMRI stacks (s4_probe2: 1 / 19 / 157 / 191 / 63 / 15 of 447 stacks have 0 / 1 / 2 / 3 / 4 / 5+)
 EMPTY_TOP = ((1, 0.045), (2, 0.35), (3, 0.43), (4, 0.14), (5, 0.035))
 N_SLICES = ((16, 0.9), (14, 0.1))
 INPLANE_MM = ((0.6875, 0.82), (0.86, 0.18))
@@ -1204,6 +1204,7 @@ def test_the_chain_strips_the_skull_binds_a_box_and_refuses_an_existing_out(tmp_
     assert rec["class_volumes_ml"]["thalamus_left"] == pytest.approx(8 * 2.0 * 2.0 * 5 / 1000, abs=1e-3)
     assert rec["binding"]["host"] == "thalamus" and rec["binding"]["host_rule"] == "overlap" and rec["box"] == [14, 14, 3, 16, 16, 5]
     assert rec["reliable_slices"] == [2, 6] and "NOT_EVIDENCE" in rec["anatomy_source"]
+    assert rec["box_in_reliable_slices"] is True                       # slices 3-4 lie inside 2..6
     assert json.loads((tmp_path / "out" / "record.json").read_text())["brain_ml"] == rec["brain_ml"]
     with pytest.raises(FileExistsError, match="use a new output directory"):
         I.run(tmp_path / "out", 2, nifti=p, predict=_fake_predict(calls))
@@ -1366,6 +1367,8 @@ def run(out_dir, gpu, h5=None, nifti=None, box=None, predict=run_nnunet):
         x0, y0, z0, x1, y1, z1 = box
         sl = (slice(x0, x1), slice(y0, y1), slice(z0, z1))
         record["box"] = [x0, y0, z0, x1, y1, z1]
+        # the binder is not restricted to the reliable slices; this flag lets a caller gate on them
+        record["box_in_reliable_slices"] = bool(len(reliable) and reliable.start <= z0 and z1 <= reliable.stop)
         record["binding"] = BrainBinder(anatomy, zooms).bind(sl, np.ones((x1 - x0, y1 - y0, z1 - z0), bool))
     (out / "record.json").write_text(json.dumps(record, ensure_ascii=False, indent=1))
     return record
