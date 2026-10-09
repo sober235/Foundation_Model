@@ -1706,8 +1706,6 @@ import torch
 import torch.nn.functional as F
 from scipy.optimize import linear_sum_assignment
 
-from anatobind.aur.labels import N_HOST_CLASSES
-
 NO_OBJECT_WEIGHT = 0.1
 LAMBDA_R = 1.0
 LAMBDA_H = 0.2
@@ -1768,7 +1766,8 @@ def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present):
 
 
 def match_events(presence, mask_logits, target):
-    """One sample: presence (M,), mask_logits (M, P), target (N, P) -> (query indices, target indices)."""
+    """One sample: presence (M,), mask_logits (M, P), target (N, P) -> (query indices, target indices). The cost
+    reads every point (points under the volume floor count as target 0 here, they only carry no loss afterwards)."""
     if target.shape[0] == 0:
         empty = torch.zeros(0, dtype=torch.long, device=presence.device)
         return empty, empty
@@ -1932,9 +1931,7 @@ Expected: FAIL (ModuleNotFoundError / ImportError / AttributeError for the new n
 
 ```python
 """The AnatoBind brain model: backbone + entity / event / sequence heads + mask head + host competition (spec §5)."""
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from anatobind.aur.heads import EntityDecoder, EventDecoder, MaskHead, SequenceHead
 from anatobind.aur.labels import N_ENTITIES
@@ -2069,6 +2066,26 @@ def test_load_volume_builds_the_targets_in_zyx(tmp_path):
     assert bare["instance"].max() == 0 and not bare["u_supervised"] and bare["hosts"]["host"].shape == (0,)
 
 
+def test_load_volume_reorients_every_source_to_ras(tmp_path):
+    row = _case(tmp_path)
+    ras = D.load_volume(row)
+    lps = {}
+    for name in ("image", "anatomy", "lesion"):                     # the same volume stored LPS: axes x and y flipped
+        img = nib.load(row[name])
+        arr = np.asarray(img.dataobj)[::-1, ::-1, :]
+        aff = img.affine.copy()
+        aff[0, 0], aff[1, 1] = -aff[0, 0], -aff[1, 1]
+        aff[0, 3], aff[1, 3] = (arr.shape[0] - 1) * img.affine[0, 0], (arr.shape[1] - 1) * img.affine[1, 1]
+        p = tmp_path / f"lps_{name}.nii.gz"
+        nib.save(nib.Nifti1Image(np.ascontiguousarray(arr), aff), str(p))
+        lps[name] = str(p)
+    assert "".join(nib.aff2axcodes(nib.load(lps["image"]).affine)) == "LPS"
+    back = D.load_volume({**row, **lps})
+    for k in ("image", "entity", "instance", "small", "a_ignore"):
+        assert np.array_equal(ras[k], back[k]), k
+    assert back["spacing"] == ras["spacing"] == (2.0, 1.0, 1.0) and back["hosts"]["host"].tolist() == ras["hosts"]["host"].tolist()
+
+
 def test_crops_carry_geometry_validity_and_renumbered_instances(tmp_path):
     vol = D.load_volume(_case(tmp_path))
     rng = np.random.default_rng(3)
@@ -2076,6 +2093,7 @@ def test_crops_carry_geometry_validity_and_renumbered_instances(tmp_path):
     assert c["image"].shape == (1, 8, 16, 16) and c["valid"].shape == (8, 16, 16) and c["coords"].shape == (3, 8, 16, 16)
     assert c["instance"].max() == 1 and c["n_instances"] == 1 and c["host"].tolist() == [HOST_NAMES.index("white_matter_left")]
     assert c["host_probs"].shape == (1, N_HOST_CLASSES) and c["negatives"].shape == (1, 2) and bool(c["u_supervised"])
+    assert c["entity_present"].shape == (32,) and c["entity_present"].dtype == torch.bool and c["entity_present"][0] and not c["entity_present"][2]      # left white matter present, left cortex absent
     assert (c["image"][0][c["valid"] < 0.5] == -1.0).all() and c["point_weight"].min() >= 0 and c["entity"].dtype == torch.int64
     dz = c["coords"][0, 1, 0, 0] - c["coords"][0, 0, 0, 0]
     assert float(dz) == 2.0 and float(c["coords"][1, 0, 1, 0] - c["coords"][1, 0, 0, 0]) == 1.0
@@ -2108,7 +2126,7 @@ def test_dataset_items_and_collate(tmp_path):
     batch = D.collate([ds[0], ds[1]])
     assert batch["image"].shape == (4, 1, 8, 16, 16) and batch["seq"].tolist() == [3, 3, 3, 3] and batch["u_supervised"].tolist() == [True, True, False, False]
     assert len(batch["host"]) == 4 and batch["n_instances"][2] == 0 and batch["instance"].shape == (4, 8, 16, 16)
-    pts = torch.tensor([[0, 1, 2]])
+    assert batch["entity_present"].shape == (4, 32) and batch["entity_present"].dtype == torch.bool
     inst_pts = torch.tensor([[0, 2, 1]])
     t = D.event_targets_at_points(inst_pts, [2])
     assert t[0].tolist() == [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0]] and D.event_targets_at_points(inst_pts, [0])[0].shape == (0, 3)
@@ -2126,7 +2144,9 @@ Expected: FAIL (ModuleNotFoundError / ImportError / AttributeError for the new n
 ```python
 """Volumes -> training crops with targets (spec §3.2, §6).
 
-One dataset item is one sample row (a volume of one sequence) and yields `crops_per_volume` crops of it: the volume is
+Every volume is first brought to RAS by axis flips / permutations (nibabel's closest canonical): the sources store LPS
+(PDGM), LAS (ISLES, 9 BMSR cases) and RAS (SibBMS, BMSR) volumes, and the sided labels must lie on one side of the
+array, or the sources would mirror each other (an implicit mirroring; S4 lesson A17). One dataset item is one sample row (a volume of one sequence) and yields `crops_per_volume` crops of it: the volume is
 read once, normalised, its entity map, lesion instances and host targets built once, then each crop is cut, rotated
 in-plane, intensity-augmented and labelled. Half of the crops of a volume with instances are centred on a random
 instance voxel. Targets per crop: the entity map, the instance map (ids renumbered 1..n within the crop), the point
@@ -2141,24 +2161,36 @@ from torch.utils.data import Dataset
 
 from anatobind.aur.crops import (CROP, PATCH, augment, coordinates_mm, crop_window, extract, local_coordinates, normalise,
                                  rotate_inplane, spacing_zyx, to_zyx)
-from anatobind.aur.labels import SEQ_INDEX, entity_map
+from anatobind.aur.labels import N_ENTITIES, SEQ_INDEX, entity_map
 from anatobind.aur.targets import host_targets, lesion_instances
 from anatobind.eval.lesion_components import min_voxels_for
 
 ROTATION_DEG = 10.0
 
 
+def canonical(img):
+    """The image reoriented to RAS by axis flips / permutations only (no resampling): the same anatomy lies on the same
+    side of the array whatever the source stored."""
+    return nib.as_closest_canonical(img)
+
+
+def spacing_of(img):
+    """Voxel spacing (x, y, z) in mm from the affine's column norms (right after a reorientation too)."""
+    a = np.asarray(img.affine, dtype=np.float64)[:3, :3]
+    return tuple(float(v) for v in np.sqrt((a ** 2).sum(0)))
+
+
 def load_volume(row):
-    """Read one sample row into (z, y, x) arrays with its targets."""
-    img_i, seg_i = nib.load(row["image"]), nib.load(row["anatomy"])
+    """Read one sample row into (z, y, x) arrays with its targets; every file is reoriented to RAS first."""
+    img_i, seg_i = canonical(nib.load(row["image"])), canonical(nib.load(row["anatomy"]))
     if img_i.shape[:3] != seg_i.shape[:3]:
         raise ValueError(f"{row['case']} {row['sequence']}: image {img_i.shape} and anatomy {seg_i.shape} differ")
-    spacing = spacing_zyx(img_i.header.get_zooms()[:3])
+    spacing = spacing_zyx(spacing_of(img_i))
     image = normalise(to_zyx(np.asarray(img_i.dataobj).astype(np.float32)))
     seg = to_zyx(np.asarray(seg_i.dataobj).astype(np.int16))
     entity = entity_map(seg)
     if row["lesion"]:
-        les = to_zyx(np.asarray(nib.load(row["lesion"]).dataobj).astype(np.int16))
+        les = to_zyx(np.asarray(canonical(nib.load(row["lesion"])).dataobj).astype(np.int16))
         if les.shape != seg.shape:
             raise ValueError(f"{row['case']}: lesion map {les.shape} and anatomy {seg.shape} differ")
         inst, small = lesion_instances(les, row["u_values"], float(np.prod(spacing)))
@@ -2199,9 +2231,10 @@ def make_crop(vol, rng, crop=CROP, do_augment=True, lesion_centred=False):
     renumbered, small, ids = crop_instances(instance, small, float(np.prod(vol["spacing"])))
     sel = np.array(ids, np.int64) - 1
     hosts = vol["hosts"]
+    entity_present = np.isin(np.arange(1, N_ENTITIES + 1), np.unique(entity))          # the entity has voxels in the crop
     return {"image": torch.from_numpy(np.ascontiguousarray(image))[None], "valid": torch.from_numpy(valid.astype(np.float32)),
             "coords": torch.from_numpy(coords), "local": torch.from_numpy(local),
-            "entity": torch.from_numpy(entity.astype(np.int64)), "instance": torch.from_numpy(renumbered),
+            "entity": torch.from_numpy(entity.astype(np.int64)), "entity_present": torch.from_numpy(entity_present), "instance": torch.from_numpy(renumbered),
             "point_weight": torch.from_numpy((~small).astype(np.float32)), "a_ignore": torch.from_numpy(a_ignore),
             "host": torch.from_numpy(hosts["host"][sel]), "host_probs": torch.from_numpy(hosts["probs"][sel]),
             "negatives": torch.from_numpy(hosts["negatives"][sel]), "seq": torch.tensor(vol["seq"]),
@@ -2241,7 +2274,7 @@ class AURDataset(Dataset):
 def collate(items):
     """A list of crop lists -> one batch dict: fixed-size tensors stacked, per-crop targets kept as lists."""
     crops = [c for item in items for c in item]
-    out = {k: torch.stack([c[k] for c in crops]) for k in ("image", "valid", "coords", "local", "entity", "instance", "point_weight", "a_ignore", "seq", "u_supervised")}
+    out = {k: torch.stack([c[k] for c in crops]) for k in ("image", "valid", "coords", "local", "entity", "entity_present", "instance", "point_weight", "a_ignore", "seq", "u_supervised")}
     for k in ("host", "host_probs", "negatives", "n_instances", "case"):
         out[k] = [c[k] for c in crops]
     return out
@@ -2546,7 +2579,7 @@ def step(model, batch, points, opt, scaler_dtype):
             part = L.relation_loss(logits, torch.tensor([0, 1], device=em.device)[ti], torch.tensor([[1, -1], [0, -1]], device=em.device)[ti])
             r = {k: r[k] + part[k] / B for k in r}
         parts.update(r)
-        total, logged = L.total(parts)
+        total, _ = L.total(parts)
     opt.zero_grad(set_to_none=True)
     total.backward()
     opt.step()
@@ -2579,8 +2612,9 @@ def main(argv=None):
     points = L.sample_points(batch["valid"].cpu(), a.points, torch.Generator().manual_seed(rank)).to(device)
     torch.cuda.reset_peak_memory_stats(device)
     losses = []
+    t0 = time.time()
     for i in range(a.steps):
-        if i == 3:
+        if i == 3:                                      # the first steps carry the warm-up
             torch.cuda.synchronize(device)
             t0 = time.time()
         losses.append(step(model, batch, points, opt, torch.bfloat16))
