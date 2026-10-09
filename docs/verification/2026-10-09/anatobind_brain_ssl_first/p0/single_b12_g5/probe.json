@@ -1,0 +1,19 @@
+{
+ "steps": 15,
+ "seen_crops": 180,
+ "world": 1,
+ "global_batch": 12,
+ "step_s_mean": 3.647022536822728,
+ "step_s_p95": 11.354370236396788,
+ "data_wait_s_mean": 1.0230690240859985,
+ "crops_per_s": 3.2903553183014753,
+ "best": {
+  "mim": Infinity,
+  "step": null,
+  "path": null
+ },
+ "finished": "2026-10-09 10:42:52",
+ "peak_alloc_gib": 50.83957767486572,
+ "peak_reserved_gib": 60.693359375,
+ "gpu": "NVIDIA A100 80GB PCIe"
+}

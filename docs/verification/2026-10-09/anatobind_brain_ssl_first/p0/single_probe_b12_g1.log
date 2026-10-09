@@ -1,0 +1,61 @@
+Traceback (most recent call last):
+  File "/data0/congcong/code/Project_Doing/foundation_model/scripts/aur_ssl_probe.py", line 43, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/scripts/aur_ssl_probe.py", line 38, in main
+    run(cfg, a.samples, a.out)
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/ssl/train.py", line 176, in run
+    out = ddp(b, g)
+          ^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/ssl/model.py", line 48, in forward
+    pred2, z2, _ = self.view(v2, valid, coords, local, hidden2)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/ssl/model.py", line 36, in view
+    levels = self.backbone(image, valid, coords, local, visible=~hidden)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 199, in forward
+    feat, (x_next, c_next, v_next) = stage(x, c, v)
+                                     ^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 153, in forward
+    x = block(x, coords, valid, mask)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 100, in forward
+    x = x + self._attention(x, coords, valid, shift_mask)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 90, in _attention
+    aw = self.attn(xw, cw, vw, shift_mask if shifted else None)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 61, in forward
+    attn = attn.softmax(-1).to(v.dtype)
+           ^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.34 GiB. GPU 0 has a total capacity of 79.25 GiB of which 1.11 GiB is free. Including non-PyTorch memory, this process has 33.36 GiB memory in use. Process 3729391 has 44.76 GiB memory in use. Of the allocated memory 32.47 GiB is allocated by PyTorch, and 374.56 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

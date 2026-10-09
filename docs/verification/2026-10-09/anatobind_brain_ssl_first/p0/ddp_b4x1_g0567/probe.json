@@ -1,0 +1,19 @@
+{
+ "steps": 50,
+ "seen_crops": 800,
+ "world": 4,
+ "global_batch": 16,
+ "step_s_mean": 1.582727033264783,
+ "step_s_p95": 2.8890735626220683,
+ "data_wait_s_mean": 0.33151959886356275,
+ "crops_per_s": 10.109134211851977,
+ "best": {
+  "mim": Infinity,
+  "step": null,
+  "path": null
+ },
+ "finished": "2026-10-09 10:36:32",
+ "peak_alloc_gib": 17.18330430984497,
+ "peak_reserved_gib": 20.28515625,
+ "gpu": "NVIDIA A800 80GB PCIe"
+}

@@ -1,0 +1,39 @@
+[rank1]:[W1009 15:22:08.962006949 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank0]:[W1009 15:22:09.106882208 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank3]:[W1009 15:22:09.191841504 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank2]:[W1009 15:22:09.206066409 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+{"step": 1, "seen_crops": 16, "lr": 0.0001, "step_s": 78.2721, "data_wait_s": 7.3906, "loss": 0.3329, "mim": 0.0829, "contrast": 2.5008, "contrast_acc": 0.7188, "mim_baseline": 0.4078, "hidden_share": 0.6028, "peak_alloc_gib": 8.7228, "peak_reserved_gib": 10.4824}
+{"step": 5, "seen_crops": 80, "lr": 0.0003, "step_s": 154.0583, "data_wait_s": 0.0004, "loss": 0.2704, "mim": 0.0884, "contrast": 1.8199, "contrast_acc": 1.0, "mim_baseline": 0.2346, "hidden_share": 0.6025, "peak_alloc_gib": 8.822, "peak_reserved_gib": 10.5293}
+W1009 15:35:16.898000 3225817 site-packages/torch/distributed/elastic/agent/server/api.py:704] Received 15 death signal, shutting down workers
+W1009 15:35:16.904000 3225817 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3225928 closing signal SIGTERM
+W1009 15:35:16.905000 3225817 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3225929 closing signal SIGTERM
+W1009 15:35:16.906000 3225817 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3225930 closing signal SIGTERM
+W1009 15:35:16.907000 3225817 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3225931 closing signal SIGTERM
+Traceback (most recent call last):
+  File "/home/congcongliu/anaconda3/envs/nvgen/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 260, in launch_agent
+    result = agent.run()
+             ^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/metrics/api.py", line 137, in wrapper
+    result = f(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/agent/server/api.py", line 696, in run
+    result = self._invoke_run(role)
+             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/agent/server/api.py", line 855, in _invoke_run
+    time.sleep(monitor_interval)
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/api.py", line 84, in _terminate_process_handler
+    raise SignalException(f"Process {os.getpid()} got signal: {sigval}", sigval=sigval)
+torch.distributed.elastic.multiprocessing.api.SignalException: Process 3225817 got signal: 15

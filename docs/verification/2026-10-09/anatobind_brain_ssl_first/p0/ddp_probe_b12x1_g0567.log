@@ -1,0 +1,114 @@
+[rank3]:[W1009 10:37:44.297436581 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank2]:[W1009 10:37:44.396847049 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank1]:[W1009 10:37:44.421649666 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank0]:[W1009 10:37:44.520276040 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 0]  using GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/scripts/aur_ssl_probe.py", line 43, in <module>
+[rank0]:     sys.exit(main())
+[rank0]:              ^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/scripts/aur_ssl_probe.py", line 38, in main
+[rank0]:     run(cfg, a.samples, a.out)
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/ssl/train.py", line 176, in run
+[rank0]:     out = ddp(b, g)
+[rank0]:           ^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1643, in forward
+[rank0]:     else self._run_ddp_forward(*inputs, **kwargs)
+[rank0]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/parallel/distributed.py", line 1459, in _run_ddp_forward
+[rank0]:     return self.module(*inputs, **kwargs)  # type: ignore[index]
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/ssl/model.py", line 48, in forward
+[rank0]:     pred2, z2, _ = self.view(v2, valid, coords, local, hidden2)
+[rank0]:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/ssl/model.py", line 36, in view
+[rank0]:     levels = self.backbone(image, valid, coords, local, visible=~hidden)
+[rank0]:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 199, in forward
+[rank0]:     feat, (x_next, c_next, v_next) = stage(x, c, v)
+[rank0]:                                      ^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 153, in forward
+[rank0]:     x = block(x, coords, valid, mask)
+[rank0]:         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 100, in forward
+[rank0]:     x = x + self._attention(x, coords, valid, shift_mask)
+[rank0]:             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 90, in _attention
+[rank0]:     aw = self.attn(xw, cw, vw, shift_mask if shifted else None)
+[rank0]:          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1736, in _wrapped_call_impl
+[rank0]:     return self._call_impl(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1747, in _call_impl
+[rank0]:     return forward_call(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/swin.py", line 61, in forward
+[rank0]:     attn = attn.softmax(-1).to(v.dtype)
+[rank0]:            ^^^^^^^^^^^^^^^^
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.34 GiB. GPU 0 has a total capacity of 79.25 GiB of which 935.19 MiB is free. Process 3729389 has 44.76 GiB memory in use. Including non-PyTorch memory, this process has 33.56 GiB memory in use. Of the allocated memory 32.52 GiB is allocated by PyTorch, and 376.53 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+[rank0]:[W1009 10:39:30.361470693 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+W1009 10:39:34.538000 3734034 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3734090 closing signal SIGTERM
+W1009 10:39:34.540000 3734034 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3734091 closing signal SIGTERM
+W1009 10:39:34.542000 3734034 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3734092 closing signal SIGTERM
+E1009 10:39:34.544000 3734034 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 3734089) of binary: /home/congcongliu/anaconda3/envs/nvgen/bin/python
+Traceback (most recent call last):
+  File "/home/congcongliu/anaconda3/envs/nvgen/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+scripts/aur_ssl_probe.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-10-09_10:39:34
+  host      : amax
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 3734089)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

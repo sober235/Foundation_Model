@@ -1,0 +1,63 @@
+{
+ "config": {
+  "seen_crops": 1000000000,
+  "microbatch": 2,
+  "grad_accum": 1,
+  "crops_per_volume": 2,
+  "lr": 0.0003,
+  "weight_decay": 0.05,
+  "warmup_steps": 5,
+  "mask_ratio": 0.6,
+  "block_mm": [
+   16.0,
+   32.0
+  ],
+  "contrast_weight": 0.1,
+  "temperature": 0.2,
+  "crop": [
+   128,
+   160,
+   160
+  ],
+  "workers": 3,
+  "seed": 0,
+  "val_every": 5000,
+  "val_volumes": 32,
+  "save_every": 5000,
+  "log_every": 5,
+  "hcp_cap": 0.25,
+  "use_checkpoint": false,
+  "max_steps": 20,
+  "probe": true,
+  "no_rotate": false,
+  "embed": 64,
+  "depths": [
+   2,
+   2,
+   6,
+   2
+  ],
+  "heads": [
+   2,
+   4,
+   8,
+   16
+  ]
+ },
+ "samples": "/data2/congcong/data/FM_data/derived/aur/ssl_manifest_probe_nohcp/samples_ssl.json",
+ "manifest_sha256": "824afe50e20d5b2774a3902298a4dde5fc0a4c4be5774fe20936b15ac5e65e50",
+ "code_sha": "39086295a11bf1c4cc7fde01f58d1ebfd80c9ef4",
+ "world": 1,
+ "global_batch": 2,
+ "total_steps": 20,
+ "train_rows": 3499,
+ "val_rows": 405,
+ "train_patients": 894,
+ "params": 13264416,
+ "backbone_params": 12929856,
+ "host": "amax",
+ "gpus": [
+  "NVIDIA A800 80GB PCIe"
+ ],
+ "started": "2026-10-09 15:22:06"
+}

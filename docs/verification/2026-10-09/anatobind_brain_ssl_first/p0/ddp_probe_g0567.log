@@ -1,0 +1,49 @@
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/scripts/aur_ssl_probe.py", line 43, in <module>
+[rank0]:     sys.exit(main())
+[rank0]:              ^^^^^^
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/scripts/aur_ssl_probe.py", line 38, in main
+[rank0]:     run(cfg, a.samples, a.out)
+[rank0]:   File "/data0/congcong/code/Project_Doing/foundation_model/anatobind/aur/ssl/train.py", line 122, in run
+[rank0]:     raise FileExistsError(f"{out_dir} exists; a run never writes into an existing directory")
+[rank0]: FileExistsError: docs/verification/2026-10-09/anatobind_brain_ssl_first/p0/ddp_b2x2_g0567 exists; a run never writes into an existing directory
+[rank2]:[W1009 10:29:49.657599807 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 2]  using GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank3]:[W1009 10:29:49.657785094 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 3]  using GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+[rank0]:[W1009 10:29:49.668289357 ProcessGroupNCCL.cpp:1250] Warning: WARNING: process group has NOT been destroyed before we destruct ProcessGroupNCCL. On normal program exit, the application should call destroy_process_group to ensure that any pending NCCL operations have finished in this process. In rare cases this process can exit before this point and block the progress of another member of the process group. This constraint has always been present,  but this warning has only been added since PyTorch 2.4 (function operator())
+[rank1]:[W1009 10:29:49.702267206 ProcessGroupNCCL.cpp:4115] [PG ID 0 PG GUID 0 Rank 1]  using GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device,or call init_process_group() with a device_id.
+W1009 10:29:51.048000 3699419 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3699478 closing signal SIGTERM
+W1009 10:29:51.049000 3699419 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3699479 closing signal SIGTERM
+W1009 10:29:51.050000 3699419 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 3699481 closing signal SIGTERM
+E1009 10:29:52.419000 3699419 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 3699477) of binary: /home/congcongliu/anaconda3/envs/nvgen/bin/python
+Traceback (most recent call last):
+  File "/home/congcongliu/anaconda3/envs/nvgen/bin/torchrun", line 6, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+scripts/aur_ssl_probe.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-10-09_10:29:51
+  host      : amax
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 3699477)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
