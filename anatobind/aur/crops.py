@@ -50,8 +50,22 @@ def extract(arr, window, fill=0):
     return crop, valid
 
 
-def coordinates_mm(window, spacing):
-    """(3, D, H, W) float32: physical coordinates (mm) of the crop's voxel centres in the volume's frame."""
+def coordinates_mm(window, spacing=None, affine=None):
+    """Physical RAS coordinates from an xyz NIfTI affine, returned as zyx channels.
+
+    NIfTI voxel indices represent voxel centres; no extra 0.5 offset applies.
+    The spacing fallback exists only for older synthetic fixtures.
+    """
+    if affine is not None:
+        A = np.asarray(affine, dtype=np.float64)
+        if A.shape != (4, 4) or not np.isfinite(A).all():
+            raise ValueError("invalid NIfTI affine")
+        zz, yy, xx = np.meshgrid(*(np.arange(a, b, dtype=np.float64) for a, b in window), indexing="ij")
+        vox = np.stack((xx, yy, zz))
+        world = np.einsum("ij,jdhw->idhw", A[:3, :3], vox) + A[:3, 3, None, None, None]
+        return np.ascontiguousarray(world[[2, 1, 0]], dtype=np.float32)
+    if spacing is None:
+        raise ValueError("physical coordinates require affine")
     axes = [(np.arange(a, b, dtype=np.float32) + 0.5) * s for (a, b), s in zip(window, spacing)]
     return np.stack(np.meshgrid(*axes, indexing="ij"), 0).astype(np.float32)
 

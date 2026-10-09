@@ -55,3 +55,13 @@ def test_the_sample_table_is_written_once(tmp_path):
     assert S.read_samples(p) == [{"case": "a"}]
     with pytest.raises(FileExistsError):
         S.write_samples(p, [])
+
+
+def test_rows_carry_anatomy_and_relation_flags_that_a_source_can_switch_off(tmp_path):
+    rows = S.all_samples(_root(tmp_path))
+    assert all(r["a_supervised"] and r["r_supervised"] for r in rows)
+    s4 = {"UCSF-PDGM-0004": {"split": "test"}, "100101A": {"split": "train"}, "MS_sub-001_ses-001": {"split": "train"}}
+    out = S.assign_splits(rows, s4, disable_a_sources=("isles",))
+    flags = {r["source"]: (r["a_supervised"], r["r_supervised"]) for r in out}
+    assert flags["isles"] == (False, False) and flags["pdgm"] == (True, True) and flags["sibbms"] == (True, True)
+    assert all(r["a_supervised"] for r in S.assign_splits(rows, s4))

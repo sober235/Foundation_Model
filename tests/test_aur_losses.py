@@ -86,3 +86,52 @@ def test_relation_loss_and_total():
     t, logged = L.total({"a_mask": torch.tensor(1.0), "r_hard": torch.tensor(2.0)})
     assert float(t) == pytest.approx(1.0 + L.LAMBDA_R * L.LAMBDA_H * 2.0) and logged == {"a_mask": 1.0, "r_hard": 2.0}
     assert L.seq_loss(torch.tensor([[5.0, 0, 0, 0, 0, 0]]), torch.tensor([0]))["s"] < 0.05
+
+
+def test_points_include_the_ring_around_the_lesions():
+    inst = torch.zeros(1, 6, 6, 6, dtype=torch.long)
+    inst[0, 2:4, 2:4, 2:4] = 1
+    valid = torch.ones(1, 6, 6, 6)
+    n = 100
+    pts = L.sample_points(valid, n, torch.Generator().manual_seed(0), instance=inst)
+    got = L.gather(inst, pts)[0]
+    assert (got[:50] == 1).all()                                         # the focus share
+    ring = (torch.nn.functional.max_pool3d((inst > 0).float(), 3, stride=1, padding=1)[0] > 0) & (inst[0] == 0)
+    boundary = pts[0, 50:70]
+    assert (got[50:70] == 0).all() and ring.flatten()[boundary].all()    # the boundary share: background next to the lesion
+    pts2 = L.sample_points(valid, n, torch.Generator().manual_seed(0), instance=inst, boundary_share=0.0)
+    assert pts2.shape == (1, n)
+    with pytest.raises(ValueError, match="differ in shape"):
+        L.sample_points(valid, n, instance=torch.zeros(1, 6, 6, 5, dtype=torch.long))
+
+
+def test_entity_loss_skips_unsupervised_samples():
+    pts = torch.tensor([[1, 1, 2, 0, 0, 2], [2, 2, 1, 0, 1, 0]])
+    ignore = torch.zeros(2, 6, dtype=torch.bool)
+    present = torch.zeros(2, 32, dtype=torch.bool)
+    present[:, :2] = True
+    logits = torch.randn(2, 32, 6, generator=torch.Generator().manual_seed(1)).requires_grad_()
+    presence = torch.zeros(2, 32, requires_grad=True)
+    both = L.entity_loss(logits, presence, pts, ignore, present)
+    first = L.entity_loss(logits[:1], presence[:1], pts[:1], ignore[:1], present[:1])
+    gated = L.entity_loss(logits, presence, pts, ignore, present, a_supervised=torch.tensor([True, False]))
+    assert torch.allclose(gated["a_mask"], first["a_mask"]) and torch.allclose(gated["a_presence"], first["a_presence"])
+    assert not torch.allclose(gated["a_mask"], both["a_mask"])
+    none = L.entity_loss(logits, presence, pts, ignore, present, a_supervised=torch.tensor([False, False]))
+    assert none["a_mask"] == 0 and none["a_presence"] == 0
+    (none["a_mask"] + none["a_presence"]).backward()
+    assert logits.grad is not None and float(logits.grad.abs().sum()) == 0.0
+    with pytest.raises(ValueError, match="a_supervised"):
+        L.entity_loss(logits, presence, pts, ignore, present, a_supervised=torch.tensor([True]))
+
+
+def test_matching_reads_only_the_weighted_points():
+    target = torch.tensor([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])
+    logits = torch.full((2, 6), -6.0)
+    logits[0, :2] = 6.0                                                  # query 0 misses point 2
+    logits[1, :4] = 6.0                                                  # query 1 adds a false point 3
+    presence = torch.tensor([3.0, 3.0])
+    qi, _ = L.match_events(presence, logits, target)
+    assert qi.tolist() == [1]
+    qi_w, _ = L.match_events(presence, logits, target, torch.tensor([1.0, 1.0, 0.0, 1.0, 1.0, 1.0]))
+    assert qi_w.tolist() == [0]                                          # point 2 carries no weight: query 0 is exact

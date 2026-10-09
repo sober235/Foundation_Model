@@ -27,7 +27,7 @@ def _row(case, source, patient, seq_name, image, anatomy, lesion):
     seq_type, values = SEQUENCES[source][seq_name]
     return {"case": case, "source": source, "patient": patient, "sequence": seq_type, "source_sequence": seq_name,
             "image": str(image), "anatomy": str(anatomy), "lesion": None if lesion is None else str(lesion),
-            "u_supervised": bool(values), "u_values": list(values), "a_ignore_values": list(ALL_LESION_VALUES[source])}
+            "a_supervised": True, "r_supervised": True, "u_supervised": bool(values), "u_values": list(values), "a_ignore_values": list(ALL_LESION_VALUES[source])}
 
 
 def disease_samples(source, root=FM):
@@ -61,7 +61,7 @@ def all_samples(root=FM):
     return rows
 
 
-def assign_splits(rows, s4_cases, seed=0):
+def assign_splits(rows, s4_cases, seed=0, disable_a_sources=()):
     """Add "split" to every row. PDGM / BMSR / SibBMS cases take the split of the S4 case table (the same test
     patients as S4); ISLES cases are split by patient here. Every case must get a split; no patient may be in both."""
     split = {case: r["split"] for case, r in s4_cases.items()}
@@ -72,7 +72,9 @@ def assign_splits(rows, s4_cases, seed=0):
     for r in rows:
         if r["case"] not in split:
             raise KeyError(f"{r['case']} ({r['source']}): no split for this case")
-        out.append({**r, "split": split[r["case"]]})
+        out.append({**r, "split": split[r["case"]],
+                    "a_supervised": bool(r.get("a_supervised", True)) and r["source"] not in disable_a_sources,
+                    "r_supervised": bool(r.get("r_supervised", True)) and r["source"] not in disable_a_sources})
     by_case = {r["case"]: r for r in out}
     check_split(by_case, {c: r["split"] for c, r in by_case.items()})
     return out

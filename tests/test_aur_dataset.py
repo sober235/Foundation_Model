@@ -108,3 +108,55 @@ def test_dataset_items_and_collate(tmp_path):
     assert t[0].tolist() == [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0]] and D.event_targets_at_points(inst_pts, [0])[0].shape == (0, 3)
     ds.set_epoch(1)
     assert ds.epoch == 1 and len(ds) == 2
+
+
+def test_load_volume_checks_the_grid_and_carries_the_affine_and_flags(tmp_path):
+    row = _case(tmp_path)
+    vol = D.load_volume(row)
+    assert vol["affine"].shape == (4, 4) and vol["voxel_mm3"] == pytest.approx(2.0)
+    assert vol["a_supervised"] and vol["r_supervised"]
+    off = D.load_volume({**row, "a_supervised": False, "r_supervised": False})
+    assert not off["a_supervised"] and not off["r_supervised"]
+    img = nib.load(row["lesion"])
+    shifted = img.affine.copy()
+    shifted[0, 3] += 1.0                                               # the lesion map one millimetre off the image's grid
+    p = tmp_path / "lesion_shifted.nii.gz"
+    nib.save(nib.Nifti1Image(np.asarray(img.dataobj), shifted), str(p))
+    with pytest.raises(ValueError, match="affine mismatch"):
+        D.load_volume({**row, "lesion": str(p)})
+    q = tmp_path / "anatomy_short.nii.gz"
+    nib.save(nib.Nifti1Image(np.asarray(nib.load(row["anatomy"]).dataobj)[:, :, :-1], img.affine), str(q))
+    with pytest.raises(ValueError, match="differ in shape"):
+        D.load_volume({**row, "anatomy": str(q)})
+    metres = nib.Nifti1Image(np.asarray(img.dataobj), img.affine)
+    metres.header.set_xyzt_units("meter")
+    r = tmp_path / "lesion_metres.nii.gz"
+    nib.save(metres, str(r))
+    with pytest.raises(ValueError, match="not mm"):
+        D.load_volume({**row, "lesion": str(r)})
+
+
+def test_host_targets_are_those_of_the_crop(tmp_path, monkeypatch):
+    """A lesion that straddles the midline: the whole-volume host is a tie, the crop that holds only its right part
+    has the right white matter as host."""
+    row = _case(tmp_path)
+    les = np.asarray(nib.load(row["lesion"]).dataobj).copy()
+    les[:] = 0
+    les[10:14, 2:5, 3:5] = 1                                           # x 10..13: two voxels left, two voxels right
+    p = tmp_path / "lesion_mid.nii.gz"
+    nib.save(nib.Nifti1Image(les, nib.load(row["lesion"]).affine), str(p))
+    vol = D.load_volume({**row, "lesion": str(p)})
+    assert vol["hosts"]["probs"][0, HOST_NAMES.index("white_matter_left")] == pytest.approx(0.5)
+    monkeypatch.setattr(D, "crop_window", lambda shape, crop, rng, centre=None: [(0, 8), (0, 16), (12, 28)])    # (z, y, x): right half only
+    c = D.make_crop(vol, np.random.default_rng(0), crop=(8, 16, 16), do_augment=False)
+    assert c["n_instances"] == 1 and c["host"].tolist() == [HOST_NAMES.index("white_matter_right")]
+    assert c["host_probs"][0, HOST_NAMES.index("white_matter_right")] == pytest.approx(1.0)
+    assert c["point_weight"][c["valid"] < 0.5].max() == 0.0            # no mask loss outside the volume
+
+
+def test_crops_and_batches_carry_the_supervision_flags(tmp_path):
+    rows = [_case(tmp_path), {**_case(tmp_path, with_lesion=False), "a_supervised": False, "r_supervised": False}]
+    ds = D.AURDataset(rows, crop=(8, 16, 16), crops_per_volume=1, seed=2)
+    batch = D.collate([ds[0], ds[1]])
+    assert batch["a_supervised"].tolist() == [True, False] and batch["r_supervised"].tolist() == [True, False]
+    assert batch["a_supervised"].dtype == torch.bool and batch["coords"].dtype == torch.float32 and batch["local"].dtype == torch.float32

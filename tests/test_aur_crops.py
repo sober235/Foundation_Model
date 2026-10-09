@@ -1,5 +1,6 @@
 # tests/test_aur_crops.py
 import numpy as np
+import pytest
 
 import anatobind.aur.crops as C
 
@@ -53,3 +54,22 @@ def test_normalise_augment_and_rotation():
     assert img_r.shape == n.shape and lab_r.dtype == np.int32 and set(np.unique(lab_r)) <= {0, 3} and lab_r.sum() > 0
     same = C.rotate_inplane([labels], 0.0, [0])[0]
     assert (same == labels).all()
+
+
+def test_physical_coordinates_follow_the_affine():
+    window = [(0, 2), (1, 3), (-1, 1)]                                  # (z, y, x) voxel ranges, x partly outside
+    affine = np.array([[1.0, 0.0, 0.0, 10.0], [0.0, 1.0, 0.0, 20.0], [0.0, 0.0, 2.0, 30.0], [0.0, 0.0, 0.0, 1.0]])
+    c = C.coordinates_mm(window, affine=affine)
+    assert c.shape == (3, 2, 2, 2) and c.dtype == np.float32
+    assert c[0, 1, 0, 0] - c[0, 0, 0, 0] == 2.0 and c[1, 0, 1, 0] - c[1, 0, 0, 0] == 1.0 and c[2, 0, 0, 1] - c[2, 0, 0, 0] == 1.0
+    assert c[2, 0, 0, 0] == 9.0 and c[1, 0, 0, 0] == 21.0 and c[0, 0, 0, 0] == 30.0      # x = -1 + 10, y = 1 + 20, z = 0 + 30
+    oblique = affine.copy()
+    oblique[:3, :3] = np.array([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 2.0]])      # a 90 degree turn of the axes
+    o = C.coordinates_mm(window, affine=oblique)
+    assert o[2, 0, 0, 0] == 9.0 and o[1, 0, 0, 0] == 19.0                                  # world x = -y_vox + 10 = 9, world y = x_vox + 20 = 19
+    legacy = C.coordinates_mm(window, (2.0, 1.0, 1.0))
+    assert legacy[0, 0, 0, 0] == 1.0 and legacy[2, 0, 0, 0] == -0.5
+    with pytest.raises(ValueError):
+        C.coordinates_mm(window)
+    with pytest.raises(ValueError):
+        C.coordinates_mm(window, affine=np.eye(3))

@@ -50,3 +50,20 @@ def test_probe_builds_a_batch_and_steps_on_cpu_sized_inputs():
     assert b["image"].shape == (1, 1, 8, 16, 16) and b["instance"].max() == 2 and b["valid"][0, 0, 0, -1] == 0.0
     assert b["coords"].shape == (1, 3, 8, 16, 16) and float(b["coords"][0, 0, 1, 0, 0] - b["coords"][0, 0, 0, 0, 0]) == 1.0
     assert callable(pr.step) and pr.main.__name__ == "main"       # the CUDA path is exercised by the controller's probe run
+
+
+def test_prepare_samples_can_switch_anatomy_supervision_off_for_a_source(tmp_path, monkeypatch):
+    p = _load("aur_prepare")
+    rows = [{"case": "sub-strokecase0001", "source": "isles", "patient": "sub-strokecase0001", "sequence": "DWI", "source_sequence": "DWI",
+             "image": "a", "anatomy": "b", "lesion": None, "u_supervised": True, "u_values": [1], "a_ignore_values": [1]},
+            {"case": "UCSF-PDGM-0004", "source": "pdgm", "patient": "UCSF-PDGM-0004", "sequence": "T1", "source_sequence": "T1",
+             "image": "c", "anatomy": "d", "lesion": None, "u_supervised": False, "u_values": [], "a_ignore_values": [1, 2, 4]}]
+    monkeypatch.setattr(p, "all_samples", lambda root=None: rows)
+    s4 = tmp_path / "cases.json"
+    s4.write_text(json.dumps({"UCSF-PDGM-0004": {"split": "train"}}))
+    out = tmp_path / "samples.json"
+    p.stage_samples(out, s4_cases=s4, disable_a_sources=("isles",))
+    written = {r["source"]: r for r in json.loads(out.read_text())}
+    assert not written["isles"]["a_supervised"] and not written["isles"]["r_supervised"] and written["pdgm"]["a_supervised"]
+    with pytest.raises(SystemExit):
+        p.main(["--stage", "samples", "--disable-anatomy-for", "knee", "--out", str(tmp_path / "x.json")])

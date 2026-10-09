@@ -1,13 +1,15 @@
-"""Losses (spec N11, §6): L = L_A + L_S + L_U + λ_R (L_bind + λ_h L_hard).
+"""Losses (spec N11, §6; SSL-first plan 2026-10-09 §4): L = L_A + L_S + L_U + λ_R (L_bind + λ_h L_hard).
 
 Masks are supervised at sampled points (the same points for every query of a sample), so no dense (Q, D, H, W) mask is
 ever built in training: half of the points are drawn per lesion instance (an equal quota for every instance of the
-sample, so that a small lesion always carries positive points), the rest uniformly over the valid voxels. Entity
-masks: BCE for every entity (an absent entity learns an empty mask), Dice for the entities present in the crop,
-presence BCE for all; lesion voxels (a_ignore) carry no entity loss. Events: Hungarian matching on
-presence + mask BCE + mask Dice, then presence BCE over every query (no-object weight) and mask losses over the matched
-ones; samples whose U is not supervised contribute nothing to L_U. Relation: cross-entropy over the 14 host classes
-plus a hinge on the hard negatives (contralateral, second host)."""
+sample, so that a small lesion always carries positive points), a fifth from the one-voxel ring around the instances
+(the peri-lesion hard negatives), the rest uniformly over the valid voxels. Entity masks: BCE for every entity (an
+absent entity learns an empty mask), Dice for the entities present in the crop, presence BCE for all; lesion voxels
+(a_ignore) carry no entity loss; samples whose A is not supervised (anatomy pseudo-label QC failed) contribute nothing
+to L_A. Events: Hungarian matching on presence + mask BCE + mask Dice over the points that carry weight, then presence
+BCE over every query (no-object weight) and mask losses over the matched ones; samples whose U is not supervised
+contribute nothing to L_U. Relation: cross-entropy over the 14 host classes plus a hinge on the hard negatives
+(contralateral, second host)."""
 import torch
 import torch.nn.functional as F
 from scipy.optimize import linear_sum_assignment
@@ -20,27 +22,39 @@ N_POINTS = 16384
 
 
 FOCUS_SHARE = 0.5
+BOUNDARY_SHARE = 0.2
 
 
-def sample_points(valid, n, generator=None, instance=None, focus_share=FOCUS_SHARE):
+def sample_points(valid, n, generator=None, instance=None, focus_share=FOCUS_SHARE, boundary_share=BOUNDARY_SHARE):
     """valid (B, D, H, W) bool / float -> (B, n) flat indices (with replacement). Without an instance map: uniform over
     the valid voxels. With one ((B, D, H, W) crop-local ids, 0 background): the first focus_share of the points of a
-    sample are split equally among its instances and drawn from each instance's voxels, the rest are uniform."""
-    flat = (valid.flatten(1) > 0.5).float()
+    sample are split equally among its instances and drawn from each instance's voxels, the next boundary_share from
+    the valid background voxels adjacent (26-neighbourhood) to an instance, the rest are uniform."""
+    mask = valid > 0.5
+    flat = mask.flatten(1).float()
     out = torch.multinomial(flat + 1e-12, n, replacement=True, generator=generator)
     if instance is None:
         return out
-    inst = instance.flatten(1)
+    if tuple(instance.shape) != tuple(valid.shape):
+        raise ValueError(f"instance map {tuple(instance.shape)} and validity {tuple(valid.shape)} differ in shape")
+    inst = (instance.long() * mask.long()).flatten(1)
     for b in range(flat.shape[0]):
         ids = torch.unique(inst[b])
         ids = ids[ids > 0]
-        quota = int(n * focus_share) // max(int(ids.numel()), 1)
-        if ids.numel() == 0 or quota == 0:
+        if ids.numel() == 0:
             continue
+        quota = int(n * focus_share) // int(ids.numel())
         pos = 0
-        for k in ids:
+        for k in ids if quota else ():
             out[b, pos:pos + quota] = torch.multinomial((inst[b] == k).float(), quota, replacement=True, generator=generator)
             pos += quota
+        q = min(int(n * boundary_share), n - pos)
+        if q:
+            lesion = (inst[b] > 0).float().view(1, 1, *valid.shape[1:])
+            near = F.max_pool3d(lesion, 3, stride=1, padding=1)[0, 0] > 0
+            ring = (near & (inst[b].view(valid.shape[1:]) == 0) & mask[b]).flatten().float()
+            if bool(ring.any()):
+                out[b, pos:pos + q] = torch.multinomial(ring, q, replacement=True, generator=generator)
     return out
 
 
@@ -57,32 +71,48 @@ def dice_loss(logits, target, weight):
     return (dice * weight).sum() / weight.sum().clamp(min=1.0)
 
 
-def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present):
+def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present, a_supervised=None):
     """mask_logits (B, K, P); presence (B, K); entity_pts (B, P) entity map values at the points (0 none, 1..K);
-    a_ignore_pts (B, P) bool (lesion voxels); present (B, K) bool: the entity has voxels in the crop. BCE over every
-    entity (absent ones learn an empty mask), Dice over the present ones."""
-    K = mask_logits.shape[1]
+    a_ignore_pts (B, P) bool (lesion voxels); present (B, K) bool: the entity has voxels in the crop; a_supervised
+    (B,) bool or None (all supervised). BCE over every entity (absent ones learn an empty mask), Dice over the present
+    ones, presence BCE over all, each averaged per sample and then over the supervised samples; a batch without a
+    supervised sample gives zeros that still touch every input (DDP)."""
+    B, K, _ = mask_logits.shape
     target = (entity_pts[:, None, :] == torch.arange(1, K + 1, device=entity_pts.device)[None, :, None]).float()
     keep = (~a_ignore_pts).float()[:, None, :]
     bce = (F.binary_cross_entropy_with_logits(mask_logits, target, reduction="none") * keep).sum(-1) / keep.sum(-1).clamp(min=1.0)
     w = present.float()
     dropped = mask_logits.masked_fill(a_ignore_pts[:, None, :], -1e4)        # ignored points count as empty in the Dice
-    mask = bce.mean() + dice_loss(dropped, target * keep, w)
-    return {"a_mask": mask, "a_presence": F.binary_cross_entropy_with_logits(presence, w)}
+    p, t = dropped.sigmoid(), target * keep
+    dice = 1 - (2 * (p * t).sum(-1) + 1) / (p.sum(-1) + t.sum(-1) + 1)
+    per_mask = bce.mean(1) + (dice * w).sum(1) / w.sum(1).clamp(min=1.0)
+    per_presence = F.binary_cross_entropy_with_logits(presence, w, reduction="none").mean(1)
+    if a_supervised is None:
+        enabled = torch.ones(B, device=mask_logits.device, dtype=per_mask.dtype)
+    else:
+        enabled = a_supervised.to(device=mask_logits.device, dtype=per_mask.dtype)
+        if tuple(enabled.shape) != (B,):
+            raise ValueError(f"a_supervised must have shape ({B},), got {tuple(enabled.shape)}")
+    denom = enabled.sum().clamp(min=1.0)
+    return {"a_mask": (per_mask * enabled).sum() / denom, "a_presence": (per_presence * enabled).sum() / denom}
 
 
-def match_events(presence, mask_logits, target):
-    """One sample: presence (M,), mask_logits (M, P), target (N, P) -> (query indices, target indices). The cost
-    reads every point (points under the volume floor count as target 0 here, they only carry no loss afterwards)."""
+def match_events(presence, mask_logits, target, point_weight=None):
+    """One sample: presence (M,), mask_logits (M, P), target (N, P), point_weight (P,) in {0, 1} or None -> (query
+    indices, target indices). The cost reads the points that carry weight, the same points as the mask losses
+    afterwards (points under the volume floor or outside the volume take no part)."""
     if target.shape[0] == 0:
         empty = torch.zeros(0, dtype=torch.long, device=presence.device)
         return empty, empty
     with torch.no_grad():
         l, t = mask_logits.float(), target.float()
         P = l.shape[1]
-        bce = (F.softplus(l).sum(1)[:, None] - l @ t.t()) / P                                   # (M, N) mean BCE
-        p = l.sigmoid()
-        dice = 1 - (2 * (p @ t.t()) + 1) / (p.sum(1)[:, None] + t.sum(1)[None, :] + 1)
+        wgt = torch.ones(P, device=l.device) if point_weight is None else point_weight.float()
+        norm = wgt.sum().clamp(min=1.0)
+        tw = t * wgt
+        bce = ((F.softplus(l) * wgt).sum(1)[:, None] - l @ tw.t()) / norm                       # (M, N) mean BCE
+        p = l.sigmoid() * wgt
+        dice = 1 - (2 * (p @ tw.t()) + 1) / (p.sum(1)[:, None] + tw.sum(1)[None, :] + 1)
         cost = -presence.float().sigmoid()[:, None] + bce + dice
         qi, ti = linear_sum_assignment(cost.cpu().numpy())
     return (torch.as_tensor(qi, dtype=torch.long, device=presence.device),
@@ -91,14 +121,15 @@ def match_events(presence, mask_logits, target):
 
 def event_loss(presence, mask_logits, targets, point_weight, u_supervised):
     """presence (B, M); mask_logits (B, M, P); targets: list of (N_b, P) float; point_weight (B, P) in {0, 1} (0 at the
-    voxels of components under the volume floor); u_supervised (B,) bool. Returns ({"u_presence", "u_mask"}, matches)."""
+    voxels of components under the volume floor and outside the volume); u_supervised (B,) bool.
+    Returns ({"u_presence", "u_mask"}, matches)."""
     B, M, P = mask_logits.shape
     matches, pres_terms, mask_terms, n_matched = [], [], [], 0
     for b in range(B):
         if not bool(u_supervised[b]):
             matches.append(None)
             continue
-        qi, ti = match_events(presence[b], mask_logits[b], targets[b])
+        qi, ti = match_events(presence[b], mask_logits[b], targets[b], point_weight[b])
         matches.append((qi, ti))
         tgt = torch.zeros(M, device=presence.device)
         tgt[qi] = 1.0
