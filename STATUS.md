@@ -25,7 +25,7 @@
   启动脚本（scratchpad 副本，内容见 p0/PROBES.md 末段与 README）：torchrun --standalone --nproc_per_node=3 scripts/aur_ssl_train.py --seen-crops 320000 --microbatch 12 --grad-accum 1 --workers 8 --lr 4.50e-04 --warmup-steps 444 --val-every 500 --save-every 500 --log-every 20 --val-volumes 32 --mask-ratio 0.60 --contrast-weight 0.10
   第 1 步：峰值分配 50.8 GiB，三张卡各 60.6 GB、利用率 77–95%
   ```
-  按 pilot 吞吐外推 6.9 h（NOT_MEASURED），约 18:10 本机时钟结束；每 500 步写 `val.jsonl`、`resume_step*.pt`、更优时写 `ssl_stage1_step*.pt`，结束写 `ssl_stage1_best.pt` 与 `summary.json`。
+  **已于 18:36（本机）结束**：8889 步、320,004 曝光、平均 2.97 s/步（CPU 争用）、12.1 crops/s；验证 masked Huber 0.0366（基线 0.361），有效秩 56.8，对比准确率全程 1.0（饱和）；导出 `ssl_stage1_best.pt`；记录 `docs/verification/2026-10-09/anatobind_brain_ssl_first/stage1/STAGE1.md`。之后由 tmux 会话 `anatobind` 的 `chain` 窗口（`scripts/ssl_first_chain.sh`）自动接 G1 → Stage II 冒烟 → Stage II → Stage III → 评估，链日志 `…/ssl_runs/chain_20261009_1405.log`。
 
 - **T10–T12 代码完成（10-09 下午，两批各一次独立评审，修补后）**：`anatobind/aur/train.py` + `scripts/aur_train.py`（Stage II/III 训练器）、`anatobind/aur/infer.py` + `scripts/infer_anatobind_brain.py`（整卷推理）、`anatobind/aur/eval.py` + `scripts/aur_eval.py`（测试集评估、G2/G3 判门、Level R 导出）；新增 40 个测试（`tests/test_aur_training_contract.py` 17、`test_aur_infer.py` 8+1 CUDA-only、`test_aur_eval.py` 8、`test_aur_scripts_t12.py` 6）。评审清单与修补见 `docs/verification/2026-10-09/anatobind_brain_ssl_first/reviews/`。T12 的阻塞项（头在 autocast 外）已在 5 号卡上用小模型与全尺寸模型验证修好；全尺寸模型整卷 176×256×256 推理 18 窗 26 s（与主训共卡时测，上界）、峰值 4.7 GiB。
 - **真实数据 CPU 核验**：训练器的损失通路在三条真实 1 mm 行（PDGM FLAIR、ISLES 厚层 ADC、SibBMS）上用小模型跑通，无缺梯度；单卡真实数据 GPU 冒烟因没有空卡未做。
