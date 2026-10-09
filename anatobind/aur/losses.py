@@ -19,10 +19,43 @@ MARGIN = 1.0
 N_POINTS = 16384
 
 
-def sample_points(valid, n, generator=None):
-    """valid (B, D, H, W) bool / float -> (B, n) flat indices drawn uniformly (with replacement) from the valid voxels."""
-    flat = (valid.flatten(1) > 0.5).float()
-    return torch.multinomial(flat + 1e-12, n, replacement=True, generator=generator)
+def sample_points(valid, n, generator=None, instance=None, focus_share=0.30, boundary_share=0.20):
+    """Mix valid uniform points, per-instance lesion points and peri-lesion background.
+
+    Where lesions are absent, sample uniformly; each represented lesion receives
+    a positive-point quota if n is sufficient.
+    """
+    mask = valid > 0.5
+    flat = mask.flatten(1).float()
+    if not bool((flat.sum(-1) > 0).all()):
+        raise ValueError("crop contains no valid voxels")
+    out = torch.multinomial(flat, n, replacement=True, generator=generator)
+    if instance is None:
+        return out
+    if instance.shape != valid.shape:
+        raise ValueError("instance and valid shapes differ")
+    instance = instance.long() * mask.long()
+    for b in range(mask.shape[0]):
+        ids = torch.unique(instance[b])
+        ids = ids[ids > 0]
+        if not ids.numel():
+            continue
+        focus = min(n, max(int(n * focus_share), int(ids.numel())))
+        quota, remainder = divmod(focus, int(ids.numel()))
+        offset = 0
+        for j, ident in enumerate(ids):
+            q = quota + int(j < remainder)
+            if q:
+                out[b, offset:offset + q] = torch.multinomial(
+                    (instance[b].flatten() == ident).float(), q, replacement=True, generator=generator)
+                offset += q
+        nearby = F.max_pool3d((instance[b] > 0).float()[None, None], 3, stride=1, padding=1)[0, 0] > 0
+        near_negative = nearby & (instance[b] == 0) & mask[b]
+        q = min(int(n * boundary_share), n - offset)
+        if q and bool(near_negative.any()):
+            out[b, offset:offset + q] = torch.multinomial(
+                near_negative.flatten().float(), q, replacement=True, generator=generator)
+    return out
 
 
 def gather(x, points):
@@ -38,20 +71,27 @@ def dice_loss(logits, target, weight):
     return (dice * weight).sum() / weight.sum().clamp(min=1.0)
 
 
-def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present):
-    """mask_logits (B, K, P); presence (B, K); entity_pts (B, P) entity map values at the points (0 none, 1..K);
-    a_ignore_pts (B, P) bool (lesion voxels); present (B, K) bool: the entity has voxels in the crop."""
+def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present, a_supervised=None):
+    """Optionally omit A supervision for samples failing anatomy pseudo-label QC."""
     K = mask_logits.shape[1]
     target = (entity_pts[:, None, :] == torch.arange(1, K + 1, device=entity_pts.device)[None, :, None]).float()
     keep = (~a_ignore_pts).float()[:, None, :]
-    bce = (F.binary_cross_entropy_with_logits(mask_logits, target, reduction="none") * keep).sum(-1) / keep.sum(-1).clamp(min=1.0)
-    w = present.float()
-    dropped = mask_logits.masked_fill(a_ignore_pts[:, None, :], -1e4)        # ignored points count as empty in the Dice
-    mask = (bce * w).sum() / w.sum().clamp(min=1.0) + dice_loss(dropped, target * keep, w)
-    return {"a_mask": mask, "a_presence": F.binary_cross_entropy_with_logits(presence, w)}
+    bce = (F.binary_cross_entropy_with_logits(mask_logits, target, reduction="none") * keep).sum(-1) / keep.sum(-1).clamp(min=1)
+    present = present.float()
+    pred = mask_logits.sigmoid() * keep
+    dice = 1 - (2 * (pred * target).sum(-1) + 1) / (pred.sum(-1) + (target * keep).sum(-1) + 1)
+    per_mask = bce.mean(1) + (dice * present).sum(1) / present.sum(1).clamp(min=1)
+    per_pres = F.binary_cross_entropy_with_logits(presence, present, reduction="none").mean(1)
+    enabled = torch.ones_like(per_mask) if a_supervised is None else a_supervised.to(
+        device=per_mask.device, dtype=per_mask.dtype)
+    if enabled.shape != per_mask.shape:
+        raise ValueError("a_supervised must have shape (B,)")
+    denom = enabled.sum().clamp(min=1)
+    return {"a_mask": (per_mask * enabled).sum() / denom,
+            "a_presence": (per_pres * enabled).sum() / denom}
 
 
-def match_events(presence, mask_logits, target):
+def match_events(presence, mask_logits, target, point_weight=None):
     """One sample: presence (M,), mask_logits (M, P), target (N, P) -> (query indices, target indices)."""
     if target.shape[0] == 0:
         empty = torch.zeros(0, dtype=torch.long, device=presence.device)
@@ -59,9 +99,11 @@ def match_events(presence, mask_logits, target):
     with torch.no_grad():
         l, t = mask_logits.float(), target.float()
         P = l.shape[1]
-        bce = (F.softplus(l).sum(1)[:, None] - l @ t.t()) / P                                   # (M, N) mean BCE
-        p = l.sigmoid()
-        dice = 1 - (2 * (p @ t.t()) + 1) / (p.sum(1)[:, None] + t.sum(1)[None, :] + 1)
+        weight = torch.ones(P, device=l.device) if point_weight is None else point_weight.float()
+        normalizer = weight.sum().clamp(min=1)
+        bce = ((F.softplus(l) * weight).sum(1)[:, None] - l @ (t * weight).t()) / normalizer
+        p = l.sigmoid() * weight
+        dice = 1 - (2 * (p @ t.t()) + 1) / (p.sum(1)[:, None] + (t * weight).sum(1)[None, :] + 1)
         cost = -presence.float().sigmoid()[:, None] + bce + dice
         qi, ti = linear_sum_assignment(cost.cpu().numpy())
     return (torch.as_tensor(qi, dtype=torch.long, device=presence.device),
@@ -77,7 +119,7 @@ def event_loss(presence, mask_logits, targets, point_weight, u_supervised):
         if not bool(u_supervised[b]):
             matches.append(None)
             continue
-        qi, ti = match_events(presence[b], mask_logits[b], targets[b])
+        qi, ti = match_events(presence[b], mask_logits[b], targets[b], point_weight[b])
         matches.append((qi, ti))
         tgt = torch.zeros(M, device=presence.device)
         tgt[qi] = 1.0

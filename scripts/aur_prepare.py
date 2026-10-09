@@ -28,8 +28,9 @@ N_VOLUME_CASES = 30
 N_MONTAGE = 6
 
 
-def stage_samples(out, root=FM, s4_cases=S4_CASES):
-    rows = assign_splits(all_samples(root), json.loads(Path(s4_cases).read_text()))
+def stage_samples(out, root=FM, s4_cases=S4_CASES, disable_a_sources=()):
+    rows = assign_splits(all_samples(root), json.loads(Path(s4_cases).read_text()),
+                         disable_a_sources=disable_a_sources)
     write_samples(out, rows)
     c = counts(rows)
     for source, d in c.items():
@@ -113,11 +114,13 @@ def main(argv=None):
     ap.add_argument("--stage", choices=("samples", "grids", "isles_check"), required=True)
     ap.add_argument("--out", type=Path)
     ap.add_argument("--samples", type=Path)
+    ap.add_argument("--disable-anatomy-for", choices=("isles",), action="append", default=[],
+                    help="Disable A/R pseudo-label training for failed anatomy QC")
     a = ap.parse_args(argv)
     if a.stage == "samples":
         if a.out is None:
             ap.error("--out is needed")
-        stage_samples(a.out)
+        stage_samples(a.out, disable_a_sources=tuple(a.disable_anatomy_for))
         return 0
     if a.samples is None:
         ap.error("--samples is needed")
