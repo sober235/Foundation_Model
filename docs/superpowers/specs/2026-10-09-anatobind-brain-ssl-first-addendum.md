@@ -1,6 +1,6 @@
 # AnatoBind-Brain 设计规格增补：Stage I 必须先于 Stage II/III（2026-10-09）
 
-**决策来源：** 原 [2026-10-08 AUR 设计规格](2026-10-08-anatobind-brain-aur-design.md) 仅为先验证模型功能、跳过 Stage I 的简化实现。新的用户决定是 **完整 Brain MRI Foundation Model 正式路线必须先自监督预训练（Stage I），再训练结构化感知（Stage II），最后训练关系推理（Stage III）**。
+**决策来源：** 原 [2026-10-08 AUR 设计规格](2026-10-08-anatobind-brain-aur-design.md) 仅为先验证模型功能、跳过 Stage I 的简化实现。新的用户决定是 **AnatoBind-Brain 的正式路线必须先自监督预训练（Stage I），再训练结构化感知（Stage II），最后训练关系推理（Stage III）**。
 
 **完整实施方案：** [2026-10-09-anatobind-brain-ssl-first-three-stage.md](../plans/2026-10-09-anatobind-brain-ssl-first-three-stage.md)。
 

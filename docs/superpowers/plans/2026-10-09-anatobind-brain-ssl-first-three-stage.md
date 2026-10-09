@@ -12,7 +12,7 @@
 - 完整逐项阻断项、证据位置、验收门和四卡环境要求见：[2026-10-09 四卡执行就绪性审查](../reviews/2026-10-09-anatobind-brain-four-a800-execution-readiness.md)。以此文的 G0/G0.5/Stage I 预算定义优先于下文初始估计。
 - **GitHub 基线差异必须先解决**：新分支从 `fa6e6fd` 继承，而 MRI-148 本地后续 `main` 已有 RAS 统一、`entity_present` 和更完整的 P0 记录。按文件核对、移植、运行新分支测试；不要直接将服务器本地分支强制推到远端。
 - **重新测 Stage I**：建议 microbatch 2/GPU×4 GPUs，grad accumulation 2，global 16 source-crops/optimizer step（两个对比视图意味着 32 view-exposures/step）；320k 曝光对应 20k steps。若 grad accumulation 1，global 8 则为 40k steps。先 8k 曝光 pilot，不由 Stage II 探针外推速度。
-- **修正 G1/G2 之前的实现门**：真正无泄漏 masked patch 输入；归一化/augment 不能使隐藏原图像素进入可见值；RAS/physical-FOV 一致；DDP 各 rank 可有不同 U/R 有效监督；`a_supervised`/`r_supervised` 在相应 loss 中实际生效。
+- **修正 G1/G2 之前的实现门**：真正无泄漏 masked patch 输入；归一化/augment 不能使隐藏原图像素进入可见值（2026-10-09 决定 Q7：整卷百分位归一化保留、与 Stage II 一致，泄漏测试在归一化之后的裁块上改隐藏体素；Stage I 的视图不做任何模糊）；RAS/physical-FOV 一致；DDP 各 rank 可有不同 U/R 有效监督；`a_supervised`/`r_supervised` 在相应 loss 中实际生效。
 - **明确用户当前工具权限**：MRI-148 连接器能检查数据/读取日志文件，但没有 shell/GPU 作业 API。文中所有 GPU 命令属于未来可执行的 CLI 合同，**尚未运行**。
 
 ## 0. 一句话、边界与实际交付
@@ -70,7 +70,7 @@
 - 先生成全项目统一 patient key（source + subject + session 并同时做跨来源重复性检查）；为同一患者的所有序列、增强视图、重复扫描分配同一 split。以图像 hash、元数据和可用的匿名体素指纹检查明显重复，疑似同一受试者进入人工核查清单。
 - **所有下游 test/val 患者都不得用于 Stage I 的梯度更新。** 独立固定 Stage I 验证患者可用于训练过程选择但不能用于梯度更新；下游最终测试仅在三个阶段全部锁定后打开。对额外未标注数据只在确认不与锁定测试来源重复后使用，无法排除重复者不纳入主实验。
 - 多序列配对只在同一患者、同一成像空间、验证 affine 后使用；绝不以同名序列推断已配准。
-- NIfTI 以真实 affine 在 mm 空间处理（先确定单位）；image/anatomy/lesion 对齐需同时检查 shape、orientation 和 affine；空间单位 unknown 的病例单列核实，不能默认为可信物理空间。拒绝 silently resize/flip；若需配准/重采样则显式生成新版本及记录。增强时图像、valid、坐标、局部坐标必须采用同一空间变换。
+- NIfTI 以真实 affine 在 mm 空间处理（先确定单位）；image/anatomy/lesion 对齐需同时检查 shape、orientation 和 affine；空间单位 unknown 的病例单列核实，不能默认为可信物理空间。拒绝 silently resize/flip；若需配准/重采样则显式生成新版本及记录。增强时图像、valid 与全部标签/掩膜采用同一空间变换；坐标网格（物理 mm 与局部坐标）固定不转（2026-10-09 决定 Q3：面内旋转表示解剖在扫描架坐标系里的姿态变化，模型须对此鲁棒；RoPE 用相对位置，坐标随图一起转等于白做增广）。
 - 数据平衡按**患者/来源/序列**三层采样，不能让序列=疾病来源的强相关性替代异常学习；记录各层有效采样曝光量。
 - 阶段门 G0：生成 `cases_aur_locked.json`、`samples_ssl.json`、`samples_aur.json`、`data_inventory.csv`、`grid_report.csv`、`split_leakage_report.json`、ISLES 解剖 QC 可视化；无可核查的锁定划分及物理网格检查，不启动 Stage I。
 
@@ -93,11 +93,11 @@
 - 主训练使用 **三维连续块遮挡**，初始 mask 比率 0.60；pilot 比较 0.40 / 0.60 / 0.70。按实际 patch 网格取整（patch=2×4×4），保证每个窗口有足够可见 token；重建监督只在 `M_valid ∧ M_masked ∧ M_foreground` 上。
 - 用轻量 patch decoder：从 F1 或浅层多尺度特征重建每个 masked patch 的 2×4×4 个归一化强度值；不要为 MIM 建立与 A/U Query 一样大的全分辨率解码器。损失以 **Huber/MAE** 为主，逐样本先归一化再平均，避免患者体积/场强权重失衡。
 - 监测 masked foreground MAE 与随机/局部插值等简单基线；重建图片好看不是效果门槛。
-- **病灶敏感性防护：** 不使用过强空间模糊、elastic 形变或“把亮点去掉”的视图生成；对有病灶标注的训练子集仅作**审计探针**，按体积与来源检查局部异常特征是否显著退化。不得把病灶掩码作为 Stage I 监督目标。
+- **病灶敏感性防护：** 不使用任何空间模糊（面内模糊是卷积，会把被遮体素混入可见体素）、elastic 形变或“把亮点去掉”的视图生成；对有病灶标注的训练子集仅作**审计探针**，按体积与来源检查局部异常特征是否显著退化。不得把病灶掩码作为 Stage I 监督目标。
 
 **任务 I-B：contrastive consistency**
 
-- 每卷/裁块生成两种温和的强度视图（bias field、gamma、Rician/Gaussian 小噪声、小范围对比度变动；不做左右镜像和强模糊），经同一 Backbone 与 128-D projection head，训练同患者/同位置的两视图正对一致性。
+- 每卷/裁块生成两种温和的强度视图（bias field、gamma、Rician/Gaussian 小噪声、小范围对比度变动；不做左右镜像，不做任何模糊），经同一 Backbone 与 128-D projection head，训练同患者/同位置的两视图正对一致性。
 - 对比损失优先 **患者去重的 NT-Xent/InfoNCE**（初始温度 τ=0.2，系数 λ_c=0.1），跨 4 卡 gather 表征；同患者其他序列/重复裁块不是负样本。若批内不同患者太少，首先调整 patient-balanced batch sampler；memory queue 作为另一个显式消融，而不是悄悄修改口径。
 - 不强制 T1/FLAIR 同 voxel 特征相同：跨序列正对齐仅在配准及可见解剖一致时单独进行消融。全局对比不应压制细粒度病灶差异，需监测局部异常探针。
 
@@ -132,7 +132,7 @@
 - 加载**整个** Stage II checkpoint；加入 `CandidateCompetition` 两层关系模块，每个预测 U Query 对 13 个侧别宿主 + no_host 独立竞争，保留 S 与视觉 Embedding。
 - 结构 `r_ij = φ(A_i, U_j, S, G_ij)`，当前 `G_ij` 含重叠、三轴物理位移、近邻距离、侧别和组织族；正式训练前审计 geometry() 的粗 F1 分辨率、`torch.cdist` 大体素复杂度、患者空间轴与“最近表面距离”是否一致。建议加入小病灶的细尺度几何消融，对不正确的物理距离实现必须修正并写测试。
 - R 主监督来自训练裁块中的 SynthSeg + lesion masks 导出的伪关系，不是人工真值；如果 A QC 不可靠，则对应样本的 R loss 真正屏蔽（`r_supervised=False`），而不能只让 A loss 为零。
-- `L_III = L_A + L_U + L_S + 1.0(L_host + 0.2L_hard)`；Stage III **80k crops**，backbone lr=3e-5、A/U/S lr=1.5e-4、R lr=3e-4（初始值）；须记录 U 匹配 query 生成 R 的有效训练样本数。
+- `L_III = L_A + L_U + L_S + 1.0(L_host + 0.2L_hard)`；Stage III **80k crops**，backbone lr=5e-5、A/U/S lr=2.5e-4、R lr=5e-4（2026-10-09 决定 Q12：取 2026-10-08 规格 §6 的值，本文初稿的 3e-5 / 1.5e-4 / 3e-4 不采用；Stage II 前 1k 步 backbone lr × 0.1 预热）；须记录 U 匹配 query 生成 R 的有效训练样本数。
 - **门 G3：** R controlled track 给定真实 lesion mask，与同一测试病例的 B0（预测 A + 几何查表）、B0*（SynthSeg + 几何查表，上限/伪参考）对比；host ABA(R) ≥ ABA(B0) 仍只是伪标签工程门。需分别报告 recognition–binding gap、R rescue、harm、side accuracy、各病灶体积层级和序列/来源。端到端轨道用 U 匹配上的病例单报。
 - **真正研究结论必须依赖独立 Level R 人工审核**：双阅片/争议仲裁，标注主宿主和左右侧，包含 geometry-conflict 例与匹配 non-conflict controls；盲于模型 R 输出，并同时评估 R 与 B0。临床对错不可由同一 SynthSeg 自动规则自证。此部分可并行准备，但统计只能在 Stage III 锁定后开展。
 
@@ -142,7 +142,7 @@
 |---|---|---|---|
 | C0 | 随机初始化 Swin → II → III | 无 Stage I | 证明 Stage I 是否带来因果可归因的增益 |
 | C1 | MIM-only Stage I → II → III | 无 contrastive | 分解两种预训练目标的作用 |
-| C2 | MIM+contrast Stage I → II → III | 主方案 | Foundation 主线 |
+| C2 | MIM+contrast Stage I → II → III | 主方案 | 主线 |
 | C3 | C2 主方案但 R→B0 几何查表 | 不用学习关系竞争 | R 是否真正有价值 |
 | C4 | C2 保留 R，但冻结或扰动 A 的可信度/几何证据 | 仅改关系证据 | 测试 rescue/harm、视觉与几何的互补性 |
 

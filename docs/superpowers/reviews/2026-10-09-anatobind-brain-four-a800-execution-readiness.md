@@ -65,7 +65,7 @@
 
 ## 3. P1：研究有效性、Stage I 探针和 R 指标
 
-1. **G1 不应仅写“未显著差于随机初始化”。** 预先锁定主冻结探针（例如 13 类宿主 shallow readout mean Dice、病灶区域与配对正常区可分性/小于5mm 的局部探针），报告 3 seeds/置信区间；至少主探针体现有意义的提升且小病灶表征不恶化，否则不得宣称完成有价值的 Foundation Stage I。
+1. **G1 不应仅写“未显著差于随机初始化”。** 预先锁定主冻结探针（例如 13 类宿主 shallow readout mean Dice、病灶区域与配对正常区可分性/小于5mm 的局部探针），报告 3 seeds/置信区间；至少主探针体现有意义的提升且小病灶表征不恶化，否则不得宣称完成有价值的 Stage I 自监督预训练。
 2. **缩小跨模态-疾病 confounding。** Train manifest 要输出患者/source/sequence/spacing 交叉表，InfoNCE 跨卡 gather 避免同患者不同序列成为假负样本；多序列正样本仅在几何严格匹配时使用。对比损失温度 0.2、权重 0.1 是试验起点，检查全局一致性是否损害 U 的局部敏感性。
 3. **R 需证明优于 B0，而非伪标签复刻。** coarse F1 几何当前是 event-centroid→host voxels 的最近距离，非病灶表面到宿主表面距离；`torch.cdist` 需复杂度 probe。测试 1–5mm/低分辨率体素，确认软 mask 和 side 在边界处的稳定性，做细尺度几何消融。人工独立 Level R 测试给出 rescue/harm，B0、B0*、end-to-end 与 controlled 口径不混淆。
 4. **实际样本数与 Stage I 规模。** MRI-148 有 4,960 序列行而非 4,960 独立患者；Stage I 320k 是采样曝光，不是新的独立数据。额外 HCP / OASIS 等训练源需要完整授权、去重、空间/年龄群体核查，不能因服务器目录存在就自动纳入。
