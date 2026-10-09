@@ -1,0 +1,16 @@
+# four-card DDP probe on GPUs 0,1,2,3, start 2026-10-09 12:33:56, code 7119383
+$ CUDA_VISIBLE_DEVICES=0,1,2,3 NCCL_DEBUG=WARN timeout 600 torchrun --nproc_per_node 4 --master_port 29571 scripts/aur_probe.py --ddp --batch 4 --steps 100 --no-checkpoint
+NCCL version 2.21.5+cuda12.4
+  File "/home/congcongliu/anaconda3/envs/nvgen/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+# exit 124 2026-10-09 12:43:57
+$ retry with NCCL_P2P_DISABLE=1 2026-10-09 12:43:57
+NCCL version 2.21.5+cuda12.4
+amax:2550198:2550602 [0] graph/search.cc:1036 NCCL WARN Could not find a path for pattern 4, falling back to simple order
+amax:2550201:2550615 [3] graph/search.cc:1036 NCCL WARN Could not find a path for pattern 4, falling back to simple order
+amax:2550199:2550614 [1] graph/search.cc:1036 NCCL WARN Could not find a path for pattern 4, falling back to simple order
+amax:2550200:2550613 [2] graph/search.cc:1036 NCCL WARN Could not find a path for pattern 4, falling back to simple order
+{"rank": 2, "world": 4, "gpu": 2, "batch": 4, "crop": [128, 160, 160], "points": 16384, "checkpoint": false, "steps": 100, "s_per_step": 0.9, "peak_gib": 18.48, "first_loss": 9.6645, "last_loss": 3.1201, "params": 22719561}
+{"rank": 1, "world": 4, "gpu": 1, "batch": 4, "crop": [128, 160, 160], "points": 16384, "checkpoint": false, "steps": 100, "s_per_step": 0.9, "peak_gib": 18.48, "first_loss": 9.6681, "last_loss": 3.1164, "params": 22719561}
+{"rank": 3, "world": 4, "gpu": 3, "batch": 4, "crop": [128, 160, 160], "points": 16384, "checkpoint": false, "steps": 100, "s_per_step": 0.9, "peak_gib": 18.48, "first_loss": 9.7079, "last_loss": 3.1197, "params": 22719561}
+{"rank": 0, "world": 4, "gpu": 0, "batch": 4, "crop": [128, 160, 160], "points": 16384, "checkpoint": false, "steps": 100, "s_per_step": 0.9, "peak_gib": 18.48, "first_loss": 9.6722, "last_loss": 3.1352, "params": 22719561}
+# exit 0 2026-10-09 12:45:44

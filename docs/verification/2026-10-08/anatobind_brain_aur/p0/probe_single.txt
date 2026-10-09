@@ -1,0 +1,12 @@
+# single-card probe on GPU 0, start 2026-10-09 12:32:11, code 7119383
+$ scripts/aur_probe.py --gpu 0 --batch 1 --steps 12
+{"rank": 0, "world": 1, "gpu": 0, "batch": 1, "crop": [128, 160, 160], "points": 16384, "checkpoint": true, "steps": 12, "s_per_step": 0.541, "peak_gib": 3.26, "first_loss": 9.4839, "last_loss": 4.9319, "params": 22719561}
+$ scripts/aur_probe.py --gpu 0 --batch 2 --steps 12
+{"rank": 0, "world": 1, "gpu": 0, "batch": 2, "crop": [128, 160, 160], "points": 16384, "checkpoint": true, "steps": 12, "s_per_step": 0.666, "peak_gib": 6.03, "first_loss": 10.1797, "last_loss": 5.4074, "params": 22719561}
+$ scripts/aur_probe.py --gpu 0 --batch 4 --steps 12
+{"rank": 0, "world": 1, "gpu": 0, "batch": 4, "crop": [128, 160, 160], "points": 16384, "checkpoint": true, "steps": 12, "s_per_step": 0.968, "peak_gib": 11.57, "first_loss": 10.481, "last_loss": 4.9117, "params": 22719561}
+$ scripts/aur_probe.py --gpu 0 --batch 2 --steps 12 --no-checkpoint
+{"rank": 0, "world": 1, "gpu": 0, "batch": 2, "crop": [128, 160, 160], "points": 16384, "checkpoint": false, "steps": 12, "s_per_step": 0.533, "peak_gib": 9.41, "first_loss": 9.224, "last_loss": 4.7433, "params": 22719561}
+$ scripts/aur_probe.py --gpu 0 --batch 4 --steps 12 --no-checkpoint
+{"rank": 0, "world": 1, "gpu": 0, "batch": 4, "crop": [128, 160, 160], "points": 16384, "checkpoint": false, "steps": 12, "s_per_step": 0.862, "peak_gib": 18.4, "first_loss": 9.4021, "last_loss": 4.6888, "params": 22719561}
+# end 2026-10-09 12:33:55
