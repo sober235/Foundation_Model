@@ -4,6 +4,12 @@
 
 **完整实施方案：** [2026-10-09-anatobind-brain-ssl-first-three-stage.md](../plans/2026-10-09-anatobind-brain-ssl-first-three-stage.md)。
 
+## 四卡训练就绪性补充（同日 Review）
+
+在真正提交 Stage I GPU 主训前，先完成 [4×A800 审查报告](../reviews/2026-10-09-anatobind-brain-four-a800-execution-readiness.md) 中的 **P0-1 至 P0-5**。已有单/四卡 BF16 显存结果只针对旧 Part 1 **合成数据**，不能作为 Stage I 两视图吞吐或真实 NIfTI loader 的承诺。需先移植并回归验证 MRI-148 本地已有而当前新分支缺失的 RAS/`entity_present` 更新；默认 NCCL P2P 有记录的初始化问题，当前四卡已证实的兼容设置为 `NCCL_P2P_DISABLE=1`。
+
+Stage I 主线建议先试 **4 GPU × microbatch 2 × accumulate 2 = global 16 source-crops**，320k 曝光约 20k optimizer steps。上述为 probe 选择，不是已经验证的 Stage I 显存/吞吐。要以 G0、无泄漏的 SSL smoke（G0.5）、G1 三项独立审核后才能进入 Stage II。MRI-148 当前文件连接器不具备 GPU 执行接口，本审查未启动训练。
+
 ## A. 变更范围（优先于旧 N11 的训练顺序）
 
 | 原设计 | 增补后正式主线 | 不变部分 |

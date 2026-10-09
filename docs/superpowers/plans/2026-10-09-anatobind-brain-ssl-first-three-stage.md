@@ -5,6 +5,16 @@
 **基于：** `docs/superpowers/specs/2026-10-08-anatobind-brain-aur-design.md` 与 `docs/superpowers/plans/2026-10-08-anatobind-brain-aur-part1.md`。
 **决策变更：** 将原先“跳过 Stage I，直接 II→III”的工程验证路线改为**正式训练必须 I→II→III**。仅将 II→III（随机初始化）保留为消融基线；不把预训练损失收敛等同于通用视觉能力已经建立。
 
+## 2026-10-09 四卡 A800 执行性 Review（优先阅读）
+
+**结论：研究路线保留，正式 Stage I 主训暂缓。** MRI-148 本地后续 Part 1 记录已有 910 passed/1 skipped、128×160×160 BF16 合成数据 4×A800×B4 的 DDP 探针（0.90 s/step、18.48 GiB/GPU），**但是这些不是此 GitHub 新分支的重跑记录，也不是 Stage I 双视图/真实数据的测量**。默认 NCCL P2P 初始化曾超时，只有设置 `NCCL_P2P_DISABLE=1` 的四卡探针成功。
+
+- 完整逐项阻断项、证据位置、验收门和四卡环境要求见：[2026-10-09 四卡执行就绪性审查](../reviews/2026-10-09-anatobind-brain-four-a800-execution-readiness.md)。以此文的 G0/G0.5/Stage I 预算定义优先于下文初始估计。
+- **GitHub 基线差异必须先解决**：新分支从 `fa6e6fd` 继承，而 MRI-148 本地后续 `main` 已有 RAS 统一、`entity_present` 和更完整的 P0 记录。按文件核对、移植、运行新分支测试；不要直接将服务器本地分支强制推到远端。
+- **重新测 Stage I**：建议 microbatch 2/GPU×4 GPUs，grad accumulation 2，global 16 source-crops/optimizer step（两个对比视图意味着 32 view-exposures/step）；320k 曝光对应 20k steps。若 grad accumulation 1，global 8 则为 40k steps。先 8k 曝光 pilot，不由 Stage II 探针外推速度。
+- **修正 G1/G2 之前的实现门**：真正无泄漏 masked patch 输入；归一化/augment 不能使隐藏原图像素进入可见值；RAS/physical-FOV 一致；DDP 各 rank 可有不同 U/R 有效监督；`a_supervised`/`r_supervised` 在相应 loss 中实际生效。
+- **明确用户当前工具权限**：MRI-148 连接器能检查数据/读取日志文件，但没有 shell/GPU 作业 API。文中所有 GPU 命令属于未来可执行的 CLI 合同，**尚未运行**。
+
 ## 0. 一句话、边界与实际交付
 
 先在严格隔离下游测试病人的脑部 MRI 上自监督预训练**同一套可变尺寸 3D Swin Backbone**（Stage I）；以该权重初始化同一个 A/U/S 联合感知模型（Stage II）；再在预测解剖/异常的视觉表征上学习逐病灶 13+1 宿主竞争（Stage III）。最终检验“先预训练”是否提高小病灶发现、脑结构识别和绑定稳健性，而非仅提高 masked reconstruction 的 PSNR。
@@ -103,7 +113,7 @@
 ### 3.3 训练预算与 Stage I 验收
 
 - 先做 8k crop 曝光 pilot：跑通 forward/backward、梯度、loss mask、双视图、DDP/all-gather、不同源采样、恢复训练、显存峰值、吞吐；需提交真实 GPU 探针后才定正式 batch/worker。
-- 正式 Stage I 暂定 **320k source-crop 曝光**（effective batch 8 时约 40k 优化步；每块两视图相当于约 640k encoder view-exposures）。4×A800 80 GB、AMP、梯度检查点和按空闲卡调度与原方案一致；绝不以预计秒数声明训练时间，使用真实单/四卡 P0 探针更新预算。GPU 不足时停并报告，不擅自占用他人任务。
+- 正式 Stage I 暂定 **320k source-crop 曝光**（建议先从 4 GPU×microbatch 2、gradient accumulation 2 = global batch 16 进行 probe：约 20k optimizer steps；若 accumulation=1、global batch 8 则约 40k steps；两个增强视图相当于约 640k encoder view-exposures）。4×A800 80 GB、AMP、梯度检查点和按空闲卡调度与原方案一致；绝不以预计秒数声明训练时间，使用真实单/四卡 P0 探针更新预算。GPU 不足时停并报告，不擅自占用他人任务。
 - 每固定 5k 步（pilot 每 1k）在不参与梯度的 Stage I 验证患者上做 `masked-MAE`、表征有效秩/方差防塌缩、两视图一致性、序列/数据源分组指标；仅以训练集拆出的 calibration probes 测**冻结 Backbone 的 13 宿主解剖轻量读出、异常区域可分性（按病灶大小）**。
 - **门 G1（先于 II 主训练）：** 完整 SSL smoke+unit tests；无 masked-content 泄漏；所有损失有限/有梯度；表示未塌缩；训练与 held-out SSL 指标优于简单基线；冻结探针至少不显著劣于随机初始化同配置，并披露样本数和置信区间；锁定 `ssl_stage1_best.pt`。未满足则只允许修复 Stage I 或提交偏离申请，**不自动跳过 Stage I**。
 - Checkpoint 必备：`backbone_state_dict`、config、数据清单/hash、代码 SHA、epoch、seen_crops、optimizer/scheduler/scaler、随机种子、RNG 状态、数据拆分版本、validation 记录。对接 II 时加载 backbone 严格键/形状检查并打印 missing/unexpected keys；辅助头只存于 SSL 完整恢复 checkpoint，不载入下游模型。
@@ -147,7 +157,7 @@
 
 **T00｜冻结旧规格并新增修订决议**
 - 新文件：`docs/superpowers/specs/2026-10-09-anatobind-brain-ssl-first-addendum.md`。
-- 不改旧 N1–N18 文档的历史叙述；修订 N11“跳过 Stage I”、N16 的 Stage I 算力和 `9 的 Stage I 文件路径；说明原 Part 1 的代码核查和探针依然是前提。
+- 不改旧 N1–N18 文档的历史叙述；修订 N11“跳过 Stage I”、N16 的 Stage I 算力和 §9 的 Stage I 文件路径；说明原 Part 1 的代码核查和探针依然是前提。
 
 **T01｜数据 inventory 与锁定拆分**
 - 新增 `anatobind/aur/ssl/samples.py`、`scripts/aur_ssl_prepare.py`、`tests/test_aur_ssl_samples.py`。
