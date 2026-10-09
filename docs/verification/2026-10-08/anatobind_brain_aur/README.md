@@ -66,8 +66,9 @@ steps. Single-card fallback ≈ 14 h + 4.8 h.
 ## Tests
 
 `PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`
-→ `909 passed, 1 skipped in 97.09s` (872 before this plan; 37 new tests in `tests/test_aur_*.py`; the plan said 36 — the
-dataset test gained one function in the batch C fix round).
+→ `910 passed, 1 skipped in 87.78s` after the final-review fix wave (872 before this plan; 38 new tests in
+`tests/test_aur_*.py`: the plan's 36, plus the sliver test of the batch C fix round and the RAS reorientation test of the
+fix wave; 909 at the first documentation commit).
 
 ## What changed against the plan's first text (review rounds; every change is in the plan and the dry-run copy)
 

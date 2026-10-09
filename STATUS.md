@@ -9,10 +9,11 @@
 - **测试**（main，2026-10-09）：
   ```
   PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
-  909 passed, 1 skipped in 97.09s (0:01:37)
+  910 passed, 1 skipped in 87.78s (0:01:27)
   ```
-  新增 37 个（`tests/test_aur_*.py`，12 个文件）。
+  新增 38 个（`tests/test_aur_*.py`，12 个文件；终审修补后，首次文档提交时为 909）。
 - **代码**（`anatobind/aur/`，12 个模块；`scripts/aur_prepare.py`、`scripts/aur_probe.py`）：标签空间（32 实体 / 13+1 宿主 / 6 序列）、样本表、实例与软宿主真值、zyx 裁块与坐标、物理坐标 RoPE、可变尺寸 Swin（RoPE 注意力、无效 token 不作键且归零）、实体/事件/序列/掩膜头、每病灶候选竞争、点采样损失、`AnatoBindBrain`、数据集。模型默认配置 = 规格 §5（embed 64、[2,2,6,2]、[2,4,8,16]、窗口 (4,8,8)、patch (2,4,4)、d_model 256、K 32、M 64），22 719 561 参数（骨干 12.9 M）。
+- **终审修补（47355a7）**：所有卷读入时先 `nib.as_closest_canonical` 到 RAS（四个来源存储方向不同：PDGM LPS、ISLES LAS、SibBMS RAS、BMSR RAS+LAS，不统一等于隐式镜像；带 LPS 副本测试）、裁块字典带 `entity_present`、几处整理；记录补 `p0/spacing.txt`、`p0/model_params.txt`、`reviews/final-review-1.md`。
 - **评审修补（两轮，全部已进代码、计划与草稿副本）**：关系几何的侧别改为宿主身份 + 左右宿主质量中点；骨干的 -1 填充约定写明；掩膜损失采样点一半按实例配额；缺席实体也学空掩膜；`bind` 按存在性门控；裁块里低于 10 mm³ 的碎片不算实例；探针测试去掉空断言。
 - **P0 核查（`p0/`）**：
   ```
