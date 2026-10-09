@@ -1,6 +1,8 @@
 """Volumes -> training crops with targets (spec §3.2, §6).
 
-One dataset item is one sample row (a volume of one sequence) and yields `crops_per_volume` crops of it: the volume is
+Every volume is first brought to RAS by axis flips / permutations (nibabel's closest canonical): the sources store LPS
+(PDGM), LAS (ISLES, 9 BMSR cases) and RAS (SibBMS, BMSR) volumes, and the sided labels must lie on one side of the
+array, or the sources would mirror each other (an implicit mirroring; S4 lesson A17). One dataset item is one sample row (a volume of one sequence) and yields `crops_per_volume` crops of it: the volume is
 read once, normalised, its entity map, lesion instances and host targets built once, then each crop is cut, rotated
 in-plane, intensity-augmented and labelled. Half of the crops of a volume with instances are centred on a random
 instance voxel. Targets per crop: the entity map, the instance map (ids renumbered 1..n within the crop), the point
@@ -15,24 +17,36 @@ from torch.utils.data import Dataset
 
 from anatobind.aur.crops import (CROP, PATCH, augment, coordinates_mm, crop_window, extract, local_coordinates, normalise,
                                  rotate_inplane, spacing_zyx, to_zyx)
-from anatobind.aur.labels import SEQ_INDEX, entity_map
+from anatobind.aur.labels import N_ENTITIES, SEQ_INDEX, entity_map
 from anatobind.aur.targets import host_targets, lesion_instances
 from anatobind.eval.lesion_components import min_voxels_for
 
 ROTATION_DEG = 10.0
 
 
+def canonical(img):
+    """The image reoriented to RAS by axis flips / permutations only (no resampling): the same anatomy lies on the same
+    side of the array whatever the source stored."""
+    return nib.as_closest_canonical(img)
+
+
+def spacing_of(img):
+    """Voxel spacing (x, y, z) in mm from the affine's column norms (right after a reorientation too)."""
+    a = np.asarray(img.affine, dtype=np.float64)[:3, :3]
+    return tuple(float(v) for v in np.sqrt((a ** 2).sum(0)))
+
+
 def load_volume(row):
-    """Read one sample row into (z, y, x) arrays with its targets."""
-    img_i, seg_i = nib.load(row["image"]), nib.load(row["anatomy"])
+    """Read one sample row into (z, y, x) arrays with its targets; every file is reoriented to RAS first."""
+    img_i, seg_i = canonical(nib.load(row["image"])), canonical(nib.load(row["anatomy"]))
     if img_i.shape[:3] != seg_i.shape[:3]:
         raise ValueError(f"{row['case']} {row['sequence']}: image {img_i.shape} and anatomy {seg_i.shape} differ")
-    spacing = spacing_zyx(img_i.header.get_zooms()[:3])
+    spacing = spacing_zyx(spacing_of(img_i))
     image = normalise(to_zyx(np.asarray(img_i.dataobj).astype(np.float32)))
     seg = to_zyx(np.asarray(seg_i.dataobj).astype(np.int16))
     entity = entity_map(seg)
     if row["lesion"]:
-        les = to_zyx(np.asarray(nib.load(row["lesion"]).dataobj).astype(np.int16))
+        les = to_zyx(np.asarray(canonical(nib.load(row["lesion"])).dataobj).astype(np.int16))
         if les.shape != seg.shape:
             raise ValueError(f"{row['case']}: lesion map {les.shape} and anatomy {seg.shape} differ")
         inst, small = lesion_instances(les, row["u_values"], float(np.prod(spacing)))
@@ -73,9 +87,10 @@ def make_crop(vol, rng, crop=CROP, do_augment=True, lesion_centred=False):
     renumbered, small, ids = crop_instances(instance, small, float(np.prod(vol["spacing"])))
     sel = np.array(ids, np.int64) - 1
     hosts = vol["hosts"]
+    entity_present = np.isin(np.arange(1, N_ENTITIES + 1), np.unique(entity))          # the entity has voxels in the crop
     return {"image": torch.from_numpy(np.ascontiguousarray(image))[None], "valid": torch.from_numpy(valid.astype(np.float32)),
             "coords": torch.from_numpy(coords), "local": torch.from_numpy(local),
-            "entity": torch.from_numpy(entity.astype(np.int64)), "instance": torch.from_numpy(renumbered),
+            "entity": torch.from_numpy(entity.astype(np.int64)), "entity_present": torch.from_numpy(entity_present), "instance": torch.from_numpy(renumbered),
             "point_weight": torch.from_numpy((~small).astype(np.float32)), "a_ignore": torch.from_numpy(a_ignore),
             "host": torch.from_numpy(hosts["host"][sel]), "host_probs": torch.from_numpy(hosts["probs"][sel]),
             "negatives": torch.from_numpy(hosts["negatives"][sel]), "seq": torch.tensor(vol["seq"]),
@@ -115,7 +130,7 @@ class AURDataset(Dataset):
 def collate(items):
     """A list of crop lists -> one batch dict: fixed-size tensors stacked, per-crop targets kept as lists."""
     crops = [c for item in items for c in item]
-    out = {k: torch.stack([c[k] for c in crops]) for k in ("image", "valid", "coords", "local", "entity", "instance", "point_weight", "a_ignore", "seq", "u_supervised")}
+    out = {k: torch.stack([c[k] for c in crops]) for k in ("image", "valid", "coords", "local", "entity", "entity_present", "instance", "point_weight", "a_ignore", "seq", "u_supervised")}
     for k in ("host", "host_probs", "negatives", "n_instances", "case"):
         out[k] = [c[k] for c in crops]
     return out

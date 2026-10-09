@@ -59,7 +59,7 @@ def step(model, batch, points, opt, scaler_dtype):
             part = L.relation_loss(logits, torch.tensor([0, 1], device=em.device)[ti], torch.tensor([[1, -1], [0, -1]], device=em.device)[ti])
             r = {k: r[k] + part[k] / B for k in r}
         parts.update(r)
-        total, logged = L.total(parts)
+        total, _ = L.total(parts)
     opt.zero_grad(set_to_none=True)
     total.backward()
     opt.step()
@@ -92,8 +92,9 @@ def main(argv=None):
     points = L.sample_points(batch["valid"].cpu(), a.points, torch.Generator().manual_seed(rank)).to(device)
     torch.cuda.reset_peak_memory_stats(device)
     losses = []
+    t0 = time.time()
     for i in range(a.steps):
-        if i == 3:
+        if i == 3:                                      # the first steps carry the warm-up
             torch.cuda.synchronize(device)
             t0 = time.time()
         losses.append(step(model, batch, points, opt, torch.bfloat16))

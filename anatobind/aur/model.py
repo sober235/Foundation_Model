@@ -1,7 +1,5 @@
 """The AnatoBind brain model: backbone + entity / event / sequence heads + mask head + host competition (spec §5)."""
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from anatobind.aur.heads import EntityDecoder, EventDecoder, MaskHead, SequenceHead
 from anatobind.aur.labels import N_ENTITIES

@@ -42,6 +42,26 @@ def test_load_volume_builds_the_targets_in_zyx(tmp_path):
     assert bare["instance"].max() == 0 and not bare["u_supervised"] and bare["hosts"]["host"].shape == (0,)
 
 
+def test_load_volume_reorients_every_source_to_ras(tmp_path):
+    row = _case(tmp_path)
+    ras = D.load_volume(row)
+    lps = {}
+    for name in ("image", "anatomy", "lesion"):                     # the same volume stored LPS: axes x and y flipped
+        img = nib.load(row[name])
+        arr = np.asarray(img.dataobj)[::-1, ::-1, :]
+        aff = img.affine.copy()
+        aff[0, 0], aff[1, 1] = -aff[0, 0], -aff[1, 1]
+        aff[0, 3], aff[1, 3] = (arr.shape[0] - 1) * img.affine[0, 0], (arr.shape[1] - 1) * img.affine[1, 1]
+        p = tmp_path / f"lps_{name}.nii.gz"
+        nib.save(nib.Nifti1Image(np.ascontiguousarray(arr), aff), str(p))
+        lps[name] = str(p)
+    assert "".join(nib.aff2axcodes(nib.load(lps["image"]).affine)) == "LPS"
+    back = D.load_volume({**row, **lps})
+    for k in ("image", "entity", "instance", "small", "a_ignore"):
+        assert np.array_equal(ras[k], back[k]), k
+    assert back["spacing"] == ras["spacing"] == (2.0, 1.0, 1.0) and back["hosts"]["host"].tolist() == ras["hosts"]["host"].tolist()
+
+
 def test_crops_carry_geometry_validity_and_renumbered_instances(tmp_path):
     vol = D.load_volume(_case(tmp_path))
     rng = np.random.default_rng(3)
@@ -49,6 +69,7 @@ def test_crops_carry_geometry_validity_and_renumbered_instances(tmp_path):
     assert c["image"].shape == (1, 8, 16, 16) and c["valid"].shape == (8, 16, 16) and c["coords"].shape == (3, 8, 16, 16)
     assert c["instance"].max() == 1 and c["n_instances"] == 1 and c["host"].tolist() == [HOST_NAMES.index("white_matter_left")]
     assert c["host_probs"].shape == (1, N_HOST_CLASSES) and c["negatives"].shape == (1, 2) and bool(c["u_supervised"])
+    assert c["entity_present"].shape == (32,) and c["entity_present"].dtype == torch.bool and c["entity_present"][0] and not c["entity_present"][2]      # left white matter present, left cortex absent
     assert (c["image"][0][c["valid"] < 0.5] == -1.0).all() and c["point_weight"].min() >= 0 and c["entity"].dtype == torch.int64
     dz = c["coords"][0, 1, 0, 0] - c["coords"][0, 0, 0, 0]
     assert float(dz) == 2.0 and float(c["coords"][1, 0, 1, 0] - c["coords"][1, 0, 0, 0]) == 1.0
@@ -81,7 +102,7 @@ def test_dataset_items_and_collate(tmp_path):
     batch = D.collate([ds[0], ds[1]])
     assert batch["image"].shape == (4, 1, 8, 16, 16) and batch["seq"].tolist() == [3, 3, 3, 3] and batch["u_supervised"].tolist() == [True, True, False, False]
     assert len(batch["host"]) == 4 and batch["n_instances"][2] == 0 and batch["instance"].shape == (4, 8, 16, 16)
-    pts = torch.tensor([[0, 1, 2]])
+    assert batch["entity_present"].shape == (4, 32) and batch["entity_present"].dtype == torch.bool
     inst_pts = torch.tensor([[0, 2, 1]])
     t = D.event_targets_at_points(inst_pts, [2])
     assert t[0].tolist() == [[0.0, 0.0, 1.0], [0.0, 1.0, 0.0]] and D.event_targets_at_points(inst_pts, [0])[0].shape == (0, 3)

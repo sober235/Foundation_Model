@@ -12,8 +12,6 @@ import torch
 import torch.nn.functional as F
 from scipy.optimize import linear_sum_assignment
 
-from anatobind.aur.labels import N_HOST_CLASSES
-
 NO_OBJECT_WEIGHT = 0.1
 LAMBDA_R = 1.0
 LAMBDA_H = 0.2
@@ -74,7 +72,8 @@ def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present):
 
 
 def match_events(presence, mask_logits, target):
-    """One sample: presence (M,), mask_logits (M, P), target (N, P) -> (query indices, target indices)."""
+    """One sample: presence (M,), mask_logits (M, P), target (N, P) -> (query indices, target indices). The cost
+    reads every point (points under the volume floor count as target 0 here, they only carry no loss afterwards)."""
     if target.shape[0] == 0:
         empty = torch.zeros(0, dtype=torch.long, device=presence.device)
         return empty, empty
