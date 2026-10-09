@@ -1,8 +1,10 @@
 """Losses (spec N11, §6): L = L_A + L_S + L_U + λ_R (L_bind + λ_h L_hard).
 
-Masks are supervised at sampled points (uniform over the valid voxels of each crop, the same points for every query of
-a sample), so no dense (Q, D, H, W) mask is ever built in training. Entity masks: BCE + Dice for the entities present
-in the crop, presence BCE for all; lesion voxels (a_ignore) carry no entity loss. Events: Hungarian matching on
+Masks are supervised at sampled points (the same points for every query of a sample), so no dense (Q, D, H, W) mask is
+ever built in training: half of the points are drawn per lesion instance (an equal quota for every instance of the
+sample, so that a small lesion always carries positive points), the rest uniformly over the valid voxels. Entity
+masks: BCE for every entity (an absent entity learns an empty mask), Dice for the entities present in the crop,
+presence BCE for all; lesion voxels (a_ignore) carry no entity loss. Events: Hungarian matching on
 presence + mask BCE + mask Dice, then presence BCE over every query (no-object weight) and mask losses over the matched
 ones; samples whose U is not supervised contribute nothing to L_U. Relation: cross-entropy over the 14 host classes
 plus a hinge on the hard negatives (contralateral, second host)."""
@@ -19,10 +21,29 @@ MARGIN = 1.0
 N_POINTS = 16384
 
 
-def sample_points(valid, n, generator=None):
-    """valid (B, D, H, W) bool / float -> (B, n) flat indices drawn uniformly (with replacement) from the valid voxels."""
+FOCUS_SHARE = 0.5
+
+
+def sample_points(valid, n, generator=None, instance=None, focus_share=FOCUS_SHARE):
+    """valid (B, D, H, W) bool / float -> (B, n) flat indices (with replacement). Without an instance map: uniform over
+    the valid voxels. With one ((B, D, H, W) crop-local ids, 0 background): the first focus_share of the points of a
+    sample are split equally among its instances and drawn from each instance's voxels, the rest are uniform."""
     flat = (valid.flatten(1) > 0.5).float()
-    return torch.multinomial(flat + 1e-12, n, replacement=True, generator=generator)
+    out = torch.multinomial(flat + 1e-12, n, replacement=True, generator=generator)
+    if instance is None:
+        return out
+    inst = instance.flatten(1)
+    for b in range(flat.shape[0]):
+        ids = torch.unique(inst[b])
+        ids = ids[ids > 0]
+        quota = int(n * focus_share) // max(int(ids.numel()), 1)
+        if ids.numel() == 0 or quota == 0:
+            continue
+        pos = 0
+        for k in ids:
+            out[b, pos:pos + quota] = torch.multinomial((inst[b] == k).float(), quota, replacement=True, generator=generator)
+            pos += quota
+    return out
 
 
 def gather(x, points):
@@ -40,14 +61,15 @@ def dice_loss(logits, target, weight):
 
 def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present):
     """mask_logits (B, K, P); presence (B, K); entity_pts (B, P) entity map values at the points (0 none, 1..K);
-    a_ignore_pts (B, P) bool (lesion voxels); present (B, K) bool: the entity has voxels in the crop."""
+    a_ignore_pts (B, P) bool (lesion voxels); present (B, K) bool: the entity has voxels in the crop. BCE over every
+    entity (absent ones learn an empty mask), Dice over the present ones."""
     K = mask_logits.shape[1]
     target = (entity_pts[:, None, :] == torch.arange(1, K + 1, device=entity_pts.device)[None, :, None]).float()
     keep = (~a_ignore_pts).float()[:, None, :]
     bce = (F.binary_cross_entropy_with_logits(mask_logits, target, reduction="none") * keep).sum(-1) / keep.sum(-1).clamp(min=1.0)
     w = present.float()
     dropped = mask_logits.masked_fill(a_ignore_pts[:, None, :], -1e4)        # ignored points count as empty in the Dice
-    mask = (bce * w).sum() / w.sum().clamp(min=1.0) + dice_loss(dropped, target * keep, w)
+    mask = bce.mean() + dice_loss(dropped, target * keep, w)
     return {"a_mask": mask, "a_presence": F.binary_cross_entropy_with_logits(presence, w)}
 
 

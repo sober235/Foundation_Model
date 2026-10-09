@@ -14,6 +14,13 @@ def test_points_are_drawn_from_valid_voxels_only():
     assert pts.shape == (2, 50) and (pts[0] < 12).all() and (pts[1] == 23).all()
     x = torch.arange(24.0).view(1, 2, 3, 4)
     assert L.gather(x, torch.tensor([[0, 23, 5]])).tolist() == [[0.0, 23.0, 5.0]]
+    inst = torch.zeros(1, 2, 3, 4, dtype=torch.long)
+    inst[0, 0, 0, :3] = 1                                       # a 3-voxel lesion
+    inst[0, 1, 2, 3] = 2                                        # a 1-voxel lesion
+    pts = L.sample_points(torch.ones(1, 2, 3, 4), 40, torch.Generator().manual_seed(0), instance=inst)
+    got = L.gather(inst, pts)[0]
+    assert pts.shape == (1, 40) and (got[:10] == 1).all() and (got[10:20] == 2).all()     # 20 focus points, 10 per instance
+    assert L.sample_points(torch.ones(1, 2, 3, 4), 8, torch.Generator().manual_seed(0), instance=torch.zeros(1, 2, 3, 4, dtype=torch.long)).shape == (1, 8)
 
 
 def test_entity_loss_prefers_the_right_masks_and_skips_lesion_points():
@@ -28,6 +35,9 @@ def test_entity_loss_prefers_the_right_masks_and_skips_lesion_points():
     lg = L.entity_loss(good, torch.full((1, 32), -5.0), pts, ignore, present)
     lb = L.entity_loss(bad, torch.full((1, 32), -5.0), pts, ignore, present)
     assert lg["a_mask"] < 0.05 < lb["a_mask"] and lg["a_presence"] > 0
+    leaky = good.clone()
+    leaky[0, 5, :] = 8.0                                           # an absent entity claiming every point: penalised
+    assert L.entity_loss(leaky, torch.full((1, 32), -5.0), pts, ignore, present)["a_mask"] > lg["a_mask"] + 0.1
     worse = good.clone()
     worse[0, 1, 5] = 8.0                                           # wrong at an ignored (lesion) point: no penalty
     assert torch.allclose(L.entity_loss(worse, torch.full((1, 32), -5.0), pts, ignore, present)["a_mask"], lg["a_mask"])

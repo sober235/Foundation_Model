@@ -5,7 +5,9 @@ read once, normalised, its entity map, lesion instances and host targets built o
 in-plane, intensity-augmented and labelled. Half of the crops of a volume with instances are centred on a random
 instance voxel. Targets per crop: the entity map, the instance map (ids renumbered 1..n within the crop), the point
 weight (0 on components under the volume floor), the entity-ignore mask (every lesion voxel of the case), the host /
-host probabilities / hard negatives of the crop's instances, the sequence type and the U supervision flag."""
+host probabilities / hard negatives of the crop's instances, the sequence type and the U supervision flag. An
+instance whose part inside the crop is under the volume floor is not an instance of the crop: its voxels join the
+small mask (no loss). The host targets of an instance cut by the crop are those of the whole instance."""
 import nibabel as nib
 import numpy as np
 import torch
@@ -15,6 +17,7 @@ from anatobind.aur.crops import (CROP, PATCH, augment, coordinates_mm, crop_wind
                                  rotate_inplane, spacing_zyx, to_zyx)
 from anatobind.aur.labels import SEQ_INDEX, entity_map
 from anatobind.aur.targets import host_targets, lesion_instances
+from anatobind.eval.lesion_components import min_voxels_for
 
 ROTATION_DEG = 10.0
 
@@ -67,10 +70,7 @@ def make_crop(vol, rng, crop=CROP, do_augment=True, lesion_centred=False):
         valid, small, a_ignore = valid.astype(bool), small.astype(bool), a_ignore.astype(bool)
         image = np.where(valid, image, -1.0).astype(np.float32)
         image = augment(image, rng)
-    ids = [int(k) for k in np.unique(instance) if k > 0]
-    renumbered = np.zeros(instance.shape, np.int64)
-    for new, old in enumerate(ids, start=1):
-        renumbered[instance == old] = new
+    renumbered, small, ids = crop_instances(instance, small, float(np.prod(vol["spacing"])))
     sel = np.array(ids, np.int64) - 1
     hosts = vol["hosts"]
     return {"image": torch.from_numpy(np.ascontiguousarray(image))[None], "valid": torch.from_numpy(valid.astype(np.float32)),
@@ -80,6 +80,19 @@ def make_crop(vol, rng, crop=CROP, do_augment=True, lesion_centred=False):
             "host": torch.from_numpy(hosts["host"][sel]), "host_probs": torch.from_numpy(hosts["probs"][sel]),
             "negatives": torch.from_numpy(hosts["negatives"][sel]), "seq": torch.tensor(vol["seq"]),
             "u_supervised": torch.tensor(vol["u_supervised"]), "n_instances": len(ids), "case": vol["case"]}
+
+
+def crop_instances(instance, small, voxel_mm3):
+    """(instance map renumbered 1..n over the instances whose in-crop part reaches the volume floor, the small mask with
+    the slivers added, the kept original ids in order)."""
+    floor = min_voxels_for(voxel_mm3)
+    ids = [int(k) for k in np.unique(instance) if k > 0]
+    kept = [k for k in ids if int((instance == k).sum()) >= floor]
+    renumbered = np.zeros(instance.shape, np.int64)
+    for new, old in enumerate(kept, start=1):
+        renumbered[instance == old] = new
+    small = small | np.isin(instance, [k for k in ids if k not in kept])
+    return renumbered, small, kept
 
 
 class AURDataset(Dataset):

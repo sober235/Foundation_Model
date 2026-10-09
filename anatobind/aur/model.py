@@ -48,9 +48,11 @@ class AnatoBindBrain(nn.Module):
 
     def bind(self, out, b, event_idx):
         """Host logits (N, 14) of the events `event_idx` (N,) of sample b, from this sample's own predicted masks on
-        the coarse grid (N8). event_idx may be the matched queries (training) or the present ones (inference)."""
+        the coarse grid (N8), the entity masks gated by the entity presence so that an absent entity holds no host
+        mass. event_idx may be the matched queries (training) or the present ones (inference)."""
         pix = {"coarse": out["pix"]["coarse"][b:b + 1]}
-        ent = self.masks.coarse_masks(out["entity_embed"][b:b + 1], pix)[0].sigmoid()                    # (32, D1, H1, W1)
+        gate = out["entity_presence"][b].sigmoid()[:, None, None, None]
+        ent = self.masks.coarse_masks(out["entity_embed"][b:b + 1], pix)[0].sigmoid() * gate             # (32, D1, H1, W1)
         ev = self.masks.coarse_masks(out["event_embed"][b:b + 1, event_idx], pix)[0].sigmoid()            # (N, D1, H1, W1)
         valid = out["levels"][0]["valid"][b]                                                              # (D1, H1, W1)
         hosts = host_masks_from_entities(ent[None])[0] * valid

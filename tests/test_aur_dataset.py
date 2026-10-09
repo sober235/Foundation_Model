@@ -60,6 +60,19 @@ def test_crops_carry_geometry_validity_and_renumbered_instances(tmp_path):
     assert big["valid"].sum() == 10 * 20 * 24 and (big["image"][0][big["valid"] < 0.5] == -1.0).all() and big["entity"][0, 0, 0] == 0
 
 
+def test_slivers_under_the_floor_leave_the_crop_without_an_instance():
+    inst = np.zeros((4, 6, 6), np.int32)
+    inst[0, 0, :3] = 1                                             # 3 voxels: at 2 mm3 each 6 mm3, under the 10 mm3 floor
+    inst[1:4, 1:4, 1:4] = 2                                        # 27 voxels
+    small = np.zeros(inst.shape, bool)
+    small[3, 5, 5] = True
+    renumbered, small2, kept = D.crop_instances(inst, small, 2.0)
+    assert kept == [2] and renumbered.max() == 1 and (renumbered[1:4, 1:4, 1:4] == 1).all()
+    assert small2[0, 0, :3].all() and small2[3, 5, 5] and small2.sum() == 4
+    r1, s1, k1 = D.crop_instances(inst, small, 8.0)                 # 8 mm3 voxels: both instances reach the floor
+    assert k1 == [1, 2] and r1.max() == 2 and s1.sum() == 1
+
+
 def test_dataset_items_and_collate(tmp_path):
     rows = [_case(tmp_path), _case(tmp_path, with_lesion=False)]
     ds = D.AURDataset(rows, crop=(8, 16, 16), crops_per_volume=2, seed=1)
