@@ -1,0 +1,14 @@
+host,pdgm,bmsr,isles
+white_matter_left,226.8,240.0,206.8
+white_matter_right,223.2,243.2,205.0
+cortex_left,279.0,259.6,234.1
+cortex_right,274.9,268.4,228.6
+thalamus_left,7.1,6.4,5.9
+thalamus_right,7.7,6.9,6.1
+basal_ganglia_left,10.4,10.3,9.5
+basal_ganglia_right,11.3,10.7,9.8
+brainstem,24.6,24.1,20.5
+cerebellum_left,67.7,68.9,58.4
+cerebellum_right,68.4,67.2,57.4
+other_deep_grey_left,10.1,9.7,7.7
+other_deep_grey_right,9.7,9.7,8.0

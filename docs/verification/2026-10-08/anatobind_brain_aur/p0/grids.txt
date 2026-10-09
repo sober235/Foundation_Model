@@ -1,0 +1,3 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/aur_prepare.py --stage grids --samples /data2/congcong/data/FM_data/derived/aur/samples.json   # start 2026-10-09 11:35:38
+4960 rows checked, 0 off their grid
+EXIT 0 2026-10-09 11:36:59

@@ -1,0 +1,7 @@
+$ PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python scripts/aur_prepare.py --stage samples --out /data2/congcong/data/FM_data/derived/aur/samples.json   # 2026-10-09 11:35:35, code 097c480
+pdgm: train 400 cases / 1600 rows / 800 with U; test 101 cases / 404 rows / 202 with U
+bmsr: train 359 cases / 1077 rows / 359 with U; test 102 cases / 306 rows / 102 with U
+isles: train 200 cases / 400 rows / 200 with U; test 50 cases / 100 rows / 50 with U
+sibbms: train 276 cases / 827 rows / 0 with U; test 82 cases / 246 rows / 0 with U
+wrote /data2/congcong/data/FM_data/derived/aur/samples.json: 4960 rows
+EXIT 0 2026-10-09 11:35:38
