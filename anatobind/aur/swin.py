@@ -5,7 +5,13 @@ The plan's geometry: Conv3D patch stem (2, 4, 4), channels [64, 128, 256, 512], 
 F_k is the output of stage k before its merging. The window partition, reverse and shift mask come from MONAI; the
 attention is our own (RoPE instead of a relative position bias, invalid tokens never serve as keys), and the features
 of invalid tokens are zeroed before every stage and before merging so that padding never leaks into valid tokens.
-Every level is returned with its own validity, physical coordinates (mm) and local coordinates ([-1, 1])."""
+Every level is returned with its own validity, physical coordinates (mm) and local coordinates ([-1, 1]).
+
+Stage I (masked image modelling, SSL-first plan §3.1): `forward(..., visible=...)` takes the patches whose image content
+the network may see. The voxels of the other patches are set to MASK_FILL before the patch stem (the stem's kernel
+equals its stride, so no hidden voxel reaches any token) and their tokens receive a learned mask token; they stay valid
+tokens (keys and queries) with their coordinates. M_valid (the volume's extent) and the visibility are two different
+things: a hidden patch is not an invalid one."""
 import math
 
 import torch
@@ -22,6 +28,15 @@ HEADS = (2, 4, 8, 16)
 WINDOW = (4, 8, 8)
 PATCH = (2, 4, 4)
 KEY_MASK = -1e4
+MASK_FILL = 0.0                 # the voxel value of a hidden patch before the stem (Stage I)
+
+
+def upsample_patches(mask, patch):
+    """(B, D', H', W') patch-level mask -> (B, D' p0, H' p1, W' p2) voxel-level mask (each patch repeated)."""
+    out = mask
+    for axis, p in enumerate(patch, start=1):
+        out = out.repeat_interleave(p, dim=axis)
+    return out
 
 
 class WindowAttention(nn.Module):
@@ -150,18 +165,30 @@ class SwinBackbone(nn.Module):
         self.channels = tuple(embed * 2 ** i for i in range(len(depths)))
         self.patch_embed = nn.Conv3d(in_channels, embed, kernel_size=self.patch, stride=self.patch)
         self.local_embed = nn.Sequential(nn.Linear(3, embed), nn.GELU(), nn.Linear(embed, embed))
+        self.mask_token = nn.Parameter(torch.zeros(embed))
         self.stages = nn.ModuleList(Stage(self.channels[i], depths[i], heads[i], window, merge=i < len(depths) - 1,
                                           use_checkpoint=use_checkpoint) for i in range(len(depths)))
 
-    def forward(self, image, valid, coords, local):
+    def forward(self, image, valid, coords, local, visible=None):
         """image (B, 1, D, H, W) with D, H, W multiples of the patch; valid (B, D, H, W) float 0/1; coords and local
-        (B, 3, D, H, W). Contract: the invalid voxels of `image` hold the constant -1 (the normalised background value,
-        crops.normalise / dataset.make_crop), so a patch that is only partly valid is a valid token that sees that
-        constant like any image border; no image content ever lies under `valid == 0`. Returns a list of levels, each {"feat": (B, C, D', H', W'), "valid": (B, D', H', W') float,
-        "coords": (B, 3, D', H', W') mm, "local": (B, 3, D', H', W')}."""
+        (B, 3, D, H, W); visible (B, D/p0, H/p1, W/p2) bool or None (every patch visible). Contract: the invalid voxels
+        of `image` hold the constant -1 (the normalised background value, crops.normalise / dataset.make_crop), so a
+        patch that is only partly valid is a valid token that sees that constant like any image border; no image
+        content ever lies under `valid == 0`. With `visible`, the voxels of the hidden patches are replaced by MASK_FILL
+        before the stem and their tokens get the mask token added (see the module docstring). Returns a list of levels,
+        each {"feat": (B, C, D', H', W'), "valid": (B, D', H', W') float, "coords": (B, 3, D', H', W') mm,
+        "local": (B, 3, D', H', W')}."""
         if any(s % p for s, p in zip(image.shape[2:], self.patch)):
             raise ValueError(f"spatial shape {tuple(image.shape[2:])} is not a multiple of the patch {self.patch}")
+        if visible is not None:
+            grid = tuple(s // p for s, p in zip(image.shape[2:], self.patch))
+            if tuple(visible.shape) != (image.shape[0],) + grid:
+                raise ValueError(f"visible {tuple(visible.shape)} is not the patch grid {(image.shape[0],) + grid}")
+            visible = visible.bool()
+            image = torch.where(upsample_patches(visible, self.patch)[:, None], image, torch.full_like(image, MASK_FILL))
         x = self.patch_embed(image)
+        if visible is not None:
+            x = x + (~visible)[:, None].to(x.dtype) * self.mask_token.view(1, -1, 1, 1, 1).to(x.dtype)
         c = F.avg_pool3d(coords, self.patch, self.patch)
         l = F.avg_pool3d(local, self.patch, self.patch)
         v = F.max_pool3d(valid[:, None], self.patch, self.patch)[:, 0]
