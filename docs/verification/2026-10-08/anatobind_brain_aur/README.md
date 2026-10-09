@@ -16,6 +16,8 @@ in `p0/` or from a printed output; comparisons between pseudo-label maps are NOT
 | `sibbms_note.md` | why no SibBMS row supervises U (10 annotated subjects on a different grid) | controller |
 | `probe_single.txt` | memory and seconds per step on one A800, batch 1 / 2 / 4 with and without checkpointing | `scripts/aur_probe.py --gpu 0 …` |
 | `probe_ddp.txt` | the four-card DDP probe: the default NCCL run timed out, the `NCCL_P2P_DISABLE=1` run gives the schedule | `torchrun --nproc_per_node 4 scripts/aur_probe.py --ddp …` |
+| `spacing.txt` | orientation, spacing and shape of every case's anatomy map per source (final review I1) | `checks/spacing_table.py` |
+| `model_params.txt` | parameter counts of the default model (backbone 12 929 792, total 22 719 561) | one-liner, recorded |
 
 ## Sample table (`samples.txt`; `/data2/congcong/data/FM_data/derived/aur/samples.json`, 4960 rows)
 
@@ -81,6 +83,19 @@ dataset test gained one function in the batch C fix round).
   join the no-loss mask; host targets of a cut instance are those of the whole instance (batch C review).
 - The probe test's tautological assertion was replaced by two real ones (plan defect found by the controller).
 
+## Orientation and spacing of the sources (`p0/spacing.txt`; final review C1 / I1)
+
+Orientations as stored: PDGM LPS (501), ISLES LAS (250), SibBMS RAS (358), BMSR RAS (452) + LAS (9). Without a
+reorientation the patient's left would lie at low x for some sources and high x for others — an implicit mirroring of
+the sided labels between sources. The fix wave after the final review makes `dataset.load_volume` reorient every file
+to RAS by axis flips / permutations (`nib.as_closest_canonical`, no resampling) before the (z, y, x) transpose; Part 2's
+inference must do the same. Spacings: PDGM and SibBMS 1 mm isotropic; ISLES 2 mm isotropic in 196 cases but 54 cases
+with 4.8 mm slices (1.15–1.8 mm in-plane); BMSR 0.43–1.17 mm in-plane and 1–5 mm slices (median 0.859 × 0.859 × 1.5;
+9 cases with a 3 mm+ axis). The spec's "1 mm (ISLES 2 mm)" was therefore wrong for BMSR and part of ISLES, and a fixed
+voxel crop of 128 × 160 × 160 spans 69–188 mm in-plane and 128–640 mm along z over the sources. The choice (voxel crops as
+they are / offline resampling of BMSR and ISLES to a common spacing / per-source crop sizes) is the user's, listed in
+`STATUS.md` §2 before the Part 2 plan; the spec §3.1 carries a dated note.
+
 ## Known deviations and notes
 
 - SibBMS supervises A and S only: its lesion annotations exist for 10 subjects on a native grid (`sibbms_note.md`).
@@ -88,13 +103,28 @@ dataset test gained one function in the batch C fix round).
 - `AnatoBindBrain.DEFAULTS` keeps `use_checkpoint = True`; the measured schedule trains without checkpointing (Part 2 passes
   `use_checkpoint=False`). All other defaults are the spec's (§5).
 - The four-card training must set `NCCL_P2P_DISABLE=1` on this host (spec N16).
-- `sample_points(..., instance=...)` has no caller yet: the Part 2 trainer passes the crop-local instance map.
+- `sample_points(..., instance=...)` has no caller yet: the Part 2 trainer passes the crop-local instance map; the crop
+  dict carries `entity_present` (K,) for `entity_loss` since the fix wave.
+- DDP (final review I2): a Stage II step (no `bind`) or a batch whose U is unsupervised everywhere leaves the relation
+  head (and the event decoder) without gradients, and `DistributedDataParallel` raises on the next step. The Part 2
+  trainer must freeze `model.relation` in Stage II and touch the event outputs with a zero weight when no sample of a
+  rank's batch supervises U (or pass `find_unused_parameters=True` and re-measure: the 0.90 s per step above was measured
+  with every part in the loss).
+- Augmentation (`crops.augment`) follows S4's recipe in spirit but is a re-implementation on the [-1, 1] scale: bias
+  amplitude 0.2 and gamma 0.7–1.4 as in S4, in-plane blur σ 0.3–0.8 (S4 0–0.7), Gaussian noise σ ~ U(0, 0.05) (S4 Rician at
+  1–4 % of the brain median), no re-normalisation afterwards.
+- The ±10° rotation turns the voxel grid about the array's z axis while the coordinate grids stay as they are (the same
+  as rotating the patient in the scanner); the corners that rotate in become invalid (-1).
+- ISLES volumes (and the 4.8 mm BMSR ones) are smaller than the crop in every axis: both crops of such a volume per epoch
+  are the same centred window and differ by augmentation only; `lesion_centred` does nothing there.
 - Deferred minors from the task reviews are listed in the SDD ledger (`.superpowers/sdd/2026-10-08-anatobind-brain-aur-part1/progress.md`)
-  and triaged by the final review (`reviews/`).
+  and triaged by the final review, kept as `reviews/final-review-1.md` (with the re-review of the fix wave beside it).
+- The ISLES montage judgement is controller-viewed (2 of 6 montages); the user has not looked: provisional (`STATUS.md` §2).
 - Two scratch paths left by an implementer outside the scratchpad are on the deletion list (`STATUS.md` §2).
 
 ## Timing
 
-Plan and dry run 2026-10-08; execution 2026-10-09 10:50–12:50: twelve code tasks in four batches (about 1 h 20 min
-including two fix rounds), P0 records 11:35–11:37 (samples 5 s, grids 81 s, ISLES check 72 s), probes 12:32–12:45
-(waiting for idle cards from 11:40).
+Plan and dry run 2026-10-08; execution 2026-10-09: first task commit 10:40, last code commit before the records 12:0x
+(git log; four batches, two fix rounds), P0 records: samples 11:35:35 → 11:35:38 (3 s), grids 11:35:38 → 11:36:59 (81 s),
+ISLES check 11:36:30 → 11:36:51 (21 s, from `p0/*.txt`), probes 12:32:11 → 12:45:44 after waiting for idle cards from
+11:40 (`p0/probe_*.txt`).

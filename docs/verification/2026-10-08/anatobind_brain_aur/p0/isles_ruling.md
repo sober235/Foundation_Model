@@ -13,8 +13,8 @@ Evidence (`isles_check.txt`, `isles_check/host_volumes_median_ml.csv`, median ov
 | other deep grey L / R | 10.1 / 9.7 | 9.7 / 9.7 | 7.7 / 8.0 | 0.76 / 0.82 |
 
 Every ISLES median lies within 0.76–0.92 of PDGM's, inside the 30 % band the plan set (ISLES patients are older stroke
-patients at 2 mm voxels; smaller volumes are expected). Montages (USER_REPORTED, the controller looked at
-`isles_sub-strokecase0001.png` and `0004.png`): the host classes follow the DWI anatomy — cerebellum and brainstem on
+patients at 2 mm voxels; smaller volumes are expected). Montages (controller-viewed, 2 of the 6: `isles_sub-strokecase0001.png` and `0004.png`; the user has not looked, so
+the judgement is provisional and listed in STATUS §2): the host classes follow the DWI anatomy — cerebellum and brainstem on
 the low slices, ventricles, thalamus and basal ganglia at the mid level, white matter / cortex with the right sides;
 the maps are coarser than on 1 mm T1 (2 mm voxels) but not misplaced.
 

@@ -32,19 +32,24 @@
 
 ## 2. 待用户拍板
 
-1. **第二部分开工**：写 Part 2 计划（训练 DDP、评估三个门、推理、记录），按规格 §6–§9；训练预计一天内完成。要不要现在就写？
-2. **push**：`git -C /data0/congcong/code/Project_Doing/foundation_model push origin main --tags`（本会话的推送只在用户明确批准时做过一次）。
-3. **可删清单（只列，不删）**：实现者留在家目录的垃圾 `/home/congcongliu/aurfix.qF3B/`、`/home/congcongliu/.aurfix_dir_tmp`；草稿区 `/tmp/claude-1002/-home-congcongliu--claude/614ccd9c-f8e8-435b-afc8-47ae37fe3721/scratchpad/{aur_dryrun,s4_dryrun}`（Part 2 写计划时还会用 aur_dryrun，之后再删）；两个 SDD 工作区 `.superpowers/sdd/2026-10-0{2,8}-*`（台账在里面）；S4 的 `derived/brain_anatomy/{preflight_best_20261003_2249,eval_20261004_0233}`、第一次带镜像的学生训练结果夹与日志；沿用：三个已合并工作树与分支、`nndet_smoke/`、`~/logs/nndet_install/wheels/`、`crossrun/*/{input,pred}`、`~/.claude/docs`。
-4. S4 结论的三条出路、S7 六条措辞小项、读片人与伦理备案、旧遗留：同前。
+1. **裁块的物理尺度怎么定（终审 I1，写 Part 2 计划前要定）**：`p0/spacing.txt` 实测：PDGM、SibBMS 1 mm；ISLES 196 例 2 mm、54 例层厚 4.8 mm；BMSR 面内 0.43–1.17 mm、层厚 1–5 mm（中位 0.859×0.859×1.5）。固定 128×160×160 体素的裁块在各来源的物理范围是面内 69–188 mm、z 向 128–640 mm。三条路：(a) 维持体素裁块、原生间距（方案 §3 的字面做法，RoPE 用 mm，模型自己跨尺度泛化）；(b) 离线把 BMSR 与 ISLES 重采样到统一间距（如 1×1×1 mm 或 1×1×2 mm，方案 §3 允许“极端 spacing 温和重采样”），裁块变成固定毫米范围；(c) 按来源定裁块大小。我倾向 (b)：解剖标签本来就是 1 mm 的 SynthSeg，训练与推理都在同一尺度，RoPE 的频率设计也按 1 mm 调的。
+2. **ISLES 保留 A 监督的裁定是临时的**：六张蒙太奇我只看了两张，你没看过（`p0/isles_check/`）。
+3. **第二部分开工**：写 Part 2 计划（训练 DDP、评估三个门、推理、记录），按规格 §6–§9；训练预计一天内完成。第 1 条定了就写。
+4. **push**：`git -C /data0/congcong/code/Project_Doing/foundation_model push origin main --tags`（本会话的推送只在用户明确批准时做过一次）。
+5. **可删清单（只列，不删）**：实现者留在家目录的垃圾 `/home/congcongliu/aurfix.qF3B/`、`/home/congcongliu/.aurfix_dir_tmp`；草稿区 `/tmp/claude-1002/-home-congcongliu--claude/614ccd9c-f8e8-435b-afc8-47ae37fe3721/scratchpad/{aur_dryrun,s4_dryrun}`（Part 2 写计划时还会用 aur_dryrun，之后再删）；两个 SDD 工作区 `.superpowers/sdd/2026-10-0{2,8}-*`（台账在里面）；S4 的 `derived/brain_anatomy/{preflight_best_20261003_2249,eval_20261004_0233}`、第一次带镜像的学生训练结果夹与日志；沿用：三个已合并工作树与分支、`nndet_smoke/`、`~/logs/nndet_install/wheels/`、`crossrun/*/{input,pred}`、`~/.claude/docs`。
+6. S4 结论的三条出路、S7 六条措辞小项、读片人与伦理备案、旧遗留：同前。
 
 ## 3. 下一步
 
-1. Part 2 计划：`anatobind/aur/train.py`（DDP、两阶段、按裁块预算、验证集 10% 病人、checkpoint 选择；`sample_points(..., instance=...)` 由训练器传入；`NCCL_P2P_DISABLE=1`；`use_checkpoint=False`）、`eval.py`（整卷滑窗、A 13 类 Dice、U 逐病灶灵敏度 @ nnU-Net 工作点、R 受控轨道 ABA vs B0 几何查表、方案实验 1 的 gap 与 rescue/harm、fastMRI 外部一致率）、`infer.py` + `scripts/infer_anatobind_brain.py`（`anatomy.nii.gz`、`lesions.nii.gz`、`record.json`、简化句子）、记录与门。门不过就停、报告、交用户。
+1. Part 2 计划：`anatobind/aur/train.py`（DDP、两阶段、按裁块预算、验证集 10% 病人、checkpoint 选择；`sample_points(..., instance=...)` 由训练器传入；`entity_present` 来自裁块字典；`NCCL_P2P_DISABLE=1`；`use_checkpoint=False`；**DDP 未用参数（终审 I2）**：Stage II 冻结 `model.relation`，某卡整批无 U 监督时给事件输出加零权重触碰，或 `find_unused_parameters=True` 并重测速度）、`eval.py`（整卷滑窗、A 13 类 Dice、U 逐病灶灵敏度 @ nnU-Net 工作点、R 受控轨道 ABA vs B0 几何查表、方案实验 1 的 gap 与 rescue/harm、fastMRI 外部一致率）、`infer.py` + `scripts/infer_anatobind_brain.py`（`anatomy.nii.gz`、`lesions.nii.gz`、`record.json`、简化句子）、记录与门。门不过就停、报告、交用户。
 2. 第二部位膝（SKM-TEA）另开规格；专家演示 URL（DICOM 进）待定数据来源与时间。
-3. Level R 读片：同前。
+3. 规格 §12 还没做的两项：P4（SibBMS 10 例标注子集只核了 1 例网格）、P5（U 对照用的 S7 折外预测位置与匹配规则对账）——放进 Part 2 计划的第一个任务。
+4. 推理（Part 2）读入也要 `nib.as_closest_canonical`，和训练一致；输出写回原方向。
+5. Level R 读片：同前。
 
 ## 4. 坑与别重做
 
+- **四个来源的存储方向不同**（PDGM LPS、ISLES LAS、SibBMS RAS、BMSR RAS 452 + LAS 9，`p0/spacing.txt`）：不统一到 RAS 就是来源之间的隐式镜像，分侧标签学不出来；`dataset.load_volume` 现在先 `nib.as_closest_canonical`，推理也要。
 - **本机四卡 NCCL 默认 P2P 路径会在初始化处卡死**（两次复现），`NCCL_P2P_DISABLE=1` 后正常；任何多卡命令都加 `timeout`。
 - **数组顺序**：模型吃 (z, y, x)，nibabel 读出来是 (x, y, z)，`crops.to_zyx` 转；裁块不 resize，窗外填 -1 并标无效；RoPE 用 mm 坐标，相对位置不变，裁块内旋转不转坐标网格。
 - **无效 token 不作注意力的键、进 stage 前和合并前归零**；部分有效的 patch 是有效 token，看到的是 -1 常量。

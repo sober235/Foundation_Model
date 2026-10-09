@@ -1,0 +1,2 @@
+$ python -c 'from anatobind.aur.model import AnatoBindBrain; m = AnatoBindBrain(use_checkpoint=False); print(m.backbone.num_parameters(), m.num_parameters())'   # 2026-10-09 13:13:05, code fa37b3c
+backbone 12929792 total 22719561 {'entities': 3466241, 'events': 3359745, 'sequence': 132870, 'masks': 783424, 'relation': 2047489}

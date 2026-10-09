@@ -40,8 +40,8 @@
 | 来源 | 例数 | 序列（网格） | A 监督 | U 监督 | 进训练 | 出处 |
 |---|---|---|---|---|---|---|
 | UCSF-PDGM | 501 | T1 / T1c / T2 / FLAIR，1 mm 同网格 | SynthSeg on T1（`derived/synthseg/pdgm/seg_native`，501） | 整瘤 mask，值 1（坏死）/ 2（水肿）/ 4（强化） | 是 | `anatobind/nnunet/brain_disease.py` |
-| UCSF-BMSR | 461 | T1pre / T1post / FLAIR，同网格 | SynthSeg on T1pre（461） | 转移瘤 mask，值 1 | 是 | 同上 |
-| ISLES-2022 | 250 | DWI / ADC 同网格（FLAIR 另网格，不用） | SynthSeg on DWI（250；质量要先核，§12 P1） | 梗死 mask，值 1 | 是 | 同上 |
+| UCSF-BMSR | 461 | T1pre / T1post / FLAIR，同网格（2026-10-09 注：不是 1 mm——面内 0.43–1.17 mm、层厚 1–5 mm，中位 0.859 × 0.859 × 1.5；存储方向 RAS 452 例 + LAS 9 例；见 `p0/spacing.txt`） | SynthSeg on T1pre（461） | 转移瘤 mask，值 1 | 是 | 同上 |
+| ISLES-2022 | 250 | DWI / ADC 同网格（FLAIR 另网格，不用）（2026-10-09 注：196 例 2 mm 各向同性，54 例层厚 4.8 mm；存储方向 LAS） | SynthSeg on DWI（250；质量要先核，§12 P1） | 梗死 mask，值 1 | 是 | 同上 |
 | SibBMS | 358 次检查 / 185 人 | T1 / T2 / FLAIR，1 mm 模板空间 | SynthSeg on T1（`derived/synthseg/sibbms/seg_native`） | **无**：MS 斑块标注只有 10 个受试者且在原生网格（201×261×261），与模板空间 FLAIR 不同网格 | 只监督 A 和 S，U 损失屏蔽（§3.2） | `anatobind/anatomy/sources.py`；2026-10-08 核查 |
 | fastMRI 脑 FLAIR | 433 卷 | 厚层 2D 轴位，0.6875 × 0.6875 × 5 mm | SynthSeg 伪标签（不可靠层已知） | fastMRI+ 框 1297 个 | 否，只做外部一致率 | S4 记录 |
 | SibBMS 标注子集 | 10 人 | FLAIR / T1 / T1c / T2 原生网格 + 斑块 mask | 无（可现跑 SynthSeg） | MS 斑块 | 否，只作 U 的小规模外部核对 | `SibBMS_ms/sibbms/Output/Annotation` |
@@ -95,13 +95,13 @@ X (1×D×H×W, 任意尺寸)
       2 层自注意力 (只在 j 的 13 个候选之间) → 14 类 softmax (13 宿主 + 无宿主)
 ```
 
-参数量预估：骨干约 25–30 M（MONAI SwinTransformer embed 64 去掉 layers4），解码器约 10 M。消融项（不进门）：方案 §12 的全局 K×M 关系 Transformer（现有 `anatobind/model/relation.py::RelationModule`）；去掉 RoPE 用相对位置偏置。
+参数量（2026-10-09 实测，`p0/model_params.txt`）：骨干 12 929 792，解码器与关系头 9 789 769，合计 22 719 561（原稿估的 25–30 M 骨干是错的）。消融项（不进门）：方案 §12 的全局 K×M 关系 Transformer（现有 `anatobind/model/relation.py::RelationModule`）；去掉 RoPE 用相对位置偏置。
 
 复用：`anatobind/model/backbone.py`（改 embed_dim、加 M_valid 与 RoPE）、`decoders.py` 的 `_QueryStack`/`ADecoder`/`UBDecoder`/`FullResMaskHead`/`PixelDecoder`（改 K / M / d_model、加 mask 监督）、`relation.py` 的 `geometry_features`（扩到 §4.3 的 G）与 `IndependentCandidateHead`（作 B1 消融）、`losses.py`。新代码放 `anatobind/aur/`。
 
 ## 6. 训练
 
-- 裁块：128 × 160 × 160 体素（ISLES 的 2 mm DWI 也按体素裁，RoPE 用各自的物理坐标），每卷每 epoch 随机 2 块，含病灶的块按 1:1 过采样（U 有监督的卷）。强度增广同 S4 的 `intensity_augment`（对比度 / 伽马 / 偏置场 / 噪声 / 模糊）；**不做镜像**（宿主分侧，教训见 S4 A17）；面内小角度旋转 ± 10°。
+- 裁块：128 × 160 × 160 体素（ISLES 的 2 mm DWI 也按体素裁，RoPE 用各自的物理坐标），每卷每 epoch 随机 2 块，含病灶的块按 1:1 过采样（U 有监督的卷）。强度增广按 S4 的思路在 [-1, 1] 尺度上重做（偏置场 ±20%、伽马 0.7–1.4、面内模糊、高斯噪声；与 S4 的差别见记录 README）；**不做镜像**（宿主分侧，教训见 S4 A17）；面内小角度旋转 ± 10°。所有卷先重定向到 RAS（2026-10-09 终审 C1 增补：四个来源存储方向不同，不重定向等于隐式镜像）。
 - 预算按裁块数：Stage II 看 240 k 个裁块（≈ 3900 卷 × 2 块 / epoch ≈ 31 epoch），Stage III 看 80 k 个。4 卡 × batch 4 = 每步 16 块 → Stage II 15 k 步、Stage III 5 k 步（2026-10-09 按 P3 实测改定，原稿为 batch 2 / 30 k + 10 k 步）。
 - Stage II：A + S + U，AdamW，lr 5e-4（有效 batch 16 下按平方根缩放自单卡 batch 2 的 2e-4：2e-4 × √8 ≈ 5.7e-4，取 5e-4），1 k 步线性预热后余弦，AMP（bf16），不用梯度检查点，4 卡 DDP（`torchrun --nproc_per_node 4`，`NCCL_P2P_DISABLE=1`，每卡一个采样器分片；模型无 BatchNorm，LayerNorm 不需同步）。掩膜损失的采样点一半按实例配额（`losses.FOCUS_SHARE`），其余均匀。
 - Stage III：加 R，骨干 lr 5e-5、解码器 2.5e-4、R 头 5e-4，5 k 步。`λ_R = 1`，`λ_h = 0.2`（Stage III 开始前写死，不扫）。
