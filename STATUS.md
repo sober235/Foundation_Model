@@ -34,10 +34,10 @@
 
 ## 2. 待用户拍板
 
-1. **推送**：main 比 origin/main 多 7 个提交（T01–T09 + 本次记录），Q14 约定每过一门推一次（G0、G0.5 已过），上一会话把推送留给用户；命令 `git -C /data0/congcong/code/Project_Doing/foundation_model push origin main`。
+1. ~~推送~~：用户 10-09 晚批准并已推（见 §1 末尾的 push 记录）；之后仍按 Q14 每过一门推一次。
 2. **卡位冲突**：10-09 上午本机另一会话的 MC-GS `arc/cycle.py` 先后进入 0、1、3、7 号卡，又有一个 35 GB 的未知进程短暂进入 5 号卡，共把三次探针 / 恢复检查挤到 OOM；主训现在占着 5/6/7 各 60 GB。请让另一会话别往 5/6/7 发任务；若想把主训换成 4 卡，只能停掉重来（曝光预算按 seen_crops 计，`--resume` 换卡数会改全局 batch 与 lr 调度，不建议）。
-3. **主训超参偏离 Q11**（PROPOSED）：全局 36 而非 16，lr 4.5e-4（平方根缩放）而非 3e-4，预热 444 步（= 16k 曝光）；mask 0.60、τ 0.2、λ_c 0.1 不变。不认可就停掉重来。
-4. **T10–T12 已写完**（用户 10-09 "continue" 后做的）；两处仍是 PROPOSED：Stage III 预热 200 步；U 的阈值若不在验证集上选就是 test-selected。待定：评估时每来源抽样还是全测（1,056 行一张卡约 8 h，可按来源分卡）。
+3. ~~主训超参偏离 Q11~~：用户 10-09 晚认可（全局 36、lr 4.5e-4、预热 444 步；mask 0.60、τ 0.2、λ_c 0.1 不变），记为决定 Q21。
+4. **T10–T12 已写完**（用户 10-09 "continue" 后做的）；仍是 PROPOSED：Stage III 预热 200 步。**评估全测**：用户 10-09 晚定全部 1,056 行测试集都评（决定 Q22），不抽样；一张卡约 8 h，或按来源分卡并行后合并（合并步骤待写）。U 阈值先在 `--split val` 选再固定到 test。
 5. 执行计划里"厚层 BMSR 9 例"改为"6 行"（实现按严格 > 3 mm，与 Q4 原文一致；记录 README 已写明）。
 6. **可删清单（只列，不删）**：空目录 `docs/verification/2026-10-09/anatobind_brain_ssl_first/p0/ddp_b2x2_g0567/`（预建导致训练器拒写）与 `…/ssl_runs/pilot_8k_mb12_resume150/`（被挤 OOM，无内容）；scratchpad 的 `launch_pilot.sh`、`launch_stage1.sh`；沿用上一轮清单（`/home/congcongliu/aurfix.qF3B/`、`.aurfix_dir_tmp`、SDD 工作区、S4 中间夹等）。
 7. 根目录 6 个未跟踪文件（两份 PDF、`docs/20260915_Proposal/`、`logs_build_m1r_cache.txt`、粘贴的 md 两份）：入库还是保持不跟踪。
