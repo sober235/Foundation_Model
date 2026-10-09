@@ -8,3 +8,4 @@ matplotlib
 monai==1.5.2
 einops
 pytest
+SimpleITK
