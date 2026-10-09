@@ -48,4 +48,5 @@ def test_probe_builds_a_batch_and_steps_on_cpu_sized_inputs():
     pr = _load("aur_probe")
     b = pr.synthetic_batch(1, (8, 16, 16), torch.device("cpu"))
     assert b["image"].shape == (1, 1, 8, 16, 16) and b["instance"].max() == 2 and b["valid"][0, 0, 0, -1] == 0.0
-    assert pr.main.__doc__ is None or True                       # the CUDA path is exercised by the controller's probe run
+    assert b["coords"].shape == (1, 3, 8, 16, 16) and float(b["coords"][0, 0, 1, 0, 0] - b["coords"][0, 0, 0, 0, 0]) == 1.0
+    assert callable(pr.step) and pr.main.__name__ == "main"       # the CUDA path is exercised by the controller's probe run
