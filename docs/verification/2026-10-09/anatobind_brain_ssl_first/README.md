@@ -13,7 +13,7 @@
 | `p0/ddp_*`、`p0/single_*`、`p0/*.log` | 探针原始输出（`probe.json`、`log_rank0.jsonl`、`probe_config.json`） | — |
 | （数据根）`ssl_runs/pilot_8k_mb12/`、`pilot_8k_mb12_resume150_r2/` | pilot 与恢复运行（日志、`val.jsonl`、resume 与导出 checkpoint） | — |
 | `stage1/STAGE1.md`（数据根 `ssl_runs/stage1_320k_mb12/`） | **Stage I 主训**：2026-10-09 11:14–18:36（BST），卡 5/6/7，全局 36，lr 4.5e-4（Q21 认可），8889 步 / 320k 曝光，验证 masked Huber 0.0366（基线 0.361），有效秩 56.8，导出 `ssl_stage1_best.pt` | 完成 |
-| `g1/` | T09 冻结探针与 G1 判定 | 待主训结束 |
+| `g1/G1.md`（`g1/run_20261009_1405/g1_report.json`、`g1/diag/`） | T09 冻结探针：13 宿主线性读出 Stage I 0.286 对随机 0.383（差 −0.097，区间全负）、病灶可分性 0.640 对 0.680 → **G1 不过**；诊断 D1–D3 + 微调探针（Stage II 600 步从 Stage I 骨干 vs 随机骨干）与读法都在 G1.md | **不过**；链在此停下；修 Stage I 还是先跑 C0 待用户定 |
 | `reviews/t10-t11-trainer-review.md` | T10/T11（Stage II/III 训练器 `anatobind/aur/train.py`、`scripts/aur_train.py`、`tests/test_aur_training_contract.py` 17 个测试）的独立评审与修补清单；双进程 gloo DDP 极端监督测试在套件里 | 代码就绪；4 卡 100 步含保存/恢复的验证记录待空卡 |
 | `reviews/t12-eval-infer-review.md` | T12（整卷推理 `anatobind/aur/infer.py`、评估 `anatobind/aur/eval.py`、`scripts/infer_anatobind_brain.py`、`scripts/aur_eval.py`，23 个测试）的独立评审与修补清单（含一条阻塞：autocast 外跑头，已修并在卡上验证） | 代码就绪；评估等 Stage III |
 

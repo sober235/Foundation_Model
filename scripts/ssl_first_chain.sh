@@ -44,7 +44,7 @@ G1=$REC/g1/run_$STAMP
 CARD=$(idle_cards 1); [ -n "$CARD" ] || { say "no idle card for G1"; exit 1; }
 say "G1 on card $CARD -> $G1"
 CUDA_VISIBLE_DEVICES=$CARD $PY scripts/aur_ssl_eval.py --checkpoint "$STAGE1/ssl_stage1_best.pt" --samples "$SAMPLES" --val-patients "$VAL" --out "$G1" > "$G1.log" 2>&1
-[ $? -eq 0 ] || { say "G1 script failed: see $G1.log"; exit 1; }
+[ -f "$G1/g1_report.json" ] || { say "G1 script failed (no report): see $G1.log"; exit 1; }     # a failed gate also exits non-zero: read the report
 VERDICT=$($PY -c "import json; r=json.load(open('$G1/g1_report.json'))['g1']; print('pass' if r.get('pass') else 'fail', r.get('host_pass'), r.get('lesion_pass'))")
 say "G1 verdict: $VERDICT (report $G1/g1_report.json)"
 case "$VERDICT" in pass*) ;; *) say "G1 did not pass: the chain stops here (plan: fix Stage I at most twice, then the user)"; exit 2;; esac

@@ -1,0 +1,5 @@
+usage: g1_diag.py [-h] --checkpoint CHECKPOINT [--samples SAMPLES]
+                  [--val-patients VAL_PATIENTS] [--zero-local] [--zero-coords]
+                  [--levels LEVELS] [--cal CAL] [--val VAL] [--seed SEED]
+                  [--arms ARMS] [--tag TAG]
+g1_diag.py: error: unrecognized arguments: --zero-local --zero-coords
