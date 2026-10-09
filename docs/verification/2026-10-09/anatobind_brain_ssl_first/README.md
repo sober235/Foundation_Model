@@ -14,6 +14,14 @@
 | （数据根）`ssl_runs/pilot_8k_mb12/`、`pilot_8k_mb12_resume150_r2/` | pilot 与恢复运行（日志、`val.jsonl`、resume 与导出 checkpoint） | — |
 | （数据根）`ssl_runs/stage1_320k_mb12/` | **Stage I 主训**：2026-10-09 11:14（BST，本机时区）起，卡 5/6/7，全局 36，lr 4.5e-4（PROPOSED），预热 444 步，8889 步，验证与 resume 每 500 步 | 运行中 |
 | `g1/` | T09 冻结探针与 G1 判定 | 待主训结束 |
+| `reviews/t10-t11-trainer-review.md` | T10/T11（Stage II/III 训练器 `anatobind/aur/train.py`、`scripts/aur_train.py`、`tests/test_aur_training_contract.py` 17 个测试）的独立评审与修补清单；双进程 gloo DDP 极端监督测试在套件里 | 代码就绪；4 卡 100 步含保存/恢复的验证记录待空卡 |
+| `reviews/t12-eval-infer-review.md` | T12（整卷推理 `anatobind/aur/infer.py`、评估 `anatobind/aur/eval.py`、`scripts/infer_anatobind_brain.py`、`scripts/aur_eval.py`，23 个测试）的独立评审与修补清单（含一条阻塞：autocast 外跑头，已修并在卡上验证） | 代码就绪；评估等 Stage III |
+
+## T10–T12 的口径（代码层面，尚未跑真实训练）
+
+- Stage II：`--init-backbone` 严格载入 Stage I 导出，主线必须带通过的 `g1_report.json`（`--pilot` 只给冒烟）；`--init random` 是 C0 对照并写进记录；relation 头、Stage I 的 mask token、coarse mask embedding 在 Stage II 冻结。Stage III：`--resume-stage2` 严格继承整个 Stage II 导出，三组学习率 5e-5 / 2.5e-4 / 5e-4（Q12），预热 200 步（PROPOSED）。预算 240k / 80k 裁块。
+- 评估（T12）：A 的门只算 `a_supervised` 行；U 按 (来源, 序列) 分组，门只读与 S7 标签同源的序列（PDGM FLAIR、BMSR T1c、ISLES DWI），阈值默认在测试集上选且报告里标"test-selected"，用 `--u-threshold 来源=阈值` 传验证集上选的阈值；BMSR/ISLES 的 AUR 行在 1 mm 重采样网格上而参考在原生网格上，报告里逐来源注明"approximate"；R 受控轨道的真值就是 SynthSeg 查表本身，没有 B0*；gap 条件 = 绑定窗内 13 宿主 Dice ≥ 0.8 且在所选阈值下被检出；端到端轨道 = 预测病灶在阈值下匹配到真值者；Level R 读片表（盲）与密钥分开导出。
+- 推理：输出写回输入自己的方向与仿射；`record.json` 里 `box`（规范 RAS zyx）与 `box_input`（输出文件自身轴序）并列；部署工作点 = 评估选定的图阈值 0.3 + `--score-threshold`。
 
 ## 本轮口径与注意
 

@@ -10,7 +10,7 @@
 | Q2 | 基线 | 本地 `main` 为基，`git merge` GitHub 分支（提交 8781786）：冲突处留 main 的实现，移植 fa6e6fd 的新增项（a/r_supervised、affine 坐标、网格校验、裁块内宿主真值、`--disable-anatomy-for`）；直接在 main 上做；**推送已批准** |
 | Q14 | 推送节奏 | 每过一门推一次：基线合并、G0.5 smoke、G1、G3；每次附记录与测试输出 |
 | Q3 | 旋转增广 | 图像与标签同变换，**坐标网格不转**（RoPE 用相对位置；旋转 = 解剖在扫描架坐标系里的姿态变化） |
-| Q4 | 裁块物理尺度 | **(b) 离线重采样到 1 mm 各向同性**：BMSR 459 例 + ISLES 250 例 → `derived/aur/resampled_1mm_v1/`，表 `samples_1mm_v1.json`；图像三线性、标签最近邻、RAS 对齐网格；原生层厚 > 3 mm（ISLES 54 例、BMSR 9 例）保留 U/S 监督、**关闭 A/R 监督**；按 spacing × source × sequence 报告 |
+| Q4 | 裁块物理尺度 | **(b) 离线重采样到 1 mm 各向同性**：BMSR 459 例 + ISLES 250 例 → `derived/aur/resampled_1mm_v1/`，表 `samples_1mm_v1.json`；图像三线性、标签最近邻、RAS 对齐网格；原生层厚 > 3 mm（ISLES 54 例 108 行、BMSR 6 行；3 例恰为 3.0 mm 的 BMSR 不算厚层）保留 U/S 监督、**关闭 A/R 监督**；按 spacing × source × sequence 报告 |
 | Q5/Q17 | GPU | 4 张空闲卡（优先 A800，A100 可混），`NCCL_P2P_DISABLE=1`；MC-GS 跑完后 4 张卡不再续发（用户在另一会话关）；忙卡上只做 ≤ 10 min 烟雾探针 |
 | Q6 | Stage I 数据 | 四来源 train 患者全部序列 + **HCP T1w/T2w**（1 mm 重采样，曝光上限 ≤ 25%，单独 source 分层）；**SSL 验证集 = Stage II 验证集**（训练患者按来源留 10%）；fastMRI 厚层、膝不进 |
 | Q7 | 归一化与泄漏门 | 整卷百分位归一化保留；泄漏测试在归一化后的裁块上改隐藏体素；**Stage I 视图不做任何模糊**（`crops.augment` 的面内模糊会把被遮体素混入可见体素） |
@@ -62,9 +62,9 @@ torchrun --standalone --nproc_per_node=4 scripts/aur_ssl_train.py --samples .../
 torchrun --standalone --nproc_per_node=4 scripts/aur_ssl_train.py --samples .../samples_ssl.json --seen-crops 320000 --mask-ratio 0.60 --contrast-weight 0.10 --out <STAGE_I_DIR>
 $PY scripts/aur_ssl_eval.py --checkpoint <STAGE_I_DIR>/ssl_stage1_best.pt --random-init --out <G1_DIR>
 # T10–T12
-torchrun --standalone --nproc_per_node=4 scripts/aur_train.py --stage II --init-backbone <STAGE_I_DIR>/ssl_stage1_best.pt --samples .../samples_1mm_v1.json --seen-crops 240000 --out <STAGE_II_DIR>
-torchrun --standalone --nproc_per_node=4 scripts/aur_train.py --stage III --resume-stage2 <STAGE_II_DIR>/aur_stage2_best.pt --samples .../samples_1mm_v1.json --seen-crops 80000 --out <STAGE_III_DIR>
-$PY scripts/aur_eval.py --checkpoint <STAGE_III_DIR>/aur_stage3_best.pt --samples .../samples_1mm_v1.json --split test --out <EVAL_DIR>
+torchrun --standalone --nproc_per_node=4 scripts/aur_train.py --stage II --init-backbone <STAGE_I_DIR>/ssl_stage1_best.pt --g1-report <G1_DIR>/g1_report.json --samples .../samples_1mm_v1.json --val-patients .../ssl_manifest_v1/val_patients.json --seen-crops 240000 --out <STAGE_II_DIR>
+torchrun --standalone --nproc_per_node=4 scripts/aur_train.py --stage III --resume-stage2 <STAGE_II_DIR>/aur_stage2_best.pt --samples .../samples_1mm_v1.json --val-patients .../ssl_manifest_v1/val_patients.json --seen-crops 80000 --out <STAGE_III_DIR>
+$PY scripts/aur_eval.py --checkpoint <STAGE_III_DIR>/aur_stage3_best.pt --samples .../samples_1mm_v1.json --split test --out <EVAL_DIR> --gpu <空卡>
 ```
 
 ## 3. 门
