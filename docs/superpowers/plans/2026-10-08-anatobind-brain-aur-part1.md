@@ -1610,6 +1610,13 @@ def test_points_are_drawn_from_valid_voxels_only():
     assert pts.shape == (2, 50) and (pts[0] < 12).all() and (pts[1] == 23).all()
     x = torch.arange(24.0).view(1, 2, 3, 4)
     assert L.gather(x, torch.tensor([[0, 23, 5]])).tolist() == [[0.0, 23.0, 5.0]]
+    inst = torch.zeros(1, 2, 3, 4, dtype=torch.long)
+    inst[0, 0, 0, :3] = 1                                       # a 3-voxel lesion
+    inst[0, 1, 2, 3] = 2                                        # a 1-voxel lesion
+    pts = L.sample_points(torch.ones(1, 2, 3, 4), 40, torch.Generator().manual_seed(0), instance=inst)
+    got = L.gather(inst, pts)[0]
+    assert pts.shape == (1, 40) and (got[:10] == 1).all() and (got[10:20] == 2).all()     # 20 focus points, 10 per instance
+    assert L.sample_points(torch.ones(1, 2, 3, 4), 8, torch.Generator().manual_seed(0), instance=torch.zeros(1, 2, 3, 4, dtype=torch.long)).shape == (1, 8)
 
 
 def test_entity_loss_prefers_the_right_masks_and_skips_lesion_points():
@@ -1624,6 +1631,9 @@ def test_entity_loss_prefers_the_right_masks_and_skips_lesion_points():
     lg = L.entity_loss(good, torch.full((1, 32), -5.0), pts, ignore, present)
     lb = L.entity_loss(bad, torch.full((1, 32), -5.0), pts, ignore, present)
     assert lg["a_mask"] < 0.05 < lb["a_mask"] and lg["a_presence"] > 0
+    leaky = good.clone()
+    leaky[0, 5, :] = 8.0                                           # an absent entity claiming every point: penalised
+    assert L.entity_loss(leaky, torch.full((1, 32), -5.0), pts, ignore, present)["a_mask"] > lg["a_mask"] + 0.1
     worse = good.clone()
     worse[0, 1, 5] = 8.0                                           # wrong at an ignored (lesion) point: no penalty
     assert torch.allclose(L.entity_loss(worse, torch.full((1, 32), -5.0), pts, ignore, present)["a_mask"], lg["a_mask"])
@@ -1684,9 +1694,11 @@ Expected: FAIL (ModuleNotFoundError / ImportError / AttributeError for the new n
 ```python
 """Losses (spec N11, §6): L = L_A + L_S + L_U + λ_R (L_bind + λ_h L_hard).
 
-Masks are supervised at sampled points (uniform over the valid voxels of each crop, the same points for every query of
-a sample), so no dense (Q, D, H, W) mask is ever built in training. Entity masks: BCE + Dice for the entities present
-in the crop, presence BCE for all; lesion voxels (a_ignore) carry no entity loss. Events: Hungarian matching on
+Masks are supervised at sampled points (the same points for every query of a sample), so no dense (Q, D, H, W) mask is
+ever built in training: half of the points are drawn per lesion instance (an equal quota for every instance of the
+sample, so that a small lesion always carries positive points), the rest uniformly over the valid voxels. Entity
+masks: BCE for every entity (an absent entity learns an empty mask), Dice for the entities present in the crop,
+presence BCE for all; lesion voxels (a_ignore) carry no entity loss. Events: Hungarian matching on
 presence + mask BCE + mask Dice, then presence BCE over every query (no-object weight) and mask losses over the matched
 ones; samples whose U is not supervised contribute nothing to L_U. Relation: cross-entropy over the 14 host classes
 plus a hinge on the hard negatives (contralateral, second host)."""
@@ -1703,10 +1715,29 @@ MARGIN = 1.0
 N_POINTS = 16384
 
 
-def sample_points(valid, n, generator=None):
-    """valid (B, D, H, W) bool / float -> (B, n) flat indices drawn uniformly (with replacement) from the valid voxels."""
+FOCUS_SHARE = 0.5
+
+
+def sample_points(valid, n, generator=None, instance=None, focus_share=FOCUS_SHARE):
+    """valid (B, D, H, W) bool / float -> (B, n) flat indices (with replacement). Without an instance map: uniform over
+    the valid voxels. With one ((B, D, H, W) crop-local ids, 0 background): the first focus_share of the points of a
+    sample are split equally among its instances and drawn from each instance's voxels, the rest are uniform."""
     flat = (valid.flatten(1) > 0.5).float()
-    return torch.multinomial(flat + 1e-12, n, replacement=True, generator=generator)
+    out = torch.multinomial(flat + 1e-12, n, replacement=True, generator=generator)
+    if instance is None:
+        return out
+    inst = instance.flatten(1)
+    for b in range(flat.shape[0]):
+        ids = torch.unique(inst[b])
+        ids = ids[ids > 0]
+        quota = int(n * focus_share) // max(int(ids.numel()), 1)
+        if ids.numel() == 0 or quota == 0:
+            continue
+        pos = 0
+        for k in ids:
+            out[b, pos:pos + quota] = torch.multinomial((inst[b] == k).float(), quota, replacement=True, generator=generator)
+            pos += quota
+    return out
 
 
 def gather(x, points):
@@ -1724,14 +1755,15 @@ def dice_loss(logits, target, weight):
 
 def entity_loss(mask_logits, presence, entity_pts, a_ignore_pts, present):
     """mask_logits (B, K, P); presence (B, K); entity_pts (B, P) entity map values at the points (0 none, 1..K);
-    a_ignore_pts (B, P) bool (lesion voxels); present (B, K) bool: the entity has voxels in the crop."""
+    a_ignore_pts (B, P) bool (lesion voxels); present (B, K) bool: the entity has voxels in the crop. BCE over every
+    entity (absent ones learn an empty mask), Dice over the present ones."""
     K = mask_logits.shape[1]
     target = (entity_pts[:, None, :] == torch.arange(1, K + 1, device=entity_pts.device)[None, :, None]).float()
     keep = (~a_ignore_pts).float()[:, None, :]
     bce = (F.binary_cross_entropy_with_logits(mask_logits, target, reduction="none") * keep).sum(-1) / keep.sum(-1).clamp(min=1.0)
     w = present.float()
     dropped = mask_logits.masked_fill(a_ignore_pts[:, None, :], -1e4)        # ignored points count as empty in the Dice
-    mask = (bce * w).sum() / w.sum().clamp(min=1.0) + dice_loss(dropped, target * keep, w)
+    mask = bce.mean() + dice_loss(dropped, target * keep, w)
     return {"a_mask": mask, "a_presence": F.binary_cross_entropy_with_logits(presence, w)}
 
 
@@ -1949,9 +1981,11 @@ class AnatoBindBrain(nn.Module):
 
     def bind(self, out, b, event_idx):
         """Host logits (N, 14) of the events `event_idx` (N,) of sample b, from this sample's own predicted masks on
-        the coarse grid (N8). event_idx may be the matched queries (training) or the present ones (inference)."""
+        the coarse grid (N8), the entity masks gated by the entity presence so that an absent entity holds no host
+        mass. event_idx may be the matched queries (training) or the present ones (inference)."""
         pix = {"coarse": out["pix"]["coarse"][b:b + 1]}
-        ent = self.masks.coarse_masks(out["entity_embed"][b:b + 1], pix)[0].sigmoid()                    # (32, D1, H1, W1)
+        gate = out["entity_presence"][b].sigmoid()[:, None, None, None]
+        ent = self.masks.coarse_masks(out["entity_embed"][b:b + 1], pix)[0].sigmoid() * gate             # (32, D1, H1, W1)
         ev = self.masks.coarse_masks(out["event_embed"][b:b + 1, event_idx], pix)[0].sigmoid()            # (N, D1, H1, W1)
         valid = out["levels"][0]["valid"][b]                                                              # (D1, H1, W1)
         hosts = host_masks_from_entities(ent[None])[0] * valid
@@ -2053,6 +2087,19 @@ def test_crops_carry_geometry_validity_and_renumbered_instances(tmp_path):
     assert big["valid"].sum() == 10 * 20 * 24 and (big["image"][0][big["valid"] < 0.5] == -1.0).all() and big["entity"][0, 0, 0] == 0
 
 
+def test_slivers_under_the_floor_leave_the_crop_without_an_instance():
+    inst = np.zeros((4, 6, 6), np.int32)
+    inst[0, 0, :3] = 1                                             # 3 voxels: at 2 mm3 each 6 mm3, under the 10 mm3 floor
+    inst[1:4, 1:4, 1:4] = 2                                        # 27 voxels
+    small = np.zeros(inst.shape, bool)
+    small[3, 5, 5] = True
+    renumbered, small2, kept = D.crop_instances(inst, small, 2.0)
+    assert kept == [2] and renumbered.max() == 1 and (renumbered[1:4, 1:4, 1:4] == 1).all()
+    assert small2[0, 0, :3].all() and small2[3, 5, 5] and small2.sum() == 4
+    r1, s1, k1 = D.crop_instances(inst, small, 8.0)                 # 8 mm3 voxels: both instances reach the floor
+    assert k1 == [1, 2] and r1.max() == 2 and s1.sum() == 1
+
+
 def test_dataset_items_and_collate(tmp_path):
     rows = [_case(tmp_path), _case(tmp_path, with_lesion=False)]
     ds = D.AURDataset(rows, crop=(8, 16, 16), crops_per_volume=2, seed=1)
@@ -2084,7 +2131,9 @@ read once, normalised, its entity map, lesion instances and host targets built o
 in-plane, intensity-augmented and labelled. Half of the crops of a volume with instances are centred on a random
 instance voxel. Targets per crop: the entity map, the instance map (ids renumbered 1..n within the crop), the point
 weight (0 on components under the volume floor), the entity-ignore mask (every lesion voxel of the case), the host /
-host probabilities / hard negatives of the crop's instances, the sequence type and the U supervision flag."""
+host probabilities / hard negatives of the crop's instances, the sequence type and the U supervision flag. An
+instance whose part inside the crop is under the volume floor is not an instance of the crop: its voxels join the
+small mask (no loss). The host targets of an instance cut by the crop are those of the whole instance."""
 import nibabel as nib
 import numpy as np
 import torch
@@ -2094,6 +2143,7 @@ from anatobind.aur.crops import (CROP, PATCH, augment, coordinates_mm, crop_wind
                                  rotate_inplane, spacing_zyx, to_zyx)
 from anatobind.aur.labels import SEQ_INDEX, entity_map
 from anatobind.aur.targets import host_targets, lesion_instances
+from anatobind.eval.lesion_components import min_voxels_for
 
 ROTATION_DEG = 10.0
 
@@ -2146,10 +2196,7 @@ def make_crop(vol, rng, crop=CROP, do_augment=True, lesion_centred=False):
         valid, small, a_ignore = valid.astype(bool), small.astype(bool), a_ignore.astype(bool)
         image = np.where(valid, image, -1.0).astype(np.float32)
         image = augment(image, rng)
-    ids = [int(k) for k in np.unique(instance) if k > 0]
-    renumbered = np.zeros(instance.shape, np.int64)
-    for new, old in enumerate(ids, start=1):
-        renumbered[instance == old] = new
+    renumbered, small, ids = crop_instances(instance, small, float(np.prod(vol["spacing"])))
     sel = np.array(ids, np.int64) - 1
     hosts = vol["hosts"]
     return {"image": torch.from_numpy(np.ascontiguousarray(image))[None], "valid": torch.from_numpy(valid.astype(np.float32)),
@@ -2159,6 +2206,19 @@ def make_crop(vol, rng, crop=CROP, do_augment=True, lesion_centred=False):
             "host": torch.from_numpy(hosts["host"][sel]), "host_probs": torch.from_numpy(hosts["probs"][sel]),
             "negatives": torch.from_numpy(hosts["negatives"][sel]), "seq": torch.tensor(vol["seq"]),
             "u_supervised": torch.tensor(vol["u_supervised"]), "n_instances": len(ids), "case": vol["case"]}
+
+
+def crop_instances(instance, small, voxel_mm3):
+    """(instance map renumbered 1..n over the instances whose in-crop part reaches the volume floor, the small mask with
+    the slivers added, the kept original ids in order)."""
+    floor = min_voxels_for(voxel_mm3)
+    ids = [int(k) for k in np.unique(instance) if k > 0]
+    kept = [k for k in ids if int((instance == k).sum()) >= floor]
+    renumbered = np.zeros(instance.shape, np.int64)
+    for new, old in enumerate(kept, start=1):
+        renumbered[instance == old] = new
+    small = small | np.isin(instance, [k for k in ids if k not in kept])
+    return renumbered, small, kept
 
 
 class AURDataset(Dataset):
@@ -2274,7 +2334,8 @@ def test_probe_builds_a_batch_and_steps_on_cpu_sized_inputs():
     pr = _load("aur_probe")
     b = pr.synthetic_batch(1, (8, 16, 16), torch.device("cpu"))
     assert b["image"].shape == (1, 1, 8, 16, 16) and b["instance"].max() == 2 and b["valid"][0, 0, 0, -1] == 0.0
-    assert pr.main.__doc__ is None or True                       # the CUDA path is exercised by the controller's probe run
+    assert b["coords"].shape == (1, 3, 8, 16, 16) and float(b["coords"][0, 0, 1, 0, 0] - b["coords"][0, 0, 0, 0, 0]) == 1.0
+    assert callable(pr.step) and pr.main.__name__ == "main"       # the CUDA path is exercised by the controller's probe run
 ```
 
 - [ ] **Step 2: Run it to see it fail**
