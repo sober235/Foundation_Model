@@ -90,8 +90,8 @@ Orientations as stored: PDGM LPS (501), ISLES LAS (250), SibBMS RAS (358), BMSR 
 reorientation the patient's left would lie at low x for some sources and high x for others — an implicit mirroring of
 the sided labels between sources. The fix wave after the final review makes `dataset.load_volume` reorient every file
 to RAS by axis flips / permutations (`nib.as_closest_canonical`, no resampling) before the (z, y, x) transpose; Part 2's
-inference must do the same. Spacings: PDGM and SibBMS 1 mm isotropic; ISLES 2 mm isotropic in 196 cases but 54 cases
-with 4.8 mm slices (1.15–1.8 mm in-plane); BMSR 0.43–1.17 mm in-plane and 1–5 mm slices (median 0.859 × 0.859 × 1.5;
+inference must do the same. Spacings: PDGM and SibBMS 1 mm isotropic; ISLES 2 mm slices in 196 cases (194 of them 2 mm isotropic, 2 at 0.875 mm in-plane)
+and 54 cases with 4.8 mm slices (1.15–1.8 mm in-plane); BMSR 0.43–1.17 mm in-plane and 1–5 mm slices (median 0.859 × 0.859 × 1.5;
 9 cases with a 3 mm+ axis). The spec's "1 mm (ISLES 2 mm)" was therefore wrong for BMSR and part of ISLES, and a fixed
 voxel crop of 128 × 160 × 160 spans 69–188 mm in-plane and 128–640 mm along z over the sources. The choice (voxel crops as
 they are / offline resampling of BMSR and ISLES to a common spacing / per-source crop sizes) is the user's, listed in
@@ -125,7 +125,7 @@ they are / offline resampling of BMSR and ISLES to a common spacing / per-source
 
 ## Timing
 
-Plan and dry run 2026-10-08; execution 2026-10-09: first task commit 10:40, last code commit before the records 12:0x
+Plan and dry run 2026-10-08; execution 2026-10-09: first task commit 10:40, last code commit before the records 11:33
 (git log; four batches, two fix rounds), P0 records: samples 11:35:35 → 11:35:38 (3 s), grids 11:35:38 → 11:36:59 (81 s),
 ISLES check 11:36:30 → 11:36:51 (21 s, from `p0/*.txt`), probes 12:32:11 → 12:45:44 after waiting for idle cards from
 11:40 (`p0/probe_*.txt`).

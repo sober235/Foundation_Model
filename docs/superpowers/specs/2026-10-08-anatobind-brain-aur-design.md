@@ -41,7 +41,7 @@
 |---|---|---|---|---|---|---|
 | UCSF-PDGM | 501 | T1 / T1c / T2 / FLAIR，1 mm 同网格 | SynthSeg on T1（`derived/synthseg/pdgm/seg_native`，501） | 整瘤 mask，值 1（坏死）/ 2（水肿）/ 4（强化） | 是 | `anatobind/nnunet/brain_disease.py` |
 | UCSF-BMSR | 461 | T1pre / T1post / FLAIR，同网格（2026-10-09 注：不是 1 mm——面内 0.43–1.17 mm、层厚 1–5 mm，中位 0.859 × 0.859 × 1.5；存储方向 RAS 452 例 + LAS 9 例；见 `p0/spacing.txt`） | SynthSeg on T1pre（461） | 转移瘤 mask，值 1 | 是 | 同上 |
-| ISLES-2022 | 250 | DWI / ADC 同网格（FLAIR 另网格，不用）（2026-10-09 注：196 例 2 mm 各向同性，54 例层厚 4.8 mm；存储方向 LAS） | SynthSeg on DWI（250；质量要先核，§12 P1） | 梗死 mask，值 1 | 是 | 同上 |
+| ISLES-2022 | 250 | DWI / ADC 同网格（FLAIR 另网格，不用）（2026-10-09 注：196 例层厚 2 mm（其中 194 例 2 mm 各向同性、2 例面内 0.875 mm），54 例层厚 4.8 mm；存储方向 LAS） | SynthSeg on DWI（250；质量要先核，§12 P1） | 梗死 mask，值 1 | 是 | 同上 |
 | SibBMS | 358 次检查 / 185 人 | T1 / T2 / FLAIR，1 mm 模板空间 | SynthSeg on T1（`derived/synthseg/sibbms/seg_native`） | **无**：MS 斑块标注只有 10 个受试者且在原生网格（201×261×261），与模板空间 FLAIR 不同网格 | 只监督 A 和 S，U 损失屏蔽（§3.2） | `anatobind/anatomy/sources.py`；2026-10-08 核查 |
 | fastMRI 脑 FLAIR | 433 卷 | 厚层 2D 轴位，0.6875 × 0.6875 × 5 mm | SynthSeg 伪标签（不可靠层已知） | fastMRI+ 框 1297 个 | 否，只做外部一致率 | S4 记录 |
 | SibBMS 标注子集 | 10 人 | FLAIR / T1 / T1c / T2 原生网格 + 斑块 mask | 无（可现跑 SynthSeg） | MS 斑块 | 否，只作 U 的小规模外部核对 | `SibBMS_ms/sibbms/Output/Annotation` |
