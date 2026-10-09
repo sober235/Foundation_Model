@@ -4,13 +4,15 @@ For an abnormality j and each of the 13 host classes i a token r_ij = fuse([A_i,
 the mean embedding of the entities that form host i, U_j the event embedding, S the sequence embedding and G_ij the
 geometry between the predicted event mask and the predicted host mask on the coarse (F1) grid: overlap share, centroid
 displacement (mm / 100), distance from the event centroid to the nearest host voxel (mm / 100, capped), host presence,
-the event's side offset from the brain's midline, the host's side and the host's tissue family. The 13 tokens plus a
+the event's side offset from the midline between the left and the right host masses (signed towards the patient's
+right, 0 when one side is absent from the crop), the host's own side (-1 left, +1 right, 0 brainstem) and the host's
+tissue family. The 13 tokens plus a
 "no host" token attend to each other (only within the lesion) and each yields one logit: a 14-way host distribution."""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from anatobind.aur.labels import ENTITY_HOST, HOST_TISSUE, N_HOSTS, TISSUES
+from anatobind.aur.labels import ENTITY_HOST, HOST_SIDE, HOST_TISSUE, N_HOSTS, TISSUES
 
 GEO_DIM = 1 + 3 + 1 + 1 + 1 + 1 + len(TISSUES)      # 15
 DIST_CAP_MM = 200.0
@@ -18,6 +20,7 @@ SCALE_MM = 100.0
 
 _HOST_OF_ENTITY = torch.tensor(ENTITY_HOST)                                    # (32,) host index or -1
 _TISSUE_ONEHOT = F.one_hot(torch.tensor([TISSUES.index(t) for t in HOST_TISSUE]), len(TISSUES)).float()   # (13, 7)
+_HOST_SIDE_SIGN = torch.tensor([-1.0 if s == "left" else 1.0 if s == "right" else 0.0 for s in HOST_SIDE])  # (13,)
 
 
 def host_from_entities(x):
@@ -57,10 +60,15 @@ def geometry(event_probs, host_probs, coords):
         if vox.shape[1]:
             dist[:, j] = torch.cdist(e_cent, vox.t()).amin(1).clamp(max=DIST_CAP_MM)
     dist = torch.where(overlap > 0.05, torch.zeros_like(dist), dist)    # touching the host: no distance
-    total = h.sum(0)
-    midline = (total @ c[2]) / total.sum().clamp(min=1e-6)
-    e_side = ((e_cent[:, 2] - midline) / SCALE_MM)[:, None, None].expand(-1, N_HOSTS, 1)
-    h_side = torch.sign(h_cent[:, 2] - midline)[None, :, None].expand(e.shape[0], -1, 1) * present[None, :, None]
+    side = _HOST_SIDE_SIGN.to(e.device)
+    left_mass, right_mass = h[side < 0].sum(0), h[side > 0].sum(0)                     # (V,) each
+    if left_mass.sum() > 0.5 and right_mass.sum() > 0.5:
+        lx, rx = (left_mass @ c[2]) / left_mass.sum(), (right_mass @ c[2]) / right_mass.sum()
+        e_side = (e_cent[:, 2] - (lx + rx) / 2) * torch.sign(rx - lx) / SCALE_MM
+    else:
+        e_side = torch.zeros(e.shape[0], device=e.device)
+    e_side = e_side[:, None, None].expand(-1, N_HOSTS, 1)
+    h_side = side[None, :, None].expand(e.shape[0], -1, 1)
     tissue = _TISSUE_ONEHOT.to(e.device)[None].expand(e.shape[0], -1, -1)
     return torch.cat([overlap[..., None], disp, (dist / SCALE_MM)[..., None], present[None, :, None].expand(e.shape[0], -1, 1),
                       e_side, h_side, tissue], -1)

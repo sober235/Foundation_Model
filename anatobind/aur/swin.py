@@ -155,7 +155,9 @@ class SwinBackbone(nn.Module):
 
     def forward(self, image, valid, coords, local):
         """image (B, 1, D, H, W) with D, H, W multiples of the patch; valid (B, D, H, W) float 0/1; coords and local
-        (B, 3, D, H, W). Returns a list of levels, each {"feat": (B, C, D', H', W'), "valid": (B, D', H', W') float,
+        (B, 3, D, H, W). Contract: the invalid voxels of `image` hold the constant -1 (the normalised background value,
+        crops.normalise / dataset.make_crop), so a patch that is only partly valid is a valid token that sees that
+        constant like any image border; no image content ever lies under `valid == 0`. Returns a list of levels, each {"feat": (B, C, D', H', W'), "valid": (B, D', H', W') float,
         "coords": (B, 3, D', H', W') mm, "local": (B, 3, D', H', W')}."""
         if any(s % p for s, p in zip(image.shape[2:], self.patch)):
             raise ValueError(f"spatial shape {tuple(image.shape[2:])} is not a multiple of the patch {self.patch}")

@@ -2,7 +2,7 @@
 import torch
 
 import anatobind.aur.relation as R
-from anatobind.aur.labels import ENTITY_HOST, ENTITY_INDEX, HOST_NAMES, N_ENTITIES, N_HOSTS, TISSUES
+from anatobind.aur.labels import ENTITY_HOST, ENTITY_INDEX, HOST_NAMES, HOST_SIDE, N_ENTITIES, N_HOSTS, TISSUES
 
 
 def test_host_grouping_of_entities():
@@ -35,7 +35,13 @@ def test_geometry_between_events_and_hosts():
     assert g[0, 0, 0] == 1.0 and g[0, 1, 0] == 0.0 and g[1, 0, 0] == 0.5 and g[1, 1, 0] == 0.5
     assert g[0, 0, 4] == 0.0 and abs(g[0, 1, 4] * 100 - 27 ** 0.5) < 1e-3       # centroid (2, 4, 4) mm to voxel (3, 3, 9) mm
     assert g[0, 0, 5] == 1.0 and g[0, 2, 5] == 0.0 and g[0, 2, 4] == R.DIST_CAP_MM / 100
-    assert g[0, 0, 6] < 0 and g[0, 1, 7] == 1.0 and g[0, 0, 7] == -1.0           # event left of the midline; host sides
+    assert g[0, 0, 6] < 0 and g[0, 1, 7] == 1.0 and g[0, 0, 7] == -1.0           # event on the left; host sides by identity
+    assert g[0, HOST_NAMES.index("brainstem"), 7] == 0.0 and all(g[0, i, 7] == (-1.0 if HOST_SIDE[i] == "left" else 1.0 if HOST_SIDE[i] == "right" else 0.0) for i in range(N_HOSTS))
+    flipped = R.geometry(ev, host.flip(-1), coords)                                 # the right host at small x: the event is now on the right
+    assert flipped[0, 0, 6] > 0 and flipped[0, 1, 7] == 1.0
+    one_side = host.clone()
+    one_side[1] = 0.0                                                               # a crop without any right host
+    assert (R.geometry(ev, one_side, coords)[:, :, 6] == 0.0).all()
     assert g[0, 0, 8:].sum() == 1.0 and g[0, 0, 8 + TISSUES.index("white_matter")] == 1.0
     disp = g[0, 1, 1:4] * 100
     assert disp[2] > 0 and abs(disp[0]) < 1e-4                                 # host 1 lies at larger x, same z
