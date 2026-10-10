@@ -1,4 +1,4 @@
-# STATUS：2026-10-10 03:40 本机（SSL-first 线：G1 不过的根因是重建解码器只读 F1；第一轮修复经独立评审修订后已提交并推送（35624fc），预先登记写在 g1/G1.md；C0 与第一轮的链就绪；**8 张卡全被另一会话的对比方法队列占着，等用户分卡**）
+# STATUS：2026-10-10 08:40 本机（SSL-first 线：G1 不过的根因已修，第一轮经评审就绪（预先登记在 g1/G1.md）；**卡仍被另一会话的循环与 haobo 占满**；tmux 里两个守卡窗口在等：`pilot`（1/6/4 号卡任一空闲满 3 分钟 → 单卡小试 36k 曝光 + 探针 → C0）、`r1`（2/5/7/3/0 中三张空闲满 3 分钟 → 第一轮全量 + 探针 + G1 + C2））
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 本机时钟是 BST（UTC+1），北京时间加 7 小时；下面的时刻都是本机时钟。
@@ -41,7 +41,8 @@
 
 ## 2. 待用户拍板
 
-0. **分卡（最急，什么都卡在这）**：用户 10-10 选了 (c) 并行（C0 与修 Stage I 同时跑），但 8 张卡全在另一会话的队列里。需要的卡：第一轮 Stage I 3 张（全局 36 只能用 1/2/3/6 张卡，3 张约 7.5 h），C0 1–2 张（全局 16 只能用 1/2/4 张卡；1 张 Stage II 约 23 h，2 张约 11 h）。最少 4 张、理想 5 张，而且要让那边的队列别往这几张卡上续发。起法：
+0. **守卡窗口已起（10-10 08:3x，用户回"continue"后）**：`scripts/wait_for_card.sh` 只接手连续 3 分钟完全空闲的卡（那边循环一两分钟内就续发的卡不会被抢）。`pilot` 窗口盯 1、6、4 号卡，拿到后跑 `scripts/stage1_r1_pilot.sh`（第一轮配置的单卡小试：36k 曝光，第 1500/3000 步探针与归因；InfoNCE 批内 12 个裁块、学习率在小试内退火，与第一轮不同，**不算预先登记的第一轮**），随后同卡接 C0（1 张卡，Stage II 约 23 h）。`r1` 窗口盯 2、5、7、3、0 中三张同时空闲，拿到后跑 `scripts/stage1_r1_chain.sh`（PROBE_CARD=1，C2 用前两张卡；C0 是 1 张卡、C2 是 2 张卡，全局批同为 16，数据流的分片不同，报告里注明）。
+   原先的分卡请求仍然有效：用户 10-10 选了 (c) 并行（C0 与修 Stage I 同时跑），但 8 张卡全在另一会话的队列里。需要的卡：第一轮 Stage I 3 张（全局 36 只能用 1/2/3/6 张卡，3 张约 7.5 h），C0 1–2 张（全局 16 只能用 1/2/4 张卡；1 张 Stage II 约 23 h，2 张约 11 h）。最少 4 张、理想 5 张，而且要让那边的队列别往这几张卡上续发。起法：
    ```
    tmux new-window -t anatobind -n c0 "cd /data0/congcong/code/Project_Doing/foundation_model && ARM=c0 CARDS=3,4 bash scripts/stage23_chain.sh; exec bash"
    tmux new-window -t anatobind -n r1 "cd /data0/congcong/code/Project_Doing/foundation_model && CARDS=5,6,7 PROBE_CARD=3 C2_CARDS=5,6 bash scripts/stage1_r1_chain.sh; exec bash"
