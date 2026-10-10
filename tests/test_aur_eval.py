@@ -104,7 +104,7 @@ def test_evaluate_case_runs_the_three_tracks_on_a_tiny_model(tmp_path):
     model = AnatoBindBrain(**TINY).eval()
     row = _row(tmp_path)
     res = E.evaluate_case(model, row, crop=(8, 16, 16), device=torch.device("cpu"), batch_size=4)
-    assert res["case"] == "c0" and res["source"] == "pdgm" and res["sequence"] == "FLAIR" and res["n_windows"] > 1
+    assert res["case"] == "c0" and res["patient"] == "c0" and res["source"] == "pdgm" and res["sequence"] == "FLAIR" and res["n_windows"] > 1
     assert set(res["a"]) >= {"hosts", "host_macro", "entities", "entity_macro"} and 0.0 <= res["a"]["host_macro"] <= 1.0
     assert len(res["u"]["gt"]) == 2 and all({"box", "score", "volume_mm3"} <= set(d) for d in res["u"]["dets"])
     assert len(res["r"]["instances"]) == 2

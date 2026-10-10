@@ -195,7 +195,7 @@ def evaluate_case(model, row, crop, device, batch_size=1, instance_threshold=INS
     vol = load_volume(row)
     pred = predict_volume(model, vol["image"], vol["affine"], crop, device, batch_size=batch_size)
     pred_seg, true_seg = entity_to_synthseg(pred["entity"]), entity_to_synthseg(vol["entity"])
-    res = {"case": row["case"], "source": row["source"], "sequence": row["sequence"], "n_windows": pred["n_windows"],
+    res = {"case": row["case"], "patient": row.get("patient", row["case"]), "source": row["source"], "sequence": row["sequence"], "n_windows": pred["n_windows"],
            "a_supervised": bool(vol["a_supervised"]), "u_supervised": bool(vol["u_supervised"]), "r_supervised": bool(vol["r_supervised"]),
            "seq_pred": int(np.argmax(pred["seq_probs"])), "seq_truth": int(vol["seq"]), "seq_probs": [float(p) for p in pred["seq_probs"]],
            "a": host_dice(pred_seg, true_seg), "u": None, "r": None, "e2e": None}
