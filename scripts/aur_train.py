@@ -51,6 +51,7 @@ def parser():
     ap.add_argument("--save-every", type=int, default=DEFAULTS["save_every"])
     ap.add_argument("--log-every", type=int, default=DEFAULTS["log_every"])
     ap.add_argument("--max-steps", type=int, default=None)
+    ap.add_argument("--stop-after", type=int, default=None, help="stop (with a resume checkpoint) after this many steps of this invocation; the schedule is unchanged")
     ap.add_argument("--use-checkpoint", action="store_true")
     return ap
 
@@ -60,7 +61,7 @@ def config_from_args(a):
            "resume_stage2": a.resume_stage2, "microbatch": a.microbatch, "grad_accum": a.grad_accum, "crops_per_volume": a.crops_per_volume,
            "crop": tuple(a.crop), "points": a.points, "workers": a.workers, "seed": a.seed, "weight_decay": a.weight_decay,
            "val_every": a.val_every, "val_volumes": a.val_volumes, "save_every": a.save_every, "log_every": a.log_every,
-           "max_steps": a.max_steps, "use_checkpoint": a.use_checkpoint}
+           "max_steps": a.max_steps, "stop_after": a.stop_after, "use_checkpoint": a.use_checkpoint}
     stage = stage_defaults(a.stage)
     cfg["seen_crops"] = a.seen_crops if a.seen_crops is not None else stage["seen_crops"]
     cfg["warmup_steps"] = a.warmup_steps if a.warmup_steps is not None else stage["warmup_steps"]

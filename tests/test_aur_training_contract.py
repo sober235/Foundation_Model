@@ -254,6 +254,10 @@ def test_cli_contract():
     assert cfg["seen_crops"] == 10 and cfg["resume_stage2"] == "two.pt" and cfg["lrs"]["relation"] == 5e-4
     with pytest.raises(SystemExit):
         parser.parse_args(["--stage", "I", "--samples", "s", "--val-patients", "v", "--out", "o"])
+    a = parser.parse_args(["--stage", "II", "--init", "random", "--samples", "s", "--val-patients", "v", "--out", "o", "--stop-after", "50", "--grad-accum", "4"])
+    cfg = _load("aur_train").config_from_args(a)
+    assert cfg["stop_after"] == 50 and cfg["grad_accum"] == 4
+    assert _load("aur_train").config_from_args(parser.parse_args(["--stage", "II", "--samples", "s", "--val-patients", "v", "--out", "o"]))["stop_after"] is None
 
 
 # ---- after the independent review of the batch (2026-10-09): resume bookkeeping, counts, gating, sharding, DDP ----
