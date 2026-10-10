@@ -85,3 +85,17 @@ def test_a_host_only_probe_skips_the_lesion_arm_and_gives_no_verdict(tmp_path):
     assert np.isfinite(g1["macro_dice_gain"]) and g1["host_macro_ssl"] == report["arms"]["ssl"]["host"]["macro_dice_mean"]
     full = E.run(rows, val, ck, tmp_path / "full", torch.device("cpu"), crop=(8, 16, 16), n_calibration=4, n_validation=2, n_lesion=3, seeds=(0,), backbone_kwargs=SMALL)
     assert full["mode"] == "gate" and full["g1"]["pass"] in (True, False)
+
+
+def test_shared_parallel_crops_give_the_same_report(tmp_path):
+    """The probe crops are built once (in loader workers) and shared by both arms (2026-10-10: serially and per arm a
+    probe took 40-70 minutes); the report must not change by a single bit."""
+    rows, val = _rows(tmp_path)
+    ck = CK.export_backbone(tmp_path / "ssl.pt", SwinBackbone(**SMALL), {"stage": "I", "step": 1})
+    kw = dict(crop=(8, 16, 16), n_calibration=4, n_validation=2, n_lesion=3, seeds=(0, 1), backbone_kwargs=SMALL)
+    old = E.run(rows, val, ck, tmp_path / "old", torch.device("cpu"), share_crops=False, **kw)
+    new = E.run(rows, val, ck, tmp_path / "new", torch.device("cpu"), share_crops=True, workers=2, **kw)
+    assert json.dumps(old["arms"], sort_keys=True, default=str) == json.dumps(new["arms"], sort_keys=True, default=str)
+    assert json.dumps(old["g1"], sort_keys=True, default=str) == json.dumps(new["g1"], sort_keys=True, default=str)
+    probe = E.run(rows, val, ck, tmp_path / "probe", torch.device("cpu"), share_crops=True, workers=2, lesion=False, **kw)
+    assert probe["g1"]["host_macro_ssl"] == old["arms"]["ssl"]["host"]["macro_dice_mean"]

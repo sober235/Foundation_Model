@@ -69,12 +69,48 @@ def stride_of(crop_shape, grid):
     return tuple(int(s // g) for s, g in zip(crop_shape, grid))
 
 
-def gather_probe_data(backbone, rows, device, crop, rng_seed, lesion=False):
-    """Frozen features and targets of one crop per row (no augmentation; lesion-centred when `lesion`)."""
+PROBE_KEYS = ("image", "valid", "coords", "local", "entity", "instance")
+
+
+class _ProbeCrops(torch.utils.data.Dataset):
+    """One crop per row, as gather_probe_data draws it (rng [rng_seed, i]); only the arrays the probes read."""
+
+    def __init__(self, rows, crop, rng_seed, lesion):
+        self.rows, self.crop, self.rng_seed, self.lesion = list(rows), tuple(crop), rng_seed, lesion
+
+    def __len__(self):
+        return len(self.rows)
+
+    def __getitem__(self, i):
+        vol = load_volume(self.rows[i])
+        c = make_crop(vol, np.random.default_rng([self.rng_seed, i]), crop=self.crop, do_augment=False, lesion_centred=self.lesion)
+        return {**{k: c[k] for k in PROBE_KEYS}, "voxel_mm3": vol["voxel_mm3"]}
+
+
+def _first(items):
+    return items[0]
+
+
+def probe_crops(rows, crop, rng_seed, lesion=False, workers=0):
+    """The crops of gather_probe_data, built once (in `workers` loader processes, in order) so that both arms can read
+    the same ones."""
+    ds = _ProbeCrops(rows, crop, rng_seed, lesion)
+    if workers > 0 and len(ds) > 1:
+        return list(torch.utils.data.DataLoader(ds, batch_size=1, shuffle=False, num_workers=min(workers, len(ds)), collate_fn=_first))
+    return [ds[i] for i in range(len(ds))]
+
+
+def gather_probe_data(backbone, rows, device, crop, rng_seed, lesion=False, crops=None):
+    """Frozen features and targets of one crop per row (no augmentation; lesion-centred when `lesion`); `crops` (from
+    probe_crops with the same rows, seed and flag) skips the loading."""
     feats, targets, valids, lesions, meta = [], [], [], [], []
     for i, r in enumerate(rows):
-        vol = load_volume(r)
-        c = make_crop(vol, np.random.default_rng([rng_seed, i]), crop=crop, do_augment=False, lesion_centred=lesion)
+        if crops is not None:
+            c = crops[i]
+            vol = {"voxel_mm3": c["voxel_mm3"]}
+        else:
+            vol = load_volume(r)
+            c = make_crop(vol, np.random.default_rng([rng_seed, i]), crop=crop, do_augment=False, lesion_centred=lesion)
         f, v = cell_features(backbone, c, device)
         grid = f.shape[1:]
         hosts, les = host_cells(c, grid, stride_of(crop, grid))
@@ -226,7 +262,7 @@ def load_backbones(checkpoint, device, random_seed=0, **kwargs):
 
 
 def run(rows, val_patients, checkpoint, out_dir, device, crop, n_calibration=96, n_validation=48, n_lesion=48, seeds=(0, 1, 2), backbone_kwargs=None,
-        lesion=True):
+        lesion=True, share_crops=True, workers=0):
     """The G1 gate (lesion=True), or a host-only probe of a running Stage I (lesion=False: no lesion arm, no verdict;
     used to decide early whether a run is heading the right way, 2026-10-10)."""
     out_dir = Path(out_dir)
@@ -240,9 +276,16 @@ def run(rows, val_patients, checkpoint, out_dir, device, crop, n_calibration=96,
               "n_calibration_crops": len(cal_rows), "n_validation_crops": len(val_rows), "n_lesion_calibration": len(lcal_rows), "n_lesion_validation": len(lval_rows),
               "seeds": list(seeds), "thresholds": {"dice_gain": DICE_GAIN, "auc_tolerance": AUC_TOLERANCE, "status": "PROPOSED"}, "arms": {}}
     per_crop = {}
+    shared = {}
+    if share_crops:                                                   # one load per crop for both arms (identical crops)
+        shared["cal"] = probe_crops(cal_rows, crop, 21, False, workers)
+        shared["val"] = probe_crops(val_rows, crop, 22, False, workers)
+        if lesion:
+            shared["lcal"] = probe_crops(lcal_rows, crop, 23, True, workers)
+            shared["lval"] = probe_crops(lval_rows, crop, 24, True, workers)
     for name, bb in backbones.items():
-        cal = gather_probe_data(bb, cal_rows, device, crop, rng_seed=21)
-        val = gather_probe_data(bb, val_rows, device, crop, rng_seed=22)
+        cal = gather_probe_data(bb, cal_rows, device, crop, rng_seed=21, crops=shared.get("cal"))
+        val = gather_probe_data(bb, val_rows, device, crop, rng_seed=22, crops=shared.get("val"))
         arm = {"host": {"seeds": []}, "lesion": {"seeds": []}}
         for s in seeds:
             head = train_readout(cal[0], cal[1], cal[2], s, device)
@@ -255,8 +298,8 @@ def run(rows, val_patients, checkpoint, out_dir, device, crop, n_calibration=96,
             arm["lesion"] = None
             report["arms"][name] = arm
             continue
-        lcal = gather_probe_data(bb, lcal_rows, device, crop, rng_seed=23, lesion=True)
-        lval = gather_probe_data(bb, lval_rows, device, crop, rng_seed=24, lesion=True)
+        lcal = gather_probe_data(bb, lcal_rows, device, crop, rng_seed=23, lesion=True, crops=shared.get("lcal"))
+        lval = gather_probe_data(bb, lval_rows, device, crop, rng_seed=24, lesion=True, crops=shared.get("lval"))
         for s in seeds:
             rng = np.random.default_rng(s)
             res = lesion_probe(roi_pairs(lcal[0], lcal[3], lcal[1], lcal[2], lcal[4], rng), roi_pairs(lval[0], lval[3], lval[1], lval[2], lval[4], rng), s)

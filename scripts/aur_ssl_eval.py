@@ -34,11 +34,13 @@ def main(argv=None):
     ap.add_argument("--lesion", type=int, default=48)
     ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2])
     ap.add_argument("--host-only", action="store_true", help="the early probe of a running Stage I: host readout only, no lesion arm, no verdict")
+    ap.add_argument("--workers", type=int, default=8, help="loader processes that build the probe crops (once, shared by both arms)")
     a = ap.parse_args(argv)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     rows = json.loads(a.samples.read_text())
     val = json.loads(a.val_patients.read_text())
-    report = run(rows, val, a.checkpoint, a.out, device, tuple(a.crop), a.calibration, a.validation, a.lesion, tuple(a.seeds), lesion=not a.host_only)
+    report = run(rows, val, a.checkpoint, a.out, device, tuple(a.crop), a.calibration, a.validation, a.lesion, tuple(a.seeds), lesion=not a.host_only,
+                 share_crops=True, workers=a.workers)
     print(json.dumps(report["g1"], indent=1, default=str))
     print("host macro Dice: ssl %.4f random %.4f" % (report["arms"]["ssl"]["host"]["macro_dice_mean"], report["arms"]["random"]["host"]["macro_dice_mean"]))
     if a.host_only:
