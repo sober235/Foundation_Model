@@ -191,3 +191,16 @@ def test_the_autocast_path_runs_the_heads_inside_the_context_on_cuda():
     inst[3:6, 10:14, 12:16] = 1
     rows = I.bind_instances(model, image, affine, inst, crop=(8, 16, 16), device=device)
     assert len(rows) == 1 and rows[0]["host_probs"].sum() == pytest.approx(1.0, abs=1e-3)
+
+
+def test_the_device_window_equals_the_numpy_window_of_training():
+    """prepare_device (the whole-volume inference path) must give the arrays crops.extract / coordinates_mm /
+    local_coordinates give in training, for windows inside, across and beyond the volume (2026-10-10)."""
+    image, _ = _volume(shape=(12, 36, 40))
+    affine = np.array([[0.0, 0.0, 2.0, -11.0], [0.0, 1.1, 0.0, 7.5], [-0.9, 0.0, 0.0, 30.0], [0.0, 0.0, 0.0, 1.0]])   # oblique-free, permuted, flipped
+    vol = I.volume_on(image, torch.device("cpu"))
+    for window in ([(0, 8), (0, 16), (0, 16)], [(4, 12), (20, 36), (24, 40)], [(-2, 6), (30, 46), (-3, 13)], [(-1, 13), (-2, 38), (0, 40)]):
+        ref = I.prepare(image, affine, window)
+        got = I.prepare_device(vol, affine, window)
+        assert torch.equal(got[0], torch.from_numpy(ref[0])) and torch.equal(got[1], torch.from_numpy(ref[1]))
+        assert torch.allclose(got[2], torch.from_numpy(ref[2]), atol=1e-4) and torch.allclose(got[3], torch.from_numpy(ref[3]), atol=1e-6)

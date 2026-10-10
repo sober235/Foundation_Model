@@ -71,6 +71,37 @@ def prepare(image, affine, window):
             np.ascontiguousarray(local, dtype=np.float32))
 
 
+def volume_on(image, device):
+    """The whole normalised (z, y, x) volume on the device, once per volume."""
+    return torch.from_numpy(np.ascontiguousarray(image, dtype=np.float32)).to(device)
+
+
+def prepare_device(vol, affine, window):
+    """prepare() on the device: the same four arrays (image with -1 outside, validity, mm coordinates zyx, local
+    coordinates), built from the volume already on the device, so that no window crosses the bus and no coordinate
+    grid is built on the CPU. Equal to prepare() (coordinates within 1e-4 mm; tested)."""
+    device, shape = vol.device, tuple(vol.shape)
+    size = [b - a for a, b in window]
+    img = torch.full(size, -1.0, device=device)
+    valid = torch.zeros(size, device=device)
+    dst, src = _inside(window, shape)
+    if all(d.stop > d.start for d in dst):
+        img[src] = vol[dst]
+        valid[src] = 1.0
+    A = torch.as_tensor(np.asarray(affine, dtype=np.float64), device=device)
+    zz, yy, xx = torch.meshgrid(*(torch.arange(a, b, dtype=torch.float64, device=device) for a, b in window), indexing="ij")
+    world = torch.einsum("ij,jdhw->idhw", A[:3, :3], torch.stack((xx, yy, zz))) + A[:3, 3, None, None, None]
+    coords = world[[2, 1, 0]].float()
+    axes = [((torch.arange(a, b, dtype=torch.float32, device=device) + 0.5) / n) * 2 - 1 for (a, b), n in zip(window, shape)]
+    local = torch.stack(torch.meshgrid(*axes, indexing="ij"), 0)
+    return img, valid, coords.contiguous(), local.contiguous()
+
+
+def _tensors_device(prepared):
+    img, valid, coords, local = (torch.stack(a) for a in zip(*prepared))
+    return img[:, None], valid, coords, local
+
+
 def _tensors(arrays, device):
     img, valid, coords, local = (np.stack(a) for a in zip(*arrays))
     return (torch.from_numpy(img)[:, None].to(device), torch.from_numpy(valid).to(device), torch.from_numpy(coords).to(device),
@@ -110,10 +141,10 @@ def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5
     seq = torch.zeros(len(SEQ_TYPES), device=device, dtype=torch.float64)
     presence = torch.zeros(N_ENTITIES, device=device, dtype=torch.float64)
     model.eval()
+    vol = volume_on(image, device)
     for i in range(0, len(ws), max(1, batch_size)):
         group = ws[i:i + max(1, batch_size)]
-        arrays = [prepare(image, affine, w) for w in group]
-        img, valid, coords, local = _tensors(arrays, device)
+        img, valid, coords, local = _tensors_device([prepare_device(vol, affine, w) for w in group])
         with _autocast(device):
             out = model(img, valid, coords, local)
             ent = model.entity_masks(out).float().sigmoid()
@@ -123,7 +154,7 @@ def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5
             presence += out["entity_presence"].float().sigmoid().sum(0)
         for b, w in enumerate(group):
             dst, src = _inside(w, shape)
-            wb = weight[src]
+            wb = weight[src] * valid[b][src]
             ent_acc[(slice(None),) + dst] += ent[b][(slice(None),) + src] * wb
             keep = ev_pres[b] > presence_threshold
             if bool(keep.any()):
@@ -170,12 +201,12 @@ def bind_instances(model, image, affine, inst, crop, device):
         return []
     shape, crop = tuple(image.shape), tuple(crop)
     model.eval()
+    vol = volume_on(image, device)
     rows = []
     for k in ids:
         vox = np.argwhere(inst == k)
         window = crop_window(shape, crop, None, centre=vox.mean(0))
-        arrays = [prepare(image, affine, window)]
-        img, valid, coords, local = _tensors(arrays, device)
+        img, valid, coords, local = _tensors_device([prepare_device(vol, affine, window)])
         target, _ = extract(inst == k, window, fill=False)
         target = torch.from_numpy(target).to(device)
         with _autocast(device):
