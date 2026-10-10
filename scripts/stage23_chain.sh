@@ -26,6 +26,11 @@ GLOBAL=16
 MB=4
 
 say() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
+LOCK=$RUNS/${ARM}_chain.lock                                     # one chain per arm: a second launch of the same arm exits
+if [ -f "$LOCK" ] && kill -0 "$(cat "$LOCK")" 2>/dev/null; then
+  say "another $ARM chain (pid $(cat "$LOCK")) is running: not starting a second one"; exit 3
+fi
+echo $$ > "$LOCK"
 N=$(echo "$CARDS" | awk -F, '{print NF}')
 [ $((GLOBAL % (MB * N))) -eq 0 ] || { say "global batch $GLOBAL is not a multiple of $MB x $N cards: use 1, 2 or 4 cards"; exit 1; }
 ACCUM=$((GLOBAL / (MB * N)))
