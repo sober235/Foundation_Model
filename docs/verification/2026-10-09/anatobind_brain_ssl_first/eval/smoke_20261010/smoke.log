@@ -1,0 +1,7 @@
+[2026-10-10 14:10:38] smoke with /data2/congcong/data/FM_data/derived/aur/ssl_runs/c0_stage2_240k_20261010_0903/aur_stage2_step2000.pt
+[2026-10-10 14:26:52] val done in 974 s
+[2026-10-10 14:26:52] U thresholds from the validation split: --u-threshold pdgm=0.65
+[2026-10-10 14:51:39] test done in 1487 s
+[2026-10-10 14:52:48] fastMRI done in 69 s
+[2026-10-10 15:31:50] SibBMS done in 2342 s
+[2026-10-10 15:31:50] smoke finished
