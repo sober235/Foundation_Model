@@ -42,6 +42,7 @@
 ## 2. 待用户拍板
 
 0. **小试已起（10-10 08:33，4 号卡空出 3 分钟后被 `pilot` 窗口接手）**：`ssl_runs/stage1_r1_pilot36k_20261010_0833/`，单卡 microbatch 12、显存分配 51.5 / 预留 58 GiB、约 2.2–2.9 s/步，3000 步约 2.1 h；日志 `ssl_runs/stage1_r1_pilot_20261010_0833.log`；探针结果写到 `g1/pilot_r1_probe_step{1500,3000}_20261010_0833/`、归因 `g1/pilot_r1_attrib_step*_20261010_0833.json`。之后同卡接 C0。
+   **C0 守卡窗口 `c0w`（08:44 起）**：等 7、1、6 号卡中两张同时空闲 3 分钟就起两卡 C0（与之后 C2 的两卡对齐）；`stage23_chain.sh` 现有按臂的锁（`ssl_runs/<arm>_chain.lock`），小试结束后它自带的 C0 若发现已有 C0 在跑会自行退出。
    **守卡窗口（10-10 08:3x，用户回"continue"后）**：`scripts/wait_for_card.sh` 只接手连续 3 分钟完全空闲的卡（那边循环一两分钟内就续发的卡不会被抢）。`pilot` 窗口盯 1、6、4 号卡，拿到后跑 `scripts/stage1_r1_pilot.sh`（第一轮配置的单卡小试：36k 曝光，第 1500/3000 步探针与归因；InfoNCE 批内 12 个裁块、学习率在小试内退火，与第一轮不同，**不算预先登记的第一轮**），随后同卡接 C0（1 张卡，Stage II 约 23 h）。`r1` 窗口盯 2、5、7、3、0 中三张同时空闲，拿到后跑 `scripts/stage1_r1_chain.sh`（PROBE_CARD=1，C2 用前两张卡；C0 是 1 张卡、C2 是 2 张卡，全局批同为 16，数据流的分片不同，报告里注明）。
    原先的分卡请求仍然有效：用户 10-10 选了 (c) 并行（C0 与修 Stage I 同时跑），但 8 张卡全在另一会话的队列里。需要的卡：第一轮 Stage I 3 张（全局 36 只能用 1/2/3/6 张卡，3 张约 7.5 h），C0 1–2 张（全局 16 只能用 1/2/4 张卡；1 张 Stage II 约 23 h，2 张约 11 h）。最少 4 张、理想 5 张，而且要让那边的队列别往这几张卡上续发。起法：
    ```
@@ -56,7 +57,7 @@
 3. ~~主训超参偏离 Q11~~：用户 10-09 晚认可（全局 36、lr 4.5e-4、预热 444 步；mask 0.60、τ 0.2、λ_c 0.1 不变），记为决定 Q21。
 4. **T10–T12 已写完**（用户 10-09 "continue" 后做的）；仍是 PROPOSED：Stage III 预热 200 步。**评估全测**：用户 10-09 晚定全部 1,056 行测试集都评（决定 Q22），不抽样；一张卡约 8 h，或按来源分卡并行后合并（合并步骤待写）。U 阈值先在 `--split val` 选再固定到 test。
 5. 执行计划里"厚层 BMSR 9 例"改为"6 行"（实现按严格 > 3 mm，与 Q4 原文一致；记录 README 已写明）。
-6. **可删清单（只列，不删）**：10-10 新增 `ssl_runs/c0_stage2_smoke_20261010_0253/`（撞卡后自停的半截冒烟）、`ssl_runs/stage1_r1_chain_20261010_0332.log`（链守卫自测留下的两行日志）、scratchpad 的 `g1_diag.py`、`ft_probe.sh`、评审的 `gradbal*.py`、`reach.py`、`f16_check.py`、`bashtest/`、`conv/`、`revert/`、`mut_*`；空目录 `docs/verification/2026-10-09/anatobind_brain_ssl_first/p0/ddp_b2x2_g0567/`（预建导致训练器拒写）与 `…/ssl_runs/pilot_8k_mb12_resume150/`（被挤 OOM，无内容）；scratchpad 的 `launch_pilot.sh`、`launch_stage1.sh`；沿用上一轮清单（`/home/congcongliu/aurfix.qF3B/`、`.aurfix_dir_tmp`、SDD 工作区、S4 中间夹等）。
+6. **可删清单（只列，不删）**：10-10 新增 `ssl_runs/ctest_chain.lock` 与 `ssl_runs/ctest_chain_*.log`（锁的自测）、`ssl_runs/c0_stage2_smoke_20261010_0253/`（撞卡后自停的半截冒烟）、`ssl_runs/stage1_r1_chain_20261010_0332.log`（链守卫自测留下的两行日志）、scratchpad 的 `g1_diag.py`、`ft_probe.sh`、评审的 `gradbal*.py`、`reach.py`、`f16_check.py`、`bashtest/`、`conv/`、`revert/`、`mut_*`；空目录 `docs/verification/2026-10-09/anatobind_brain_ssl_first/p0/ddp_b2x2_g0567/`（预建导致训练器拒写）与 `…/ssl_runs/pilot_8k_mb12_resume150/`（被挤 OOM，无内容）；scratchpad 的 `launch_pilot.sh`、`launch_stage1.sh`；沿用上一轮清单（`/home/congcongliu/aurfix.qF3B/`、`.aurfix_dir_tmp`、SDD 工作区、S4 中间夹等）。
 7. 根目录 6 个未跟踪文件（两份 PDF、`docs/20260915_Proposal/`、`logs_build_m1r_cache.txt`、粘贴的 md 两份）：入库还是保持不跟踪。
 8. 沿用：ISLES 保留 A 监督的裁定只看了两张蒙太奇；S4 三条出路；S7 六条措辞；读片人与伦理备案。
 
