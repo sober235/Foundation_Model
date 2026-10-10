@@ -1,4 +1,4 @@
-# STATUS：2026-10-10 凌晨（SSL-first 线：G1 不过的根因已找到并修复——重建解码器只读 F1，第 2–4 层从没收到重建梯度；第一轮修复与提前判停规则已提交并在评审；C0 与第一轮 Stage I 的链脚本就绪；**8 张卡全被另一会话的对比方法队列占着，什么都起不来**，等用户分卡）
+# STATUS：2026-10-10 03:40 本机（SSL-first 线：G1 不过的根因是重建解码器只读 F1；第一轮修复经独立评审修订后已提交并推送（35624fc），预先登记写在 g1/G1.md；C0 与第一轮的链就绪；**8 张卡全被另一会话的对比方法队列占着，等用户分卡**）
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 本机时钟是 BST（UTC+1），北京时间加 7 小时；下面的时刻都是本机时钟。
@@ -32,6 +32,7 @@
 
 - **G1 不过（10-09 18:52）**：`docs/verification/2026-10-09/anatobind_brain_ssl_first/g1/G1.md`。冻结 13 宿主线性读出宏 Dice：Stage I 0.286 对随机初始化 0.383（差 −0.097，三种子 bootstrap 区间 [−0.117, −0.074]）；病灶可分性 AUC 0.640 对 0.680。差距集中在丘脑、基底节、脑干、深灰（随机 0.05–0.46，Stage I 0–0.14）。诊断：随机臂约六成优势来自局部坐标嵌入的位置捷径（置零后 0.383 → 0.322），但位置全去后随机仍领先 0.06；Stage I 的读出 500 步时（0.300）就已低于随机，之后缓慢下降；单层看 F1/F2/F4 都不如随机投影（F2 最差 0.171 对 0.295）。**微调探针**（Stage II 单卡 600 步，同种子同裁块）：A 掩膜损失两臂一样（0.91–0.92），U 一样，Stage I 臂的序列类型损失明显更差（步 400：1.55 对 0.79），与对比项把两个强度增广视图拉成同一表征、使全局特征对强度外观不敏感一致。结论：按现口径 Stage I 没有给下游带来可测的好处；原因在目标设计（遮挡重建 + 强度不变的全局对比），不是训练没收敛。
 - **根因（10-10 读代码确认）**：`StageOne.view` 只把 F1 交给重建解码器，第一层之后的 PatchMerging 与第 2–4 层（12 个块里 10 个）从没收到重建梯度，只被 0.1 权重、批内已饱和的全局 InfoNCE 训练；G1.md 末尾"更正"一节写明，先前"目标设计"的读法在机制上是错的。
+- **第一轮评审后修订（35624fc，已推）**：评审 `reviews/stage1-r1-review.md`（解码器修复正确、无泄漏、单变量；提前规则必须改）。现规则：第 1000/2000 步探针用 3 个种子，仅当第 2000 步读出 < 随机 − 0.01 且上升 < 0.01 才停；探针失败只跳过不杀训练；探针卡必须在训练卡外；训练只许 3 或 6 张卡（对比项批内 36 个裁块与第一次一致）；每次探针在 CPU 记录归因（`scripts/aur_ssl_attrib.py`）；第二轮的单一改动按第一轮第 2000 步归因选（深层对比梯度占优 → λ_c 0，否则 → 解码器去掉 F1 一路）。基线改为只用可见前景（第一次运行的 0.361 是旧口径，"0.366 → 0.037" 高估了）。全量测试 996 passed、2 skipped。
 - **第一轮修复（61b915a，用户 10-10 选 (c) 并行后做）**：解码器读全部四层（逐级上采样相加，只读特征不读图像）；新测试：只用重建损失时每层（含 PatchMerging）梯度非零（旧代码挂）、重建对被遮体素不变；全尺寸模型 CPU 实测四层梯度都非零，解码器 6.8 万参数。另加 `scripts/aur_ssl_eval.py --host-only`（提前探针），链 `scripts/stage1_r1_chain.sh`（同超参主训 + 第 1000/2000 步探针 + 预先登记的继续规则 + G1 + C2），预先登记写在 G1.md（cb1696a）。全量测试 991 passed、2 skipped。独立评审在跑。
 - **C0 / C2 共用链** `scripts/stage23_chain.sh`（原 c0_chain.sh 改名）：全局批固定 16（每卡 4 × 累积 16/(4×卡数)，1/2/4 张卡），学习率用规格 §6 原值不缩放；冒烟 = 第 50 步停（新参数 `--stop-after`）再恢复到 100。
 - **卡**：10-10 02:47–02:52 另一会话的对比方法队列（DIP/ZS-SSDU/INR/MC-GS，`/data0/congcong/code/GS/Results_20260908/CE_retro_cssense_af16_vdpois/logs/cmp/queue.log`）占满 8 张卡，并在卡空出几分钟内续发；02:53 我在 3 号卡起的 C0 与它的两个任务撞车，已自行停掉（目录 `ssl_runs/c0_stage2_smoke_20261010_0253/` 只有半截，可删清单）。
@@ -42,15 +43,18 @@
 
 0. **分卡（最急，什么都卡在这）**：用户 10-10 选了 (c) 并行（C0 与修 Stage I 同时跑），但 8 张卡全在另一会话的队列里。需要的卡：第一轮 Stage I 3 张（全局 36 只能用 1/2/3/6 张卡，3 张约 7.5 h），C0 1–2 张（全局 16 只能用 1/2/4 张卡；1 张 Stage II 约 23 h，2 张约 11 h）。最少 4 张、理想 5 张，而且要让那边的队列别往这几张卡上续发。起法：
    ```
-   tmux new-window -t anatobind -n r1 "cd /data0/congcong/code/Project_Doing/foundation_model && CARDS=5,6,7 bash scripts/stage1_r1_chain.sh; exec bash"
-   tmux new-window -t anatobind -n c0 "cd /data0/congcong/code/Project_Doing/foundation_model && ARM=c0 CARDS=3 bash scripts/stage23_chain.sh; exec bash"
+   tmux new-window -t anatobind -n c0 "cd /data0/congcong/code/Project_Doing/foundation_model && ARM=c0 CARDS=3,4 bash scripts/stage23_chain.sh; exec bash"
+   tmux new-window -t anatobind -n r1 "cd /data0/congcong/code/Project_Doing/foundation_model && CARDS=5,6,7 PROBE_CARD=3 C2_CARDS=5,6 bash scripts/stage1_r1_chain.sh; exec bash"
+   ```
+   （C0 先起：它的链从冒烟开始，先验证 stage23_chain 能在真实数据上走通，第一轮跑完交接 C2 时就不是首次；C0 与 C2 用相同卡数；探针卡可以借 C0 的卡，每次约 10 分钟。）
+   ```
    ```
 1. ~~推送~~：用户 10-09 晚批准并已推（见 §1 末尾的 push 记录）；之后仍按 Q14 每过一门推一次。
 2. **卡位冲突**：10-09 上午本机另一会话的 MC-GS `arc/cycle.py` 先后进入 0、1、3、7 号卡，又有一个 35 GB 的未知进程短暂进入 5 号卡，共把三次探针 / 恢复检查挤到 OOM；主训现在占着 5/6/7 各 60 GB。请让另一会话别往 5/6/7 发任务；若想把主训换成 4 卡，只能停掉重来（曝光预算按 seen_crops 计，`--resume` 换卡数会改全局 batch 与 lr 调度，不建议）。
 3. ~~主训超参偏离 Q11~~：用户 10-09 晚认可（全局 36、lr 4.5e-4、预热 444 步；mask 0.60、τ 0.2、λ_c 0.1 不变），记为决定 Q21。
 4. **T10–T12 已写完**（用户 10-09 "continue" 后做的）；仍是 PROPOSED：Stage III 预热 200 步。**评估全测**：用户 10-09 晚定全部 1,056 行测试集都评（决定 Q22），不抽样；一张卡约 8 h，或按来源分卡并行后合并（合并步骤待写）。U 阈值先在 `--split val` 选再固定到 test。
 5. 执行计划里"厚层 BMSR 9 例"改为"6 行"（实现按严格 > 3 mm，与 Q4 原文一致；记录 README 已写明）。
-6. **可删清单（只列，不删）**：空目录 `docs/verification/2026-10-09/anatobind_brain_ssl_first/p0/ddp_b2x2_g0567/`（预建导致训练器拒写）与 `…/ssl_runs/pilot_8k_mb12_resume150/`（被挤 OOM，无内容）；scratchpad 的 `launch_pilot.sh`、`launch_stage1.sh`；沿用上一轮清单（`/home/congcongliu/aurfix.qF3B/`、`.aurfix_dir_tmp`、SDD 工作区、S4 中间夹等）。
+6. **可删清单（只列，不删）**：10-10 新增 `ssl_runs/c0_stage2_smoke_20261010_0253/`（撞卡后自停的半截冒烟）、`ssl_runs/stage1_r1_chain_20261010_0332.log`（链守卫自测留下的两行日志）、scratchpad 的 `g1_diag.py`、`ft_probe.sh`、评审的 `gradbal*.py`、`reach.py`、`f16_check.py`、`bashtest/`、`conv/`、`revert/`、`mut_*`；空目录 `docs/verification/2026-10-09/anatobind_brain_ssl_first/p0/ddp_b2x2_g0567/`（预建导致训练器拒写）与 `…/ssl_runs/pilot_8k_mb12_resume150/`（被挤 OOM，无内容）；scratchpad 的 `launch_pilot.sh`、`launch_stage1.sh`；沿用上一轮清单（`/home/congcongliu/aurfix.qF3B/`、`.aurfix_dir_tmp`、SDD 工作区、S4 中间夹等）。
 7. 根目录 6 个未跟踪文件（两份 PDF、`docs/20260915_Proposal/`、`logs_build_m1r_cache.txt`、粘贴的 md 两份）：入库还是保持不跟踪。
 8. 沿用：ISLES 保留 A 监督的裁定只看了两张蒙太奇；S4 三条出路；S7 六条措辞；读片人与伦理备案。
 
