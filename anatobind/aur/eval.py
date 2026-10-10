@@ -31,7 +31,7 @@ LOCAL_DICE_MIN = 0.8                   # the recognition–binding gap counts in
 REFERENCE = {"pdgm": {"disease": "glioma", "thr": 0.60, "sequence": "FLAIR", "grid": "same 1 mm grid"},
              "bmsr": {"disease": "metastasis", "thr": 0.65, "sequence": "T1c", "grid": "AUR 1 mm resampled vs native (approximate)"},
              "isles": {"disease": "infarct", "thr": 0.50, "sequence": "DWI", "grid": "AUR 1 mm resampled vs native 2 mm (approximate)"}}
-NOT_IMPLEMENTED = ("SibBMS 10-case annotated subset (U, report only)", "fastMRI 433-volume reliable-slice A Dice and 1297-box host agreement (report only)",
+NOT_IMPLEMENTED = ("SibBMS 10-case annotated subset (U, report only)", "fastMRI 433-volume reliable-slice A Dice and 1297-box host agreement (report only; a separate script: scripts/aur_eval_fastmri.py)",
                    "end-to-end R on a human-labelled set (Level R: the sheet is exported, the statistics wait for the readers)")
 
 
