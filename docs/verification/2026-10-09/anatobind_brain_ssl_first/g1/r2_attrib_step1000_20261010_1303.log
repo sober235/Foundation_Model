@@ -1,0 +1,9 @@
+{"full": 0.03494125232100487, "no_f1": 0.03673749417066574, "f1_only": 0.11160266399383545, "baseline": 0.0717359408736229, "hidden_voxels": 9282586}
+stem            MIM 4.13e-04  contrast 0.00e+00  MIM/contrast 413343135733157345733115904.00
+stage1.blocks   MIM 2.32e-04  contrast 0.00e+00  MIM/contrast 232091508223675161372524544.00
+stage1.merge    MIM 1.27e-04  contrast 0.00e+00  MIM/contrast 126917846500873559013851136.00
+stage2.blocks   MIM 2.69e-05  contrast 0.00e+00  MIM/contrast 26865263862418938076856320.00
+stage2.merge    MIM 1.67e-05  contrast 0.00e+00  MIM/contrast 16713645891286432015712256.00
+stage3.blocks   MIM 3.98e-06  contrast 0.00e+00  MIM/contrast 3981836925959214341292032.00
+stage3.merge    MIM 2.74e-06  contrast 0.00e+00  MIM/contrast 2738356442932854262857728.00
+stage4.blocks   MIM 1.00e-06  contrast 0.00e+00  MIM/contrast 1004554064820695176577024.00
