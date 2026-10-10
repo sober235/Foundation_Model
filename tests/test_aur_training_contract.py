@@ -431,3 +431,36 @@ def test_validation_crops_loaded_by_workers_equal_the_serial_ones(tmp_path):
     assert len(serial) == len(parallel) == 2
     for a, b in zip(serial, parallel):
         assert a["case"] == b["case"] and all(torch.equal(a[k], b[k]) for k in ("image", "valid", "coords", "entity", "instance", "point_weight"))
+
+
+# ---- 2026-10-10: restarts of the running arms (a resume record is never overwritten; a stale later checkpoint is refused) ----
+
+def test_a_second_resume_from_the_same_checkpoint_keeps_the_first_resume_record(tmp_path, monkeypatch):
+    samples, val, _ = _manifest(tmp_path)
+    ssl = _ssl_export(tmp_path)
+    out = tmp_path / "run"
+    T.run(_cfg(init="backbone", init_backbone=str(ssl), seen_crops=8, stop_after=2), samples, val, out)
+    real = T.make_loader
+
+    def killed(*a, **k):                                                        # stopped after its config, before any save
+        raise RuntimeError("killed before the next save")
+    monkeypatch.setattr(T, "make_loader", killed)
+    with pytest.raises(RuntimeError, match="killed"):
+        T.run(_cfg(init="backbone", init_backbone=str(ssl), seen_crops=8), samples, val, out, resume=out / "resume_step2.pt")
+    first = (out / "run_config_resume_step2.json").read_text()
+    monkeypatch.setattr(T, "make_loader", real)
+    T.run(_cfg(init="backbone", init_backbone=str(ssl), seen_crops=8), samples, val, out, resume=out / "resume_step2.pt")
+    assert (out / "run_config_resume_step2.json").read_text() == first
+    assert len(list(out.glob("run_config_resume_step2*.json"))) == 2
+
+
+def test_a_resume_behind_a_later_checkpoint_is_refused_before_anything_is_written(tmp_path):
+    samples, val, _ = _manifest(tmp_path)
+    ssl = _ssl_export(tmp_path)
+    out = tmp_path / "run"
+    T.run(_cfg(init="backbone", init_backbone=str(ssl), seen_crops=8, stop_after=3), samples, val, out)
+    assert (out / "resume_step2.pt").is_file() and (out / "resume_step3.pt").is_file()
+    before = sorted(p.name for p in out.iterdir())
+    with pytest.raises(ValueError, match="later than step 2"):
+        T.run(_cfg(init="backbone", init_backbone=str(ssl), seen_crops=8), samples, val, out, resume=out / "resume_step2.pt")
+    assert sorted(p.name for p in out.iterdir()) == before

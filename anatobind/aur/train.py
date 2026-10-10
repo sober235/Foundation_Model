@@ -21,6 +21,7 @@ import json
 import math
 import os
 import platform
+import re
 import time
 from pathlib import Path
 
@@ -313,6 +314,12 @@ def make_loader(rows, cfg, rank, world, epoch, device_count, skip_batches=0):
     return loader
 
 
+def _step_of(name):
+    """The step of a '..._step<N>.pt' checkpoint file name, else None."""
+    m = re.search(r"_step(\d+)\.pt$", name)
+    return int(m.group(1)) if m else None
+
+
 def _clean(rec):
     """JSON-safe: an undefined float becomes None."""
     return {k: (None if isinstance(v, float) and not math.isfinite(v) else v) for k, v in rec.items()}
@@ -370,6 +377,9 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
         saved = meta.get("schedule")
         if saved is not None and saved != schedule:
             raise ValueError(f"resume schedule mismatch: the checkpoint was made with {saved}, this run has {schedule}")
+        later = sorted(f.name for f in out_dir.glob("*.pt") if (_step_of(f.name) or 0) > step)
+        if later:                                                  # another trajectory went past this point: its saves would collide hours later
+            raise ValueError(f"{out_dir} holds checkpoints later than step {step} ({', '.join(later)}): resume from the latest one or into a new directory")
         if (out_dir / "best.json").exists():
             best = json.loads((out_dir / "best.json").read_text())
     ddp = DistributedDataParallel(model, device_ids=[local_rank] if device.type == "cuda" else None) if world > 1 else model
@@ -390,7 +400,10 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
                 "gpus": [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())] if device.type == "cuda" else [],
                 "started": time.strftime("%Y-%m-%d %H:%M:%S"), **extra_meta}
         name = "run_config.json" if resume is None else f"run_config_resume_step{step}.json"       # a resumed invocation never rewrites the first
-        (out_dir / name).write_text(json.dumps(info, indent=1, default=str))
+        path, k = out_dir / name, 1
+        while path.exists():                                                                       # nor an earlier resume from the same step
+            path, k = out_dir / f"{Path(name).stem}_{k}.json", k + 1
+        path.write_text(json.dumps(info, indent=1, default=str))
     model.train()
     trainable = [p for p in model.parameters() if p.requires_grad]
     done, stopped, start_step = step >= total_steps, False, step
