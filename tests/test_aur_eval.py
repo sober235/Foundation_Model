@@ -187,3 +187,62 @@ def test_write_report_exports_the_level_r_sheet_and_key(tmp_path):
     assert sheet[0].startswith("source,case,sequence,lesion_id,box_zyx,volume_mm3,stratum,reader1_host") and len(sheet) == 2 and "white_matter" not in sheet[1]
     key = json.loads((out / "level_r_key.json").read_text())
     assert key[0]["r_host"] == "white_matter_left" and key[0]["pseudo_truth_host"] == "white_matter_left"
+
+
+def test_external_u_reads_an_image_and_a_lesion_label_on_one_grid(tmp_path):
+    """The SibBMS 10-subject check (spec §7, report only): U on a volume whose lesion label shares its grid."""
+    shape = (40, 36, 24)
+    affine = np.diag([-1.0, 1.0, 1.0, 1.0])                  # LAS, as the SibBMS annotation folders
+    affine[0, 3] = 39.0
+    img = np.full(shape, 100.0, np.float32)
+    lab = np.zeros(shape, np.uint8)
+    lab[5:10, 5:10, 5:10] = 2                                  # 125 mm3, value 2
+    lab[30, 30, 20] = 1                                        # 1 mm3, under the floor: an ignored truth
+    img[lab > 0] = 400.0
+    ip, lp = tmp_path / "flair.nii.gz", tmp_path / "label.nii.gz"
+    nib.save(nib.Nifti1Image(img, affine), str(ip))
+    nib.save(nib.Nifti1Image(lab, affine), str(lp))
+    torch.manual_seed(0)
+    model = AnatoBindBrain(**TINY).eval()
+    res = E.evaluate_u_external(model, ip, lp, crop=(8, 16, 16), device=torch.device("cpu"))
+    counted = [g for g in res["gt"] if not g.get("ignore")]
+    assert len(counted) == 1 and counted[0]["volume_mm3"] == 125.0 and sum(1 for g in res["gt"] if g.get("ignore")) == 1
+    assert res["label_values"] == {"1": 1, "2": 125} and all({"box", "score"} <= set(d) for d in res["dets"])
+    rows = E.u_sweep({"s1": res, "s2": res})
+    assert len(rows) == 19 and rows[0]["n_gt"] == 2 and all(0.0 <= r["sensitivity"] <= 1.0 for r in rows)
+    bad = tmp_path / "bad.nii.gz"
+    nib.save(nib.Nifti1Image(lab[:-1], affine), str(bad))
+    with pytest.raises(ValueError, match="grid"):
+        E.evaluate_u_external(model, ip, bad, crop=(8, 16, 16), device=torch.device("cpu"))
+
+
+def test_the_sibbms_script_runs_on_a_tiny_annotation_tree(tmp_path):
+    import importlib.util
+    from pathlib import Path
+
+    import anatobind.aur.train as T
+
+    root = tmp_path / "Annotation"
+    for sub in ("sub-001", "sub-002"):
+        d = root / sub / "ses-001"
+        d.mkdir(parents=True)
+        img = np.full((40, 36, 24), 100.0, np.float32)
+        lab = np.zeros(img.shape, np.uint8)
+        lab[5:10, 5:10, 5:10] = 1
+        img[lab > 0] = 400.0
+        nib.save(nib.Nifti1Image(img, np.eye(4)), str(d / f"{sub}_flair.nii.gz"))
+        nib.save(nib.Nifti1Image(lab, np.eye(4)), str(d / f"{sub}_Segmentation-label.nii.gz"))
+    samples = tmp_path / "samples.json"
+    samples.write_text(json.dumps([{"source": "sibbms", "patient": "MS_sub-001", "split": "test"}, {"source": "sibbms", "patient": "MS_sub-002", "split": "train"}]))
+    torch.manual_seed(0)
+    export = T.export_model(tmp_path / "aur.pt", AnatoBindBrain(**TINY), {"stage": "III", "config": {"model": TINY, "crop": [8, 16, 16]}})
+    path = Path(__file__).resolve().parents[1] / "scripts" / "aur_eval_sibbms.py"
+    spec = importlib.util.spec_from_file_location("aur_eval_sibbms", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    out = tmp_path / "rec"
+    assert mod.main(["--checkpoint", str(export), "--out", str(out), "--annotation", str(root), "--samples", str(samples), "--cpu"]) == 0
+    per = json.loads((out / "per_subject.json").read_text())
+    assert per["sub-001"]["split"] == "test" and per["sub-002"]["split"] == "train"
+    sweeps = json.loads((out / "sweep.json").read_text())["sweeps"]
+    assert len(sweeps["all"]) == 19 and sweeps["all"][0]["n_gt"] == 2 and sweeps["test"][0]["n_gt"] == 1 and (out / "REPORT.md").is_file()

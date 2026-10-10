@@ -31,7 +31,7 @@ LOCAL_DICE_MIN = 0.8                   # the recognition–binding gap counts in
 REFERENCE = {"pdgm": {"disease": "glioma", "thr": 0.60, "sequence": "FLAIR", "grid": "same 1 mm grid"},
              "bmsr": {"disease": "metastasis", "thr": 0.65, "sequence": "T1c", "grid": "AUR 1 mm resampled vs native (approximate)"},
              "isles": {"disease": "infarct", "thr": 0.50, "sequence": "DWI", "grid": "AUR 1 mm resampled vs native 2 mm (approximate)"}}
-NOT_IMPLEMENTED = ("SibBMS 10-case annotated subset (U, report only)", "fastMRI 433-volume reliable-slice A Dice and 1297-box host agreement (report only; a separate script: scripts/aur_eval_fastmri.py)",
+NOT_IMPLEMENTED = ("SibBMS 10-subject MS plaque check (U, report only; a separate script: scripts/aur_eval_sibbms.py)", "fastMRI 433-volume reliable-slice A Dice and 1297-box host agreement (report only; a separate script: scripts/aur_eval_fastmri.py)",
                    "end-to-end R on a human-labelled set (Level R: the sheet is exported, the statistics wait for the readers)")
 
 
@@ -231,6 +231,35 @@ def evaluate_case(model, row, crop, device, batch_size=1, instance_threshold=INS
         res["e2e"] = [{"det": p["instance"], "r": int(p["host"]), "b0": int(b0_pred[p["instance"] - 1]), "score": next(d["score"] for d in dets if d["instance"] == p["instance"]),
                        "truth": det_truth.get(p["instance"]), "query_iou": p["query_iou"], "zero_overlap": p["zero_overlap"]} for p in pb]
     return res
+
+
+def evaluate_u_external(model, image_path, label_path, crop, device, values=None, instance_threshold=INSTANCE_THRESHOLD, batch_size=1):
+    """U on an external volume with its own lesion label on the same grid (the SibBMS 10-subject check, spec §7, report
+    only): both reoriented to RAS, the label's voxels > 0 (or `values`) as lesion, components under the volume floor
+    as ignored truths, the whole-volume lesion map's components as detections. Returns a detection scan plus the
+    label's value counts (in mm3)."""
+    import nibabel as nib
+    from anatobind.aur.crops import normalise, to_zyx
+    from anatobind.aur.targets import lesion_instances
+    img, lab = nib.as_closest_canonical(nib.load(str(image_path))), nib.as_closest_canonical(nib.load(str(label_path)))
+    if img.shape != lab.shape or not np.allclose(img.affine, lab.affine, atol=1e-3):
+        raise ValueError(f"{image_path} and {label_path} are not on one grid ({img.shape} vs {lab.shape})")
+    affine = np.asarray(img.affine, dtype=np.float64)
+    voxel_mm3 = abs(float(np.linalg.det(affine[:3, :3])))
+    image = normalise(to_zyx(np.asarray(img.dataobj).astype(np.float32)))
+    label = to_zyx(np.asarray(lab.dataobj).astype(np.int16))
+    vals = tuple(int(v) for v in np.unique(label) if v > 0) if values is None else tuple(values)
+    inst, small = lesion_instances(label, vals, voxel_mm3)
+    pred = predict_volume(model, image, affine, crop, device, batch_size=batch_size)
+    _, dets = instances_from_probability(pred["lesion_prob"], voxel_mm3, instance_threshold)
+    counts = {str(int(v)): float((label == v).sum() * voxel_mm3) for v in np.unique(label) if v > 0}
+    return {"gt": instance_rows(inst, voxel_mm3) + ignored_rows(small, voxel_mm3), "dets": dets, "label_values": counts,
+            "voxel_mm3": voxel_mm3, "shape": list(image.shape)}
+
+
+def u_sweep(scans):
+    """{name: evaluate_u_external result} -> the sensitivity / false positives per scan over the score thresholds."""
+    return sweep([scan(name, r["gt"], r["dets"]) for name, r in scans.items()])
 
 
 def _r_block(instances, r_key="r", b0_key="b0", truth_key="truth"):
