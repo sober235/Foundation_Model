@@ -408,3 +408,15 @@ def test_two_rank_ddp_survives_extreme_supervision_in_both_stages(tmp_path):
         for rank in (0, 1):
             rec = json.loads((tmp_path / f"rank{rank}_{stage}.json").read_text())
             assert rec["missing"] == [] and rec["finite"] and rec["equal"], (stage, rank, rec)
+
+
+def test_a_skipped_loader_yields_the_same_batches_without_loading_the_skipped_ones(tmp_path):
+    """Resuming mid-epoch drops the skipped rows instead of loading them, and keeps every remaining item's crops."""
+    rows = [_case(tmp_path, f"k{i}", f"q{i}") for i in range(6)]
+    cfg = {**T.DEFAULTS, **_cfg(microbatch=2, crops_per_volume=1)}
+    full = [b for b in T.make_loader(rows, cfg, 0, 1, 0, 0)]
+    part = [b for b in T.make_loader(rows, cfg, 0, 1, 0, 0, skip_batches=1)]
+    assert len(full) == 3 and len(part) == 2
+    for a, b in zip(full[1:], part):
+        assert a["case"] == b["case"] and torch.equal(a["image"], b["image"]) and torch.equal(a["instance"], b["instance"])
+    assert T.make_loader(rows, cfg, 0, 1, 0, 0, skip_batches=3) is None          # the resumed position was the epoch's end

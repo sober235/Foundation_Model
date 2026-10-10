@@ -237,8 +237,8 @@ def validate(module, model, batches, device, stage, cfg):
     sums, n, dice = {}, 0, []
     counts = {"u_matched_n": 0, "u_instances": 0, "r_samples": 0, "r_correct": 0, "r_instances": 0}
     for i, b in enumerate(batches):
-        points = L.sample_points(b["valid"], cfg["points"], torch.Generator().manual_seed(cfg["seed"] + 99 + i), instance=b["instance"]).to(device)
         b = to_device(b, device)
+        points = L.sample_points(b["valid"], cfg["points"], torch.Generator(device=device).manual_seed(cfg["seed"] + 99 + i), instance=b["instance"])
         with torch.autocast(device_type="cuda" if device.type == "cuda" else "cpu", dtype=torch.bfloat16, enabled=device.type == "cuda"):
             total, logged, matches, ex = _forward_losses(module, model, b, points, stage, cfg["lambda_r"], cfg["lambda_h"])
         sums["loss"] = sums.get("loss", 0.0) + float(total)
@@ -285,14 +285,19 @@ def rank_rows(rows, seed, epoch, rank, world):
     return [rows[i] for i in order[rank::world]]
 
 
-def make_loader(rows, cfg, rank, world, epoch, device_count):
-    """This rank's rows for the epoch, crops_per_volume crops each, micro-batches of microbatch crops."""
+def make_loader(rows, cfg, rank, world, epoch, device_count, skip_batches=0):
+    """This rank's rows for the epoch, crops_per_volume crops each, micro-batches of microbatch crops. skip_batches
+    (a resumed run) drops the rows of the first micro-batches instead of loading them; None when nothing is left."""
     if cfg["microbatch"] % cfg["crops_per_volume"]:
         raise ValueError(f"microbatch {cfg['microbatch']} must be a multiple of crops_per_volume {cfg['crops_per_volume']}")
-    mine = rank_rows(rows, cfg["seed"], epoch, rank, world)
-    ds = AURDataset(mine, cfg["crop"], cfg["crops_per_volume"], do_augment=True, lesion_share=cfg["lesion_share"], seed=cfg["seed"] + 1000 * rank)
-    ds.set_epoch(epoch)
     volumes_per_batch = cfg["microbatch"] // cfg["crops_per_volume"]
+    mine = rank_rows(rows, cfg["seed"], epoch, rank, world)
+    start = int(skip_batches) * volumes_per_batch
+    if skip_batches and len(mine) - start < volumes_per_batch:
+        return None
+    ds = AURDataset(mine[start:], cfg["crop"], cfg["crops_per_volume"], do_augment=True, lesion_share=cfg["lesion_share"],
+                    seed=cfg["seed"] + 1000 * rank, index_offset=start)
+    ds.set_epoch(epoch)
     loader = DataLoader(ds, batch_size=volumes_per_batch, shuffle=False, num_workers=cfg["workers"], collate_fn=collate, pin_memory=device_count > 0,
                         drop_last=True, persistent_workers=cfg["workers"] > 0, prefetch_factor=2 if cfg["workers"] > 0 else None)
     if len(loader) == 0:
@@ -384,14 +389,11 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
     skip = epoch_step * cfg["grad_accum"] if resume is not None else 0
     t_step = time.time()
     while not done:
-        loader = make_loader(train_rows, cfg, rank, world, epoch, torch.cuda.device_count())
-        it = iter(loader)
-        try:
-            for _ in range(skip):                                 # a resumed run continues its epoch where it stopped
-                next(it)
-        except StopIteration:
+        loader = make_loader(train_rows, cfg, rank, world, epoch, torch.cuda.device_count(), skip_batches=skip)   # a resumed run continues its epoch
+        if loader is None:                                        # it stopped at the epoch's end
             epoch, epoch_step, skip = epoch + 1, 0, 0
             continue
+        it = iter(loader)
         skip = 0
         while not done:
             t0 = time.time()
@@ -405,9 +407,9 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
             opt.zero_grad(set_to_none=True)
             stats = {}
             for j, b in enumerate(micro):
-                g = torch.Generator().manual_seed(int(np.random.SeedSequence([cfg["seed"], step, rank, j]).generate_state(1)[0]))
-                points = L.sample_points(b["valid"], cfg["points"], g, instance=b["instance"]).to(device)
-                b = to_device(b, device)
+                b = to_device(b, device)                                   # the loss points are drawn on the device (2026-10-10:
+                g = torch.Generator(device=device).manual_seed(int(np.random.SeedSequence([cfg["seed"], step, rank, j]).generate_state(1)[0]))
+                points = L.sample_points(b["valid"], cfg["points"], g, instance=b["instance"])   # on the CPU they bound a 12-crop step)
                 with torch.autocast(device_type="cuda" if device.type == "cuda" else "cpu", dtype=torch.bfloat16, enabled=device.type == "cuda"):
                     total, logged, _ = compute_losses(model, ddp, b, points, stage, cfg["lambda_r"], cfg["lambda_h"])
                     (total / cfg["grad_accum"]).backward()

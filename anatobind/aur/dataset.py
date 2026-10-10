@@ -139,8 +139,11 @@ def crop_instances(instance, small, voxel_mm3):
 
 
 class AURDataset(Dataset):
-    def __init__(self, rows, crop=CROP, crops_per_volume=2, do_augment=True, lesion_share=0.5, seed=0):
+    def __init__(self, rows, crop=CROP, crops_per_volume=2, do_augment=True, lesion_share=0.5, seed=0, index_offset=0):
+        """index_offset: the position of rows[0] in the epoch's full list, so that a resumed run that starts mid-epoch
+        draws each remaining item's crops with the same seed as an uninterrupted run."""
         self.rows, self.crop, self.k, self.do_augment, self.lesion_share, self.seed = list(rows), tuple(crop), crops_per_volume, do_augment, lesion_share, seed
+        self.index_offset = int(index_offset)
         self.epoch = 0
 
     def set_epoch(self, epoch):
@@ -150,7 +153,7 @@ class AURDataset(Dataset):
         return len(self.rows)
 
     def __getitem__(self, i):
-        rng = np.random.default_rng([self.seed, self.epoch, i])
+        rng = np.random.default_rng([self.seed, self.epoch, i + self.index_offset])
         vol = load_volume(self.rows[i])
         return [make_crop(vol, rng, self.crop, self.do_augment, lesion_centred=rng.random() < self.lesion_share) for _ in range(self.k)]
 
