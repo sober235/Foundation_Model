@@ -420,3 +420,14 @@ def test_a_skipped_loader_yields_the_same_batches_without_loading_the_skipped_on
     for a, b in zip(full[1:], part):
         assert a["case"] == b["case"] and torch.equal(a["image"], b["image"]) and torch.equal(a["instance"], b["instance"])
     assert T.make_loader(rows, cfg, 0, 1, 0, 0, skip_batches=3) is None          # the resumed position was the epoch's end
+
+
+def test_validation_crops_loaded_by_workers_equal_the_serial_ones(tmp_path):
+    """The validation crops are built by loader workers (2026-10-10: serially they idled the cards for ~25 min at
+    every start); they must be the very same crops."""
+    _, _, rows = _manifest(tmp_path)
+    serial = T.validation_batches(rows, {**T.DEFAULTS, **_cfg(val_volumes=4, workers=0, microbatch=2, crops_per_volume=1)})
+    parallel = T.validation_batches(rows, {**T.DEFAULTS, **_cfg(val_volumes=4, workers=2, microbatch=2, crops_per_volume=1)})
+    assert len(serial) == len(parallel) == 2
+    for a, b in zip(serial, parallel):
+        assert a["case"] == b["case"] and all(torch.equal(a[k], b[k]) for k in ("image", "valid", "coords", "entity", "instance", "point_weight"))

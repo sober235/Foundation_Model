@@ -274,9 +274,17 @@ def validation_batches(rows, cfg):
     rng = np.random.default_rng(cfg["seed"] + 7)
     pick = [rows[i] for i in rng.choice(len(rows), size=min(cfg["val_volumes"], len(rows)), replace=False)]
     ds = AURDataset(pick, cfg["crop"], cfg["crops_per_volume"], do_augment=False, lesion_share=cfg["lesion_share"], seed=cfg["seed"] + 7)
-    crops = [c for i in range(len(ds)) for c in ds[i]]
+    if cfg.get("workers", 0) > 0 and len(ds) > 1:                   # loader workers, in order: the same crops, built in parallel
+        items = list(DataLoader(ds, batch_size=1, shuffle=False, num_workers=min(cfg["workers"], len(ds)), collate_fn=_single))
+    else:
+        items = [ds[i] for i in range(len(ds))]
+    crops = [c for item in items for c in item]
     step = max(1, cfg["microbatch"])
     return [collate([crops[i:i + step]]) for i in range(0, len(crops), step)]
+
+
+def _single(items):
+    return items[0]
 
 
 def rank_rows(rows, seed, epoch, rank, world):
