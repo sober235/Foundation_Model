@@ -48,11 +48,35 @@ def test_the_reconstruction_alone_trains_every_stage_of_the_backbone():
     out["mim"].backward()
     bb = model.backbone
     assert bb.patch_embed.weight.grad.abs().sum() > 0 and bb.local_embed[0].weight.grad.abs().sum() > 0
+
+    def rms(module):
+        g = [p.grad.flatten() for p in module.parameters()]
+        assert all(p.grad is not None for p in module.parameters())
+        return float(torch.cat(g).pow(2).mean().sqrt())
+
+    first = rms(bb.stages[0].blocks)
     for i, stage in enumerate(bb.stages):
-        grads = [p.grad for p in stage.parameters()]
-        assert all(g is not None for g in grads) and sum(float(g.abs().sum()) for g in grads) > 0, f"stage {i + 1} gets no reconstruction gradient"
+        r = rms(stage.blocks)
+        assert r > 1e-3 * first, f"the blocks of stage {i + 1} get a negligible reconstruction gradient ({r:.2e} vs {first:.2e})"
         if stage.merge is not None:
-            assert any(p.grad.abs().sum() > 0 for p in stage.merge.parameters()), f"merge after stage {i + 1}"
+            assert rms(stage.merge) > 0, f"the merge after stage {i + 1} gets no reconstruction gradient"
+
+
+def test_the_reconstruction_depends_on_the_deep_levels():
+    torch.manual_seed(0)
+    model = M.StageOne(**SMALL).eval()
+    b = _batch(b=1)
+    with torch.no_grad():
+        levels = model.backbone(b["view1"], b["valid"], b["coords"], b["local"])
+        full = model.decoder(levels)
+        for k in (1, 2, 3):
+            cut = [dict(lv) for lv in levels]
+            cut[k]["feat"] = torch.zeros_like(cut[k]["feat"])
+            changed = (model.decoder(cut) - full).abs().mean() / full.abs().mean()
+            assert changed > 1e-3, f"level {k + 1} barely moves the reconstruction ({float(changed):.2e})"
+        only_f1 = model.decoder(levels, use=(True, False, False, False))
+        no_f1 = model.decoder(levels, use=(False, True, True, True))
+    assert not torch.equal(only_f1, full) and not torch.equal(no_f1, full)
 
 
 def test_the_reconstruction_never_sees_a_hidden_voxel():
@@ -69,7 +93,12 @@ def test_the_reconstruction_never_sees_a_hidden_voxel():
         hv = hidden_voxels(hidden)
         tampered[:, 0][hv] = torch.rand(int(hv.sum())) * 4 - 2
         same, _, _ = model.view(tampered, batch["valid"], batch["coords"], batch["local"], hidden)
+        shown = batch["view1"].clone()
+        vv = ~hv & (batch["valid"] > 0.5)
+        shown[:, 0][vv] = shown[:, 0][vv] + 0.5
+        seen, _, _ = model.view(shown, batch["valid"], batch["coords"], batch["local"], hidden)
     assert torch.equal(ref, same)
+    assert not torch.equal(ref, seen)                                              # a change under a visible patch is reconstructed from
 
 
 def test_effective_rank_separates_spread_from_collapse():

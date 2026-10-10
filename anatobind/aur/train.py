@@ -376,7 +376,8 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
                 "resumed_from": str(resume) if resume else None, "host": platform.node(),
                 "gpus": [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())] if device.type == "cuda" else [],
                 "started": time.strftime("%Y-%m-%d %H:%M:%S"), **extra_meta}
-        (out_dir / "run_config.json").write_text(json.dumps(info, indent=1, default=str))
+        name = "run_config.json" if resume is None else f"run_config_resume_step{step}.json"       # a resumed invocation never rewrites the first
+        (out_dir / name).write_text(json.dumps(info, indent=1, default=str))
     model.train()
     trainable = [p for p in model.parameters() if p.requires_grad]
     done, stopped, start_step = step >= total_steps, False, step
@@ -493,7 +494,8 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
                 prior = json.loads(sidecar.read_text()) if sidecar.exists() else {}
                 summary["final_export"] = str(final) if prior.get("step") == best["step"] else best["path"]
             sidecar.write_text(json.dumps({**best, "final_export": summary["final_export"]}, indent=1))
-        (out_dir / "summary.json").write_text(json.dumps(summary, indent=1, default=str))
+        name = f"summary_stop_step{step}.json" if stopped else "summary.json"                       # summary.json only when the run is done
+        (out_dir / name).write_text(json.dumps(summary, indent=1, default=str))
         print("SUMMARY", json.dumps(summary, default=str), flush=True)
     if world > 1:
         dist.barrier()

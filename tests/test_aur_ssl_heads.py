@@ -51,3 +51,13 @@ def test_mim_loss_reads_the_weighted_voxels_only_and_normalises_per_sample():
     assert base == 0.0                                                       # a constant image is predicted by its visible mean
     ramp = torch.arange(4.0).view(1, 1, 4, 1, 1).expand(2, 1, 4, 8, 8)
     assert H.interpolation_baseline(ramp, half, torch.ones(2, 4, 8, 8)) > 0
+
+
+def test_the_baseline_predicts_from_the_visible_foreground_only():
+    """The no-learning reference must not average the background (-1) into its prediction (review of 2026-10-10)."""
+    image = torch.full((1, 1, 4, 8, 8), -1.0)
+    image[:, :, :, :, :4] = 0.5                                              # foreground: the left half, background the right
+    hidden = torch.zeros(1, 4, 8, 8)
+    hidden[:, :2, :, :4] = 1.0                                               # hide the upper foreground
+    valid = torch.ones(1, 4, 8, 8)
+    assert H.interpolation_baseline(image, hidden, valid) == 0.0             # the visible foreground mean is 0.5 = the target

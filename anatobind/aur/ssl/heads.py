@@ -14,6 +14,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from anatobind.aur.ssl.masking import BACKGROUND
 from anatobind.aur.swin import CHANNELS, PATCH
 
 HUBER_DELTA = 1.0
@@ -28,15 +29,17 @@ class MaskedPatchDecoder(nn.Module):
         self.lateral = nn.ModuleList(nn.Conv3d(c, width, 1) for c in self.channels)
         self.net = nn.Sequential(nn.GELU(), nn.Conv3d(width, hidden, 1), nn.GELU(), nn.Conv3d(hidden, math.prod(self.patch), 1))
 
-    def forward(self, levels):
+    def forward(self, levels, use=None):
         """levels: the backbone's list of {"feat": (B, C_k, D_k, H_k, W_k)}, finest first -> (B, 1, D1 p0, H1 p1, W1 p2)
-        predicted intensities on the F1 grid."""
+        predicted intensities on the F1 grid. `use` (one bool per level, default all) drops levels from the sum: the
+        attribution diagnostic (how much the reconstruction leans on F1 vs the deeper levels), never used in training."""
         if len(levels) != len(self.lateral):
             raise ValueError(f"the decoder reads {len(self.lateral)} levels, got {len(levels)}")
-        x = self.lateral[-1](levels[-1]["feat"])
+        use = tuple(use) if use is not None else (True,) * len(levels)
+        lats = [self.lateral[k](levels[k]["feat"]) * (1.0 if use[k] else 0.0) for k in range(len(levels))]
+        x = lats[-1]
         for k in range(len(levels) - 2, -1, -1):
-            lat = self.lateral[k](levels[k]["feat"])
-            x = lat + F.interpolate(x.float(), size=lat.shape[2:], mode="trilinear", align_corners=False).to(lat.dtype)
+            x = lats[k] + F.interpolate(x.float(), size=lats[k].shape[2:], mode="trilinear", align_corners=False).to(lats[k].dtype)
         return patches_to_voxels(self.net(x), self.patch)
 
 
@@ -70,10 +73,12 @@ def mim_loss(pred, target, weight, delta=HUBER_DELTA):
     return (per_sample * has).sum() / has.sum().clamp(min=1.0), int(n.sum())
 
 
-def interpolation_baseline(target, weight, valid, patch=PATCH):
-    """A no-learning reference for the MIM metric: every voxel predicted by the mean of the visible voxels of its
-    sample. Returns the same per-sample-normalised Huber as mim_loss. The hidden voxels' own values never enter."""
-    visible = (valid > 0.5).float() * (1.0 - weight)
+def interpolation_baseline(target, weight, valid, patch=PATCH, background=BACKGROUND):
+    """A no-learning reference for the MIM metric: every voxel predicted by the mean of the visible foreground voxels
+    of its sample (the background constant is left out: averaging it in made the reference too easy to beat; review of
+    2026-10-10, run 0 logged the old one). Returns the same per-sample-normalised Huber as mim_loss. The hidden voxels'
+    own values never enter."""
+    visible = (valid > 0.5).float() * (1.0 - weight) * (target[:, 0] > background).float()
     mean = (target[:, 0] * visible).flatten(1).sum(1) / visible.flatten(1).sum(1).clamp(min=1.0)
     pred = mean.view(-1, 1, 1, 1, 1).expand_as(target)
     return mim_loss(pred, target, weight)[0]

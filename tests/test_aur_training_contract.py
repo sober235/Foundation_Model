@@ -215,8 +215,13 @@ def test_a_tiny_stage_two_run_writes_logs_validation_export_and_resume(tmp_path)
     stopped = T.run(_cfg(init="backbone", init_backbone=str(ssl)), samples, val, tmp_path / "stopped")
     short = T.run(_cfg(init="backbone", init_backbone=str(ssl), stop_after=2), samples, val, tmp_path / "short")
     assert short["stopped"] and short["steps"] == 2 and not (tmp_path / "short" / "aur_stage2_best.pt").exists()
+    assert (tmp_path / "short" / "summary_stop_step2.json").is_file() and not (tmp_path / "short" / "summary.json").exists()
+    first_config = (tmp_path / "short" / "run_config.json").read_text()
     resumed = T.run(_cfg(init="backbone", init_backbone=str(ssl)), samples, val, tmp_path / "short", resume=tmp_path / "short" / "resume_step2.pt")
     assert resumed["steps"] == 3 and not resumed["stopped"] and (tmp_path / "short" / "aur_stage2_best.pt").is_file()
+    assert (tmp_path / "short" / "run_config.json").read_text() == first_config                # a resumed invocation never rewrites it
+    assert json.loads((tmp_path / "short" / "run_config_resume_step2.json").read_text())["resumed_from"].endswith("resume_step2.pt")
+    assert json.loads((tmp_path / "short" / "summary.json").read_text())["steps"] == 3
     with pytest.raises(ValueError, match="schedule mismatch"):
         T.run(_cfg(init="backbone", init_backbone=str(ssl), seen_crops=8), samples, val, tmp_path / "short", resume=tmp_path / "short" / "resume_step2.pt")
 
