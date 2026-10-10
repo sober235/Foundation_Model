@@ -16,6 +16,7 @@
 | `g1/G1.md`（`g1/run_20261009_1405/g1_report.json`、`g1/diag/`） | T09 冻结探针：13 宿主线性读出 Stage I 0.286 对随机 0.383（差 −0.097，区间全负）、病灶可分性 0.640 对 0.680 → **G1 不过**；诊断 D1–D3 + 微调探针（Stage II 600 步从 Stage I 骨干 vs 随机骨干）与读法都在 G1.md | **不过**；链在此停下；修 Stage I 还是先跑 C0 待用户定 |
 | `reviews/t10-t11-trainer-review.md` | T10/T11（Stage II/III 训练器 `anatobind/aur/train.py`、`scripts/aur_train.py`、`tests/test_aur_training_contract.py` 17 个测试）的独立评审与修补清单；双进程 gloo DDP 极端监督测试在套件里 | 代码就绪；4 卡 100 步含保存/恢复的验证记录待空卡 |
 | `reviews/t12-eval-infer-review.md` | T12（整卷推理 `anatobind/aur/infer.py`、评估 `anatobind/aur/eval.py`、`scripts/infer_anatobind_brain.py`、`scripts/aur_eval.py`，23 个测试）的独立评审与修补清单（含一条阻塞：autocast 外跑头，已修并在卡上验证） | 代码就绪；评估等 Stage III |
+| `stage2/C0_A_DIAG.md`（`stage2/diag/` 四个诊断脚本与图） | C0 Stage II（随机初始化）A 头学得极慢：训练时 A 点 Dice 第 3000 步 0.111；整卷冒烟 13 宿主宏 Dice 0.066（第 2000 步，CPU，4 例）；不是阈值校准，组织分不开（右白质 74 % 判成右皮层），冻结特征的线性可读性只和灰度 + 位置相当 | 诊断，NOT_EVIDENCE；改不改 Stage II 设计待用户定，C0 照常训练 |
 
 ## T10–T12 的口径（代码层面，尚未跑真实训练）
 
