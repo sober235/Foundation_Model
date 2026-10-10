@@ -9,7 +9,10 @@
 # is kept in crops (steps x 16 / GLOBAL). C0 and C2 must run with the same MB and GLOBAL (PROPOSED, decision Q23).
 # Order: a 100-step Stage II smoke that stops at step 50 and is resumed to 100 (T10 acceptance on real data), Stage II
 # (240k crops), Stage III (80k crops), the evaluation on the validation split (chooses the U thresholds) and on the
-# whole test split. Every failure stops the chain and says so; nothing is deleted or overwritten. Run inside tmux:
+# whole test split, each sharded over all CARDS (scripts/aur_eval.py --shard k/N) and merged once. RESUME_STAGE2 (a
+# resume_step*.pt) with STAGE2_DIR (its run directory) continues a Stage II instead (no smoke): same global batch, so
+# the same schedule, on any card count. MB defaults to the largest of 12, 8, 6 that divides GLOBAL over the cards.
+# Every failure stops the chain and says so; nothing is deleted or overwritten. Run inside tmux:
 #   ARM=c0 CARDS=3 tmux new-window -t anatobind -n c0 "bash scripts/stage23_chain.sh; exec bash"
 set -u
 cd /data0/congcong/code/Project_Doing/foundation_model
@@ -25,7 +28,6 @@ REC=docs/verification/2026-10-09/anatobind_brain_ssl_first
 STAMP=$(date +%Y%m%d_%H%M)
 LOG=$RUNS/${ARM}_chain_$STAMP.log
 GLOBAL=${GLOBAL:-24}
-MB=${MB:-12}
 
 say() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
 LOCK=$RUNS/${ARM}_chain.lock                                     # one chain per arm: a second launch of the same arm exits
@@ -34,7 +36,10 @@ if [ -f "$LOCK" ] && kill -0 "$(cat "$LOCK")" 2>/dev/null; then
 fi
 echo $$ > "$LOCK"
 N=$(echo "$CARDS" | awk -F, '{print NF}')
-[ $((GLOBAL % (MB * N))) -eq 0 ] || { say "global batch $GLOBAL is not a multiple of $MB x $N cards: use 1, 2 or 4 cards"; exit 1; }
+if [ -z "${MB:-}" ]; then
+  for m in 12 8 6; do [ $((GLOBAL % (m * N))) -eq 0 ] && { MB=$m; break; }; done
+fi
+[ -n "${MB:-}" ] && [ $((GLOBAL % (MB * N))) -eq 0 ] || { say "global batch $GLOBAL does not split over $N cards with 12, 8 or 6 crops per card"; exit 1; }
 ACCUM=$((GLOBAL / (MB * N)))
 SCALE=$($PY -c "import math; print(math.sqrt($GLOBAL / 16))")
 lr() { $PY -c "print(f'{$1 * $SCALE:.3e}')"; }
@@ -57,6 +62,14 @@ launch() {   # launch <out> <log> <stage args...>: one torchrun on CARDS (plain 
 COMMON=(--samples "$SAMPLES" --val-patients "$VAL" --microbatch $MB --grad-accum $ACCUM --workers 8)
 say "$ARM chain started on cards $CARDS (world $N, microbatch $MB, accumulation $ACCUM, global $GLOBAL; Stage II ${II_LR[*]}; Stage III ${III_LR[*]})"
 
+if [ -n "${RESUME_STAGE2:-}" ]; then
+  : "${STAGE2_DIR:?STAGE2_DIR=the run directory of RESUME_STAGE2}"
+  STAGE2=$STAGE2_DIR
+  say "Stage II ($ARM) resumed from $RESUME_STAGE2 in $STAGE2"
+  launch "$STAGE2" "$STAGE2.resume_$STAMP.log" --stage II "${INIT[@]}" "${COMMON[@]}" "${II_LR[@]}" --val-every 500 --save-every 500 --log-every 20 --resume "$RESUME_STAGE2"
+  [ -f "$STAGE2/aur_stage2_best.pt" ] || { say "Stage II failed: see $STAGE2.resume_$STAMP.log"; exit 1; }
+  say "Stage II finished: $(tr -d '\n' < "$STAGE2/summary.json" | cut -c1-300)"
+else
 # ---- Stage II smoke: stop at 50, resume to 100 ----
 SMOKE=$RUNS/${ARM}_stage2_smoke_$STAMP
 SMOKE_ARGS=(--stage II "${INIT[@]}" "${COMMON[@]}" "${II_LR[@]}" --max-steps 100 --val-every 50 --save-every 50 --log-every 10 --val-volumes 8)
@@ -73,6 +86,7 @@ say "Stage II ($ARM, 240k crops) -> $STAGE2"
 launch "$STAGE2" "$STAGE2.log" --stage II "${INIT[@]}" "${COMMON[@]}" "${II_LR[@]}" --val-every 500 --save-every 500 --log-every 20
 [ -f "$STAGE2/aur_stage2_best.pt" ] || { say "Stage II failed: see $STAGE2.log"; exit 1; }
 say "Stage II finished: $(tr -d '\n' < "$STAGE2/summary.json" | cut -c1-300)"
+fi
 
 # ---- Stage III ----
 STAGE3=$RUNS/${ARM}_stage3_80k_$STAMP
@@ -81,17 +95,26 @@ launch "$STAGE3" "$STAGE3.log" --stage III --resume-stage2 "$STAGE2/aur_stage2_b
 [ -f "$STAGE3/aur_stage3_best.pt" ] || { say "Stage III failed: see $STAGE3.log"; exit 1; }
 say "Stage III finished: $(tr -d '\n' < "$STAGE3/summary.json" | cut -c1-300)"
 
-# ---- evaluation on the first card: the validation split chooses the U thresholds, then the whole test split ----
-CARD=${CARDS%%,*}
+# ---- evaluation, sharded over all cards: the validation split chooses the U thresholds, then the whole test split ----
+evaluate() {   # evaluate <split> <out> [extra args]: one shard per card, then one merge
+  local split=$1 out=$2; shift 2
+  local k=0 pids=() shards=()
+  for card in ${CARDS//,/ }; do
+    CUDA_VISIBLE_DEVICES=$card $PY scripts/aur_eval.py --checkpoint "$STAGE3/aur_stage3_best.pt" --samples "$SAMPLES" --split "$split" --val-patients "$VAL" \
+      --out "$out.shard$k" --gpu 0 --batch-size 2 --shard "$k/$N" > "$out.shard$k.log" 2>&1 &
+    pids+=($!); shards+=("$out.shard$k"); k=$((k + 1))
+  done
+  for p in "${pids[@]}"; do wait "$p" || { say "a shard of the $split evaluation failed: see $out.shard*.log"; return 1; }; done
+  $PY scripts/aur_eval_merge.py --shards "${shards[@]}" --samples "$SAMPLES" --split "$split" --val-patients "$VAL" "$@" --out "$out" > "$out.log" 2>&1 \
+    || { say "the merge of the $split evaluation failed: see $out.log"; return 1; }
+}
 EVAL_VAL=$REC/eval/${ARM}_val_$STAMP
-say "evaluation on the validation split (card $CARD) -> $EVAL_VAL"
-CUDA_VISIBLE_DEVICES=$CARD $PY scripts/aur_eval.py --checkpoint "$STAGE3/aur_stage3_best.pt" --samples "$SAMPLES" --split val --val-patients "$VAL" --out "$EVAL_VAL" --gpu 0 --batch-size 2 > "$EVAL_VAL.log" 2>&1 \
-  || { say "validation-split evaluation failed: see $EVAL_VAL.log"; exit 1; }
+say "evaluation on the validation split, $N shards on cards $CARDS -> $EVAL_VAL"
+evaluate val "$EVAL_VAL" || exit 1
 THR=$($PY -c "import json; a=json.load(open('$EVAL_VAL/aggregate.json')); print(' '.join(f'--u-threshold {s}={e[\"thr\"]}' for s,e in a['u']['per_source'].items() if e.get('thr') is not None))")
 say "U thresholds from the validation split: $THR"
 EVAL_TEST=$REC/eval/${ARM}_test_$STAMP
-say "evaluation on the whole test split (card $CARD) -> $EVAL_TEST"
-CUDA_VISIBLE_DEVICES=$CARD $PY scripts/aur_eval.py --checkpoint "$STAGE3/aur_stage3_best.pt" --samples "$SAMPLES" --split test --out "$EVAL_TEST" --gpu 0 --batch-size 2 $THR > "$EVAL_TEST.log" 2>&1 \
-  || { say "test-split evaluation failed: see $EVAL_TEST.log"; exit 1; }
+say "evaluation on the whole test split, $N shards on cards $CARDS -> $EVAL_TEST"
+evaluate test "$EVAL_TEST" $THR || exit 1
 say "evaluation finished: $EVAL_TEST/REPORT.md"
 say "$ARM chain done"
