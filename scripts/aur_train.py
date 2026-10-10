@@ -45,6 +45,7 @@ def parser():
     ap.add_argument("--lr-heads", type=float, default=None)
     ap.add_argument("--lr-relation", type=float, default=None)
     ap.add_argument("--warmup-steps", type=int, default=None)
+    ap.add_argument("--backbone-warm-steps", type=int, default=None, help="Stage II: steps at a tenth of the backbone rate (default the stage's)")
     ap.add_argument("--weight-decay", type=float, default=DEFAULTS["weight_decay"])
     ap.add_argument("--val-every", type=int, default=DEFAULTS["val_every"])
     ap.add_argument("--val-volumes", type=int, default=DEFAULTS["val_volumes"])
@@ -65,6 +66,7 @@ def config_from_args(a):
     stage = stage_defaults(a.stage)
     cfg["seen_crops"] = a.seen_crops if a.seen_crops is not None else stage["seen_crops"]
     cfg["warmup_steps"] = a.warmup_steps if a.warmup_steps is not None else stage["warmup_steps"]
+    cfg["backbone_warm_steps"] = a.backbone_warm_steps if a.backbone_warm_steps is not None else stage["backbone_warm_steps"]
     lrs = dict(stage["lrs"])
     for name in lrs:
         value = getattr(a, f"lr_{name}")

@@ -261,7 +261,10 @@ def test_cli_contract():
         parser.parse_args(["--stage", "I", "--samples", "s", "--val-patients", "v", "--out", "o"])
     a = parser.parse_args(["--stage", "II", "--init", "random", "--samples", "s", "--val-patients", "v", "--out", "o", "--stop-after", "50", "--grad-accum", "4"])
     cfg = _load("aur_train").config_from_args(a)
-    assert cfg["stop_after"] == 50 and cfg["grad_accum"] == 4
+    assert cfg["stop_after"] == 50 and cfg["grad_accum"] == 4 and cfg["backbone_warm_steps"] == 1000
+    a = parser.parse_args(["--stage", "II", "--init", "random", "--samples", "s", "--val-patients", "v", "--out", "o", "--backbone-warm-steps", "667", "--warmup-steps", "667"])
+    cfg = _load("aur_train").config_from_args(a)
+    assert cfg["backbone_warm_steps"] == 667 and cfg["warmup_steps"] == 667
     assert _load("aur_train").config_from_args(parser.parse_args(["--stage", "II", "--samples", "s", "--val-patients", "v", "--out", "o"]))["stop_after"] is None
 
 
