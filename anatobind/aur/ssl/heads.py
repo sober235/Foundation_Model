@@ -1,30 +1,43 @@
 """Stage I heads (SSL-first plan §3.2): the masked-patch decoder and the MIM loss.
 
-The decoder reads F1 (stride = the patch, 64 channels) and predicts, for every patch, its 2 x 4 x 4 normalised voxel
-intensities with two 1 x 1 x 1 convolutions; the prediction is rearranged to a voxel image. It is a light head that is
-never carried into Stage II. The loss is a Huber loss on the hidden foreground voxels of each sample, normalised per
-sample (a big head and a small head weigh the same), averaged over the samples that hide anything."""
+The decoder reads all four levels of the backbone: every level is projected to `width` channels by a 1 x 1 x 1
+convolution, the coarser map is upsampled (trilinear) to the next finer grid and added (top-down, F4 -> F1), and two
+1 x 1 x 1 convolutions predict, for every F1 patch, its 2 x 4 x 4 normalised voxel intensities, rearranged to a voxel
+image. Every stage therefore receives the reconstruction gradient: the first Stage I run (2026-10-09) decoded from F1
+alone, which left stages 2-4 (10 of the 12 Swin blocks) to the contrastive term and failed gate G1. The decoder never
+reads the input image, only the levels, so the hidden voxels stay out of reach. It is a light head that is never
+carried into Stage II. The loss is a Huber loss on the hidden foreground voxels of each sample, normalised per sample
+(a big head and a small head weigh the same), averaged over the samples that hide anything."""
 import math
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from anatobind.aur.swin import PATCH
+from anatobind.aur.swin import CHANNELS, PATCH
 
 HUBER_DELTA = 1.0
 
 
 class MaskedPatchDecoder(nn.Module):
-    def __init__(self, in_channels=64, patch=PATCH, hidden=None):
+    def __init__(self, channels=CHANNELS, patch=PATCH, width=64, hidden=None):
         super().__init__()
         self.patch = tuple(patch)
-        hidden = hidden or in_channels
-        self.net = nn.Sequential(nn.Conv3d(in_channels, hidden, 1), nn.GELU(), nn.Conv3d(hidden, math.prod(self.patch), 1))
+        self.channels = tuple(channels)
+        hidden = hidden or width
+        self.lateral = nn.ModuleList(nn.Conv3d(c, width, 1) for c in self.channels)
+        self.net = nn.Sequential(nn.GELU(), nn.Conv3d(width, hidden, 1), nn.GELU(), nn.Conv3d(hidden, math.prod(self.patch), 1))
 
-    def forward(self, f1):
-        """f1 (B, C, D', H', W') -> (B, 1, D' p0, H' p1, W' p2) predicted intensities."""
-        return patches_to_voxels(self.net(f1), self.patch)
+    def forward(self, levels):
+        """levels: the backbone's list of {"feat": (B, C_k, D_k, H_k, W_k)}, finest first -> (B, 1, D1 p0, H1 p1, W1 p2)
+        predicted intensities on the F1 grid."""
+        if len(levels) != len(self.lateral):
+            raise ValueError(f"the decoder reads {len(self.lateral)} levels, got {len(levels)}")
+        x = self.lateral[-1](levels[-1]["feat"])
+        for k in range(len(levels) - 2, -1, -1):
+            lat = self.lateral[k](levels[k]["feat"])
+            x = lat + F.interpolate(x.float(), size=lat.shape[2:], mode="trilinear", align_corners=False).to(lat.dtype)
+        return patches_to_voxels(self.net(x), self.patch)
 
 
 def patches_to_voxels(x, patch=PATCH):

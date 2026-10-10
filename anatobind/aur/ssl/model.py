@@ -2,7 +2,8 @@
 heads, and the Stage I objective L_I = L_MIM + λ_c L_contrast.
 
 Each of the two views gets its own block mask (drawn here, on the device, from a generator seeded per step and rank),
-goes through the backbone with the hidden patches replaced, and is reconstructed by the masked-patch decoder; the MIM
+goes through the backbone with the hidden patches replaced, and is reconstructed by the masked-patch decoder from all
+four levels (every stage learns from the reconstruction; see heads.py for why); the MIM
 loss of a view reads only its own hidden foreground voxels against the view's own (unmasked) intensities, so neither
 view ever supplies the other's targets. The projector pools F4 of each masked view; the InfoNCE pairs the two views of
 a crop against the other patients' crops of the global batch. Only the backbone is carried into Stage II."""
@@ -28,13 +29,13 @@ class StageOne(nn.Module):
             raise KeyError(f"unknown Stage I options {sorted(unknown)}")
         self.cfg = cfg
         self.backbone = SwinBackbone(cfg["embed"], cfg["depths"], cfg["heads"], cfg["window"], cfg["patch"], use_checkpoint=cfg["use_checkpoint"])
-        self.decoder = MaskedPatchDecoder(self.backbone.channels[0], cfg["patch"])
+        self.decoder = MaskedPatchDecoder(self.backbone.channels, cfg["patch"], width=self.backbone.channels[0])
         self.projector = Projector(self.backbone.channels[3], self.backbone.channels[3], cfg["contrast_dim"])
 
     def view(self, image, valid, coords, local, hidden):
         """One masked view -> (reconstruction (B, 1, D, H, W), projection (B, d), levels)."""
         levels = self.backbone(image, valid, coords, local, visible=~hidden)
-        return self.decoder(levels[0]["feat"]), self.projector(levels[3]["feat"], levels[3]["valid"]), levels
+        return self.decoder(levels), self.projector(levels[3]["feat"], levels[3]["valid"]), levels
 
     def forward(self, batch, generator):
         """batch: view1, view2 (B, 1, D, H, W); valid (B, D, H, W); coords, local (B, 3, D, H, W); spacing (B, 3) mm (z, y, x);

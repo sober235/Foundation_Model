@@ -225,15 +225,18 @@ def load_backbones(checkpoint, device, random_seed=0, **kwargs):
     return out, meta
 
 
-def run(rows, val_patients, checkpoint, out_dir, device, crop, n_calibration=96, n_validation=48, n_lesion=48, seeds=(0, 1, 2), backbone_kwargs=None):
+def run(rows, val_patients, checkpoint, out_dir, device, crop, n_calibration=96, n_validation=48, n_lesion=48, seeds=(0, 1, 2), backbone_kwargs=None,
+        lesion=True):
+    """The G1 gate (lesion=True), or a host-only probe of a running Stage I (lesion=False: no lesion arm, no verdict;
+    used to decide early whether a run is heading the right way, 2026-10-10)."""
     out_dir = Path(out_dir)
     if out_dir.exists():
         raise FileExistsError(f"{out_dir} exists")
     out_dir.mkdir(parents=True)
     backbones, meta = load_backbones(checkpoint, device, **(backbone_kwargs or {}))
     cal_rows, val_rows = select_rows(rows, val_patients, n_calibration, n_validation, seed=11)
-    lcal_rows, lval_rows = select_rows(rows, val_patients, n_lesion, n_lesion, seed=12, lesion_only=True)
-    report = {"checkpoint": None if checkpoint is None else str(checkpoint), "checkpoint_meta": meta, "crop": list(crop),
+    lcal_rows, lval_rows = select_rows(rows, val_patients, n_lesion, n_lesion, seed=12, lesion_only=True) if lesion else ([], [])
+    report = {"mode": "gate" if lesion else "host-only probe", "checkpoint": None if checkpoint is None else str(checkpoint), "checkpoint_meta": meta, "crop": list(crop),
               "n_calibration_crops": len(cal_rows), "n_validation_crops": len(val_rows), "n_lesion_calibration": len(lcal_rows), "n_lesion_validation": len(lval_rows),
               "seeds": list(seeds), "thresholds": {"dice_gain": DICE_GAIN, "auc_tolerance": AUC_TOLERANCE, "status": "PROPOSED"}, "arms": {}}
     per_crop = {}
@@ -248,6 +251,10 @@ def run(rows, val_patients, checkpoint, out_dir, device, crop, n_calibration=96,
             arm["host"]["seeds"].append({"seed": s, "macro_dice": macro, "per_host_dice": [None if math.isnan(float(d)) else float(d) for d in dice]})
             per_crop[(name, s)] = pc
         arm["host"]["macro_dice_mean"] = float(np.nanmean([x["macro_dice"] for x in arm["host"]["seeds"]]))
+        if not lesion:
+            arm["lesion"] = None
+            report["arms"][name] = arm
+            continue
         lcal = gather_probe_data(bb, lcal_rows, device, crop, rng_seed=23, lesion=True)
         lval = gather_probe_data(bb, lval_rows, device, crop, rng_seed=24, lesion=True)
         for s in seeds:
@@ -259,10 +266,21 @@ def run(rows, val_patients, checkpoint, out_dir, device, crop, n_calibration=96,
         report["arms"][name] = arm
         if name == "ssl":
             report["val_patients_used"] = len({r["patient"] for r in val_rows})
+    if "val_patients_used" not in report:
+        report["val_patients_used"] = len({r["patient"] for r in val_rows})
     patients = [r["patient"] for r in val_rows]
     diffs = [bootstrap_difference(per_crop[("ssl", s)], per_crop[("random", s)], patients, seed=s) for s in seeds]
     gain = report["arms"]["ssl"]["host"]["macro_dice_mean"] - report["arms"]["random"]["host"]["macro_dice_mean"]
     lo = min(d["ci95"][0] for d in diffs)
+    if not lesion:
+        report["g1"] = {"macro_dice_gain": gain, "gain_bootstrap_by_seed": diffs, "gain_ci_low_min": lo,
+                        "host_macro_ssl": report["arms"]["ssl"]["host"]["macro_dice_mean"],
+                        "host_macro_random": report["arms"]["random"]["host"]["macro_dice_mean"],
+                        "host_pass": None, "lesion_pass": None, "pass": None,
+                        "note": "host-only probe of a running Stage I: not the G1 verdict",
+                        "evidence": "NOT_EVIDENCE: SynthSeg-derived pseudo-labels; engineering probe only"}
+        (out_dir / "g1_report.json").write_text(json.dumps(report, indent=1, default=str))
+        return report
     auc_ssl, auc_rnd = report["arms"]["ssl"]["lesion"]["auc_mean"], report["arms"]["random"]["lesion"]["auc_mean"]
     report["g1"] = {"macro_dice_gain": gain, "gain_bootstrap_by_seed": diffs, "gain_ci_low_min": lo,
                     "host_pass": bool(gain >= DICE_GAIN and lo > 0.0),

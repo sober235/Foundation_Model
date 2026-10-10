@@ -40,6 +40,38 @@ def test_stage_one_forward_backward_and_statistics():
     assert torch.equal(a["mim"], b["mim"])                                        # the same generator seed gives the same masks
 
 
+def test_the_reconstruction_alone_trains_every_stage_of_the_backbone():
+    """The reconstruction must reach all four stages (the 2026-10-09 G1 failure: only stage 1 learnt from it)."""
+    torch.manual_seed(0)
+    model = M.StageOne(**SMALL, mask_ratio=0.5, block_mm=(8.0, 16.0), contrast_weight=0.0)
+    out = model(_batch(), torch.Generator().manual_seed(0))
+    out["mim"].backward()
+    bb = model.backbone
+    assert bb.patch_embed.weight.grad.abs().sum() > 0 and bb.local_embed[0].weight.grad.abs().sum() > 0
+    for i, stage in enumerate(bb.stages):
+        grads = [p.grad for p in stage.parameters()]
+        assert all(g is not None for g in grads) and sum(float(g.abs().sum()) for g in grads) > 0, f"stage {i + 1} gets no reconstruction gradient"
+        if stage.merge is not None:
+            assert any(p.grad.abs().sum() > 0 for p in stage.merge.parameters()), f"merge after stage {i + 1}"
+
+
+def test_the_reconstruction_never_sees_a_hidden_voxel():
+    torch.manual_seed(0)
+    model = M.StageOne(**SMALL).eval()
+    batch = _batch(b=1)
+    from anatobind.aur.ssl.masking import batch_masks, foreground_patches, hidden_voxels
+    fg = foreground_patches(batch["view1"], batch["valid"])
+    hidden = batch_masks(fg, torch.Generator().manual_seed(3), ratio=0.5, block_mm=(8.0, 16.0), spacing_mm=(2.0, 1.0, 1.0))
+    assert hidden.any()
+    with torch.no_grad():
+        ref, _, _ = model.view(batch["view1"], batch["valid"], batch["coords"], batch["local"], hidden)
+        tampered = batch["view1"].clone()
+        hv = hidden_voxels(hidden)
+        tampered[:, 0][hv] = torch.rand(int(hv.sum())) * 4 - 2
+        same, _, _ = model.view(tampered, batch["valid"], batch["coords"], batch["local"], hidden)
+    assert torch.equal(ref, same)
+
+
 def test_effective_rank_separates_spread_from_collapse():
     spread = torch.randn(64, 16)
     collapsed = torch.randn(64, 1) @ torch.randn(1, 16)

@@ -1,4 +1,5 @@
 # tests/test_aur_ssl_heads.py
+import pytest
 import torch
 
 import anatobind.aur.ssl.heads as H
@@ -11,13 +12,21 @@ def test_patches_and_voxels_are_inverse_rearrangements():
     assert p[0, 0, 0, 0, 0] == x[0, 0, 0, 0, 0] and p[0, 1, 0, 0, 0] == x[0, 0, 0, 0, 1] and p[0, 4, 0, 0, 0] == x[0, 0, 0, 1, 0] and p[0, 16, 0, 0, 0] == x[0, 0, 1, 0, 0]
 
 
-def test_the_decoder_predicts_a_voxel_image_from_f1():
-    dec = H.MaskedPatchDecoder(in_channels=8)
-    f1 = torch.randn(2, 8, 3, 5, 5, requires_grad=True)
-    out = dec(f1)
+def _levels(b=2, channels=(8, 16, 32, 64), grids=((3, 5, 5), (2, 3, 3), (1, 2, 2), (1, 1, 1))):
+    return [{"feat": torch.randn(b, c, *g, requires_grad=True)} for c, g in zip(channels, grids)]
+
+
+def test_the_decoder_reads_every_level_and_predicts_a_voxel_image():
+    """The 2026-10-09 G1 failure: a decoder on F1 alone left stages 2-4 without any reconstruction gradient."""
+    dec = H.MaskedPatchDecoder(channels=(8, 16, 32, 64))
+    levels = _levels()
+    out = dec(levels)
     assert out.shape == (2, 1, 6, 20, 20)
-    out.sum().backward()
-    assert f1.grad is not None
+    out.square().sum().backward()
+    for i, lv in enumerate(levels):
+        assert lv["feat"].grad is not None and lv["feat"].grad.abs().sum() > 0, f"level {i + 1} gets no gradient"
+    with pytest.raises(ValueError, match="levels"):
+        dec(levels[:3])
 
 
 def test_mim_loss_reads_the_weighted_voxels_only_and_normalises_per_sample():

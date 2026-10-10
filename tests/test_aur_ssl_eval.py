@@ -70,3 +70,18 @@ def test_the_probe_run_writes_a_g1_report(tmp_path):
     assert saved["thresholds"]["status"] == "PROPOSED" and saved["checkpoint_meta"]["step"] == 1
     with pytest.raises(FileExistsError):
         E.run(rows, val, ck, tmp_path / "g1", torch.device("cpu"), crop=(8, 16, 16), backbone_kwargs=SMALL)
+
+
+def test_a_host_only_probe_skips_the_lesion_arm_and_gives_no_verdict(tmp_path):
+    """The early probe of a running Stage I (2026-10-10): host readout only, one seed, no G1 verdict."""
+    rows, val = _rows(tmp_path)
+    ck = CK.export_backbone(tmp_path / "ssl.pt", SwinBackbone(**SMALL), {"stage": "I", "step": 1000})
+    report = E.run(rows, val, ck, tmp_path / "probe", torch.device("cpu"), crop=(8, 16, 16), n_calibration=4, n_validation=2, seeds=(0,),
+                   backbone_kwargs=SMALL, lesion=False)
+    assert report["mode"] == "host-only probe" and set(report["arms"]) == {"ssl", "random"}
+    assert report["arms"]["ssl"]["lesion"] is None and report["arms"]["random"]["lesion"] is None
+    g1 = report["g1"]
+    assert g1["pass"] is None and g1["lesion_pass"] is None and "not the G1 verdict" in g1["note"]
+    assert np.isfinite(g1["macro_dice_gain"]) and g1["host_macro_ssl"] == report["arms"]["ssl"]["host"]["macro_dice_mean"]
+    full = E.run(rows, val, ck, tmp_path / "full", torch.device("cpu"), crop=(8, 16, 16), n_calibration=4, n_validation=2, n_lesion=3, seeds=(0,), backbone_kwargs=SMALL)
+    assert full["mode"] == "gate" and full["g1"]["pass"] in (True, False)
