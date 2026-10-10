@@ -178,3 +178,20 @@ def test_eval_script_runs_end_to_end_without_the_reference(tmp_path):
     agg = json.loads((out / "aggregate.json").read_text())
     assert agg["n_results"] == 3 and agg["run"]["n_rows"] == 3 and agg["u"]["gate"]["sources_judged"] == 0 and "pdgm/FLAIR" in agg["u"]["per_source_sequence"]
     assert (out / "REPORT.md").is_file() and (out / "reference.json").read_text().strip() == "{}" and (out / "level_r_sheet.csv").is_file()
+
+    # sharded: two shards on "two cards", then one merge, must give the same aggregate as the single run (2026-10-10)
+    for k in (0, 1):
+        assert mod.main(["--checkpoint", str(export), "--samples", str(samples), "--out", str(tmp_path / f"shard{k}"), "--cpu", "--crop", "8", "16", "16",
+                         "--no-e2e", "--shard", f"{k}/2"]) == 0
+    s0, s1 = (json.loads((tmp_path / f"shard{k}" / "cases.json").read_text()) for k in (0, 1))
+    assert len(s0) + len(s1) == 3 and not {r["case"] for r in s0} & {r["case"] for r in s1}
+    assert not (tmp_path / "shard0" / "aggregate.json").exists()                  # a shard holds cases only
+    merge = _load("aur_eval_merge")
+    merged = tmp_path / "merged"
+    assert merge.main(["--shards", str(tmp_path / "shard0"), str(tmp_path / "shard1"), "--samples", str(samples), "--split", "test", "--out", str(merged), "--no-reference"]) == 0
+    agg_m = json.loads((merged / "aggregate.json").read_text())
+    for k in ("a", "u", "r", "s"):
+        assert json.dumps(agg_m[k], sort_keys=True) == json.dumps(agg[k], sort_keys=True), k
+    assert agg_m["run"]["n_shards"] == 2 and (merged / "REPORT.md").is_file()
+    with pytest.raises(ValueError, match="rows"):
+        merge.main(["--shards", str(tmp_path / "shard0"), "--samples", str(samples), "--split", "test", "--out", str(tmp_path / "half"), "--no-reference"])

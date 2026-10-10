@@ -38,6 +38,8 @@ def parser():
     ap.add_argument("--u-threshold", action="append", default=[], metavar="SOURCE=THR",
                     help="a score threshold chosen on the validation split, per source (else the threshold is selected on this set and labelled so)")
     ap.add_argument("--no-e2e", action="store_true", help="skip binding the predicted lesions (the end-to-end R track)")
+    ap.add_argument("--shard", default=None, metavar="K/N", help="evaluate rows K, K+N, K+2N, ... only and write their cases (no reference, no aggregate); "
+                    "scripts/aur_eval_merge.py merges the N shards")
     dev = ap.add_mutually_exclusive_group(required=True)
     dev.add_argument("--gpu", type=int, default=None, help="CUDA device index")
     dev.add_argument("--cpu", action="store_true")
@@ -82,8 +84,14 @@ def main(argv=None):
         source, thr = item.split("=")
         fixed[source] = float(thr)
     rows = select_rows(json.loads(a.samples.read_text()), a.split, a.val_patients, a.sources, a.limit)
+    shard = None
+    if a.shard:
+        k, n = (int(x) for x in a.shard.split("/"))
+        if not 0 <= k < n:
+            raise ValueError(f"--shard {a.shard}: K must be in 0..N-1")
+        shard, rows = (k, n), rows[k::n]
     reference = {}
-    if not a.no_reference:                                         # before the inference loop: a missing file fails now, not hours later
+    if not a.no_reference and shard is None:                                         # before the inference loop: a missing file fails now, not hours later
         for source in sorted({r["source"] for r in rows if r["source"] in E.REFERENCE}):
             cases = sorted({r["case"] for r in rows if r["source"] == source and r.get("u_supervised")})
             if not cases:
@@ -98,6 +106,16 @@ def main(argv=None):
         results.append(E.evaluate_case(model, r, crop, device, batch_size=a.batch_size, instance_threshold=a.instance_threshold, bind_predicted=not a.no_e2e))
         if (i + 1) % 10 == 0 or i + 1 == len(rows):
             print(f"[{i + 1}/{len(rows)}] {r['source']} {r['case']} {r['sequence']} elapsed {time.time() - t0:.0f} s", flush=True)
+    if shard is not None:                                          # a shard: the cases only; the merge builds the reference and the report
+        a.out.mkdir(parents=True, exist_ok=False)
+        (a.out / "cases.json").write_text(json.dumps(results, indent=1, default=str))
+        (a.out / "shard.json").write_text(json.dumps({"shard": list(shard), "checkpoint": str(a.checkpoint), "checkpoint_sha256": file_sha256(a.checkpoint),
+                                                      "code_sha": code_sha(), "split": a.split, "samples": str(a.samples), "samples_sha256": file_sha256(a.samples),
+                                                      "crop": list(crop), "n_rows": len(rows), "sources": a.sources, "limit": a.limit,
+                                                      "instance_threshold": a.instance_threshold, "stage": meta.get("stage"), "e2e": not a.no_e2e,
+                                                      "seconds": round(time.time() - t0, 1)}, indent=1))
+        print(f"shard {shard[0]}/{shard[1]}: {len(results)} rows", flush=True)
+        return 0
     agg = E.aggregate(results, reference, fixed_thresholds=fixed)
     agg["run"] = {"checkpoint": str(a.checkpoint), "checkpoint_sha256": file_sha256(a.checkpoint), "code_sha": code_sha(), "split": a.split,
                   "samples": str(a.samples), "samples_sha256": file_sha256(a.samples), "crop": list(crop), "n_rows": len(rows),
