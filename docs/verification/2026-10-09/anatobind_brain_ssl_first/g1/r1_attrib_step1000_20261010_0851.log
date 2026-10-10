@@ -1,0 +1,9 @@
+{"full": 0.042698051780462265, "no_f1": 0.04515952989459038, "f1_only": 0.10346507281064987, "baseline": 0.0717359408736229, "hidden_voxels": 9282586}
+stem            MIM 7.54e-04  contrast 1.53e-03  MIM/contrast 0.49
+stage1.blocks   MIM 4.27e-04  contrast 4.34e-04  MIM/contrast 0.98
+stage1.merge    MIM 1.93e-04  contrast 8.76e-05  MIM/contrast 2.21
+stage2.blocks   MIM 5.78e-05  contrast 2.93e-05  MIM/contrast 1.97
+stage2.merge    MIM 2.12e-05  contrast 2.72e-05  MIM/contrast 0.78
+stage3.blocks   MIM 4.53e-06  contrast 1.35e-05  MIM/contrast 0.34
+stage3.merge    MIM 7.72e-06  contrast 3.95e-05  MIM/contrast 0.20
+stage4.blocks   MIM 3.37e-06  contrast 2.95e-05  MIM/contrast 0.11
