@@ -1,0 +1,60 @@
+{
+ "checkpoint": "/data2/congcong/data/FM_data/derived/aur/ssl_runs/stage1_r1_320k_20261010_0851/resume_step2000.pt",
+ "step": 2000,
+ "n_crops": 12,
+ "gradient_balance": {
+  "parts": {
+   "stem": {
+    "mim": 0.0007485956302843988,
+    "contrast": 0.00030595448333770037,
+    "ratio_mim_over_contrast": 2.446754896734521
+   },
+   "stage1.blocks": {
+    "mim": 0.00037489275564439595,
+    "contrast": 9.588259126758203e-05,
+    "ratio_mim_over_contrast": 3.9099147268368357
+   },
+   "stage1.merge": {
+    "mim": 0.00012978239101357758,
+    "contrast": 1.5774858184158802e-05,
+    "ratio_mim_over_contrast": 8.227166894210546
+   },
+   "stage2.blocks": {
+    "mim": 4.639699909603223e-05,
+    "contrast": 6.8318213379825465e-06,
+    "ratio_mim_over_contrast": 6.791307442143002
+   },
+   "stage2.merge": {
+    "mim": 1.0000469046644866e-05,
+    "contrast": 7.3617889029264916e-06,
+    "ratio_mim_over_contrast": 1.3584292049816091
+   },
+   "stage3.blocks": {
+    "mim": 1.68754138485383e-06,
+    "contrast": 5.2541386139637325e-06,
+    "ratio_mim_over_contrast": 0.32118326310785045
+   },
+   "stage3.merge": {
+    "mim": 5.174077159608714e-06,
+    "contrast": 1.9411943867453374e-05,
+    "ratio_mim_over_contrast": 0.2665409087795541
+   },
+   "stage4.blocks": {
+    "mim": 1.6241700677710469e-06,
+    "contrast": 1.4944048416509759e-05,
+    "ratio_mim_over_contrast": 0.1086834050923383
+   }
+  },
+  "mim": 0.03629680722951889,
+  "contrast": 0.19754576683044434,
+  "contrast_weight": 0.1
+ },
+ "reconstruction": {
+  "full": 0.03765711933374405,
+  "no_f1": 0.04002698138356209,
+  "f1_only": 0.10936359316110611,
+  "baseline": 0.0717359408736229,
+  "hidden_voxels": 9282586
+ },
+ "evidence": "diagnostic only (attribution of a Stage I round), not a gate"
+}

@@ -1,0 +1,35 @@
+{
+ "macro_dice_gain": -0.07029270132382709,
+ "gain_bootstrap_by_seed": [
+  {
+   "mean": -0.0653948218524456,
+   "ci95": [
+    -0.08264082819223403,
+    -0.04743301123380662
+   ]
+  },
+  {
+   "mean": -0.07109762844443321,
+   "ci95": [
+    -0.09077031835913658,
+    -0.051914975792169575
+   ]
+  },
+  {
+   "mean": -0.07345367449522018,
+   "ci95": [
+    -0.09108385518193245,
+    -0.05454376935958863
+   ]
+  }
+ ],
+ "gain_ci_low_min": -0.09108385518193245,
+ "host_macro_ssl": 0.31312588850657147,
+ "host_macro_random": 0.38341858983039856,
+ "host_pass": null,
+ "lesion_pass": null,
+ "pass": null,
+ "note": "host-only probe of a running Stage I: not the G1 verdict",
+ "evidence": "NOT_EVIDENCE: SynthSeg-derived pseudo-labels; engineering probe only"
+}
+host macro Dice: ssl 0.3131 random 0.3834
