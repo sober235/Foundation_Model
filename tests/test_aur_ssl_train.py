@@ -89,3 +89,38 @@ def test_probe_mode_times_steps_without_validation(tmp_path):
     assert summary["steps"] == 3 and summary["step_s_mean"] > 0 and (out / "probe.json").is_file() and (out / "probe_config.json").is_file()
     assert not (out / "val.jsonl").exists() and not any(out.glob("ssl_stage1_*.pt"))
     assert _load("aur_ssl_probe").main.__name__ == "main" and _load("aur_ssl_train").parser().parse_args(["--samples", "a", "--out", "b"]).seen_crops == 320000
+
+
+# ---- 2026-10-10: a resumed Stage I run continues the run (round 2 was taken down at step ~3870 by the NCCL watchdog) ----
+
+def _batches(loader):
+    return [{k: v for k, v in b.items() if torch.is_tensor(v)} for b in loader]
+
+
+def test_a_skipped_loader_continues_the_draw_sequence(tmp_path):
+    m = _manifest(tmp_path)
+    rows = [r for r in json.loads(m.read_text()) if r["ssl_split"] == "train"]
+    cfg = {**T.DEFAULTS, **_cfg(seen_crops=16)}
+    full = _batches(T.make_loader(rows, cfg, 0, 1, 0, 0)[0])
+    rest = _batches(T.make_loader(rows, cfg, 0, 1, 0, 0, skip_batches=3)[0])
+    assert len(full) > 3 and len(rest) == len(full) - 3
+    assert all(set(a) == set(b) and all(torch.equal(a[k], b[k]) for k in a) for a, b in zip(full[3:], rest))
+
+
+def test_a_resumed_run_skips_its_used_batches_and_keeps_its_first_config_and_best(tmp_path, monkeypatch):
+    m = _manifest(tmp_path)
+    out = tmp_path / "run"
+    T.run(_cfg(seen_crops=8, max_steps=2), m, out)
+    first_config = (out / "run_config.json").read_text()
+    first_best = json.loads((out / "best.json").read_text())
+    skips, real = [], T.make_loader
+
+    def spy(*a, **k):
+        skips.append(k.get("skip_batches", 0))
+        return real(*a, **k)
+    monkeypatch.setattr(T, "make_loader", spy)
+    monkeypatch.setattr(T, "validate", lambda *a, **k: {"mim": first_best["mim"] + 1.0, "val_crops": 2})   # every later validation is worse
+    T.run(_cfg(seen_crops=8), m, out, resume=out / "resume_step2.pt")
+    assert skips[0] == 2                                                         # 2 steps x 1 micro-batch each
+    assert (out / "run_config.json").read_text() == first_config and (out / "run_config_resume_step2.json").is_file()
+    assert json.loads((out / "best.json").read_text())["step"] == first_best["step"] == 2

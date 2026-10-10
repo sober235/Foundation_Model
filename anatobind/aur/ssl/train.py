@@ -51,14 +51,18 @@ def lr_lambda(step, warmup, total):
     return 0.5 * (1.0 + math.cos(math.pi * min(t, 1.0)))
 
 
-def make_loader(rows, cfg, rank, world, epoch, device_count):
+def make_loader(rows, cfg, rank, world, epoch, device_count, skip_batches=0):
     """A loader over the train rows: weighted draws with replacement, this rank's and epoch's seed; one volume per
-    micro-batch when crops_per_volume == microbatch (the common case), else the nearest number of volumes."""
+    micro-batch when crops_per_volume == microbatch (the common case), else the nearest number of volumes. One epoch's
+    draws cover the whole budget, so a resumed run passes the micro-batches it already used (skip_batches) and continues
+    the same draw sequence instead of replaying it from the start."""
     weights, share = source_weights(rows, cfg["hcp_cap"])
     volumes_per_batch = max(1, cfg["microbatch"] // cfg["crops_per_volume"])
     draws = max(volumes_per_batch, (cfg["seen_crops"] // max(world, 1) // cfg["crops_per_volume"]) + volumes_per_batch)
     g = torch.Generator().manual_seed(int(np.random.SeedSequence([cfg["seed"], epoch, rank]).generate_state(1)[0]))
     sampler = WeightedRandomSampler(torch.as_tensor(weights, dtype=torch.double), num_samples=draws, replacement=True, generator=g)
+    if skip_batches:
+        sampler = list(sampler)[int(skip_batches) * volumes_per_batch:]
     ds = SSLDataset(rows, cfg["crop"], cfg["crops_per_volume"], do_rotate=not cfg["no_rotate"], seed=cfg["seed"] + 1000 * rank)
     ds.set_epoch(epoch)
     loader = DataLoader(ds, batch_size=volumes_per_batch, sampler=sampler, num_workers=cfg["workers"], collate_fn=collate_ssl,
@@ -135,14 +139,17 @@ def run(cfg, samples, out_dir, resume=None):
         total_steps = min(total_steps, int(cfg["max_steps"]))
     opt = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"], betas=(0.9, 0.95))
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: lr_lambda(s, cfg["warmup_steps"], total_steps))
-    step, seen = 0, 0
+    step, seen, skip = 0, 0, 0
     if resume is not None:
         meta, _ = CK.load_resume(resume, model, opt, sched, map_location=device)
         step, seen = int(meta["step"]), int(meta["seen_crops"])
+        skip = step * cfg["grad_accum"]                                    # the micro-batches every rank has already used
     ddp = DistributedDataParallel(model, device_ids=[local_rank] if device.type == "cuda" else None) if world > 1 else model
     val_batches = [] if cfg["probe"] else validation_batches(val_rows, cfg, device)
     log_path = out_dir / f"log_rank{rank}.jsonl"
     best = {"mim": float("inf"), "step": None, "path": None}
+    if resume is not None and (out_dir / "best.json").exists():
+        best = json.loads((out_dir / "best.json").read_text())
     times, waits = [], []
     if rank == 0:
         info = {"config": cfg, "samples": str(samples), "manifest_sha256": CK.file_sha256(samples), "code_sha": CK.code_sha(), "world": world,
@@ -151,12 +158,17 @@ def run(cfg, samples, out_dir, resume=None):
                 "backbone_params": model.backbone.num_parameters(), "host": platform.node(),
                 "gpus": [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())] if device.type == "cuda" else [],
                 "started": time.strftime("%Y-%m-%d %H:%M:%S")}
-        (out_dir / ("probe_config.json" if cfg["probe"] else "run_config.json")).write_text(json.dumps(info, indent=1, default=str))
+        name = "probe_config.json" if cfg["probe"] else ("run_config.json" if resume is None else f"run_config_resume_step{step}.json")
+        path, k = out_dir / name, 1
+        while path.exists():                                               # a resumed invocation never rewrites an earlier record
+            path, k = out_dir / f"{Path(name).stem}_{k}.json", k + 1
+        path.write_text(json.dumps(info, indent=1, default=str))
     model.train()
     epoch, done = 0, step >= total_steps
     t_step = time.time()
     while not done:
-        loader, share = make_loader(train_rows, cfg, rank, world, epoch, torch.cuda.device_count())
+        loader, share = make_loader(train_rows, cfg, rank, world, epoch, torch.cuda.device_count(), skip_batches=skip)
+        skip = 0
         it = iter(loader)
         while not done:
             t0 = time.time()
