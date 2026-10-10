@@ -7,6 +7,10 @@
 # spec's rates are defined at a global batch of 16 (spec §6: Stage II 5e-4 with the backbone at a tenth for the first
 # 1000 steps; Stage III 5e-5 / 2.5e-4 / 5e-4, warmup 200 steps): they are scaled by sqrt(GLOBAL / 16) and every warmup
 # is kept in crops (steps x 16 / GLOBAL). C0 and C2 must run with the same MB and GLOBAL (PROPOSED, decision Q23).
+# WORKERS loader processes per rank (default 24): a Stage II crop costs about 4 s of one CPU core (2026-10-10 profile:
+# the in-plane rotation of six arrays, the bias field, the physical coordinates), so a process gives about 0.25 crops/s,
+# and a rank needs about 6 crops/s whatever the card count; 8 left a one-card rank at about 12 s a step against 4 s of
+# compute. The worker count changes speed only: every crop is seeded by its index.
 # Order: a 100-step Stage II smoke that stops at step 50 and is resumed to 100 (T10 acceptance on real data), Stage II
 # (240k crops), Stage III (80k crops), the evaluation on the validation split (chooses the U thresholds) and on the
 # whole test split, each sharded over all CARDS (scripts/aur_eval.py --shard k/N) and merged once. RESUME_STAGE2 (a
@@ -59,8 +63,9 @@ launch() {   # launch <out> <log> <stage args...>: one torchrun on CARDS (plain 
     CUDA_VISIBLE_DEVICES=$CARDS $PY scripts/aur_train.py "$@" --out "$out" > "$log" 2>&1
   fi
 }
-COMMON=(--samples "$SAMPLES" --val-patients "$VAL" --microbatch $MB --grad-accum $ACCUM --workers 8)
-say "$ARM chain started on cards $CARDS (world $N, microbatch $MB, accumulation $ACCUM, global $GLOBAL; Stage II ${II_LR[*]}; Stage III ${III_LR[*]})"
+WORKERS=${WORKERS:-24}                                           # loader processes per rank (see the header)
+COMMON=(--samples "$SAMPLES" --val-patients "$VAL" --microbatch $MB --grad-accum $ACCUM --workers $WORKERS)
+say "$ARM chain started on cards $CARDS (world $N, microbatch $MB, accumulation $ACCUM, global $GLOBAL, $WORKERS loaders per rank; Stage II ${II_LR[*]}; Stage III ${III_LR[*]})"
 
 if [ -n "${RESUME_STAGE2:-}" ]; then
   : "${STAGE2_DIR:?STAGE2_DIR=the run directory of RESUME_STAGE2}"
