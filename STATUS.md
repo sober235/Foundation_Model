@@ -1,4 +1,4 @@
-# STATUS：2026-10-09 深夜（SSL-first 线：T01–T12 代码全在 main 并已推；Stage I 主训完成但 **G1 不过**（冻结线性读出 0.286 对随机 0.383；微调探针 600 步也无优势，序列类型反而更差）；链停在 G1；C0 链脚本就绪未起；待用户定：先跑 C0 还是修 Stage I）
+# STATUS：2026-10-10 凌晨（SSL-first 线：G1 不过的根因已找到并修复——重建解码器只读 F1，第 2–4 层从没收到重建梯度；第一轮修复与提前判停规则已提交并在评审；C0 与第一轮 Stage I 的链脚本就绪；**8 张卡全被另一会话的对比方法队列占着，什么都起不来**，等用户分卡）
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 本机时钟是 BST（UTC+1），北京时间加 7 小时；下面的时刻都是本机时钟。
@@ -31,13 +31,20 @@
 - **真实数据 CPU 核验**：训练器的损失通路在三条真实 1 mm 行（PDGM FLAIR、ISLES 厚层 ADC、SibBMS）上用小模型跑通，无缺梯度；单卡真实数据 GPU 冒烟因没有空卡未做。
 
 - **G1 不过（10-09 18:52）**：`docs/verification/2026-10-09/anatobind_brain_ssl_first/g1/G1.md`。冻结 13 宿主线性读出宏 Dice：Stage I 0.286 对随机初始化 0.383（差 −0.097，三种子 bootstrap 区间 [−0.117, −0.074]）；病灶可分性 AUC 0.640 对 0.680。差距集中在丘脑、基底节、脑干、深灰（随机 0.05–0.46，Stage I 0–0.14）。诊断：随机臂约六成优势来自局部坐标嵌入的位置捷径（置零后 0.383 → 0.322），但位置全去后随机仍领先 0.06；Stage I 的读出 500 步时（0.300）就已低于随机，之后缓慢下降；单层看 F1/F2/F4 都不如随机投影（F2 最差 0.171 对 0.295）。**微调探针**（Stage II 单卡 600 步，同种子同裁块）：A 掩膜损失两臂一样（0.91–0.92），U 一样，Stage I 臂的序列类型损失明显更差（步 400：1.55 对 0.79），与对比项把两个强度增广视图拉成同一表征、使全局特征对强度外观不敏感一致。结论：按现口径 Stage I 没有给下游带来可测的好处；原因在目标设计（遮挡重建 + 强度不变的全局对比），不是训练没收敛。
-- **C0 链脚本就绪未起**：`scripts/c0_chain.sh`（Stage II 从随机骨干 → Stage III → 验证集选阈值 → 全测），在 tmux 里起：`tmux new-window -t anatobind -n c0 "bash scripts/c0_chain.sh; exec bash"`。
+- **根因（10-10 读代码确认）**：`StageOne.view` 只把 F1 交给重建解码器，第一层之后的 PatchMerging 与第 2–4 层（12 个块里 10 个）从没收到重建梯度，只被 0.1 权重、批内已饱和的全局 InfoNCE 训练；G1.md 末尾"更正"一节写明，先前"目标设计"的读法在机制上是错的。
+- **第一轮修复（61b915a，用户 10-10 选 (c) 并行后做）**：解码器读全部四层（逐级上采样相加，只读特征不读图像）；新测试：只用重建损失时每层（含 PatchMerging）梯度非零（旧代码挂）、重建对被遮体素不变；全尺寸模型 CPU 实测四层梯度都非零，解码器 6.8 万参数。另加 `scripts/aur_ssl_eval.py --host-only`（提前探针），链 `scripts/stage1_r1_chain.sh`（同超参主训 + 第 1000/2000 步探针 + 预先登记的继续规则 + G1 + C2），预先登记写在 G1.md（cb1696a）。全量测试 991 passed、2 skipped。独立评审在跑。
+- **C0 / C2 共用链** `scripts/stage23_chain.sh`（原 c0_chain.sh 改名）：全局批固定 16（每卡 4 × 累积 16/(4×卡数)，1/2/4 张卡），学习率用规格 §6 原值不缩放；冒烟 = 第 50 步停（新参数 `--stop-after`）再恢复到 100。
+- **卡**：10-10 02:47–02:52 另一会话的对比方法队列（DIP/ZS-SSDU/INR/MC-GS，`/data0/congcong/code/GS/Results_20260908/CE_retro_cssense_af16_vdpois/logs/cmp/queue.log`）占满 8 张卡，并在卡空出几分钟内续发；02:53 我在 3 号卡起的 C0 与它的两个任务撞车，已自行停掉（目录 `ssl_runs/c0_stage2_smoke_20261010_0253/` 只有半截，可删清单）。
 
 **之前（保留）**：Part 1（方案架构的代码包、样本表、目标、探针）在 tag `handoff/2026-10-09-anatobind-brain-aur-part1`；S4 脑解剖学生模型 A11 不过、三条出路待定；S7 三病种五折全过、1212 份记录 v2；nnDetection 与小病灶线已停；Level R 读片工具就绪、读片未开始（见 CLAUDE.md 当前状态段）。
 
 ## 2. 待用户拍板
 
-0. **G1 不过之后走哪条**（最急）：(a) 今晚先起 C0 链（随机骨干 Stage II → III → 全测），周四有 A/U/R 结果和一个对照臂；Stage I 的修复另排。(b) 直接修 Stage I 再跑一轮（约 7 h + G1）：候选改法 = 对比项改成稠密（F2/F3 同位置两视图 InfoNCE，负样本来自其他位置/裁块）、去掉"强度增广视图互为正样本"的强度不变性（正样本改用同裁块的不同遮挡）、加一份不遮挡视图；这是 T03–T05 的设计变更，要先写测试。(c) 两者并行：3 张空卡分不开，C0 用 2 张、Stage I 修复用 1 张则各自慢一倍。我建议 (a)，修复放到 C0 之后或有第 4 张卡时。
+0. **分卡（最急，什么都卡在这）**：用户 10-10 选了 (c) 并行（C0 与修 Stage I 同时跑），但 8 张卡全在另一会话的队列里。需要的卡：第一轮 Stage I 3 张（全局 36 只能用 1/2/3/6 张卡，3 张约 7.5 h），C0 1–2 张（全局 16 只能用 1/2/4 张卡；1 张 Stage II 约 23 h，2 张约 11 h）。最少 4 张、理想 5 张，而且要让那边的队列别往这几张卡上续发。起法：
+   ```
+   tmux new-window -t anatobind -n r1 "cd /data0/congcong/code/Project_Doing/foundation_model && CARDS=5,6,7 bash scripts/stage1_r1_chain.sh; exec bash"
+   tmux new-window -t anatobind -n c0 "cd /data0/congcong/code/Project_Doing/foundation_model && ARM=c0 CARDS=3 bash scripts/stage23_chain.sh; exec bash"
+   ```
 1. ~~推送~~：用户 10-09 晚批准并已推（见 §1 末尾的 push 记录）；之后仍按 Q14 每过一门推一次。
 2. **卡位冲突**：10-09 上午本机另一会话的 MC-GS `arc/cycle.py` 先后进入 0、1、3、7 号卡，又有一个 35 GB 的未知进程短暂进入 5 号卡，共把三次探针 / 恢复检查挤到 OOM；主训现在占着 5/6/7 各 60 GB。请让另一会话别往 5/6/7 发任务；若想把主训换成 4 卡，只能停掉重来（曝光预算按 seen_crops 计，`--resume` 换卡数会改全局 batch 与 lr 调度，不建议）。
 3. ~~主训超参偏离 Q11~~：用户 10-09 晚认可（全局 36、lr 4.5e-4、预热 444 步；mask 0.60、τ 0.2、λ_c 0.1 不变），记为决定 Q21。
@@ -49,20 +56,11 @@
 
 ## 3. 下一步
 
-1. 主训结束（约 17:45 本机时钟）→ **T09 G1**：
-   ```
-   PYTHONNOUSERSITE=1 PYTHONPATH=. CUDA_VISIBLE_DEVICES=<空卡> ~/anaconda3/envs/nvgen/bin/python scripts/aur_ssl_eval.py \
-     --checkpoint /data2/congcong/data/FM_data/derived/aur/ssl_runs/stage1_320k_mb12/ssl_stage1_best.pt \
-     --samples /data2/congcong/data/FM_data/derived/aur/samples_1mm_v1.json \
-     --val-patients /data2/congcong/data/FM_data/derived/aur/ssl_manifest_v1/val_patients.json \
-     --out docs/verification/2026-10-09/anatobind_brain_ssl_first/g1/<新目录>
-   ```
-   （含随机初始化对照与 3 种子；Q8 严口径：13 宿主读出宏 Dice 高于随机 ≥ 0.05 且区间不含 0，病灶可分性 ≥ 随机 − 0.02；不过最多修两轮再交用户。）
-2. G1 过 → Stage II（命令在执行计划 §2，已补 `--g1-report` 与 `--val-patients`；3 或 4 卡，microbatch 4/卡不累积 = 全局 12–16，lr 5e-4；约 240k/全局 步）→ Stage III → `scripts/aur_eval.py`（先 `--split val` 选 U 阈值，再 `--split test --u-threshold …`）→ C0（`--init random`）。开 Stage II 前补 T10 的 4 卡 100 步含保存/恢复验证记录（需要 4 张空卡；2 进程 gloo 版已在测试套件里）。
-3. 推理冒烟：主训/Stage III 导出后对一卷真实 FLAIR 跑 `scripts/infer_anatobind_brain.py --gpu <空卡>`，看 `record.json` 与句子。
-4. 主训期间看一眼 `val.jsonl`（每 500 步）：masked Huber 要持续低于基线、有效秩不掉、`contrast_acc` 不该一直是 1.0（批大了该掉一点）；出现 `non-finite` 训练器会自己抛错退出。
-5. 周三起草汇报 PPT（Q20：全项目含阴性结果、伪标签数字标 NOT_EVIDENCE、中文）。
-6. Level R 读片：同前；T12 已能导出盲读片表 `level_r_sheet.csv` 与密钥 `level_r_key.json`。
+1. 用户分卡后：tmux 窗口 `r1` 起第一轮 Stage I（`scripts/stage1_r1_chain.sh`，自动做第 1000/2000 步探针、按预先登记规则继续或停、跑完接 G1、过了接 C2），窗口 `c0` 起 C0（`scripts/stage23_chain.sh ARM=c0`）。命令在 §2 第 0 条。
+2. 第一轮提前停或 G1 仍不过：第二轮 = λ_c 0（纯遮挡重建），其余不变；两轮都不过交用户（G1.md 预先登记）。
+3. 两条臂的评估都是先 `--split val` 选 U 阈值、再全测 1,056 行（Q22）；之后汇总 C0 对 C2（同全局批 16、同预算、同验证集选阈值）。
+4. 周三起草汇报 PPT（Q20：全项目、含 G1 失败与修复、伪标签数字标 NOT_EVIDENCE、中文）。
+5. Level R：T12 已能导出盲读片表与密钥；读片等用户安排。
 
 ## 4. 坑与别重做
 
