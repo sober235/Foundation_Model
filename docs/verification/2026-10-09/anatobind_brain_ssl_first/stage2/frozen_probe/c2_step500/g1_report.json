@@ -1,0 +1,266 @@
+{
+ "mode": "host-only probe",
+ "checkpoint": "/tmp/claude-1002/-home-congcongliu/4c51bb86-6842-43b4-9b18-0dd733b5a3d4/scratchpad/bb/c2_step500.backbone.pt",
+ "checkpoint_meta": {
+  "config": {
+   "stage": "II",
+   "model": {},
+   "microbatch": 12,
+   "grad_accum": 1,
+   "crops_per_volume": 2,
+   "crop": [
+    128,
+    160,
+    160
+   ],
+   "points": 16384,
+   "workers": 24,
+   "seed": 0,
+   "weight_decay": 0.05,
+   "val_every": 500,
+   "val_volumes": 32,
+   "save_every": 500,
+   "log_every": 20,
+   "lambda_r": 1.0,
+   "lambda_h": 0.2,
+   "use_checkpoint": false,
+   "max_steps": null,
+   "lesion_share": 0.5,
+   "init": "backbone",
+   "init_backbone": "/data2/congcong/data/FM_data/derived/aur/ssl_runs/stage1_r2_320k_20261010_1303/ssl_stage1_best.pt",
+   "resume_stage2": null,
+   "g1_report": "docs/verification/2026-10-09/anatobind_brain_ssl_first/g1/r2_run_20261010_1942/g1_report.json",
+   "pilot": false,
+   "stop_after": null,
+   "seen_crops": 240000,
+   "lrs": {
+    "backbone": 0.0006124,
+    "heads": 0.0006124
+   },
+   "warmup_steps": 667,
+   "backbone_warm_steps": 667,
+   "backbone_warm_scale": 0.1,
+   "export": "aur_stage2_best.pt"
+  },
+  "manifest": "/data2/congcong/data/FM_data/derived/aur/samples_1mm_v1.json",
+  "manifest_sha256": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+  "code_sha": "f0d5d47b75cf843acf725d7c3322f3d525c5b0d6",
+  "step": 500,
+  "seen_crops": 12000,
+  "seed": 0,
+  "torch": "2.5.1+cu121",
+  "saved_at": "2026-10-11 03:01:22",
+  "stage": "II",
+  "init": "backbone",
+  "init_backbone": "/data2/congcong/data/FM_data/derived/aur/ssl_runs/stage1_r2_320k_20261010_1303/ssl_stage1_best.pt",
+  "resume_stage2": null,
+  "val_patients": "/data2/congcong/data/FM_data/derived/aur/ssl_manifest_v1/val_patients.json",
+  "val_patients_sha256": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34",
+  "init_meta": {
+   "stage": "I",
+   "step": 8500,
+   "seen_crops": 306000,
+   "code_sha": "5e674b2c8ef58d367b3efdf627e4db0453c868d3"
+  },
+  "epoch": 1,
+  "epoch_step": 209,
+  "schedule": {
+   "total_steps": 10000,
+   "global_batch": 24,
+   "lrs": {
+    "backbone": 0.0006124,
+    "heads": 0.0006124
+   },
+   "warmup_steps": 667,
+   "backbone_warm_steps": 667,
+   "seen_crops": 240000
+  },
+  "from_resume": "/data2/congcong/data/FM_data/derived/aur/ssl_runs/c2_stage2_240k_20261011_0216/resume_step500.pt"
+ },
+ "crop": [
+  128,
+  160,
+  160
+ ],
+ "n_calibration_crops": 96,
+ "n_validation_crops": 48,
+ "n_lesion_calibration": 0,
+ "n_lesion_validation": 0,
+ "seeds": [
+  0,
+  1,
+  2
+ ],
+ "thresholds": {
+  "dice_gain": 0.05,
+  "auc_tolerance": 0.02,
+  "status": "PROPOSED"
+ },
+ "arms": {
+  "ssl": {
+   "host": {
+    "seeds": [
+     {
+      "seed": 0,
+      "macro_dice": 0.6926999688148499,
+      "per_host_dice": [
+       0.7627225518226624,
+       0.7565152645111084,
+       0.7293647527694702,
+       0.7211596369743347,
+       0.6425826549530029,
+       0.6965348124504089,
+       0.5009730458259583,
+       0.5253431797027588,
+       0.7848857045173645,
+       0.8618811368942261,
+       0.8585251569747925,
+       0.6077097654342651,
+       0.5569019913673401
+      ]
+     },
+     {
+      "seed": 1,
+      "macro_dice": 0.6953961253166199,
+      "per_host_dice": [
+       0.7626657485961914,
+       0.7565266489982605,
+       0.7295816540718079,
+       0.7210693359375,
+       0.6818012595176697,
+       0.692034125328064,
+       0.4998600482940674,
+       0.5258438587188721,
+       0.7828689813613892,
+       0.8615967631340027,
+       0.858065128326416,
+       0.6000000238418579,
+       0.568236231803894
+      ]
+     },
+     {
+      "seed": 2,
+      "macro_dice": 0.6932182908058167,
+      "per_host_dice": [
+       0.7624887228012085,
+       0.756246030330658,
+       0.729332685470581,
+       0.7211001515388489,
+       0.6758775115013123,
+       0.6972153782844543,
+       0.5008347034454346,
+       0.4964616298675537,
+       0.7891125082969666,
+       0.8624058365821838,
+       0.8577712774276733,
+       0.6068721413612366,
+       0.556118369102478
+      ]
+     }
+    ],
+    "macro_dice_mean": 0.6937714616457621
+   },
+   "lesion": null
+  },
+  "random": {
+   "host": {
+    "seeds": [
+     {
+      "seed": 0,
+      "macro_dice": 0.3824891448020935,
+      "per_host_dice": [
+       0.6356399059295654,
+       0.6371263861656189,
+       0.5904688239097595,
+       0.5975600481033325,
+       0.09842271357774734,
+       0.03824091702699661,
+       0.10745234042406082,
+       0.08405906707048416,
+       0.45512819290161133,
+       0.7322812676429749,
+       0.7341674566268921,
+       0.12809564173221588,
+       0.1337161660194397
+      ]
+     },
+     {
+      "seed": 1,
+      "macro_dice": 0.3835253417491913,
+      "per_host_dice": [
+       0.6260522603988647,
+       0.6394804120063782,
+       0.5962035059928894,
+       0.5809637904167175,
+       0.08322496712207794,
+       0.07965152710676193,
+       0.1507413536310196,
+       0.07310503721237183,
+       0.45805707573890686,
+       0.7334460616111755,
+       0.7332449555397034,
+       0.10233788937330246,
+       0.12932085990905762
+      ]
+     },
+     {
+      "seed": 2,
+      "macro_dice": 0.3842412829399109,
+      "per_host_dice": [
+       0.6372470855712891,
+       0.6397741436958313,
+       0.5902028679847717,
+       0.578201949596405,
+       0.09815169125795364,
+       0.039315156638622284,
+       0.11799914389848709,
+       0.05988967791199684,
+       0.471386194229126,
+       0.7322049736976624,
+       0.7345373630523682,
+       0.1444164514541626,
+       0.15181005001068115
+      ]
+     }
+    ],
+    "macro_dice_mean": 0.38341858983039856
+   },
+   "lesion": null
+  }
+ },
+ "val_patients_used": 36,
+ "g1": {
+  "macro_dice_gain": 0.31035287181536353,
+  "gain_bootstrap_by_seed": [
+   {
+    "mean": 0.31007039538025855,
+    "ci95": [
+     0.2898390904068947,
+     0.32875184044241906
+    ]
+   },
+   {
+    "mean": 0.3118751683533192,
+    "ci95": [
+     0.29037216007709504,
+     0.3307406283915043
+    ]
+   },
+   {
+    "mean": 0.3089890593588352,
+    "ci95": [
+     0.2887344278395176,
+     0.3281150944530964
+    ]
+   }
+  ],
+  "gain_ci_low_min": 0.2887344278395176,
+  "host_macro_ssl": 0.6937714616457621,
+  "host_macro_random": 0.38341858983039856,
+  "host_pass": null,
+  "lesion_pass": null,
+  "pass": null,
+  "note": "host-only probe of a running Stage I: not the G1 verdict",
+  "evidence": "NOT_EVIDENCE: SynthSeg-derived pseudo-labels; engineering probe only"
+ }
+}
