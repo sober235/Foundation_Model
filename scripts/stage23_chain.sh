@@ -7,6 +7,8 @@
 # spec's rates are defined at a global batch of 16 (spec §6: Stage II 5e-4 with the backbone at a tenth for the first
 # 1000 steps; Stage III 5e-5 / 2.5e-4 / 5e-4, warmup 200 steps): they are scaled by sqrt(GLOBAL / 16) and every warmup
 # is kept in crops (steps x 16 / GLOBAL). C0 and C2 must run with the same MB and GLOBAL (PROPOSED, decision Q23).
+# II_BB is the spec-scale Stage II backbone rate (default 5e-4, the spec); 5e-5 keeps the backbone at a tenth of the heads
+# for the whole of Stage II (2026-10-11, user: the spec rate erased the Stage I features within 1500 steps).
 # WORKERS loader processes per rank (default 24): a Stage II crop costs about 4 s of one CPU core (2026-10-10 profile:
 # the in-plane rotation of six arrays, the bias field, the physical coordinates), so a process gives about 0.25 crops/s,
 # and a rank needs about 6 crops/s whatever the card count; 8 left a one-card rank at about 12 s a step against 4 s of
@@ -48,7 +50,8 @@ ACCUM=$((GLOBAL / (MB * N)))
 SCALE=$($PY -c "import math; print(math.sqrt($GLOBAL / 16))")
 lr() { $PY -c "print(f'{$1 * $SCALE:.3e}')"; }
 steps() { $PY -c "print(max(1, round($1 * 16 / $GLOBAL)))"; }
-II_LR=(--lr-backbone "$(lr 5e-4)" --lr-heads "$(lr 5e-4)" --warmup-steps "$(steps 1000)" --backbone-warm-steps "$(steps 1000)")
+II_BB=${II_BB:-5e-4}
+II_LR=(--lr-backbone "$(lr $II_BB)" --lr-heads "$(lr 5e-4)" --warmup-steps "$(steps 1000)" --backbone-warm-steps "$(steps 1000)")
 III_LR=(--lr-backbone "$(lr 5e-5)" --lr-heads "$(lr 2.5e-4)" --lr-relation "$(lr 5e-4)" --warmup-steps "$(steps 200)")
 case "$ARM" in
   c0) INIT=(--init random) ;;
