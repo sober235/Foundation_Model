@@ -1,0 +1,34 @@
+{
+ "macro_dice_gain": 0.34147380789120996,
+ "gain_bootstrap_by_seed": [
+  {
+   "mean": 0.3414013992846012,
+   "ci95": [
+    0.3198381409049034,
+    0.3620134688913822
+   ]
+  },
+  {
+   "mean": 0.3432207902371883,
+   "ci95": [
+    0.3202375195920467,
+    0.36399583965539933
+   ]
+  },
+  {
+   "mean": 0.33974560990929603,
+   "ci95": [
+    0.32041492536664007,
+    0.35961205288767817
+   ]
+  }
+ ],
+ "gain_ci_low_min": 0.3198381409049034,
+ "host_pass": true,
+ "lesion_auc_ssl": 0.6669841995630748,
+ "lesion_auc_random": 0.6795712035766904,
+ "lesion_pass": true,
+ "evidence": "NOT_EVIDENCE: SynthSeg-derived pseudo-labels; engineering gate only",
+ "pass": true
+}
+host macro Dice: ssl 0.7249 random 0.3834
