@@ -1,0 +1,62 @@
+# AnatoBind-Brain test-set evaluation (NOT_EVIDENCE: every number rests on SynthSeg / lesion pseudo-labels)
+
+## A (gate G2, part 1)
+
+13-host macro Dice 0.6319 over 394 A-supervised volumes (entity macro 0.3980); gate ≥ 0.8: **fail**. Unsupervised (QC-failed) rows: 11, host macro 0.6197 (not gated).
+
+| source | volumes | host macro Dice |
+|---|---|---|
+| bmsr | 120 | 0.6390 |
+| isles | 32 | 0.5846 |
+| pdgm | 164 | 0.6367 |
+| sibbms | 78 | 0.6301 |
+
+| host | Dice |
+|---|---|
+| white_matter_left | 0.7140 |
+| white_matter_right | 0.7048 |
+| cortex_left | 0.6027 |
+| cortex_right | 0.6166 |
+| thalamus_left | 0.7345 |
+| thalamus_right | 0.7131 |
+| basal_ganglia_left | 0.5531 |
+| basal_ganglia_right | 0.0000 |
+| brainstem | 0.8225 |
+| cerebellum_left | 0.8667 |
+| cerebellum_right | 0.8682 |
+| other_deep_grey_left | 0.6193 |
+| other_deep_grey_right | 0.3989 |
+
+## U (gate G2, part 2)
+
+Sensitivity at the reference detector's false positives per scan on the same patients; pass = ≥ reference − 0.05; the gate reads one sequence per source (the one with the reference's lesion labels); gate: **fail** (3 sources judged)
+
+| source/sequence | gated | scans | GT (ignored) | thr | selection | sensitivity | FP/scan | budget | ref sens | ref thr | ref scans | ref GT | grid | <5 mm | 5–10 mm | ≥10 mm | pass |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| bmsr/T1c | True | 41 | 470 (61) | 0.95 | test-selected (optimistic: the best of 19 thresholds on this very set) | 0.0000 | 0.000 | 0.878 | 0.6961 | 0.65 | 41 | 464 | AUR 1 mm resampled vs native (approximate) | 0.0000 | 0.0000 | 0.0000 | False |
+| isles/DWI | True | 20 | 138 (11) | 0.55 | test-selected (optimistic: the best of 19 thresholds on this very set) | 0.0507 | 1.050 | 1.600 | 0.5943 | 0.50 | 20 | 175 | AUR 1 mm resampled vs native 2 mm (approximate) | 0.0294 | 0.0488 | 0.1034 | False |
+| pdgm/FLAIR | True | 41 | 53 (19) | 0.70 | test-selected (optimistic: the best of 19 thresholds on this very set) | 0.1698 | 0.024 | 0.366 | 0.9057 | 0.60 | 41 | 53 | same 1 mm grid | 0.0000 | 0.0000 | 0.1875 | False |
+| pdgm/T1c | False | 41 | 57 (15) | nan | — | nan | nan | nan | nan | nan | — | — | — | nan | nan | nan | None |
+
+## R, controlled track (gate G3)
+
+716 instances (zero-overlap bindings 3); ABA(R) 0.5251 vs ABA(B0) 0.6746; side R 0.8785 / B0 0.9721; tissue R 0.5782 / B0 0.6955; gate ABA(R) ≥ ABA(B0): **fail**. the controlled-track truth is the SynthSeg lookup itself (host_targets on the SynthSeg map); no B0* column, it would be 1.0 by construction.
+
+All controlled instances: B0 wrong on 0.3254; R rescues 105, harms 212, both right 271, both wrong 128.
+
+Recognition–binding gap: no instance meets the condition (local 13-host Dice >= 0.8 in the bind window and a detection matched at the source's U threshold).
+
+End to end (predicted lesions matched to a truth at the U threshold): 16 lesions, ABA(R) 0.6875 vs ABA(B0) 0.6875.
+
+| split | n | ABA(R) | ABA(B0) | rescue | harm |
+|---|---|---|---|---|---|
+| bmsr | 469 | 0.5288 | 0.7186 | 59 | 148 |
+| isles | 137 | 0.4891 | 0.6496 | 17 | 39 |
+| pdgm | 110 | 0.5545 | 0.5182 | 29 | 25 |
+| <5 | 353 | 0.4958 | 0.7082 | 42 | 117 |
+| 5-10 | 200 | 0.5600 | 0.7200 | 24 | 56 |
+| >=10 | 163 | 0.5460 | 0.5460 | 39 | 39 |
+
+Sequence-type accuracy 0.9877 over 405 volumes.
+
+Not in this report: SibBMS 10-subject MS plaque check (U, report only; a separate script: scripts/aur_eval_sibbms.py); fastMRI 433-volume reliable-slice A Dice and 1297-box host agreement (report only; a separate script: scripts/aur_eval_fastmri.py); end-to-end R on a human-labelled set (Level R: the sheet is exported, the statistics wait for the readers).

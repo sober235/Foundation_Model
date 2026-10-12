@@ -1,0 +1,6 @@
+[2026-10-11 05:13:31] new C2 Stage II run: /data2/congcong/data/FM_data/derived/aur/ssl_runs/c2_stage2_240k_20261011_0500
+[2026-10-11 06:13:07] step 1000 saved; exporting the backbone and probing on card 5
+frozen readout at step 1000: 0.6829 (>= 0.65: True); validation A point Dice: step 500 0.010284701129421592, step 1000 0.0443 (> 0.045: False)
+VERDICT: FAIL - stop and report
+ val 500 a_dice 0.0103 a_mask 0.8929 u_matched 0.7142857142857143 s 0.0019
+ val 1000 a_dice 0.0443 a_mask 0.8699 u_matched 0.6142857142857143 s 0.0003

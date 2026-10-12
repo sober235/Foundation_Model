@@ -19,6 +19,12 @@
 | `g1/r2_run_20261010_1942/g1_report.json`（第二轮，λ_c 0；经过与预先登记在 `g1/G1.md` 末尾） | 正式 G1：13 宿主读出 0.724 对随机 0.383（+0.342，三种子区间下界 0.320）；病灶可分性 AUC 0.667 对 0.680（容差 0.02 内） | **过**（阈值 PROPOSED）；C2 10-11 02:16 起 |
 | `stage2/C0_A_DIAG.md`（`stage2/diag/` 四个诊断脚本与图） | C0 Stage II（随机初始化）A 头学得极慢：训练时 A 点 Dice 第 3000 步 0.111；整卷冒烟 13 宿主宏 Dice 0.066（第 2000 步，CPU，4 例）；不是阈值校准，组织分不开（右白质 74 % 判成右皮层），冻结特征的线性可读性只和灰度 + 位置相当 | 诊断，NOT_EVIDENCE；改不改 Stage II 设计待用户定，C0 照常训练 |
 
+| `stage2/STAGE2_V2.md`、`stage2/frozen_probe/c2v2_step1000_check.{sh,log}`、`stage2/frozen_probe/c2v2_step1000/g1_report.json` | 决定 Q25 的预先登记与新 C2 第 1000 步检查：冻结读出 0.6829 ≥ 0.65 过，验证 A 点 Dice 0.0443 不过门 > 0.045 → **VERDICT: FAIL - stop and report**；检查脚本只报告，当时无人值守，链继续跑完 | 检查不过、未停（10-12 披露） |
+| `eval/c0_val_20261010_1533/`、`eval/c0_test_20261010_1533/`（`REPORT.md`、`aggregate.json`、`reference.json`，分片日志） | 现行配方 C0（随机初始化）：验证集选 U 阈值 → 全测 1,056 行；A 宏 Dice 0.6289、U 三源 0.000 / 0.035 / 0.169、ABA(R) 0.5007 对 B0 0.6789 | G2、G3 不过 |
+| `eval/c2_val_20261011_0500/`、`eval/c2_test_20261011_0500/`（同上） | 新配方 C2（预训练、主干学习率十分之一；越过不过的第 1000 步检查）：A 宏 Dice 0.7961、U PDGM 0.7538 / BMSR 0.0049 / ISLES 0.0069、ABA(R) 0.5142 对 B0 0.6692；差距子集 53 例 R 救回 23 / 弄错 7；端到端 139 例 0.7050 对 0.4892 | G2、G3 不过 |
+
+逐例 `cases.json` 与 Level R 的 `level_r_key.json` / `level_r_sheet.csv` 留在本地对应目录、不入库（仓库公开，密钥会破坏盲读）。
+
 ## T10–T12 的口径（代码层面，尚未跑真实训练）
 
 - Stage II：`--init-backbone` 严格载入 Stage I 导出，主线必须带通过的 `g1_report.json`（`--pilot` 只给冒烟）；`--init random` 是 C0 对照并写进记录；relation 头、Stage I 的 mask token、coarse mask embedding 在 Stage II 冻结。Stage III：`--resume-stage2` 严格继承整个 Stage II 导出，三组学习率 5e-5 / 2.5e-4 / 5e-4（Q12），预热 200 步（PROPOSED）。预算 240k / 80k 裁块。

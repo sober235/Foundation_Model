@@ -1,0 +1,775 @@
+{
+ "evidence": "NOT_EVIDENCE",
+ "n_results": 1056,
+ "sources": [
+  "bmsr",
+  "isles",
+  "pdgm",
+  "sibbms"
+ ],
+ "a": {
+  "n_cases": 1032,
+  "host_macro": 0.6289403424330066,
+  "entity_macro": 0.3948439546504394,
+  "per_host": {
+   "white_matter_left": 0.7116816627615116,
+   "white_matter_right": 0.7057776292488922,
+   "cortex_left": 0.602577445462647,
+   "cortex_right": 0.6173972979217344,
+   "thalamus_left": 0.7259998540625588,
+   "thalamus_right": 0.7078678036550646,
+   "basal_ganglia_left": 0.5462757859948876,
+   "basal_ganglia_right": 3.7073791995316605e-06,
+   "brainstem": 0.8134055778625761,
+   "cerebellum_left": 0.861258375989643,
+   "cerebellum_right": 0.865871641967986,
+   "other_deep_grey_left": 0.6188655349381802,
+   "other_deep_grey_right": 0.39924213438420325
+  },
+  "per_source": {
+   "bmsr": {
+    "n_cases": 306,
+    "host_macro": 0.6372019988257149
+   },
+   "isles": {
+    "n_cases": 76,
+    "host_macro": 0.5885232572007625
+   },
+   "pdgm": {
+    "n_cases": 404,
+    "host_macro": 0.6297502467444895
+   },
+   "sibbms": {
+    "n_cases": 246,
+    "host_macro": 0.6298201403177325
+   }
+  },
+  "unsupervised": {
+   "n_cases": 24,
+   "host_macro": 0.5882643837404024,
+   "note": "rows whose SynthSeg labels failed QC (thick slices): reported, not gated"
+  },
+  "gate": {
+   "threshold": 0.8,
+   "pass": false
+  }
+ },
+ "u": {
+  "per_source_sequence": {
+   "bmsr/T1c": {
+    "n_scans": 102,
+    "n_gt": 824,
+    "n_ignored": 94,
+    "saturated_cases": [
+     "100126C",
+     "100291B"
+    ],
+    "threshold_selection": "fixed (chosen on the validation split)",
+    "thr": 0.95,
+    "sensitivity": 0.0,
+    "fp_per_scan": 0.0,
+    "n_hit": 0,
+    "n_fp": 0,
+    "within_budget": true,
+    "budget": 0.5098039215686274,
+    "strata": {
+     "<5": {
+      "n_gt": 446,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     "5-10": {
+      "n_gt": 258,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     ">=10": {
+      "n_gt": 120,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     }
+    },
+    "pass": false,
+    "sequence": "T1c",
+    "reference": {
+     "thr": 0.65,
+     "sensitivity": 0.7315598548972189,
+     "fp_per_scan": 0.5098039215686274,
+     "n_gt": 827,
+     "n_hit": 605,
+     "n_fp": 52,
+     "n_scans": 102,
+     "disease": "metastasis",
+     "source": "bmsr"
+    },
+    "gated": true,
+    "grid": "AUR 1 mm resampled vs native (approximate)"
+   },
+   "isles/DWI": {
+    "n_scans": 50,
+    "n_gt": 289,
+    "n_ignored": 7,
+    "saturated_cases": [],
+    "threshold_selection": "fixed (chosen on the validation split)",
+    "thr": 0.55,
+    "sensitivity": 0.03460207612456748,
+    "fp_per_scan": 1.3,
+    "n_hit": 10,
+    "n_fp": 65,
+    "within_budget": true,
+    "budget": 1.46,
+    "strata": {
+     "<5": {
+      "n_gt": 105,
+      "n_hit": 4,
+      "sensitivity": 0.0380952380952381
+     },
+     "5-10": {
+      "n_gt": 120,
+      "n_hit": 1,
+      "sensitivity": 0.008333333333333333
+     },
+     ">=10": {
+      "n_gt": 64,
+      "n_hit": 5,
+      "sensitivity": 0.078125
+     }
+    },
+    "pass": false,
+    "sequence": "DWI",
+    "reference": {
+     "thr": 0.5,
+     "sensitivity": 0.6302521008403361,
+     "fp_per_scan": 1.46,
+     "n_gt": 357,
+     "n_hit": 225,
+     "n_fp": 73,
+     "n_scans": 50,
+     "disease": "infarct",
+     "source": "isles"
+    },
+    "gated": true,
+    "grid": "AUR 1 mm resampled vs native 2 mm (approximate)"
+   },
+   "pdgm/FLAIR": {
+    "n_scans": 101,
+    "n_gt": 130,
+    "n_ignored": 53,
+    "saturated_cases": [],
+    "threshold_selection": "fixed (chosen on the validation split)",
+    "thr": 0.7,
+    "sensitivity": 0.16923076923076924,
+    "fp_per_scan": 0.13861386138613863,
+    "n_hit": 22,
+    "n_fp": 14,
+    "within_budget": true,
+    "budget": 0.22772277227722773,
+    "strata": {
+     "<5": {
+      "n_gt": 11,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     "5-10": {
+      "n_gt": 3,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     ">=10": {
+      "n_gt": 116,
+      "n_hit": 22,
+      "sensitivity": 0.1896551724137931
+     }
+    },
+    "pass": false,
+    "sequence": "FLAIR",
+    "reference": {
+     "thr": 0.6,
+     "sensitivity": 0.8615384615384616,
+     "fp_per_scan": 0.22772277227722773,
+     "n_gt": 130,
+     "n_hit": 112,
+     "n_fp": 23,
+     "n_scans": 101,
+     "disease": "glioma",
+     "source": "pdgm"
+    },
+    "gated": true,
+    "grid": "same 1 mm grid"
+   },
+   "pdgm/T1c": {
+    "n_scans": 101,
+    "n_gt": 123,
+    "n_ignored": 33,
+    "saturated_cases": [],
+    "sweep": [
+     {
+      "thr": 0.05,
+      "n_gt": 123,
+      "n_hit": 1,
+      "n_hit_family": 1,
+      "n_fp": 7570,
+      "n_scans": 101,
+      "sensitivity": 0.008130081300813009,
+      "sensitivity_family": 0.008130081300813009,
+      "fp_per_scan": 74.95049504950495
+     },
+     {
+      "thr": 0.1,
+      "n_gt": 123,
+      "n_hit": 1,
+      "n_hit_family": 1,
+      "n_fp": 7570,
+      "n_scans": 101,
+      "sensitivity": 0.008130081300813009,
+      "sensitivity_family": 0.008130081300813009,
+      "fp_per_scan": 74.95049504950495
+     },
+     {
+      "thr": 0.15,
+      "n_gt": 123,
+      "n_hit": 1,
+      "n_hit_family": 1,
+      "n_fp": 7570,
+      "n_scans": 101,
+      "sensitivity": 0.008130081300813009,
+      "sensitivity_family": 0.008130081300813009,
+      "fp_per_scan": 74.95049504950495
+     },
+     {
+      "thr": 0.2,
+      "n_gt": 123,
+      "n_hit": 1,
+      "n_hit_family": 1,
+      "n_fp": 7570,
+      "n_scans": 101,
+      "sensitivity": 0.008130081300813009,
+      "sensitivity_family": 0.008130081300813009,
+      "fp_per_scan": 74.95049504950495
+     },
+     {
+      "thr": 0.25,
+      "n_gt": 123,
+      "n_hit": 1,
+      "n_hit_family": 1,
+      "n_fp": 7570,
+      "n_scans": 101,
+      "sensitivity": 0.008130081300813009,
+      "sensitivity_family": 0.008130081300813009,
+      "fp_per_scan": 74.95049504950495
+     },
+     {
+      "thr": 0.3,
+      "n_gt": 123,
+      "n_hit": 1,
+      "n_hit_family": 1,
+      "n_fp": 7570,
+      "n_scans": 101,
+      "sensitivity": 0.008130081300813009,
+      "sensitivity_family": 0.008130081300813009,
+      "fp_per_scan": 74.95049504950495
+     },
+     {
+      "thr": 0.35,
+      "n_gt": 123,
+      "n_hit": 1,
+      "n_hit_family": 1,
+      "n_fp": 5308,
+      "n_scans": 101,
+      "sensitivity": 0.008130081300813009,
+      "sensitivity_family": 0.008130081300813009,
+      "fp_per_scan": 52.554455445544555
+     },
+     {
+      "thr": 0.4,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 2217,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 21.95049504950495
+     },
+     {
+      "thr": 0.45,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 885,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 8.762376237623762
+     },
+     {
+      "thr": 0.5,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 354,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 3.504950495049505
+     },
+     {
+      "thr": 0.55,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 171,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 1.693069306930693
+     },
+     {
+      "thr": 0.6,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 63,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.6237623762376238
+     },
+     {
+      "thr": 0.65,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 7,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.06930693069306931
+     },
+     {
+      "thr": 0.7,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 1,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.009900990099009901
+     },
+     {
+      "thr": 0.75,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 0,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.0
+     },
+     {
+      "thr": 0.8,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 0,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.0
+     },
+     {
+      "thr": 0.85,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 0,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.0
+     },
+     {
+      "thr": 0.9,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 0,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.0
+     },
+     {
+      "thr": 0.95,
+      "n_gt": 123,
+      "n_hit": 0,
+      "n_hit_family": 0,
+      "n_fp": 0,
+      "n_scans": 101,
+      "sensitivity": 0.0,
+      "sensitivity_family": 0.0,
+      "fp_per_scan": 0.0
+     }
+    ],
+    "pass": null,
+    "threshold_selection": null,
+    "sequence": "T1c",
+    "reference": null,
+    "gated": false,
+    "grid": null
+   }
+  },
+  "per_source": {
+   "bmsr": {
+    "n_scans": 102,
+    "n_gt": 824,
+    "n_ignored": 94,
+    "saturated_cases": [
+     "100126C",
+     "100291B"
+    ],
+    "threshold_selection": "fixed (chosen on the validation split)",
+    "thr": 0.95,
+    "sensitivity": 0.0,
+    "fp_per_scan": 0.0,
+    "n_hit": 0,
+    "n_fp": 0,
+    "within_budget": true,
+    "budget": 0.5098039215686274,
+    "strata": {
+     "<5": {
+      "n_gt": 446,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     "5-10": {
+      "n_gt": 258,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     ">=10": {
+      "n_gt": 120,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     }
+    },
+    "pass": false,
+    "sequence": "T1c",
+    "reference": {
+     "thr": 0.65,
+     "sensitivity": 0.7315598548972189,
+     "fp_per_scan": 0.5098039215686274,
+     "n_gt": 827,
+     "n_hit": 605,
+     "n_fp": 52,
+     "n_scans": 102,
+     "disease": "metastasis",
+     "source": "bmsr"
+    },
+    "gated": true,
+    "grid": "AUR 1 mm resampled vs native (approximate)"
+   },
+   "isles": {
+    "n_scans": 50,
+    "n_gt": 289,
+    "n_ignored": 7,
+    "saturated_cases": [],
+    "threshold_selection": "fixed (chosen on the validation split)",
+    "thr": 0.55,
+    "sensitivity": 0.03460207612456748,
+    "fp_per_scan": 1.3,
+    "n_hit": 10,
+    "n_fp": 65,
+    "within_budget": true,
+    "budget": 1.46,
+    "strata": {
+     "<5": {
+      "n_gt": 105,
+      "n_hit": 4,
+      "sensitivity": 0.0380952380952381
+     },
+     "5-10": {
+      "n_gt": 120,
+      "n_hit": 1,
+      "sensitivity": 0.008333333333333333
+     },
+     ">=10": {
+      "n_gt": 64,
+      "n_hit": 5,
+      "sensitivity": 0.078125
+     }
+    },
+    "pass": false,
+    "sequence": "DWI",
+    "reference": {
+     "thr": 0.5,
+     "sensitivity": 0.6302521008403361,
+     "fp_per_scan": 1.46,
+     "n_gt": 357,
+     "n_hit": 225,
+     "n_fp": 73,
+     "n_scans": 50,
+     "disease": "infarct",
+     "source": "isles"
+    },
+    "gated": true,
+    "grid": "AUR 1 mm resampled vs native 2 mm (approximate)"
+   },
+   "pdgm": {
+    "n_scans": 101,
+    "n_gt": 130,
+    "n_ignored": 53,
+    "saturated_cases": [],
+    "threshold_selection": "fixed (chosen on the validation split)",
+    "thr": 0.7,
+    "sensitivity": 0.16923076923076924,
+    "fp_per_scan": 0.13861386138613863,
+    "n_hit": 22,
+    "n_fp": 14,
+    "within_budget": true,
+    "budget": 0.22772277227722773,
+    "strata": {
+     "<5": {
+      "n_gt": 11,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     "5-10": {
+      "n_gt": 3,
+      "n_hit": 0,
+      "sensitivity": 0.0
+     },
+     ">=10": {
+      "n_gt": 116,
+      "n_hit": 22,
+      "sensitivity": 0.1896551724137931
+     }
+    },
+    "pass": false,
+    "sequence": "FLAIR",
+    "reference": {
+     "thr": 0.6,
+     "sensitivity": 0.8615384615384616,
+     "fp_per_scan": 0.22772277227722773,
+     "n_gt": 130,
+     "n_hit": 112,
+     "n_fp": 23,
+     "n_scans": 101,
+     "disease": "glioma",
+     "source": "pdgm"
+    },
+    "gated": true,
+    "grid": "same 1 mm grid"
+   }
+  },
+  "margin": 0.05,
+  "gate": {
+   "pass": false,
+   "sources_judged": 3
+  }
+ },
+ "r": {
+  "controlled": {
+   "n": 1336,
+   "aba_r": 0.500748502994012,
+   "aba_b0": 0.6788922155688623,
+   "side_r": 0.8562874251497006,
+   "side_b0": 0.9767964071856288,
+   "tissue_r": 0.5419161676646707,
+   "tissue_b0": 0.6946107784431138,
+   "rescue_harm": {
+    "n": 1336,
+    "both_right": 484,
+    "both_wrong": 244,
+    "rescue": 185,
+    "harm": 423,
+    "b0_wrong_share": 0.32110778443113774
+   },
+   "n_zero_overlap": 8,
+   "per_source": {
+    "bmsr": {
+     "n": 824,
+     "aba_r": 0.47815533980582525,
+     "aba_b0": 0.7220873786407767,
+     "side_r": 0.8410194174757282,
+     "side_b0": 0.9781553398058253,
+     "tissue_r": 0.5242718446601942,
+     "tissue_b0": 0.7366504854368932,
+     "rescue_harm": {
+      "n": 824,
+      "both_right": 292,
+      "both_wrong": 127,
+      "rescue": 102,
+      "harm": 303,
+      "b0_wrong_share": 0.2779126213592233
+     },
+     "n_zero_overlap": 8
+    },
+    "isles": {
+     "n": 259,
+     "aba_r": 0.5212355212355212,
+     "aba_b0": 0.6177606177606177,
+     "side_r": 0.8378378378378378,
+     "side_b0": 0.9575289575289575,
+     "tissue_r": 0.5482625482625483,
+     "tissue_b0": 0.6447876447876448,
+     "rescue_harm": {
+      "n": 259,
+      "both_right": 101,
+      "both_wrong": 65,
+      "rescue": 34,
+      "harm": 59,
+      "b0_wrong_share": 0.38223938223938225
+     },
+     "n_zero_overlap": 0
+    },
+    "pdgm": {
+     "n": 253,
+     "aba_r": 0.5533596837944664,
+     "aba_b0": 0.6007905138339921,
+     "side_r": 0.924901185770751,
+     "side_b0": 0.9920948616600791,
+     "tissue_r": 0.5928853754940712,
+     "tissue_b0": 0.6086956521739131,
+     "rescue_harm": {
+      "n": 253,
+      "both_right": 91,
+      "both_wrong": 52,
+      "rescue": 49,
+      "harm": 61,
+      "b0_wrong_share": 0.39920948616600793
+     },
+     "n_zero_overlap": 0
+    }
+   },
+   "per_stratum": {
+    "<5": {
+     "n": 558,
+     "aba_r": 0.48566308243727596,
+     "aba_b0": 0.7132616487455197,
+     "side_r": 0.8476702508960573,
+     "side_b0": 0.9838709677419355,
+     "tissue_r": 0.532258064516129,
+     "tissue_b0": 0.7275985663082437,
+     "rescue_harm": {
+      "n": 558,
+      "both_right": 200,
+      "both_wrong": 89,
+      "rescue": 71,
+      "harm": 198,
+      "b0_wrong_share": 0.2867383512544803
+     },
+     "n_zero_overlap": 8
+    },
+    "5-10": {
+     "n": 390,
+     "aba_r": 0.5153846153846153,
+     "aba_b0": 0.6871794871794872,
+     "side_r": 0.8256410256410256,
+     "side_b0": 0.958974358974359,
+     "tissue_r": 0.5615384615384615,
+     "tissue_b0": 0.7128205128205128,
+     "rescue_harm": {
+      "n": 390,
+      "both_right": 154,
+      "both_wrong": 75,
+      "rescue": 47,
+      "harm": 114,
+      "b0_wrong_share": 0.3128205128205128
+     },
+     "n_zero_overlap": 0
+    },
+    ">=10": {
+     "n": 388,
+     "aba_r": 0.5077319587628866,
+     "aba_b0": 0.6211340206185567,
+     "side_r": 0.8994845360824743,
+     "side_b0": 0.9845360824742269,
+     "tissue_r": 0.5360824742268041,
+     "tissue_b0": 0.6288659793814433,
+     "rescue_harm": {
+      "n": 388,
+      "both_right": 130,
+      "both_wrong": 80,
+      "rescue": 67,
+      "harm": 111,
+      "b0_wrong_share": 0.3788659793814433
+     },
+     "n_zero_overlap": 0
+    }
+   }
+  },
+  "gap": {
+   "n": 0,
+   "condition": "local 13-host Dice >= 0.8 in the bind window and a detection matched at the source's U threshold"
+  },
+  "end_to_end": {
+   "n": 32,
+   "aba_r": 0.5625,
+   "aba_b0": 0.59375,
+   "side_r": 0.9375,
+   "side_b0": 0.9375,
+   "tissue_r": 0.5625,
+   "tissue_b0": 0.59375,
+   "rescue_harm": {
+    "n": 32,
+    "both_right": 14,
+    "both_wrong": 9,
+    "rescue": 4,
+    "harm": 5,
+    "b0_wrong_share": 0.40625
+   },
+   "n_zero_overlap": 0
+  },
+  "gate": {
+   "pass": false,
+   "n_instances": 1336
+  },
+  "truth_note": "the controlled-track truth is the SynthSeg lookup itself (host_targets on the SynthSeg map); no B0* column, it would be 1.0 by construction"
+ },
+ "s": {
+  "accuracy": 0.9914772727272727,
+  "n": 1056
+ },
+ "not_implemented": [
+  "SibBMS 10-subject MS plaque check (U, report only; a separate script: scripts/aur_eval_sibbms.py)",
+  "fastMRI 433-volume reliable-slice A Dice and 1297-box host agreement (report only; a separate script: scripts/aur_eval_fastmri.py)",
+  "end-to-end R on a human-labelled set (Level R: the sheet is exported, the statistics wait for the readers)"
+ ],
+ "run": {
+  "checkpoint": "/data2/congcong/data/FM_data/derived/aur/ssl_runs/c0_stage3_80k_20261010_1533/aur_stage3_best.pt",
+  "checkpoint_sha256": "131722887171788140cb15845e97ec47e1fb126037d72f907d72345aec6f910c",
+  "split": "test",
+  "samples": "/data2/congcong/data/FM_data/derived/aur/samples_1mm_v1.json",
+  "samples_sha256": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+  "crop": [
+   128,
+   160,
+   160
+  ],
+  "sources": null,
+  "limit": null,
+  "instance_threshold": 0.3,
+  "stage": "III",
+  "e2e": true,
+  "n_rows": 1056,
+  "n_shards": 1,
+  "shards": [
+   "docs/verification/2026-10-09/anatobind_brain_ssl_first/eval/c0_test_20261010_1533.shard0"
+  ],
+  "fixed_thresholds": {
+   "bmsr": 0.95,
+   "isles": 0.55,
+   "pdgm": 0.7
+  },
+  "code_sha_shards": [
+   "ea5b09f13db2a12a0dc070d630d9b4d3e2b506c8"
+  ],
+  "code_sha_merge": "ea5b09f13db2a12a0dc070d630d9b4d3e2b506c8",
+  "seconds_shards": [
+   9062.6
+  ]
+ }
+}

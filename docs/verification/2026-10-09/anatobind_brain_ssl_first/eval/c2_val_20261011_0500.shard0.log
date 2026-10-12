@@ -1,0 +1,22 @@
+[10/203] bmsr 100161C FLAIR elapsed 101 s
+[20/203] bmsr 100218A T1c elapsed 255 s
+[30/203] bmsr 100227B T1 elapsed 398 s
+[40/203] bmsr 100269A FLAIR elapsed 478 s
+[50/203] bmsr 100332A T1c elapsed 599 s
+[60/203] bmsr 100403A T1 elapsed 708 s
+[70/203] isles sub-strokecase0074 DWI elapsed 887 s
+[80/203] isles sub-strokecase0202 DWI elapsed 1026 s
+[90/203] pdgm UCSF-PDGM-0039 T2 elapsed 1068 s
+[100/203] pdgm UCSF-PDGM-0109 T2 elapsed 1087 s
+[110/203] pdgm UCSF-PDGM-0157 T2 elapsed 1106 s
+[120/203] pdgm UCSF-PDGM-0237 T2 elapsed 1125 s
+[130/203] pdgm UCSF-PDGM-0389 T2 elapsed 1145 s
+[140/203] pdgm UCSF-PDGM-0437 T2 elapsed 1164 s
+[150/203] pdgm UCSF-PDGM-0491 T2 elapsed 1183 s
+[160/203] pdgm UCSF-PDGM-0533 T2 elapsed 1202 s
+[170/203] sibbms MS_sub-029_ses-002 T2 elapsed 1220 s
+[180/203] sibbms MS_sub-072_ses-001 T1 elapsed 1238 s
+[190/203] sibbms Norm_sub-004_ses-001 FLAIR elapsed 1255 s
+[200/203] sibbms Norm_sub-066_ses-001 T2 elapsed 1272 s
+[203/203] sibbms Norm_sub-074_ses-001 T2 elapsed 1278 s
+shard 0/2: 203 rows
