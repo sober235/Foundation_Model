@@ -10,13 +10,17 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-13-anatobind-aur-three-goal-conformance-design.md`
 
+**Review status:** 2026-10-13 plan review split the legacy Q25 gate from the new U-loss profile; awaiting user review of this corrected plan.
+
 ## Global Constraints
 
-- 仅保留三个模型目标：A anatomy masks；U generic abnormality instances；R 每个 U instance 的单一主宿主。
+- 仅保留三个模型目标：A 输出 32 个 anatomy masks（13-host macro Dice 为门，32 类均报告）；U 将所有来源已标注病灶并为一个 abnormality 类并输出实例 masks；R 为每个 U instance 输出一个 13 类分侧 host 或 no-host。
 - 不增加疾病分类 D、E、邻近/累及关系、其他器官或新的主要终点。
 - A 门保持 13-host macro Dice ≥ 0.80；U 门保持同来源、S7 同误报工作点、参照灵敏度 −0.05；R G3 保持 ABA(R) ≥ B0。
-- Q25 gate 只用于显式采用 Q25 的 C2 配置；readout ≥ 0.65 且 A point Dice > 0.045。缺数据、评估失败和解析失败均视为 FAIL。
-- U 未匹配 query mask loss 使用 `NO_OBJECT_WEIGHT = 0.1`；训练阈值来自验证集；test 只评一次。
+- G1/Q25 是预训练/执行门，不是第四目标；G1 通过不代表 G2-A 通过。
+- U loss profile 与 Q25 gate 分开配置并记录：`U_MASK_PROFILE=legacy|unmatched_empty_v1`。Q25 gate 只用于 legacy C2；readout ≥ 0.65 且 A point Dice > 0.045。缺数据、评估失败和解析失败均视为 FAIL。
+- `unmatched_empty_v1` 使用 `NO_OBJECT_WEIGHT = 0.1`，不继承 legacy 的 step-1000 早停阈值；按既定 G2-A/G2-U/G3 最终门评估。任何新早停门须在 run 前另行预注册。
+- 训练阈值来自验证集；test 只评一次。
 - 不停止、重启、覆盖或暂存 live main checkout 的 C0、checkpoint、盲读密钥或逐例数据。
 - 新 C0/C2 配对训练仅在当前 C0 结束、卡资源确认可用后启动；两臂使用完全相同的新 U loss 与 Stage II/III recipe。
 - 所有 SynthSeg/病灶伪标签结果继续标记 `NOT_EVIDENCE`；Level R 人工真值需要真实读者，不能用伪标签替代。
@@ -24,10 +28,10 @@
 ## Review Focus
 
 1. Q25 的边界条件：readout 恰为 0.65 通过；A Dice 恰为 0.045 失败；缺失/非有限指标 fail-closed。
-2. C2 gate 失败时不能进入 Stage II resume、Stage III 或 test evaluation。
+2. `U_MASK_PROFILE=legacy` 的 Q25 C2 gate 失败时不能进入 Stage II resume、Stage III 或 test evaluation；`unmatched_empty_v1` 不调用旧 Q25 gate。
 3. 续跑必须保留 optimizer、scheduler、数据游标、global batch 和总预算；恢复调用不再传 `--stop-after`。
 4. U mask loss 只惩罚已监督样本里的未匹配 queries；`u_supervised=False` 与 `point_weight=0` 不产生 U mask 梯度。
-5. C0/C2 配对 recipe、患者划分、验证阈值选择相同；C2 未通过 early gate 时不报告 G2/G3 test 结果。
+5. 报告严格覆盖目标输出：A 32 类分项与 13-host gate；U 各来源按 S7 一对一 IoU≥0.1 matching 在参照 FP/scan 工作点评估；R 每个 U instance 一个 14 类概率向量（13 host + no-host），报告 G3 controlled ABA。C0/C2 配对 recipe、患者划分和验证阈值选择相同。
 
 ---
 
@@ -105,14 +109,15 @@ Run the same command. Expected: all report and error-path tests pass without req
 - Create: `tests/test_aur_stage23_gate.py`
 
 **Interfaces:**
-- Q25 C2 run enables `C2_STEP1000_GATE=1`; C0 never enters this gate.
-- Q25 recipe is `ARM=c2` with `II_BB=5e-5`; that combination requires `C2_STEP1000_GATE=1` or exits before training. C0 never enters this gate.
+- U loss profile is explicit: `U_MASK_PROFILE=legacy|unmatched_empty_v1`; both C0 and C2 in a comparison use the same loss profile.
+- Q25 recipe is `ARM=c2`, `U_MASK_PROFILE=legacy`, `II_BB=5e-5`; it requires `C2_STEP1000_GATE=1` or exits before training. C0 never enters this gate.
+- `U_MASK_PROFILE=unmatched_empty_v1` rejects `C2_STEP1000_GATE=1`; it uses final G2-A/G2-U/G3 gates unless a separately reviewed early-stop contract is added.
 - The run script resolves repository root from its own location and accepts `FM_DATA_ROOT`, `PY`, `TORCHRUN`, and checker path overrides, so branch code can run against the shared data mount and a temporary test harness without changing live main.
 - Test harness supplies temporary repo/data roots and stubbed trainer/checker commands; production defaults remain the actual trainer and Q25 checker.
 
 - [ ] **Step 1: Write failing chain-order tests**
 
-Test that Q25 C2 calls Stage II with `--stop-after 1000`, then the checker; FAIL exits before resume/Stage III/validation/test; PASS resumes from `resume_step1000.pt` without `--stop-after`, then reaches Stage III/evaluation. Test that Q25 C2 without the required gate flag exits before training. Test that C0 does not invoke the Q25 checker.
+Test that `U_MASK_PROFILE=legacy` C2 with the Q25 recipe calls Stage II with `--stop-after 1000`, then the checker; FAIL exits before resume/Stage III/validation/test; PASS resumes from `resume_step1000.pt` without `--stop-after`, then reaches Stage III/evaluation. Test that legacy Q25 C2 without the required gate flag exits before training. Test that `unmatched_empty_v1` rejects the Q25 flag and that C0 never invokes the Q25 checker.
 
 - [ ] **Step 2: Run chain-order tests and confirm expected failures**
 
@@ -122,7 +127,7 @@ Expected: fail because the existing chain proceeds directly from complete Stage 
 
 - [ ] **Step 3: Implement the gated path**
 
-For `ARM=c2` with Q25 gate enabled, stop at 1000, invoke the checker, exit immediately on non-zero, and resume the same Stage II run only on PASS. Keep smoke, optimizer state, scheduler schedule, data cursor, global batch, and Stage III settings unchanged. Resolve paths from the active branch and preserve existing `FM_DATA_ROOT` default.
+For `ARM=c2`, apply the step-1000 gate only when `U_MASK_PROFILE=legacy` and the Q25 recipe is selected; stop at 1000, invoke the checker, exit immediately on non-zero, and resume the same Stage II run only on PASS. Reject that gate flag for `unmatched_empty_v1`. Keep smoke, optimizer state, scheduler schedule, data cursor, global batch, and Stage III settings unchanged. Resolve paths from the active branch and preserve existing `FM_DATA_ROOT` default.
 
 - [ ] **Step 4: Run chain-order tests and shell syntax check**
 
@@ -138,15 +143,17 @@ Expected: PASS; failure-path test observes no Stage III or test-evaluation comma
 
 **Files:**
 - Modify: `anatobind/aur/losses.py`
+- Modify: `anatobind/aur/train.py`
+- Modify: `scripts/aur_train.py`
 - Modify: `tests/test_aur_losses.py`
 
 **Interfaces:**
-- `event_loss(...)` keeps its current return keys and matching output.
-- `u_mask = existing_matched_mask_loss + NO_OBJECT_WEIGHT * mean_unmatched_empty_mask_bce` over U-supervised samples and valid weighted points only.
+- `event_loss(...)` keeps its current return keys and matching output; the training config selects `U_MASK_PROFILE=legacy` or `unmatched_empty_v1`.
+- `legacy` preserves current loss exactly. `unmatched_empty_v1` uses `u_mask = existing_matched_mask_loss + NO_OBJECT_WEIGHT * mean_unmatched_empty_mask_bce`; compute per supervised sample, mean BCE over valid points per unmatched query, then mean over that sample's unmatched queries and supervised samples.
 
 - [ ] **Step 1: Write failing loss tests**
 
-Test that a high-logit unmatched mask receives a positive gradient (gradient descent lowers it); matched lesion masks preserve existing loss behavior; `u_supervised=False` samples have zero U loss; `point_weight=0` points receive zero gradient; a supervised sample with zero lesion instances still suppresses all query masks.
+Test that `U_MASK_PROFILE=legacy` is unchanged; `unmatched_empty_v1` gives a high-logit unmatched mask a positive gradient (gradient descent lowers it); matched lesion masks preserve existing loss behavior; `u_supervised=False` samples have zero U loss; `point_weight=0` points receive zero gradient; a supervised sample with zero lesion instances still suppresses all query masks.
 
 - [ ] **Step 2: Run the loss tests and confirm expected failures**
 
@@ -156,7 +163,7 @@ Expected: unmatched mask gradient assertion fails under current loss.
 
 - [ ] **Step 3: Implement the minimal unmatched-mask BCE**
 
-For each supervised sample, calculate BCE-to-zero for unmatched query masks. Mask invalid points with `point_weight`; average point loss per query and then across unmatched queries; add with coefficient `NO_OBJECT_WEIGHT`. Leave presence loss, matching, matched-query BCE/Dice, inference merging, and thresholds unchanged.
+Thread `U_MASK_PROFILE` through the trainer and run config. For `unmatched_empty_v1`, calculate BCE-to-zero for unmatched query masks. Mask invalid points with `point_weight`; average point loss per query, then across unmatched queries per sample, then across supervised samples; add with coefficient `NO_OBJECT_WEIGHT`. For `U_MASK_PROFILE=legacy`, preserve current loss exactly. Leave presence loss, matching, matched-query BCE/Dice, inference merging, and thresholds unchanged.
 
 - [ ] **Step 4: Run loss tests**
 
@@ -182,7 +189,7 @@ Run the same command. Expected: all matched/unmatched/supervision-mask assertion
 **Files:**
 - Run existing test suite; no additional source changes unless a failure requires a focused fix.
 
-- [ ] Run targeted tests from Tasks 1–4, then the full CPU suite:
+- [ ] Run targeted tests from Tasks 1–4, verify the R output/inference contracts (`tests/test_aur_relation.py`, `tests/test_aur_infer.py`, `tests/test_aur_eval.py`), then the full CPU suite:
 
 `CUDA_VISIBLE_DEVICES="" PYTHONNOUSERSITE=1 PYTHONPATH=. /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider`
 
@@ -196,9 +203,9 @@ Run the same command. Expected: all matched/unmatched/supervision-mask assertion
 - Training outputs remain under the configured data `ssl_runs/`; do not commit checkpoints or case-level evaluation files.
 
 - [ ] Confirm the existing C0 chain has completed and required cards are idle; never take cards from another process. Use two cards per arm; run in parallel only with four idle cards, otherwise run sequentially with the same recipe.
-- [ ] Run matched C0 (random init) and C2 (G1 init) with the new U loss, same two-card global batch, crops, Stage II/III budgets, validation split, and evaluation settings.
-- [ ] Enable Q25 fail-closed gate for C2. On gate failure, stop and report; do not run Stage III or test evaluation.
-- [ ] If C2 passes, complete both Stage III runs; select U thresholds on validation only; evaluate the full test split once; report A, U, and R, all pseudolabel metrics as `NOT_EVIDENCE`.
+- [ ] Run matched C0 (random init) and C2 (G1 init) with `U_MASK_PROFILE=unmatched_empty_v1`, same two-card global batch, crops, Stage II/III budgets, validation split, and evaluation settings.
+- [ ] Do not apply the legacy Q25 step-1000 gate to the new U-loss pair. Apply only the predeclared final G2-A/G2-U/G3 gates; a separate early-stop gate requires a separate preregistration before launch.
+- [ ] Complete both Stage III runs; select U thresholds on validation only; evaluate the full test split once. Report all 32 A structures plus the 13-host gate; per-source U sensitivity using S7 matching/FP operating points; one R host/no-host result per U instance with G3 controlled ABA. Mark all pseudolabel metrics `NOT_EVIDENCE`.
 - [ ] Preserve the old-loss C0 run as historical comparison; do not claim it is matched to the new-loss pair.
 - [ ] Update status with actual run IDs, gate verdicts, and verified metrics. Do not claim R0/R1 or clinical validation; Level R awaits human readers.
 

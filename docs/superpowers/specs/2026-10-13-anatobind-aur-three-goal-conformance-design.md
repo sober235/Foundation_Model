@@ -1,6 +1,6 @@
 # AnatoBind-Brain A/U/R 三目标执行修正设计
 
-**状态：待用户审阅**
+**状态：2026-10-13 复核修订；待用户复核本次 Q25/profile 边界更改**
 
 **范围：** 对齐已批准的脑部 A/U/R 规格和 SSL-first 执行决定；不扩展研究目标。
 
@@ -22,6 +22,7 @@ G1 表征探针与 Q25 step-1000 检查是训练质量/执行门，不是第四�
 
 - 新配方 C0 当前仍按旧 U mask loss 运行；检查时已有 step 3260 记录。该运行保持原状，作为旧目标配置的结果。
 - Q25 新 C2 的 step-1000 条件是冻结宿主读出 ≥ 0.65 且 A point Dice > 0.045。历史检查脚本只打印 verdict，失败没有阻止训练链继续。C2 后续全测仍标为越过失败条件后的探索结果。
+- U mask loss profile 与 Q25 gate 是分开的 run 配置：`U_MASK_PROFILE=legacy|unmatched_empty_v1` 控制 U loss，`C2_STEP1000_GATE` 控制 Q25 执行门。run config 必须同时记录二者；Q25 的 step-1000 数值只适用于 `U_MASK_PROFILE=legacy` 的原 Q25 C2 recipe。
 - 现有 G2/G3 使用 SynthSeg 与病灶伪标签，所有此类指标继续标记 `NOT_EVIDENCE`。Level R 人工读片仍是独立验证依赖。
 - 实现和后续训练使用隔离分支，不改 `/data0/.../foundation_model` 上正在运行的 C0，也不暂存或覆盖其未跟踪评估文件。
 
@@ -29,9 +30,9 @@ G1 表征探针与 Q25 step-1000 检查是训练质量/执行门，不是第四�
 
 ### 1. Q25 C2 门控必须 fail-closed
 
-只对显式启用 Q25 step-1000 gate 的 C2 Stage II run 使用该门，不把这两个数值暗中推广为所有模型的通用门。
+只对显式启用 Q25 step-1000 gate、`ARM=c2`、`II_BB=5e-5` 且 `U_MASK_PROFILE=legacy` 的 Stage II run 使用该门，不把这两个数值暗中推广为所有模型的通用门。`U_MASK_PROFILE=unmatched_empty_v1` 是新的训练目标配置，不继承旧配方的早停阈值；该配对实验按既定 G2/G3 最终门评估。若要为新 profile 加早停门，必须另行预注册并审阅后再启动。
 
-1. 仅在 `ARM=c2` 且显式启用 Q25 gate 时，Stage II 首次调用以 `--stop-after 1000` 运行，写出验证记录和 `resume_step1000.pt` 后暂停。
+1. 仅在 `ARM=c2`、`U_MASK_PROFILE=legacy` 且显式启用 Q25 gate 时，Stage II 首次调用以 `--stop-after 1000` 运行，写出验证记录和 `resume_step1000.pt` 后暂停。
 2. 参数化的 Q25 检查器从同一 checkpoint 计算冻结 13-host readout，并读取该步验证 A point Dice；脚本本身对 FAIL、缺文件、解析错误返回非零状态。它接收 Stage II run dir、样本清单、验证患者清单和探针卡号，检查产物写入该 run 的 gate 子目录，不依赖临时 scratch 路径。
 3. 只有两项均通过才从该 checkpoint 恢复 Stage II。任何条件失败、文件缺失、评估错误或解析错误都返回非零状态；链立即停止，不进入 Stage III 或测试集评估。
 4. 通过后第二次调用从 `resume_step1000.pt` 恢复，并省略 `--stop-after`；沿用同一 optimizer、scheduler、数据游标、global batch 和预算。`train.py` 的 schedule 不含 invocation-local `stop_after`，现有恢复路径已覆盖“有限步暂停后继续完整 schedule”。门结果、阈值和检查产物写入 run metadata。
@@ -41,7 +42,7 @@ G1 表征探针与 Q25 step-1000 检查是训练质量/执行门，不是第四�
 
 ### 2. U 修复只补未匹配 query 的空掩膜监督
 
-保留 64 个匿名 event queries、匈牙利匹配、当前实例输出格式和推理合并路径。针对已定位的缺口，给 **U 已监督样本**中的未匹配 query 添加空掩膜 BCE：
+保留 64 个匿名 event queries、匈牙利匹配、当前实例输出格式和推理合并路径。`U_MASK_PROFILE=legacy` 完全保留旧 mask loss；新 profile `U_MASK_PROFILE=unmatched_empty_v1` 在 **U 已监督样本**中给未匹配 query 添加空掩膜 BCE：
 
 - 匹配 query：现有目标 mask BCE + Dice 不变。
 - 未匹配 query：目标 mask 为全零；每个 query 只在 `point_weight` 有效采样点上取平均 BCE，再对所有未匹配 query 取平均；将该项乘现有 `NO_OBJECT_WEIGHT = 0.1` 后加到现有 matched-mask loss，不新增可调超参数。
@@ -52,14 +53,15 @@ G1 表征探针与 Q25 step-1000 检查是训练质量/执行门，不是第四�
 
 ### 3. 重新评估必须保持 A/U/R 对照可解释
 
-当前 C0 作为旧损失运行继续完成。代码修正后，如进行新训练，C0 和 C2 都使用相同的新 U loss、数据清单、global batch、Stage II/III 预算和阈值选择协议；C2 还须遵循 fail-closed Q25 gate。validation 选 U 操作点，封存 test 只评估一次。所有伪标签数字仍标 `NOT_EVIDENCE`。
+当前 C0 作为 `U_MASK_PROFILE=legacy` 运行继续完成。代码修正后，新的配对实验中 C0 和 C2 都显式使用 `U_MASK_PROFILE=unmatched_empty_v1`，并匹配数据清单、global batch、Stage II/III 预算和阈值选择协议。该新 profile 不复用旧 Q25 早停门；validation 选 U 操作点，最终按原 G2-A、G2-U、G3 门评估，封存 test 只评估一次。若希望给新 profile 加早停门，必须在启动前另行预注册并审阅。所有伪标签数字仍标 `NOT_EVIDENCE`。
 
 R 的输出空间和 G3 指标不变。Level R 的读片工具/盲法清单可准备，但人工真值、reader agreement 与论文级 R1 结果必须等实际读者完成；本设计不生成或伪造人工标注。
 
 ## 文件边界
 
-- 修改 `anatobind/aur/losses.py`：仅增加 U 未匹配 query 的空 mask BCE。
-- 修改 `scripts/stage23_chain.sh` 与 `docs/verification/2026-10-09/anatobind_brain_ssl_first/ops/c2v2_check.sh`：参数化 checkpoint 路径；让检查器退出码控制是否续跑；失败时阻断后续阶段。
+- 修改 `anatobind/aur/losses.py`：按 U loss profile 选择旧 loss 或 U 未匹配 query 空 mask BCE。
+- 修改 `anatobind/aur/train.py` 与 `scripts/aur_train.py`：显式传递并记录 `U_MASK_PROFILE=legacy|unmatched_empty_v1`；默认保留旧行为。
+- 修改 `scripts/stage23_chain.sh` 与 `docs/verification/2026-10-09/anatobind_brain_ssl_first/ops/c2v2_check.sh`：Q25 gate 只对 `U_MASK_PROFILE=legacy` 参数化 checkpoint 路径并 fail-closed；禁止新 U-loss profile 误用旧 gate。
 - 修改对应现有测试文件：`tests/test_aur_losses.py`、`tests/test_aur_training_contract.py` 及脚本门控测试。
 - 更新 `STATUS.md`：记录实际运行状态、代码门控语义、旧 C2 的协议偏差及伪标签边界；不编辑运行中的 checkpoint 或逐例盲读文件。
 
@@ -67,6 +69,7 @@ R 的输出空间和 G3 指标不变。Level R 的读片工具/盲法清单可�
 
 - 不修改 A/U/R 类别定义、模型输入、训练/测试 patient split、主要评估指标或输出接口。
 - 不替换 U query 解码器，不改 score threshold，不针对 test 集调参。
+- 不把旧 Q25 早停阈值套到 `U_MASK_PROFILE=unmatched_empty_v1`；不为新 profile 事后发明早停门。
 - 不重写 R 架构、不新增病种头、E 或次级关系。
 - 不停止、重启或覆盖当前 C0；不在无人审阅时启动新的 GPU 训练链。
 - 不把伪标签结果写成临床验证或 v2.6 R0/R1 完成。
