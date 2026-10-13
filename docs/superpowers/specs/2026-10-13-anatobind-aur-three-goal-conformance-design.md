@@ -33,8 +33,8 @@ G1 表征探针与 Q25 step-1000 检查是训练质量/执行门，不是第四�
 只对显式启用 Q25 step-1000 gate、`ARM=c2`、`II_BB=5e-5` 且 `U_MASK_PROFILE=legacy` 的 Stage II run 使用该门，不把这两个数值暗中推广为所有模型的通用门。`U_MASK_PROFILE=unmatched_empty_v1` 是新的训练目标配置，不继承旧配方的早停阈值；该配对实验按既定 G2/G3 最终门评估。若要为新 profile 加早停门，必须另行预注册并审阅后再启动。
 
 1. 仅在 `ARM=c2`、`U_MASK_PROFILE=legacy` 且显式启用 Q25 gate 时，Stage II 首次调用以 `--stop-after 1000` 运行，写出验证记录和 `resume_step1000.pt` 后暂停。
-2. 参数化的 Q25 检查器从同一 checkpoint 计算冻结 13-host readout，并读取该步验证 A point Dice；脚本本身对 FAIL、缺文件、解析错误返回非零状态。它接收 Stage II run dir、样本清单、验证患者清单和探针卡号，检查产物写入该 run 的 gate 子目录，不依赖临时 scratch 路径。
-3. 只有两项均通过才从该 checkpoint 恢复 Stage II。任何条件失败、文件缺失、评估错误或解析错误都返回非零状态；链立即停止，不进入 Stage III 或测试集评估。
+2. 参数化的 Q25 检查器从同一 checkpoint 计算冻结 13-host readout，并读取该步验证 A point Dice；脚本本身对 FAIL、缺文件、解析错误返回非零状态。它通过 `STAGE2_DIR`、`SAMPLES`、`VAL_PATIENTS`、`PROBE_GPU`、`PY` 环境变量接收 run dir、样本清单、验证患者清单、探针卡和 Python；`GATE_OUT` 固定为 `$STAGE2_DIR/gate_step1000`。检查产物留在该 run 子目录，不依赖临时 scratch 路径。
+3. 只有两项均通过才从该 checkpoint 恢复 Stage II。任何条件失败、文件缺失、评估错误或解析错误都返回非零状态；链立即停止，保留 step-1000 验证产物，不恢复 Stage II、不进入 Stage III、不做最终验证集阈值选择或测试集评估。
 4. 通过后第二次调用从 `resume_step1000.pt` 恢复，并省略 `--stop-after`；沿用同一 optimizer、scheduler、数据游标、global batch 和预算。`train.py` 的 schedule 不含 invocation-local `stop_after`，现有恢复路径已覆盖“有限步暂停后继续完整 schedule”。门结果、阈值和检查产物写入 run metadata。
 5. 验证阈值只取自 validation。测试集不参与门判断、调阈值或修复选择。
 
@@ -53,15 +53,17 @@ G1 表征探针与 Q25 step-1000 检查是训练质量/执行门，不是第四�
 
 ### 3. 重新评估必须保持 A/U/R 对照可解释
 
-当前 C0 作为 `U_MASK_PROFILE=legacy` 运行继续完成。代码修正后，新的配对实验中 C0 和 C2 都显式使用 `U_MASK_PROFILE=unmatched_empty_v1`，并匹配数据清单、global batch、Stage II/III 预算和阈值选择协议。该新 profile 不复用旧 Q25 早停门；validation 选 U 操作点，最终按原 G2-A、G2-U、G3 门评估，封存 test 只评估一次。若希望给新 profile 加早停门，必须在启动前另行预注册并审阅。所有伪标签数字仍标 `NOT_EVIDENCE`。
+当前 C0 作为 `U_MASK_PROFILE=legacy` 运行继续完成。代码修正后，新的配对实验中 C0 和 C2 都显式使用 `U_MASK_PROFILE=unmatched_empty_v1`，并固定相同训练数据根 `/data2/congcong/data/FM_data`、`derived/aur/samples_1mm_v1.json`、`derived/aur/ssl_manifest_v1/val_patients.json`（开跑前记录 SHA-256）、代码 SHA、seed 0、两卡 global batch 24（microbatch 12/card、grad accumulation 1）、crop 128×160×160、每卷 2 crops、Stage II/III 预算 240k/80k seen crops、24 workers/rank。C0 随机初始化；C2 从登记的 G1 backbone 初始化；除此之外只允许初始化不同。
 
-R 的输出空间和 G3 指标不变。Level R 的读片工具/盲法清单可准备，但人工真值、reader agreement 与论文级 R1 结果必须等实际读者完成；本设计不生成或伪造人工标注。
+新配对 recipe 的 Stage II 使用脚本尺度 `II_BB=5e-5`，global batch 24 时按 `sqrt(24/16)` 缩放为 backbone/head 学习率 6.124e-5 / 6.124e-4，预热 667 步；Stage III backbone/head/relation 学习率为 6.124e-5 / 3.062e-4 / 6.124e-4，预热 133 步。两臂均不启用 Q25 step-1000 gate；validation 选 U 操作点，最终按原 G2-A、G2-U、G3 门评估，封存 test 每臂只评估一次。两臂完成后运行 `scripts/aur_compare.py`，按患者做 2,000 次 bootstrap（seed 0）；其 C0/C2 差值为描述性比较，不改变预注册门。比较中的 U 指标使用各臂在 validation 选择的阈值，G2-U 仍单独按 S7 参照误报工作点评估。若希望给新 profile 加早停门，必须在启动前另行预注册并审阅。所有伪标签数字仍标 `NOT_EVIDENCE`。
+
+R 的 G3 controlled track 使用测试集真值病灶实例作为 R 输入，以隔离宿主绑定能力；R 的目标宿主来自 SynthSeg 伪真值，B0 使用模型预测 anatomy 做几何查表。预测 U 匹配上的端到端 R 仅报告，不替代 G3。任一最终门未通过时，记录失败并停止本计划；不得在 test 上调参或追加未登记改动。Level R 的读片工具/盲法清单可准备，但人工真值、reader agreement 与论文级 R1 结果必须等实际读者完成；本设计不生成或伪造人工标注。
 
 ## 文件边界
 
 - 修改 `anatobind/aur/losses.py`：按 U loss profile 选择旧 loss 或 U 未匹配 query 空 mask BCE。
-- 修改 `anatobind/aur/train.py` 与 `scripts/aur_train.py`：显式传递并记录 `U_MASK_PROFILE=legacy|unmatched_empty_v1`；默认保留旧行为。
-- 修改 `scripts/stage23_chain.sh` 与 `docs/verification/2026-10-09/anatobind_brain_ssl_first/ops/c2v2_check.sh`：Q25 gate 只对 `U_MASK_PROFILE=legacy` 参数化 checkpoint 路径并 fail-closed；禁止新 U-loss profile 误用旧 gate。
+- 修改 `anatobind/aur/train.py` 与 `scripts/aur_train.py`：添加 `--u-mask-profile {legacy,unmatched_empty_v1}`，显式传递并记录 profile；直接调用 trainer 时默认保留旧行为。
+- 修改 `scripts/stage23_chain.sh` 与 `docs/verification/2026-10-09/anatobind_brain_ssl_first/ops/c2v2_check.sh`：Q25 gate 只对 `U_MASK_PROFILE=legacy` 参数化 checkpoint 路径并 fail-closed；新 profile 禁止误用旧 gate。chain 显式传递 U profile 与 `SEED`，并支持 `FM_DATA_ROOT`、`PY`、`TORCHRUN` 和 checker 路径覆盖。
 - 修改对应现有测试文件：`tests/test_aur_losses.py`、`tests/test_aur_training_contract.py` 及脚本门控测试。
 - 更新 `STATUS.md`：记录实际运行状态、代码门控语义、旧 C2 的协议偏差及伪标签边界；不编辑运行中的 checkpoint 或逐例盲读文件。
 
