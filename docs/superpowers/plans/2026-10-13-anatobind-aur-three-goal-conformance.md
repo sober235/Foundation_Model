@@ -12,6 +12,8 @@
 
 **Review status:** 2026-10-13 plan review split the legacy Q25 gate from the new U-loss profile; awaiting user review of this corrected plan.
 
+**Scope note (2026-10-14):** This remains the 3D model-correction subplan. The complete user-facing target—single-slice / 3D-series brain MRI DICOM input, A/U/R display, and a public interactive HTTPS URL—is specified in [the DICOM/web product plan](2026-10-14-anatobind-brain-dicom-web-execution.md). Passing this subplan alone does not deliver that product.
+
 ## Global Constraints
 
 - 仅保留三个模型目标：A 输出 32 个 anatomy masks（13-host macro Dice 为门，32 类均报告）；U 将所有来源已标注病灶并为一个 abnormality 类并输出实例 masks；R 为每个 U instance 输出一个 13 类分侧 host 或 no-host。
