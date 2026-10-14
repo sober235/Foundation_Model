@@ -1,4 +1,4 @@
-# STATUS：2026-10-14 15:0x CEST（周四节点已取消，按顺序连续推进，以 A、U、R 做成为准；现在接着 Codex 停下的地方执行三目标修正计划，见 §2 第 0 条"用户已定"与 §3。SSL-first 线：Q25 收尾，三臂都已全测，G2 的 A、U 与 G3 三臂全不过；配对比较显示 A 的大头来自 Stage II 主干学习率降到十分之一（随机初始化 +0.12），预训练再加 0.045、PDGM 病灶灵敏度 +0.15 且误报更少，但受控 R 低 0.085；新 C2 越过过一次不过的预先登记检查，只作探索性结果；BMSR / ISLES 的 U 三臂都接近 0，是事件解码问题不是数据；待用户定见 §2 第 0 条）
+# STATUS：2026-10-14 14:3x CEST（三目标修正计划 Task 1–4 已在分支 `codex/aur-three-goal-conformance-2026-10-13` 完成并推送，全量测试 1046 passed、2 skipped；独立评审在跑，过了就起 Task 7（新 U 损失训练 C2）。周四节点已取消，按顺序连续推进，以 A、U、R 做成为准，见 §2 第 0 条"用户已定"与 §3。SSL-first 线：Q25 收尾，三臂都已全测，G2 的 A、U 与 G3 三臂全不过；配对比较显示 A 的大头来自 Stage II 主干学习率降到十分之一（随机初始化 +0.12），预训练再加 0.045、PDGM 病灶灵敏度 +0.15 且误报更少，但受控 R 低 0.085；新 C2 越过过一次不过的预先登记检查，只作探索性结果；BMSR / ISLES 的 U 三臂都接近 0，是事件解码问题不是数据；待用户定见 §2 第 0 条）
 
 每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。
 时刻都注明时区或"链日志时钟"（BST）。旧记录里的"本机"：10-11 及以前是 BST（UTC+1），10-12 起是 CEST（UTC+2），见 §4 第一条。
@@ -48,6 +48,17 @@
   | 1336 | 0.5996 | 0.5007 | 0.0988 | [0.0562, 0.1382] | 0.7013 | 0.6789 |
   ```
   全表与读法在 `stage2/STAGE2_V2.md` 末节和 §2 第 0 条。
+- **三目标修正计划 Task 1–4（10-14 14:0x–14:3x CEST，本会话接 Codex；分支 `codex/aur-three-goal-conformance-2026-10-13`，工作树 `../foundation_model-conformance`）**：
+  - Task 1 `anatobind/aur/gates.py::q25_step1000_gate`：读出 ≥ 0.65（含等号）且 A 点 Dice > 0.045（严格），缺失、非有限值一律不过。Codex 写的 1904a09 按仓库身份重提为 66510ce。
+  - Task 2 `ops/c2v2_check.sh` 改成 fail-closed（595434b）：环境 STAGE2_DIR、SAMPLES、VAL_PATIENTS、PROBE_GPU，产物全写 `$STAGE2_DIR/gate_step1000/`，已有判定不覆盖，只有 PASS 退出 0。用 10-11 的真实产物回放判定函数，得到记录里的 FAIL（读出 0.6829 过、A 点 Dice 0.0443 不过）。当时实际跑的旧脚本原样留在 `stage2/frozen_probe/c2v2_step1000_check.sh`。
+  - Task 3 `scripts/stage23_chain.sh`（a50a033）：必须给 `U_MASK_PROFILE`（legacy | unmatched_empty_v1），与 `SEED` 一起传给每次训练；`C2_STEP1000_GATE=1` 只给 Q25 配方（c2、legacy、II_BB 5e-5）：第 1000 步停、跑检查、PASS 才在同一目录续跑，FAIL 或检查出错就停链。链从自己所在的检出运行，可覆盖 PY、TORCHRUN、FM_DATA_ROOT、Q25_CHECKER、PROBE_CARD，默认值不变。
+  - Task 4 `anatobind/aur/losses.py::event_loss(..., u_mask_profile)`（7da5743）：`unmatched_empty_v1` 给 U 监督样本里每个未匹配查询加压空 BCE（有效点平均 → 查询平均 → 样本平均，× NO_OBJECT_WEIGHT 0.1）；legacy 是默认且不变；`--u-mask-profile` 写进 run_config。
+  - 全量测试（Task 6 的核心，14:2x CEST）：
+    ```
+    CUDA_VISIBLE_DEVICES="" PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider
+    1046 passed, 2 skipped in 157.36s (0:02:37)
+    ```
+    此前 1012 passed；新增 34 个（gates 18、链 10、损失 5、训练 1）。
 
 **之前（保留）**：Part 1（方案架构的代码包、样本表、目标、探针）在 tag `handoff/2026-10-09-anatobind-brain-aur-part1`；S4 脑解剖学生模型 A11 不过、三条出路待定；S7 三病种五折全过、1212 份记录 v2；nnDetection 与小病灶线已停；Level R 读片工具就绪、读片未开始（见 CLAUDE.md 当前状态段）。
 
@@ -72,7 +83,7 @@
      3. R：三臂受控轨道都输给 B0（R − B0：新 C2 −0.155、新 C0 −0.102、现行 C0 −0.178），预训练让 R 低 0.085。另有一点未解释：B0 是在各臂自己预测的解剖图上查表，新 C2 全脑 A 更好，B0 却更低（0.6692 对 0.7013），即病灶位置上它的解剖图与 SynthSeg 更不一致，待查。
      4. 新 C2 越过了一次不过的预先登记检查，它的数字只作探索性结果。
    - Q25 三个小目标：第 1 条不过（已披露），第 2、3 条完成。
-   - 现状（10-14 13:2x CEST 查）：AnatoBind 没有在跑的任务，0、2 号卡空；pgrep 只看到本会话。GitHub 上有两条 10-13 的 codex 分支未合 main：`codex/review-aur-execution-alignment-2026-10-13`（执行一致性复核）；`codex/aur-three-goal-conformance-2026-10-13`（三目标修正的规格与计划 + DICOM 网页原型的规格与计划）。用户 10-13 在 Codex 里审过并让它按计划执行，Codex 在 `/tmp/Foundation_Model-aur-brain-iter2` 做完 Task 1（提交 1904a09，未推）、Task 2 做了一半，10-13 10:10 UTC 用量到顶停下（Codex 到 11-12 才能再用）。**本会话从这里接着按计划执行**，见下面"用户已定"与 §3。
+   - 现状（10-14 13:4x CEST 查）：AnatoBind 没有在跑的任务，0、2 号卡空；pgrep 只看到本会话。GitHub 上有两条 10-13 的 codex 分支未合 main：`codex/review-aur-execution-alignment-2026-10-13`（执行一致性复核）；`codex/aur-three-goal-conformance-2026-10-13`（三目标修正的规格与计划 + DICOM 网页原型的规格与计划）。用户 10-13 在 Codex 里审过并让它按计划执行，Codex 在 `/tmp/Foundation_Model-aur-brain-iter2` 做完 Task 1（提交 1904a09，未推）、Task 2 做了一半，10-13 10:10 UTC 用量到顶停下（Codex 到 11-12 才能再用）。本会话从这里接着执行，14:3x CEST 已做完 Task 1–4（§1 末条），见下面"用户已定"与 §3。
    - **用户已定（10-13 / 10-14；10-13 的几条当时没写进仓库，10-14 从 Claude 与 Codex 会话记录里找回原话）**：
      - Q26（10-13 02:28 UTC，Claude 会话）："先消除周四的目标.已经能够实现上述三个子目标为准"。周四汇报节点取消，以 A、U、R 三个子目标真正做成为准。
      - Q27（10-13 07:48 UTC，Codex）：目标重申，给一张 2D 或 3D DICOM，1 识别解剖结构，2 识别异常组织，3 给出异常组织在哪个解剖结构上；最好以任何人都能打开的可交互 URL 呈现。规格与计划在 codex 三目标分支（`docs/superpowers/specs|plans/2026-10-14-anatobind-brain-dicom-web-*`）。
@@ -186,10 +197,9 @@
 
 按顺序连续推进（Q30），没有日期节点（Q26）。执行计划 `docs/superpowers/plans/2026-10-13-anatobind-aur-three-goal-conformance.md`（在 codex 三目标分支上），在工作树里按任务顺序做，每完成一个任务提交、推送：
 
-1. Task 1（Q25 门判定纯函数）：Codex 已做完（1904a09，在 /tmp 克隆里未推），按仓库身份重新提交。
-2. Task 2：参数化、fail-closed 的 Q25 检查脚本（Codex 的报告函数与测试已写好未提交，脚本未写完）。
-3. Task 3：门接进 Stage II → III 链；Task 4：U 损失 `unmatched_empty_v1`（未匹配查询压空，NO_OBJECT_WEIGHT 0.1）；Task 5：同步 STATUS；Task 6：全量测试。
-4. Task 7：新 U 损失的训练（C2 必跑；C0 配对按 Q29 是可选分析，卡够就并行）。验证集选 U 阈值，测试集只评一次；任一门不过就如实记录、停下，再写新计划补 A、R 缺口（病灶位置的 A 图与 B0 反常、R 输给查表）。
+1. Task 1–4 完成并推送（§1 末条）；Task 5 是本次 STATUS 同步；Task 6 全量测试已过（1046 passed）。
+2. 独立评审（用户 Q18：每批一个独立评审代理）在看 Task 1–4 的改动；有阻塞问题先修，修完再起训练。
+3. Task 7：新 U 损失（`U_MASK_PROFILE=unmatched_empty_v1`，`C2_STEP1000_GATE=0`）训练 C2：从 G1 导出起，配方同新 C2（II_BB 5e-5，全局 24，每卡 12，种子 0），两张空卡，约 13.5 h。启动前把代码 SHA、两份清单与主干的 SHA-256、卡号写进记录目录。C0 配对按 Q29 是可选分析，本轮不跑（只回答预训练增益，不影响 A/U/R 过门）。验证集选 U 阈值，测试集只评一次；任一门不过就如实记录、停下，再写新计划补 A、R 缺口（病灶位置的 A 图与 B0 反常、R 输给查表）。
 5. 之后：2D 模型（DICOM 单张）单独推进；显示与公开 URL 最后做（Q28）。Level R 读片仍等用户安排。
 
 ## 4. 坑与别重做
@@ -204,6 +214,9 @@
 - **测试套件要在 CPU 上跑**：`CUDA_VISIBLE_DEVICES="" PYTHONNOUSERSITE=1 PYTHONPATH=. nice -n 19 … pytest tests/`，否则训练器与推理测试会去抢 0 号卡（本机 0 号卡常被别的会话占着）；一个 CUDA-only 测试在 CPU 上跳过。
 - **CPU 的 bf16 autocast 不是 CUDA 的代理**：transformer 层在 CPU autocast 下缺算子，强开会报 dtype 错；autocast 相关行为只能在卡上验。
 - **整卷推理的主机侧成本**：窗口准备（坐标网格）每窗约 1 s，比前向贵；要快就把坐标搬到 GPU 上算。
+- **新测试别对旧脚本跑**：旧 `stage23_chain.sh` 与旧 Q25 检查脚本都写死 `cd` 到主检出和真 Python，旧检查脚本还会在 5 号卡起探针、用 `>` 截断已入库的日志。10-14 先把脚本改成可覆盖，再放占位脚本看 RED，最后才在桩上跑。
+- **链现在必须给 U_MASK_PROFILE**：历史启动脚本（`scripts/stage1_r*`、`ops/swap_*`）不带它会直接报错退出；要复现旧运行就加 `U_MASK_PROFILE=legacy`。
+- **Codex 的 /tmp 克隆**：`/tmp/Foundation_Model-aur-brain-iter2` 还留着 Task 2 的半截改动和 1904a09（作者是全局身份 Qsdcm）；内容已全部移到分支，克隆原样保留，可删（只列）。
 - **时区不固定**：会话 shell 10-11 及以前是 BST（UTC+1），10-12 起是 CEST（UTC+2）；tmux 服务器是 `TZ=Europe/London`，链日志一直是 BST（10-14 用 REPORT.md 的 UTC 修改时间对过）；系统时区是 Asia/Shanghai（UTC+8）。记录里的时刻一律注明时区或"链日志时钟"。
 - **四卡默认 NCCL P2P 会卡死**，`NCCL_P2P_DISABLE=1`；`torchrun --standalone` 自选端口，多个同时起不冲突。
 - **数组顺序 / RAS / 采样点 / 侧别用身份 / 钩子拦删除字样 / zsh 不分词 / 不并行派两个实现者 / SibBMS 编号**：同上一版。
@@ -216,3 +229,5 @@
 - **pilot 在 3 卡**：冒烟目的（DDP、显存、loader、验证、恢复）与卡数无关；主训与 pilot 同 3 卡同全局 36，配置一致。
 - **恢复检查用同卡数同配置**：换卡数会改调度，对照不成立。
 - **记录只增不删**：被挤 OOM 的空目录保留并写明原因，删除只列清单。
+- **Q25 门只管 legacy 配方**：那两个阈值是按旧配方 C0 同步数值定的，新 U 损失不继承；新配方要早停门得另行预先登记（三目标设计 §1）。
+- **压空项的权重用现成的 NO_OBJECT_WEIGHT 0.1**：不新增可调超参数；存在性损失、匹配、推理阈值与跨窗合并首轮都不动，一次只改一个变量（三目标设计 §2）。
