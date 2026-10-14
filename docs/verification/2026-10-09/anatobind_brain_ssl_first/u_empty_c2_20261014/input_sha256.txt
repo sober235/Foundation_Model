@@ -1,0 +1,4 @@
+fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d  /data2/congcong/data/FM_data/derived/aur/samples_1mm_v1.json
+475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34  /data2/congcong/data/FM_data/derived/aur/ssl_manifest_v1/val_patients.json
+98d518aa5dc8910a2a0b248823f68cff4523411100d526d564018c20f96fac08  /data2/congcong/data/FM_data/derived/aur/ssl_runs/stage1_r2_320k_20261010_1303/ssl_stage1_best.pt
+8e06a19eab77fd0b99b2e1c77034ebc7268d8f12d4f06a871f11fa2d48072981  docs/verification/2026-10-09/anatobind_brain_ssl_first/g1/r2_run_20261010_1942/g1_report.json
