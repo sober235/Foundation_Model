@@ -1,24 +1,26 @@
 #!/bin/bash
-# Pre-registered check of the new-recipe C2 (decision Q25, stage2/STAGE2_V2.md): at step 1000, frozen 13-host readout
-# >= 0.65 AND validation A point Dice > 0.045. Waits for the run's step-1000 validation and resume checkpoint, probes the
-# backbone on card 5 (shared with C0), prints the verdict. Reports only: stopping is decided after the report.
+# Fail-closed check of decision Q25 (stage2/STAGE2_V2.md) at step 1000 of a Stage II run: frozen 13-host readout
+# >= 0.65 AND validation A point Dice > 0.045 (anatobind/aur/gates.py). Environment: STAGE2_DIR, SAMPLES, VAL_PATIENTS,
+# PROBE_GPU required; PY optional. Everything is written under $STAGE2_DIR/gate_step1000/ (report.json, the exported
+# backbone, the probe); an existing verdict is never overwritten. Exit 0 only on PASS; FAIL and every error exit
+# non-zero. The 2026-10-11 version only printed its verdict and the chain ran on past a FAIL; it is kept as run in
+# stage2/frozen_probe/c2v2_step1000_check.sh.
 set -u
-cd /data0/congcong/code/Project_Doing/foundation_model
-export PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=8
-PY=$HOME/anaconda3/envs/nvgen/bin/python
-RUNS=/data2/congcong/data/FM_data/derived/aur/ssl_runs
-D=/data2/congcong/data/FM_data/derived/aur
-OUT=docs/verification/2026-10-09/anatobind_brain_ssl_first/stage2/frozen_probe
-SCR=/tmp/claude-1002/-home-congcongliu/4c51bb86-6842-43b4-9b18-0dd733b5a3d4/scratchpad
-say() { echo "[$(date '+%F %T')] $*"; }
-RUN=""
-until [ -n "$RUN" ]; do RUN=$(ls -d $RUNS/c2_stage2_240k_20261011_05* 2>/dev/null | head -1); [ -n "$RUN" ] || sleep 30; done
-say "new C2 Stage II run: $RUN"
-until [ -f "$RUN/resume_step1000.pt" ] && grep -q '"step": 1000' "$RUN/val.jsonl" 2>/dev/null; do sleep 30; done
-T=$(pgrep -f "^$PY -u scripts/aur_train.py --stage II --init-backbone" | head -1)
-while ls -l /proc/$T/fd 2>/dev/null | grep -q resume_step1000; do sleep 5; done; sleep 5
-say "step 1000 saved; exporting the backbone and probing on card 5"
-$PY - "$RUN/resume_step1000.pt" "$SCR/bb/c2v2_step1000.backbone.pt" <<'PYEOF'
+REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../../.." && pwd)
+PY=${PY:-$HOME/anaconda3/envs/nvgen/bin/python}
+[ -n "${STAGE2_DIR:-}" ] || { echo "Q25 check: STAGE2_DIR is not set" >&2; exit 2; }
+GATE_OUT=$STAGE2_DIR/gate_step1000
+mkdir "$GATE_OUT" || { echo "Q25 check: cannot create $GATE_OUT (an earlier verdict is never overwritten)" >&2; exit 2; }
+cd "$REPO" || exit 2
+export PYTHONNOUSERSITE=1 PYTHONPATH="$REPO" OMP_NUM_THREADS=8
+
+ERRORS=()
+for v in SAMPLES VAL_PATIENTS PROBE_GPU; do [ -n "${!v:-}" ] || ERRORS+=("env_missing:$v"); done
+[ -n "${SAMPLES:-}" ] && [ ! -f "$SAMPLES" ] && ERRORS+=("samples_missing")
+[ -n "${VAL_PATIENTS:-}" ] && [ ! -f "$VAL_PATIENTS" ] && ERRORS+=("validation_manifest_missing")
+PROBE_ERROR=""
+if [ ${#ERRORS[@]} -eq 0 ] && [ -f "$STAGE2_DIR/resume_step1000.pt" ]; then
+  "$PY" - "$STAGE2_DIR/resume_step1000.pt" "$GATE_OUT/backbone_step1000.pt" > "$GATE_OUT/export.log" 2>&1 <<'PYEOF' || PROBE_ERROR="backbone export failed, see export.log"
 import sys, torch
 from anatobind.aur.ssl import checkpoint as CK
 from anatobind.aur.model import AnatoBindBrain
@@ -27,18 +29,32 @@ m = AnatoBindBrain(use_checkpoint=False)
 m.load_state_dict(ck["model"], strict=True)
 CK.export_backbone(sys.argv[2], m.backbone, {**ck["meta"], "from_resume": sys.argv[1]})
 PYEOF
-CUDA_VISIBLE_DEVICES=5 $PY scripts/aur_ssl_eval.py --checkpoint "$SCR/bb/c2v2_step1000.backbone.pt" --samples "$D/samples_1mm_v1.json" \
-  --val-patients "$D/ssl_manifest_v1/val_patients.json" --out "$OUT/c2v2_step1000" --seeds 0 1 2 --host-only --workers 4 > "$OUT/c2v2_step1000.log" 2>&1 \
-  || { say "probe failed: see $OUT/c2v2_step1000.log"; exit 1; }
-$PY - "$OUT/c2v2_step1000/g1_report.json" "$RUN/val.jsonl" <<'PYEOF'
+  if [ -z "$PROBE_ERROR" ]; then
+    CUDA_VISIBLE_DEVICES=$PROBE_GPU "$PY" scripts/aur_ssl_eval.py --checkpoint "$GATE_OUT/backbone_step1000.pt" \
+      --samples "$SAMPLES" --val-patients "$VAL_PATIENTS" --out "$GATE_OUT/probe" --seeds 0 1 2 --host-only \
+      --workers 4 > "$GATE_OUT/probe.log" 2>&1 || PROBE_ERROR="probe failed, see probe.log"
+  fi
+fi
+
+"$PY" - "$STAGE2_DIR" "$GATE_OUT" "$PROBE_ERROR" "${ERRORS[@]}" <<'PYEOF'
 import json, sys
-g = json.load(open(sys.argv[1]))["g1"]
-val = {json.loads(l)["step"]: json.loads(l) for l in open(sys.argv[2])}
-readout, a1000 = g["host_macro_ssl"], val[1000]["a_dice"]
-a500 = val.get(500, {}).get("a_dice")
-ok1, ok2 = readout >= 0.65, a1000 > 0.045
-print(f"frozen readout at step 1000: {readout:.4f} (>= 0.65: {ok1}); validation A point Dice: step 500 {a500}, step 1000 {a1000:.4f} (> 0.045: {ok2})")
-print("VERDICT:", "PASS - continue" if ok1 and ok2 else "FAIL - stop and report")
-for s in sorted(val):
-    v = val[s]; print(" val", s, "a_dice %.4f a_mask %.4f u_matched %s s %.4f" % (v["a_dice"], v["a_mask"], v.get("u_matched"), v["s"]))
+from pathlib import Path
+from anatobind.aur.gates import build_q25_step1000_report
+
+run, out, probe_error, input_errors = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3] or None, sys.argv[4:]
+
+
+def read(path, parse):
+    try:
+        return parse(path.read_text())
+    except (OSError, ValueError):
+        return None
+
+
+report = build_q25_step1000_report(
+    read(out / "probe" / "g1_report.json", json.loads), read(run / "val.jsonl", str),
+    checkpoint_exists=(run / "resume_step1000.pt").is_file(), probe_error=probe_error, input_errors=input_errors)
+(out / "report.json").write_text(json.dumps(report, indent=1))
+print("Q25 step 1000:", "PASS" if report["passed"] else "FAIL", json.dumps(report["metrics"]), report["failures"])
+sys.exit(0 if report["passed"] else 1)
 PYEOF
