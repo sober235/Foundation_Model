@@ -22,6 +22,9 @@
 | `stage2/STAGE2_V2.md`、`stage2/frozen_probe/c2v2_step1000_check.{sh,log}`、`stage2/frozen_probe/c2v2_step1000/g1_report.json` | 决定 Q25 的预先登记与新 C2 第 1000 步检查：冻结读出 0.6829 ≥ 0.65 过，验证 A 点 Dice 0.0443 不过门 > 0.045 → **VERDICT: FAIL - stop and report**；检查脚本只报告，当时无人值守，链继续跑完 | 检查不过、未停（10-12 披露） |
 | `eval/c0_val_20261010_1533/`、`eval/c0_test_20261010_1533/`（`REPORT.md`、`aggregate.json`、`reference.json`，分片日志） | 现行配方 C0（随机初始化）：验证集选 U 阈值 → 全测 1,056 行；A 宏 Dice 0.6289、U 三源 0.000 / 0.035 / 0.169、ABA(R) 0.5007 对 B0 0.6789 | G2、G3 不过 |
 | `eval/c2_val_20261011_0500/`、`eval/c2_test_20261011_0500/`（同上） | 新配方 C2（预训练、主干学习率十分之一；越过不过的第 1000 步检查）：A 宏 Dice 0.7961、U PDGM 0.7538 / BMSR 0.0049 / ISLES 0.0069、ABA(R) 0.5142 对 B0 0.6692；差距子集 53 例 R 救回 23 / 弄错 7；端到端 139 例 0.7050 对 0.4892 | G2、G3 不过 |
+| `eval/c0_val_20261013_0259/`、`eval/c0_test_20261013_0259/`（同上） | 新配方 C0（随机初始化、主干学习率十分之一，与新 C2 逐项同设置）：A 宏 Dice 0.7506、U PDGM 0.6077 / BMSR 0.0061 / ISLES 0.0242、ABA(R) 0.5996 对 B0 0.7013；端到端 103 例 0.6796 对 0.5340 | G2、G3 不过 |
+| `eval/compare_c2v2_c0v2_20261014/`（`COMPARE.md`、`compare.json`） | Q25 配对，新 C2 − 新 C0：A +0.0454 [0.0435, 0.0477]、U PDGM FLAIR +0.1462 [0.0720, 0.2250]（误报 0.158 对 0.604）、受控 ABA(R) −0.0853 [−0.1186, −0.0496]；读法见 `stage2/STAGE2_V2.md` 末节 | 只报告，NOT_EVIDENCE |
+| `eval/compare_c0v2_c0_20261014/`（同上） | 配方对照，新 C0 − 现行 C0（只差 Stage II 主干学习率）：A +0.1217 [0.1186, 0.1243]、U PDGM FLAIR +0.4385 [0.3534, 0.5360]（误报 0.604 对 0.139）、受控 ABA(R) +0.0988 [0.0562, 0.1382] | 只报告，NOT_EVIDENCE |
 
 逐例 `cases.json` 与 Level R 的 `level_r_key.json` / `level_r_sheet.csv` 留在本地对应目录、不入库（仓库公开，密钥会破坏盲读）。
 
