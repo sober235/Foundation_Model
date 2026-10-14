@@ -1,0 +1,35 @@
+{
+ "bmsr": {
+  "thr": 0.65,
+  "sensitivity": 0.6961206896551724,
+  "fp_per_scan": 0.8780487804878049,
+  "n_gt": 464,
+  "n_hit": 323,
+  "n_fp": 36,
+  "n_scans": 41,
+  "disease": "metastasis",
+  "source": "bmsr"
+ },
+ "isles": {
+  "thr": 0.5,
+  "sensitivity": 0.5942857142857143,
+  "fp_per_scan": 1.6,
+  "n_gt": 175,
+  "n_hit": 104,
+  "n_fp": 32,
+  "n_scans": 20,
+  "disease": "infarct",
+  "source": "isles"
+ },
+ "pdgm": {
+  "thr": 0.6,
+  "sensitivity": 0.9056603773584906,
+  "fp_per_scan": 0.36585365853658536,
+  "n_gt": 53,
+  "n_hit": 48,
+  "n_fp": 15,
+  "n_scans": 41,
+  "disease": "glioma",
+  "source": "pdgm"
+ }
+}
