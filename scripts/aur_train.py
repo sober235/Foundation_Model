@@ -56,6 +56,8 @@ def parser():
     ap.add_argument("--stop-after", type=int, default=None, help="stop (with a resume checkpoint) after this many steps of this invocation; the schedule is unchanged")
     ap.add_argument("--u-mask-profile", choices=U_MASK_PROFILES, default="legacy",
                     help="U mask loss: legacy, or unmatched_empty_v1 (unmatched queries also learn an empty mask; plan 2026-10-13)")
+    ap.add_argument("--c2-step1000-gate", type=int, choices=(0, 1), default=0,
+                    help="recorded only: 1 when scripts/stage23_chain.sh runs this Stage II behind the decision-Q25 step-1000 gate")
     ap.add_argument("--use-checkpoint", action="store_true")
     return ap
 
@@ -66,7 +68,7 @@ def config_from_args(a):
            "crop": tuple(a.crop), "points": a.points, "workers": a.workers, "seed": a.seed, "weight_decay": a.weight_decay,
            "val_every": a.val_every, "val_volumes": a.val_volumes, "save_every": a.save_every, "log_every": a.log_every,
            "max_steps": a.max_steps, "stop_after": a.stop_after, "use_checkpoint": a.use_checkpoint,
-           "u_mask_profile": a.u_mask_profile}
+           "u_mask_profile": a.u_mask_profile, "c2_step1000_gate": a.c2_step1000_gate}
     stage = stage_defaults(a.stage)
     cfg["seen_crops"] = a.seen_crops if a.seen_crops is not None else stage["seen_crops"]
     cfg["warmup_steps"] = a.warmup_steps if a.warmup_steps is not None else stage["warmup_steps"]

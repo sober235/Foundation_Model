@@ -215,7 +215,7 @@
 - **CPU 的 bf16 autocast 不是 CUDA 的代理**：transformer 层在 CPU autocast 下缺算子，强开会报 dtype 错；autocast 相关行为只能在卡上验。
 - **整卷推理的主机侧成本**：窗口准备（坐标网格）每窗约 1 s，比前向贵；要快就把坐标搬到 GPU 上算。
 - **新测试别对旧脚本跑**：旧 `stage23_chain.sh` 与旧 Q25 检查脚本都写死 `cd` 到主检出和真 Python，旧检查脚本还会在 5 号卡起探针、用 `>` 截断已入库的日志。10-14 先把脚本改成可覆盖，再放占位脚本看 RED，最后才在桩上跑。
-- **链现在必须给 U_MASK_PROFILE**：历史启动脚本（`scripts/stage1_r*`、`ops/swap_*`）不带它会直接报错退出；要复现旧运行就加 `U_MASK_PROFILE=legacy`。
+- **链现在必须给 U_MASK_PROFILE**：历史启动脚本（`scripts/stage1_r*`、`ops/swap_*`）不带它会直接报错退出；要复现旧运行就加 `U_MASK_PROFILE=legacy`，Q25 那条 C2（`ops/swap_c2_v2.sh`）还要 `C2_STEP1000_GATE=1`。这些启动脚本不看链的退出码：链在入口报错时它们照样写"chain done"，要看链日志或 stderr。
 - **Codex 的 /tmp 克隆**：`/tmp/Foundation_Model-aur-brain-iter2` 还留着 Task 2 的半截改动和 1904a09（作者是全局身份 Qsdcm）；内容已全部移到分支，克隆原样保留，可删（只列）。
 - **时区不固定**：会话 shell 10-11 及以前是 BST（UTC+1），10-12 起是 CEST（UTC+2）；tmux 服务器是 `TZ=Europe/London`，链日志一直是 BST（10-14 用 REPORT.md 的 UTC 修改时间对过）；系统时区是 Asia/Shanghai（UTC+8）。记录里的时刻一律注明时区或"链日志时钟"。
 - **四卡默认 NCCL P2P 会卡死**，`NCCL_P2P_DISABLE=1`；`torchrun --standalone` 自选端口，多个同时起不冲突。

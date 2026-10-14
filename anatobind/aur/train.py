@@ -48,7 +48,7 @@ DEFAULTS = {"stage": "II", "model": {}, "microbatch": 4, "grad_accum": 1, "crops
             "workers": 4, "seed": 0, "weight_decay": 0.05, "val_every": 500, "val_volumes": 32, "save_every": 500, "log_every": 20,
             "lambda_r": L.LAMBDA_R, "lambda_h": L.LAMBDA_H, "use_checkpoint": False, "max_steps": None, "lesion_share": 0.5,
             "init": "backbone", "init_backbone": None, "resume_stage2": None, "g1_report": None, "pilot": False, "stop_after": None,
-            "u_mask_profile": "legacy"}
+            "u_mask_profile": "legacy", "c2_step1000_gate": 0}
 HEAD_MODULES = ("entities", "events", "sequence", "masks")
 COUNT_KEYS = ("r_samples", "r_correct", "r_instances")
 LOSS_KEYS = ("a_mask", "a_presence", "u_presence", "u_mask", "s", "r_host", "r_hard")
@@ -380,6 +380,10 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
         saved = meta.get("schedule")
         if saved is not None and saved != schedule:
             raise ValueError(f"resume schedule mismatch: the checkpoint was made with {saved}, this run has {schedule}")
+        made = {"u_mask_profile": (meta.get("config") or {}).get("u_mask_profile", "legacy"), "seed": meta.get("seed")}  # runs before 2026-10-14 were all legacy
+        for key, value in made.items():
+            if value is not None and value != cfg[key]:
+                raise ValueError(f"resume {key} mismatch: the checkpoint was made with {value!r}, this run has {cfg[key]!r}")
         later = sorted(f.name for f in out_dir.glob("*.pt") if (_step_of(f.name) or 0) > step)
         if later:                                                  # another trajectory went past this point: its saves would collide hours later
             raise ValueError(f"{out_dir} holds checkpoints later than step {step} ({', '.join(later)}): resume from the latest one or into a new directory")

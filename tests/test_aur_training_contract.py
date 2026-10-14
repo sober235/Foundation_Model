@@ -198,6 +198,25 @@ def test_u_mask_profile_reaches_the_loss_the_cli_and_the_run_config(tmp_path):
     assert not (tmp_path / "bad").exists()
 
 
+def test_resume_refuses_another_u_mask_profile_or_seed_and_the_gate_setting_is_recorded(tmp_path):
+    samples, val, _ = _manifest(tmp_path)
+    short = tmp_path / "short"
+    T.run(_cfg(init="random", stop_after=2), samples, val, short)
+    resume = short / "resume_step2.pt"
+    with pytest.raises(ValueError, match="u_mask_profile mismatch"):
+        T.run(_cfg(init="random", u_mask_profile="unmatched_empty_v1"), samples, val, short, resume=resume)
+    with pytest.raises(ValueError, match="seed mismatch"):
+        T.run(_cfg(init="random", seed=5), samples, val, short, resume=resume)
+    assert T.run(_cfg(init="random"), samples, val, short, resume=resume)["steps"] == 3
+    assert json.loads((short / "run_config.json").read_text())["config"]["c2_step1000_gate"] == 0
+    cli = _load("aur_train")
+    base = ["--stage", "II", "--init", "random", "--samples", "s", "--val-patients", "v", "--out", "o"]
+    assert cli.config_from_args(cli.parser().parse_args(base))["c2_step1000_gate"] == 0
+    assert cli.config_from_args(cli.parser().parse_args(base + ["--c2-step1000-gate", "1"]))["c2_step1000_gate"] == 1
+    with pytest.raises(SystemExit):
+        cli.parser().parse_args(base + ["--c2-step1000-gate", "2"])
+
+
 def test_relation_loss_is_gated_by_r_supervised_and_uses_the_matched_targets(tmp_path):
     _, _, rows = _manifest(tmp_path)
     on = _batch([rows[0], rows[2]])
@@ -393,7 +412,7 @@ def test_stage_three_run_starts_from_the_stage_two_export(tmp_path):
         T.resolve_init({"init": "random", "init_backbone": str(ssl), "pilot": True})
 
 
-def _ddp_worker(rank, world, init_file, samples, stage, result_dir):
+def _ddp_worker(rank, world, init_file, samples, stage, result_dir, profile="legacy"):
     import torch.distributed as dist
     rows = json.loads(Path(samples).read_text())
     dist.init_process_group("gloo", init_method=f"file://{init_file}", rank=rank, world_size=world)
@@ -408,7 +427,7 @@ def _ddp_worker(rank, world, init_file, samples, stage, result_dir):
     for step in range(2):
         batch = _batch(extreme if (rank + step) % 2 == 0 else full, seed=step)
         points = L.sample_points(batch["valid"], 64, torch.Generator().manual_seed(step), instance=batch["instance"])
-        total, logged, _ = T.compute_losses(model, ddp, batch, points, stage)
+        total, logged, _ = T.compute_losses(model, ddp, batch, points, stage, u_mask_profile=profile)
         opt.zero_grad(set_to_none=True)
         total.backward()
         record["missing"] += [n for n, p in model.named_parameters() if p.requires_grad and p.grad is None]
@@ -418,17 +437,18 @@ def _ddp_worker(rank, world, init_file, samples, stage, result_dir):
     gathered = [torch.zeros_like(flat) for _ in range(world)]
     dist.all_gather(gathered, flat)
     record["equal"] = all(torch.allclose(gathered[0], g) for g in gathered)
-    (Path(result_dir) / f"rank{rank}_{stage}.json").write_text(json.dumps(record))
+    (Path(result_dir) / f"rank{rank}_{stage}_{profile}.json").write_text(json.dumps(record))
     dist.destroy_process_group()
 
 
-def test_two_rank_ddp_survives_extreme_supervision_in_both_stages(tmp_path):
+@pytest.mark.parametrize("profile", ["legacy", "unmatched_empty_v1"])
+def test_two_rank_ddp_survives_extreme_supervision_in_both_stages(tmp_path, profile):
     samples, _, _ = _manifest(tmp_path)
     for stage in ("II", "III"):
         init_file = tmp_path / f"init_{stage}"
-        torch.multiprocessing.spawn(_ddp_worker, args=(2, str(init_file), str(samples), stage, str(tmp_path)), nprocs=2, join=True)
+        torch.multiprocessing.spawn(_ddp_worker, args=(2, str(init_file), str(samples), stage, str(tmp_path), profile), nprocs=2, join=True)
         for rank in (0, 1):
-            rec = json.loads((tmp_path / f"rank{rank}_{stage}.json").read_text())
+            rec = json.loads((tmp_path / f"rank{rank}_{stage}_{profile}.json").read_text())
             assert rec["missing"] == [] and rec["finite"] and rec["equal"], (stage, rank, rec)
 
 

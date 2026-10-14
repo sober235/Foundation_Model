@@ -57,6 +57,11 @@ esac
 FAKE_CHECKER = '''#!/bin/bash
 echo "STAGE2_DIR=$STAGE2_DIR SAMPLES=$SAMPLES VAL_PATIENTS=$VAL_PATIENTS PROBE_GPU=$PROBE_GPU PY=$PY" >> "$CHECKER_LOG"
 mkdir "$STAGE2_DIR/gate_step1000"
+case "${STUB_REPORT:-auto}" in
+  auto) if [ "$STUB_GATE_EXIT" = 0 ]; then echo '{"passed": true}'; else echo '{"passed": false}'; fi > "$STAGE2_DIR/gate_step1000/report.json" ;;
+  none) ;;
+  *) echo "$STUB_REPORT" > "$STAGE2_DIR/gate_step1000/report.json" ;;
+esac
 exit "$STUB_GATE_EXIT"
 '''
 
@@ -140,6 +145,8 @@ def test_q25_gate_pass_resumes_the_same_run_then_stage3_and_evaluation(chain):
     assert opt(first, "--stop-after") == "1000"
     assert opt(resumed, "--out") == out and opt(resumed, "--resume") == f"{out}/resume_step1000.pt"
     assert "--stop-after" not in resumed
+    for call in (first, resumed):
+        assert opt(call, "--seed") == "0" and opt(call, "--u-mask-profile") == "legacy" and opt(call, "--c2-step1000-gate") == "1"
     stage3 = [c for c in run.calls("scripts/aur_train.py") if opt(c, "--stage") == "III"]
     assert len(stage3) == 1 and opt(stage3[0], "--resume-stage2") == f"{out}/aur_stage2_best.pt"
     assert len(run.calls("scripts/aur_eval.py")) == 2 and len(run.checker_lines()) == 1
@@ -187,3 +194,40 @@ def test_the_new_profile_runs_without_the_gate_and_every_stage_gets_seed_and_pro
     assert len(calls) == 4                                   # smoke, smoke resume, Stage II, Stage III
     for call in calls:
         assert opt(call, "--seed") == "7" and opt(call, "--u-mask-profile") == "unmatched_empty_v1"
+        assert opt(call, "--c2-step1000-gate") == "0"
+
+
+@pytest.mark.parametrize("ii_bb", ["0.00005", "5.0e-5"])
+def test_the_q25_recipe_is_recognised_by_value(chain, ii_bb):
+    run = chain(ARM="c2", U_MASK_PROFILE="legacy", II_BB=ii_bb)
+
+    assert run.returncode != 0
+    assert run.calls("scripts/aur_train.py") == []
+
+
+@pytest.mark.parametrize("report", ['{"passed": false}', "none", "not json"])
+def test_the_chain_needs_a_passed_verdict_not_only_the_exit_code(chain, report):
+    run = chain(ARM="c2", U_MASK_PROFILE="legacy", II_BB="5e-5", C2_STEP1000_GATE="1", STUB_GATE_EXIT="0", STUB_REPORT=report)
+
+    assert run.returncode != 0
+    assert len(stage2_calls(run)) == 1
+    assert not [c for c in run.calls("scripts/aur_train.py") if opt(c, "--stage") == "III"]
+
+
+@pytest.mark.parametrize("verdict", ['{"passed": true}', '{"passed": false}', None])
+def test_a_gated_run_resumes_through_the_chain_only_behind_a_passed_verdict(chain, verdict):
+    run_dir = chain.data / "derived/aur/ssl_runs/c2_stage2_240k_20991231_0000"
+    (run_dir / "gate_step1000").mkdir(parents=True)
+    (run_dir / "resume_step2500.pt").write_bytes(b"stub")
+    if verdict is not None:
+        (run_dir / "gate_step1000" / "report.json").write_text(verdict)
+    run = chain(ARM="c2", U_MASK_PROFILE="legacy", II_BB="5e-5", C2_STEP1000_GATE="1",
+                RESUME_STAGE2=str(run_dir / "resume_step2500.pt"), STAGE2_DIR=str(run_dir))
+
+    train = run.calls("scripts/aur_train.py")
+    if verdict == '{"passed": true}':
+        assert run.returncode == 0, run.stdout + run.stderr
+        assert opt(train[0], "--resume") == str(run_dir / "resume_step2500.pt") and opt(train[0], "--out") == str(run_dir)
+        assert [opt(c, "--stage") for c in train] == ["II", "III"] and run.checker_lines() == []
+    else:
+        assert run.returncode != 0 and train == []
