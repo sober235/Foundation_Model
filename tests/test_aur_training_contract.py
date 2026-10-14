@@ -176,6 +176,28 @@ def test_losses_touch_every_trainable_parameter_under_extreme_supervision(tmp_pa
         assert torch.isfinite(total)
 
 
+def test_u_mask_profile_reaches_the_loss_the_cli_and_the_run_config(tmp_path):
+    samples, val, rows = _manifest(tmp_path)
+    batch = _batch([rows[0], dict(rows[1], u_supervised=True)])          # one lesion, and a U-supervised crop without one
+    torch.manual_seed(0)
+    model = AnatoBindBrain(**TINY, use_checkpoint=False)
+    points = L.sample_points(batch["valid"], 64, torch.Generator().manual_seed(0), instance=batch["instance"])
+    _, legacy, _ = T.compute_losses(model, model, batch, points, "II")
+    _, new, _ = T.compute_losses(model, model, batch, points, "II", u_mask_profile="unmatched_empty_v1")
+    assert new["u_mask"] > legacy["u_mask"] and new["u_presence"] == legacy["u_presence"]
+    cli = _load("aur_train")
+    base = ["--stage", "II", "--init", "random", "--samples", "s", "--val-patients", "v", "--out", "o"]
+    assert cli.config_from_args(cli.parser().parse_args(base))["u_mask_profile"] == "legacy"
+    assert cli.config_from_args(cli.parser().parse_args(base + ["--u-mask-profile", "unmatched_empty_v1"]))["u_mask_profile"] == "unmatched_empty_v1"
+    with pytest.raises(SystemExit):
+        cli.parser().parse_args(base + ["--u-mask-profile", "other"])
+    T.run(_cfg(init="random", u_mask_profile="unmatched_empty_v1"), samples, val, tmp_path / "run")
+    assert json.loads((tmp_path / "run" / "run_config.json").read_text())["config"]["u_mask_profile"] == "unmatched_empty_v1"
+    with pytest.raises(ValueError, match="u_mask_profile"):
+        T.run(_cfg(init="random", u_mask_profile="other"), samples, val, tmp_path / "bad")
+    assert not (tmp_path / "bad").exists()
+
+
 def test_relation_loss_is_gated_by_r_supervised_and_uses_the_matched_targets(tmp_path):
     _, _, rows = _manifest(tmp_path)
     on = _batch([rows[0], rows[2]])

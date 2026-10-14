@@ -47,7 +47,8 @@ STAGES = {
 DEFAULTS = {"stage": "II", "model": {}, "microbatch": 4, "grad_accum": 1, "crops_per_volume": 2, "crop": CROP, "points": L.N_POINTS,
             "workers": 4, "seed": 0, "weight_decay": 0.05, "val_every": 500, "val_volumes": 32, "save_every": 500, "log_every": 20,
             "lambda_r": L.LAMBDA_R, "lambda_h": L.LAMBDA_H, "use_checkpoint": False, "max_steps": None, "lesion_share": 0.5,
-            "init": "backbone", "init_backbone": None, "resume_stage2": None, "g1_report": None, "pilot": False, "stop_after": None}
+            "init": "backbone", "init_backbone": None, "resume_stage2": None, "g1_report": None, "pilot": False, "stop_after": None,
+            "u_mask_profile": "legacy"}
 HEAD_MODULES = ("entities", "events", "sequence", "masks")
 COUNT_KEYS = ("r_samples", "r_correct", "r_instances")
 LOSS_KEYS = ("a_mask", "a_presence", "u_presence", "u_mask", "s", "r_host", "r_hard")
@@ -168,7 +169,7 @@ def to_device(batch, device):
     return out
 
 
-def _forward_losses(module, model, batch, points, stage, lambda_r, lambda_h):
+def _forward_losses(module, model, batch, points, stage, lambda_r, lambda_h, u_mask_profile="legacy"):
     """One micro-batch: (total loss, logged values (floats and the R counts), matches, extras for validation)."""
     device = points.device
     out = model(batch["image"], batch["valid"], batch["coords"], batch["local"])
@@ -180,7 +181,7 @@ def _forward_losses(module, model, batch, points, stage, lambda_r, lambda_h):
     parts = L.entity_loss(em, out["entity_presence"].float(), entity_pts, a_ignore_pts, batch["entity_present"], batch["a_supervised"])
     targets = event_targets_at_points(inst_pts, batch["n_instances"])
     with torch.autocast(device_type=device.type, enabled=False):                        # the Hungarian cost in full precision
-        u, matches = L.event_loss(out["event_presence"].float(), um, targets, weight_pts, batch["u_supervised"])
+        u, matches = L.event_loss(out["event_presence"].float(), um, targets, weight_pts, batch["u_supervised"], u_mask_profile)
     parts.update(u)
     parts.update(L.seq_loss(out["seq_logits"].float(), batch["seq"]))
     r_samples, r_correct, r_total = 0, 0, 0
@@ -208,10 +209,10 @@ def _forward_losses(module, model, batch, points, stage, lambda_r, lambda_h):
     return total, logged, matches, extras
 
 
-def compute_losses(module, model, batch, points, stage, lambda_r=L.LAMBDA_R, lambda_h=L.LAMBDA_H):
+def compute_losses(module, model, batch, points, stage, lambda_r=L.LAMBDA_R, lambda_h=L.LAMBDA_H, u_mask_profile="legacy"):
     """module: the AnatoBindBrain (for masks and bind); model: the callable (the same module or its DDP wrapper);
     batch: a collated batch on the points' device; points (B, P) flat indices. Returns (total, logged, matches)."""
-    total, logged, matches, _ = _forward_losses(module, model, batch, points, stage, lambda_r, lambda_h)
+    total, logged, matches, _ = _forward_losses(module, model, batch, points, stage, lambda_r, lambda_h, u_mask_profile)
     return total, logged, matches
 
 
@@ -241,7 +242,7 @@ def validate(module, model, batches, device, stage, cfg):
         b = to_device(b, device)
         points = L.sample_points(b["valid"], cfg["points"], torch.Generator(device=device).manual_seed(cfg["seed"] + 99 + i), instance=b["instance"])
         with torch.autocast(device_type="cuda" if device.type == "cuda" else "cpu", dtype=torch.bfloat16, enabled=device.type == "cuda"):
-            total, logged, matches, ex = _forward_losses(module, model, b, points, stage, cfg["lambda_r"], cfg["lambda_h"])
+            total, logged, matches, ex = _forward_losses(module, model, b, points, stage, cfg["lambda_r"], cfg["lambda_h"], cfg["u_mask_profile"])
         sums["loss"] = sums.get("loss", 0.0) + float(total)
         for k in LOSS_KEYS:
             sums[k] = sums.get(k, 0.0) + float(logged.get(k, 0.0))
@@ -331,6 +332,8 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
     cfg["stage"] = stage
     if cfg["microbatch"] % cfg["crops_per_volume"]:
         raise ValueError(f"microbatch {cfg['microbatch']} must be a multiple of crops_per_volume {cfg['crops_per_volume']}")
+    if cfg["u_mask_profile"] not in L.U_MASK_PROFILES:
+        raise ValueError(f"u_mask_profile must be one of {L.U_MASK_PROFILES}, not {cfg['u_mask_profile']!r}")
     if stage == "III":
         if not cfg.get("resume_stage2"):
             raise ValueError("stage III needs resume_stage2 (the Stage II export aur_stage2_best.pt)")
@@ -432,7 +435,7 @@ def run(cfg, samples, val_patients, out_dir, resume=None):
                 g = torch.Generator(device=device).manual_seed(int(np.random.SeedSequence([cfg["seed"], step, rank, j]).generate_state(1)[0]))
                 points = L.sample_points(b["valid"], cfg["points"], g, instance=b["instance"])   # on the CPU they bound a 12-crop step)
                 with torch.autocast(device_type="cuda" if device.type == "cuda" else "cpu", dtype=torch.bfloat16, enabled=device.type == "cuda"):
-                    total, logged, _ = compute_losses(model, ddp, b, points, stage, cfg["lambda_r"], cfg["lambda_h"])
+                    total, logged, _ = compute_losses(model, ddp, b, points, stage, cfg["lambda_r"], cfg["lambda_h"], cfg["u_mask_profile"])
                     (total / cfg["grad_accum"]).backward()
                 stats["loss"] = stats.get("loss", 0.0) + float(total) / cfg["grad_accum"]
                 for k, v in logged.items():

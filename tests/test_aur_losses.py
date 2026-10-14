@@ -135,3 +135,83 @@ def test_matching_reads_only_the_weighted_points():
     assert qi.tolist() == [1]
     qi_w, _ = L.match_events(presence, logits, target, torch.tensor([1.0, 1.0, 0.0, 1.0, 1.0, 1.0]))
     assert qi_w.tolist() == [0]                                          # point 2 carries no weight: query 0 is exact
+
+
+# U mask profiles (three-goal conformance plan 2026-10-13, Task 4): "legacy" supervises only the matched queries'
+# masks; "unmatched_empty_v1" also pulls every unmatched query of a U-supervised sample towards an empty mask.
+def _one_lesion_case():
+    target = torch.tensor([[1.0, 1.0, 1.0, 0.0, 0.0, 0.0]])
+    logits = torch.full((4, 6), -6.0)
+    logits[0, :3] = 6.0                                                  # query 0 fits the lesion
+    logits[1, 3:] = 6.0                                                  # query 1 is unmatched and paints three points
+    presence = torch.tensor([3.0, 0.5, -3.0, -3.0])
+    return presence, logits, target
+
+
+def _empty_bce(logits, weight):
+    bce = torch.nn.functional.binary_cross_entropy_with_logits(logits, torch.zeros_like(logits), reduction="none")
+    return (bce * weight).sum(-1) / weight.sum(-1).clamp(min=1.0)
+
+
+def test_legacy_is_the_default_u_mask_profile_and_unknown_profiles_are_rejected():
+    presence, logits, target = _one_lesion_case()
+    args = (presence[None], logits[None], [target], torch.ones(1, 6), torch.tensor([True]))
+    default, _ = L.event_loss(*args)
+    legacy, _ = L.event_loss(*args, u_mask_profile="legacy")
+    assert torch.equal(default["u_mask"], legacy["u_mask"]) and torch.equal(default["u_presence"], legacy["u_presence"])
+    with pytest.raises(ValueError):
+        L.event_loss(*args, u_mask_profile="unmatched_empty")
+
+
+def test_unmatched_empty_v1_pulls_unmatched_masks_down_and_keeps_the_matched_loss():
+    presence, logits, target = _one_lesion_case()
+    weight = torch.ones(1, 6)
+    legacy, _ = L.event_loss(presence[None], logits[None], [target], weight, torch.tensor([True]))
+    x = logits[None].clone().requires_grad_(True)
+    new, matches = L.event_loss(presence[None], x, [target], weight, torch.tensor([True]), u_mask_profile="unmatched_empty_v1")
+    assert matches[0][0].tolist() == [0]
+    expected = legacy["u_mask"] + L.NO_OBJECT_WEIGHT * _empty_bce(logits[1:], weight).mean()
+    assert torch.allclose(new["u_mask"], expected)
+    assert torch.equal(new["u_presence"], legacy["u_presence"])
+    new["u_mask"].backward()
+    assert (x.grad[0, 1, 3:] > 0).all()                                  # gradient descent lowers the painted points
+    y = logits[None].clone().requires_grad_(True)
+    L.event_loss(presence[None], y, [target], weight, torch.tensor([True]))[0]["u_mask"].backward()
+    assert torch.equal(y.grad[0, 1:], torch.zeros_like(y.grad[0, 1:]))   # legacy: unmatched masks are never supervised
+
+
+def test_unmatched_empty_v1_respects_u_supervision_and_point_weight():
+    presence, logits, target = _one_lesion_case()
+    x = logits[None].clone().requires_grad_(True)
+    off, _ = L.event_loss(presence[None], x, [target], torch.ones(1, 6), torch.tensor([False]), u_mask_profile="unmatched_empty_v1")
+    assert off["u_mask"] == 0 and off["u_presence"] == 0 and not off["u_mask"].requires_grad
+    weight = torch.tensor([[1.0, 1.0, 1.0, 1.0, 0.0, 0.0]])             # points 4 and 5 under the volume floor
+    y = logits[None].clone().requires_grad_(True)
+    L.event_loss(presence[None], y, [target], weight, torch.tensor([True]), u_mask_profile="unmatched_empty_v1")[0]["u_mask"].backward()
+    assert torch.equal(y.grad[0, :, 4:], torch.zeros_like(y.grad[0, :, 4:]))
+    assert (y.grad[0, 1, 3] > 0)
+
+
+def test_unmatched_empty_v1_suppresses_every_query_of_a_supervised_sample_without_lesions():
+    presence, logits, _ = _one_lesion_case()
+    none = torch.zeros(0, 6)
+    weight = torch.ones(1, 6)
+    legacy, _ = L.event_loss(presence[None], logits[None], [none], weight, torch.tensor([True]))
+    assert legacy["u_mask"] == 0
+    x = logits[None].clone().requires_grad_(True)
+    new, _ = L.event_loss(presence[None], x, [none], weight, torch.tensor([True]), u_mask_profile="unmatched_empty_v1")
+    assert torch.allclose(new["u_mask"], L.NO_OBJECT_WEIGHT * _empty_bce(logits, weight).mean())
+    new["u_mask"].backward()
+    assert (x.grad[0].sum(-1) > 0).all()                                 # every query is pushed towards an empty mask
+
+
+def test_unmatched_empty_v1_averages_per_query_then_per_sample():
+    presence, logits, target = _one_lesion_case()
+    weight = torch.ones(2, 6)
+    batch_logits = torch.stack([logits, torch.full((4, 6), -6.0)])
+    batch_logits[1, 2, :] = 6.0                                          # sample 1 (no lesion): one query paints everything
+    out, _ = L.event_loss(presence.expand(2, 4), batch_logits, [target, torch.zeros(0, 6)], weight, torch.tensor([True, True]),
+                          u_mask_profile="unmatched_empty_v1")
+    legacy, _ = L.event_loss(presence.expand(2, 4), batch_logits, [target, torch.zeros(0, 6)], weight, torch.tensor([True, True]))
+    per_sample = torch.stack([_empty_bce(logits[1:], weight[:1]).mean(), _empty_bce(batch_logits[1], weight[:1]).mean()])
+    assert torch.allclose(out["u_mask"], legacy["u_mask"] + L.NO_OBJECT_WEIGHT * per_sample.mean())

@@ -15,6 +15,7 @@ import torch.nn.functional as F
 from scipy.optimize import linear_sum_assignment
 
 NO_OBJECT_WEIGHT = 0.1
+U_MASK_PROFILES = ("legacy", "unmatched_empty_v1")
 LAMBDA_R = 1.0
 LAMBDA_H = 0.2
 MARGIN = 1.0
@@ -119,12 +120,18 @@ def match_events(presence, mask_logits, target, point_weight=None):
             torch.as_tensor(ti, dtype=torch.long, device=presence.device))
 
 
-def event_loss(presence, mask_logits, targets, point_weight, u_supervised):
+def event_loss(presence, mask_logits, targets, point_weight, u_supervised, u_mask_profile="legacy"):
     """presence (B, M); mask_logits (B, M, P); targets: list of (N_b, P) float; point_weight (B, P) in {0, 1} (0 at the
     voxels of components under the volume floor and outside the volume); u_supervised (B,) bool.
+    u_mask_profile "legacy" supervises the matched queries' masks only; "unmatched_empty_v1" (three-goal conformance plan
+    2026-10-13) adds NO_OBJECT_WEIGHT x the BCE towards an empty mask of every unmatched query of a U-supervised sample
+    (mean over the weighted points, then over the sample's unmatched queries, then over those samples), so the queries
+    above the presence gate that match no lesion stop painting the scattered points that flooded BMSR and ISLES.
     Returns ({"u_presence", "u_mask"}, matches)."""
+    if u_mask_profile not in U_MASK_PROFILES:
+        raise ValueError(f"u_mask_profile must be one of {U_MASK_PROFILES}, not {u_mask_profile!r}")
     B, M, P = mask_logits.shape
-    matches, pres_terms, mask_terms, n_matched = [], [], [], 0
+    matches, pres_terms, mask_terms, empty_terms, n_matched = [], [], [], [], 0
     for b in range(B):
         if not bool(u_supervised[b]):
             matches.append(None)
@@ -142,9 +149,18 @@ def event_loss(presence, mask_logits, targets, point_weight, u_supervised):
             dropped = l.masked_fill(k < 0.5, -1e4)
             mask_terms.append(bce.sum() + dice_loss(dropped[None], (t * k)[None], torch.ones(1, qi.numel(), device=l.device)) * qi.numel())
             n_matched += qi.numel()
+        if u_mask_profile == "unmatched_empty_v1":
+            free = torch.ones(M, dtype=torch.bool, device=presence.device)
+            free[qi] = False
+            if free.any():
+                l, k = mask_logits[b, free], point_weight[b][None]
+                bce = (F.binary_cross_entropy_with_logits(l, torch.zeros_like(l), reduction="none") * k).sum(-1) / k.sum(-1).clamp(min=1.0)
+                empty_terms.append(bce.mean())
     zero = presence.new_zeros(())
-    out = {"u_presence": torch.stack(pres_terms).mean() if pres_terms else zero,
-           "u_mask": torch.stack(mask_terms).sum() / max(n_matched, 1) if mask_terms else zero}
+    u_mask = torch.stack(mask_terms).sum() / max(n_matched, 1) if mask_terms else zero
+    if empty_terms:
+        u_mask = u_mask + NO_OBJECT_WEIGHT * torch.stack(empty_terms).mean()
+    out = {"u_presence": torch.stack(pres_terms).mean() if pres_terms else zero, "u_mask": u_mask}
     return out, matches
 
 
