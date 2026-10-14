@@ -18,15 +18,22 @@
 # whole test split, each sharded over all CARDS (scripts/aur_eval.py --shard k/N) and merged once. RESUME_STAGE2 (a
 # resume_step*.pt) with STAGE2_DIR (its run directory) continues a Stage II instead (no smoke): same global batch, so
 # the same schedule, on any card count. MB defaults to the largest of 12, 8, 6 that divides GLOBAL over the cards.
+# U_MASK_PROFILE (required; three-goal conformance plan 2026-10-13): legacy (the U mask loss of every run up to
+# 2026-10-13) or unmatched_empty_v1 (unmatched U queries also learn an empty mask); both arms of a comparison use the
+# same profile. SEED (default 0) goes to both stages. C2_STEP1000_GATE=1 is required by, and allowed only for, the
+# decision-Q25 recipe (ARM=c2, U_MASK_PROFILE=legacy, II_BB=5e-5): Stage II stops at step 1000, Q25_CHECKER (default
+# $REC/ops/c2v2_check.sh, probe on PROBE_CARD, default the first of CARDS) must pass before the same run resumes; a
+# FAIL or any checker error ends the chain there. PY, TORCHRUN and FM_DATA_ROOT override the defaults below.
 # Every failure stops the chain and says so; nothing is deleted or overwritten. Run inside tmux:
-#   ARM=c0 CARDS=3 tmux new-window -t anatobind -n c0 "bash scripts/stage23_chain.sh; exec bash"
+#   ARM=c0 CARDS=3 U_MASK_PROFILE=unmatched_empty_v1 tmux new-window -t anatobind -n c0 "bash scripts/stage23_chain.sh; exec bash"
 set -u
-cd /data0/congcong/code/Project_Doing/foundation_model
-: "${ARM:?ARM=c0|c2}" "${CARDS:?CARDS=comma-separated card indices}"
+cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit 1                 # the checkout this script belongs to
+: "${ARM:?ARM=c0|c2}" "${CARDS:?CARDS=comma-separated card indices}" "${U_MASK_PROFILE:?U_MASK_PROFILE=legacy|unmatched_empty_v1}"
 export PYTHONNOUSERSITE=1 PYTHONPATH=. NCCL_P2P_DISABLE=1 TORCH_NCCL_ASYNC_ERROR_HANDLING=1 OMP_NUM_THREADS=8
-PY=~/anaconda3/envs/nvgen/bin/python
-TORCHRUN=~/anaconda3/envs/nvgen/bin/torchrun
-DATA=/data2/congcong/data/FM_data/derived/aur
+PY=${PY:-$HOME/anaconda3/envs/nvgen/bin/python}
+TORCHRUN=${TORCHRUN:-$HOME/anaconda3/envs/nvgen/bin/torchrun}
+FM_DATA_ROOT=${FM_DATA_ROOT:-/data2/congcong/data/FM_data}
+DATA=$FM_DATA_ROOT/derived/aur
 RUNS=$DATA/ssl_runs
 SAMPLES=$DATA/samples_1mm_v1.json
 VAL=$DATA/ssl_manifest_v1/val_patients.json
@@ -34,8 +41,24 @@ REC=docs/verification/2026-10-09/anatobind_brain_ssl_first
 STAMP=$(date +%Y%m%d_%H%M)
 LOG=$RUNS/${ARM}_chain_$STAMP.log
 GLOBAL=${GLOBAL:-24}
+SEED=${SEED:-0}
+C2_STEP1000_GATE=${C2_STEP1000_GATE:-0}
+Q25_CHECKER=${Q25_CHECKER:-$REC/ops/c2v2_check.sh}
+PROBE_CARD=${PROBE_CARD:-${CARDS%%,*}}
 
 say() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
+case "$U_MASK_PROFILE" in legacy|unmatched_empty_v1) ;; *) say "U_MASK_PROFILE must be legacy or unmatched_empty_v1"; exit 1 ;; esac
+Q25=0                                                            # the decision-Q25 recipe (stage2/STAGE2_V2.md)
+[ "$ARM" = c2 ] && [ "$U_MASK_PROFILE" = legacy ] && [ "${II_BB:-}" = 5e-5 ] && Q25=1
+if [ "$Q25" = 1 ] && [ "$C2_STEP1000_GATE" != 1 ]; then
+  say "the Q25 recipe (c2, legacy U loss, II_BB 5e-5) runs only behind its step-1000 gate: set C2_STEP1000_GATE=1"; exit 1
+fi
+if [ "$C2_STEP1000_GATE" != 0 ] && [ "$Q25" != 1 ]; then
+  say "C2_STEP1000_GATE=$C2_STEP1000_GATE belongs to the Q25 recipe only (c2, legacy U loss, II_BB 5e-5)"; exit 1
+fi
+if [ "$C2_STEP1000_GATE" = 1 ] && [ -n "${RESUME_STAGE2:-}" ]; then
+  say "RESUME_STAGE2 is not supported behind the Q25 gate: the gate belongs to the run's first 1000 steps"; exit 1
+fi
 LOCK=$RUNS/${ARM}_chain.lock                                     # one chain per arm: a second launch of the same arm exits
 if [ -f "$LOCK" ] && kill -0 "$(cat "$LOCK")" 2>/dev/null; then
   say "another $ARM chain (pid $(cat "$LOCK")) is running: not starting a second one"; exit 3
@@ -67,8 +90,8 @@ launch() {   # launch <out> <log> <stage args...>: one torchrun on CARDS (plain 
   fi
 }
 WORKERS=${WORKERS:-24}                                           # loader processes per rank (see the header)
-COMMON=(--samples "$SAMPLES" --val-patients "$VAL" --microbatch $MB --grad-accum $ACCUM --workers $WORKERS)
-say "$ARM chain started on cards $CARDS (world $N, microbatch $MB, accumulation $ACCUM, global $GLOBAL, $WORKERS loaders per rank; Stage II ${II_LR[*]}; Stage III ${III_LR[*]})"
+COMMON=(--samples "$SAMPLES" --val-patients "$VAL" --microbatch $MB --grad-accum $ACCUM --workers $WORKERS --seed "$SEED" --u-mask-profile "$U_MASK_PROFILE")
+say "$ARM chain started on cards $CARDS (world $N, microbatch $MB, accumulation $ACCUM, global $GLOBAL, $WORKERS loaders per rank, seed $SEED, U mask profile $U_MASK_PROFILE, Q25 gate $C2_STEP1000_GATE; Stage II ${II_LR[*]}; Stage III ${III_LR[*]})"
 
 if [ -n "${RESUME_STAGE2:-}" ]; then
   : "${STAGE2_DIR:?STAGE2_DIR=the run directory of RESUME_STAGE2}"
@@ -91,7 +114,17 @@ say "Stage II smoke passed (stopped at 50, resumed to 100): $SMOKE"
 # ---- Stage II ----
 STAGE2=$RUNS/${ARM}_stage2_240k_$STAMP
 say "Stage II ($ARM, 240k crops) -> $STAGE2"
-launch "$STAGE2" "$STAGE2.log" --stage II "${INIT[@]}" "${COMMON[@]}" "${II_LR[@]}" --val-every 500 --save-every 500 --log-every 20
+II_ARGS=(--stage II "${INIT[@]}" "${COMMON[@]}" "${II_LR[@]}" --val-every 500 --save-every 500 --log-every 20)
+if [ "$C2_STEP1000_GATE" = 1 ]; then                             # decision Q25: stop at step 1000, gate, resume the same run
+  launch "$STAGE2" "$STAGE2.log" "${II_ARGS[@]}" --stop-after 1000 || { say "Stage II up to the step-1000 gate failed: see $STAGE2.log"; exit 1; }
+  say "Q25 gate at step 1000 ($Q25_CHECKER, probe on card $PROBE_CARD)"
+  STAGE2_DIR=$STAGE2 SAMPLES=$SAMPLES VAL_PATIENTS=$VAL PROBE_GPU=$PROBE_CARD PY=$PY bash "$Q25_CHECKER" >> "$LOG" 2>&1 \
+    || { say "Q25 gate FAILED or could not be evaluated: see $STAGE2/gate_step1000/report.json; the chain stops here (no Stage II resume, no Stage III, no evaluation)"; exit 1; }
+  say "Q25 gate passed: $STAGE2/gate_step1000/report.json; resuming the same Stage II from step 1000"
+  launch "$STAGE2" "$STAGE2.resume_step1000.log" "${II_ARGS[@]}" --resume "$STAGE2/resume_step1000.pt"
+else
+  launch "$STAGE2" "$STAGE2.log" "${II_ARGS[@]}"
+fi
 [ -f "$STAGE2/aur_stage2_best.pt" ] || { say "Stage II failed: see $STAGE2.log"; exit 1; }
 say "Stage II finished: $(tr -d '\n' < "$STAGE2/summary.json" | cut -c1-300)"
 fi
