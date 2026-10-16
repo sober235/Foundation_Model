@@ -1,0 +1,870 @@
+{
+  "evidence": "NOT_EVIDENCE",
+  "pairing": {
+    "all_rows": 405,
+    "same_identity_set": true,
+    "same_saved_gt": true
+  },
+  "provenance": {
+    "new": {
+      "cases.json": {
+        "path": "/data0/congcong/code/Project_Doing/foundation_model-conformance/docs/verification/2026-10-09/anatobind_brain_ssl_first/eval/c2_val_20261014_1344/cases.json",
+        "sha256": "5950f91d1070dc47f9f3770c3f03bc6a5a3e5b3d0113a2d0109b3e3522f379bf"
+      },
+      "aggregate.json": {
+        "path": "/data0/congcong/code/Project_Doing/foundation_model-conformance/docs/verification/2026-10-09/anatobind_brain_ssl_first/eval/c2_val_20261014_1344/aggregate.json",
+        "sha256": "9b83bc1d8d6b3116962e400d5b6aaf103c17408e004adee842fc8824baa05670"
+      }
+    },
+    "old": {
+      "cases.json": {
+        "path": "/data0/congcong/code/Project_Doing/foundation_model/docs/verification/2026-10-09/anatobind_brain_ssl_first/eval/c2_val_20261011_0500/cases.json",
+        "sha256": "61a87ded7491c25f9746f188bf798d6e073445eefb7ad970d5ef61d33f5e8e75"
+      },
+      "aggregate.json": {
+        "path": "/data0/congcong/code/Project_Doing/foundation_model/docs/verification/2026-10-09/anatobind_brain_ssl_first/eval/c2_val_20261011_0500/aggregate.json",
+        "sha256": "124b4b623c0d0e54ad29acbe308f2a2958d0530b748d1edd9a323ea34a743fd2"
+      }
+    },
+    "audit_code": {
+      "aur_audit_saved_eval.py": {
+        "path": "/home/congcongliu/src/Foundation_Model-conformance-work/scripts/aur_audit_saved_eval.py",
+        "sha256": "a89e3d6ad96f09a8e0828204735a48334fbf7e4b027bca91bce08f777ccb4183"
+      },
+      "detection_metrics.py": {
+        "path": "/home/congcongliu/src/Foundation_Model-conformance-work/anatobind/eval/detection_metrics.py",
+        "sha256": "54c5634af3e79b4939c27593d99e1e8f57542f6cbd24b532e16e9f41a02b5b9b"
+      },
+      "matching.py": {
+        "path": "/home/congcongliu/src/Foundation_Model-conformance-work/anatobind/eval/matching.py",
+        "sha256": "729682d7aadcfd7c63597286b567583297f3f9eb5eee22cbd33e376c7e777fbb"
+      },
+      "infer.py": {
+        "path": "/home/congcongliu/src/Foundation_Model-conformance-work/anatobind/aur/infer.py",
+        "sha256": "7e9e1898b99a421218b5a575ff4660bf87cd0e35e08b09aad627324ca3cfe414"
+      }
+    }
+  },
+  "definitions": {
+    "match_iou": 0.1,
+    "large_component_description_ml": 100,
+    "bbox_gt_coverage": 0.9,
+    "output": "anonymous source/sequence aggregates only",
+    "oracle_query_iou": {
+      "crop": "centered on the GT instance mean voxel position",
+      "queries": "all event queries, without presence gating",
+      "mask_threshold": "query probability >0.5",
+      "metric": "maximum query-mask IoU against GT inside crop; zero-hard-IoU fallback uses soft overlap and returns IoU zero"
+    },
+    "oracle_limit": "Distinct from whole-volume instance probability threshold 0.3 plus bbox IoU >=0.1; cannot locate the same fault or causal root cause; not end-to-end ability"
+  },
+  "new": {
+    "bmsr/T1c": {
+      "selected_score_threshold": 0.7,
+      "threshold_selection_note": "Reused saved validation-selected score threshold; no threshold search performed",
+      "saved_instance_probability_threshold": 0.3,
+      "recomputed": {
+        "n_scans": 41,
+        "n_gt": 470,
+        "n_ignored": 61,
+        "n_hit": 2,
+        "n_fp": 2,
+        "sensitivity": 0.00425531914893617,
+        "fp_per_scan": 0.04878048780487805
+      },
+      "aggregate_values_verified": true,
+      "detections": {
+        "raw": 3661,
+        "kept": 5
+      },
+      "per_volume_largest_component_ml": {
+        "raw": {
+          "n": 41,
+          "min": 345.699,
+          "p10": 379.678,
+          "p25": 421.439,
+          "median": 473.746,
+          "p75": 547.158,
+          "p90": 572.066,
+          "max": 624.159
+        },
+        "kept": {
+          "n": 41,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0,
+          "median": 0.0,
+          "p75": 0.0,
+          "p90": 0.015,
+          "max": 0.228
+        }
+      },
+      "volumes_largest_component_gt_100ml": {
+        "raw": {
+          "n": 41,
+          "denominator": 41,
+          "fraction": 1.0
+        },
+        "kept": {
+          "n": 0,
+          "denominator": 41,
+          "fraction": 0.0
+        }
+      },
+      "per_gt_max_box_iou": {
+        "raw": {
+          "n": 470,
+          "min": 3.323639385126714e-06,
+          "p10": 6.18104274191056e-06,
+          "p25": 1.0607336819873277e-05,
+          "median": 3.2436870447120455e-05,
+          "p75": 0.00013602180733100116,
+          "p90": 0.001747196503282903,
+          "max": 0.75
+        },
+        "kept": {
+          "n": 470,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0,
+          "median": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "max": 0.5816023738872403
+        }
+      },
+      "per_gt_any_box_iou_ge_0_1": {
+        "raw": {
+          "n": 16,
+          "denominator": 470,
+          "fraction": 0.03404255319148936
+        },
+        "kept": {
+          "n": 2,
+          "denominator": 470,
+          "fraction": 0.00425531914893617
+        }
+      },
+      "largest_gt_100ml_component_bbox_gt_coverage_ge_0_9_and_iou_lt_0_1": {
+        "raw": 470,
+        "kept": 0
+      },
+      "oracle_given_gt_crop_query_iou": {
+        "all": {
+          "n": 469,
+          "min": 0.0,
+          "p10": 0.0004466103797312826,
+          "p25": 0.0008892841287888587,
+          "median": 0.0021872473880648613,
+          "p75": 0.0070411753840744495,
+          "p90": 0.02504023648798465,
+          "max": 0.5591388940811157
+        },
+        "missed": {
+          "n": 467,
+          "min": 0.0,
+          "p10": 0.00044617128442041575,
+          "p25": 0.0008875903149601072,
+          "median": 0.002161383396014571,
+          "p75": 0.0069226715713739395,
+          "p90": 0.025146734341979046,
+          "max": 0.5591388940811157
+        },
+        "hit": {
+          "n": 2,
+          "min": 0.005305039696395397,
+          "p10": 0.005733958818018437,
+          "p25": 0.006377337500452995,
+          "median": 0.007449635304510593,
+          "p75": 0.008521933108568192,
+          "p90": 0.00916531179100275,
+          "max": 0.00959423091262579
+        }
+      },
+      "oracle_missed_given_gt_crop_in_crop_share": {
+        "n": 467,
+        "min": 1.0,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "max": 1.0
+      },
+      "oracle_query_iou_missing_gt": 1
+    },
+    "isles/DWI": {
+      "selected_score_threshold": 0.6,
+      "threshold_selection_note": "Reused saved validation-selected score threshold; no threshold search performed",
+      "saved_instance_probability_threshold": 0.3,
+      "recomputed": {
+        "n_scans": 20,
+        "n_gt": 138,
+        "n_ignored": 11,
+        "n_hit": 4,
+        "n_fp": 24,
+        "sensitivity": 0.028985507246376812,
+        "fp_per_scan": 1.2
+      },
+      "aggregate_values_verified": true,
+      "detections": {
+        "raw": 1254,
+        "kept": 28
+      },
+      "per_volume_largest_component_ml": {
+        "raw": {
+          "n": 20,
+          "min": 145.573,
+          "p10": 240.9858,
+          "p25": 311.641,
+          "median": 350.39099999999996,
+          "p75": 414.7675,
+          "p90": 441.51270000000005,
+          "max": 476.594
+        },
+        "kept": {
+          "n": 20,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.37124999999999997,
+          "median": 341.27049999999997,
+          "p75": 414.107,
+          "p90": 426.6987000000001,
+          "max": 476.594
+        }
+      },
+      "volumes_largest_component_gt_100ml": {
+        "raw": {
+          "n": 20,
+          "denominator": 20,
+          "fraction": 1.0
+        },
+        "kept": {
+          "n": 13,
+          "denominator": 20,
+          "fraction": 0.65
+        }
+      },
+      "per_gt_max_box_iou": {
+        "raw": {
+          "n": 138,
+          "min": 5.016504299144184e-06,
+          "p10": 1.2284333175684392e-05,
+          "p25": 2.286919794099806e-05,
+          "median": 6.449274917234305e-05,
+          "p75": 0.0008434410316597659,
+          "p90": 0.024053654234252514,
+          "max": 0.6
+        },
+        "kept": {
+          "n": 138,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 9.435890656157967e-06,
+          "median": 3.0444265134290054e-05,
+          "p75": 0.0002849155392170595,
+          "p90": 0.006455477459095859,
+          "max": 0.6
+        }
+      },
+      "per_gt_any_box_iou_ge_0_1": {
+        "raw": {
+          "n": 6,
+          "denominator": 138,
+          "fraction": 0.043478260869565216
+        },
+        "kept": {
+          "n": 4,
+          "denominator": 138,
+          "fraction": 0.028985507246376812
+        }
+      },
+      "largest_gt_100ml_component_bbox_gt_coverage_ge_0_9_and_iou_lt_0_1": {
+        "raw": 136,
+        "kept": 111
+      },
+      "oracle_given_gt_crop_query_iou": {
+        "all": {
+          "n": 137,
+          "min": 0.0001341947354376316,
+          "p10": 0.0008056043065153062,
+          "p25": 0.0014471779577434063,
+          "median": 0.0031889895908534527,
+          "p75": 0.015549076721072197,
+          "p90": 0.07882119119167338,
+          "max": 0.6437733173370361
+        },
+        "missed": {
+          "n": 133,
+          "min": 0.0001341947354376316,
+          "p10": 0.0008041444350965321,
+          "p25": 0.0014471779577434063,
+          "median": 0.0031889895908534527,
+          "p75": 0.015549076721072197,
+          "p90": 0.0691290035843849,
+          "max": 0.6437733173370361
+        },
+        "hit": {
+          "n": 4,
+          "min": 0.0008832565508782864,
+          "p10": 0.001491040294058621,
+          "p25": 0.0024027159088291228,
+          "median": 0.004653842770494521,
+          "p75": 0.1446360379923135,
+          "p90": 0.39346363665536055,
+          "max": 0.5593487024307251
+        }
+      },
+      "oracle_missed_given_gt_crop_in_crop_share": {
+        "n": 133,
+        "min": 1.0,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "max": 1.0
+      },
+      "oracle_query_iou_missing_gt": 1
+    },
+    "pdgm/FLAIR": {
+      "selected_score_threshold": 0.75,
+      "threshold_selection_note": "Reused saved validation-selected score threshold; no threshold search performed",
+      "saved_instance_probability_threshold": 0.3,
+      "recomputed": {
+        "n_scans": 41,
+        "n_gt": 53,
+        "n_ignored": 19,
+        "n_hit": 27,
+        "n_fp": 6,
+        "sensitivity": 0.5094339622641509,
+        "fp_per_scan": 0.14634146341463414
+      },
+      "aggregate_values_verified": true,
+      "detections": {
+        "raw": 4273,
+        "kept": 33
+      },
+      "per_volume_largest_component_ml": {
+        "raw": {
+          "n": 41,
+          "min": 36.663,
+          "p10": 53.593,
+          "p25": 99.857,
+          "median": 141.557,
+          "p75": 185.827,
+          "p90": 209.703,
+          "max": 416.162
+        },
+        "kept": {
+          "n": 41,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.213,
+          "median": 103.281,
+          "p75": 179.471,
+          "p90": 209.703,
+          "max": 416.162
+        }
+      },
+      "volumes_largest_component_gt_100ml": {
+        "raw": {
+          "n": 30,
+          "denominator": 41,
+          "fraction": 0.7317073170731707
+        },
+        "kept": {
+          "n": 21,
+          "denominator": 41,
+          "fraction": 0.5121951219512195
+        }
+      },
+      "per_gt_max_box_iou": {
+        "raw": {
+          "n": 53,
+          "min": 1.8855917222523392e-05,
+          "p10": 0.011234982957332856,
+          "p25": 0.05786352099525256,
+          "median": 0.1759338723519581,
+          "p75": 0.34936681919761625,
+          "p90": 0.6184312402315838,
+          "max": 0.9595470895182127
+        },
+        "kept": {
+          "n": 53,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0,
+          "median": 0.10226405222736276,
+          "p75": 0.26232248414071513,
+          "p90": 0.5178085636088956,
+          "max": 0.9595470895182127
+        }
+      },
+      "per_gt_any_box_iou_ge_0_1": {
+        "raw": {
+          "n": 34,
+          "denominator": 53,
+          "fraction": 0.6415094339622641
+        },
+        "kept": {
+          "n": 27,
+          "denominator": 53,
+          "fraction": 0.5094339622641509
+        }
+      },
+      "largest_gt_100ml_component_bbox_gt_coverage_ge_0_9_and_iou_lt_0_1": {
+        "raw": 20,
+        "kept": 9
+      },
+      "oracle_given_gt_crop_query_iou": {
+        "all": {
+          "n": 53,
+          "min": 0.00015413960500154644,
+          "p10": 0.008753897435963155,
+          "p25": 0.42048364877700806,
+          "median": 0.7557083964347839,
+          "p75": 0.8360244631767273,
+          "p90": 0.8809242367744446,
+          "max": 0.9260739684104919
+        },
+        "missed": {
+          "n": 26,
+          "min": 0.00015413960500154644,
+          "p10": 0.0005941470735706389,
+          "p25": 0.015942408004775643,
+          "median": 0.44583889842033386,
+          "p75": 0.6668653190135956,
+          "p90": 0.7465946674346924,
+          "max": 0.8156610727310181
+        },
+        "hit": {
+          "n": 27,
+          "min": 0.15486004948616028,
+          "p10": 0.7574413061141968,
+          "p25": 0.7908612191677094,
+          "median": 0.8360244631767273,
+          "p75": 0.8710273206233978,
+          "p90": 0.9113141179084778,
+          "max": 0.9260739684104919
+        }
+      },
+      "oracle_missed_given_gt_crop_in_crop_share": {
+        "n": 26,
+        "min": 1.0,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "max": 1.0
+      },
+      "oracle_query_iou_missing_gt": 0
+    }
+  },
+  "old": {
+    "bmsr/T1c": {
+      "selected_score_threshold": 0.7,
+      "threshold_selection_note": "Reused saved validation-selected score threshold; no threshold search performed",
+      "saved_instance_probability_threshold": 0.3,
+      "recomputed": {
+        "n_scans": 41,
+        "n_gt": 470,
+        "n_ignored": 61,
+        "n_hit": 6,
+        "n_fp": 5,
+        "sensitivity": 0.01276595744680851,
+        "fp_per_scan": 0.12195121951219512
+      },
+      "aggregate_values_verified": true,
+      "detections": {
+        "raw": 3539,
+        "kept": 11
+      },
+      "per_volume_largest_component_ml": {
+        "raw": {
+          "n": 41,
+          "min": 315.029,
+          "p10": 402.243,
+          "p25": 458.292,
+          "median": 534.052,
+          "p75": 612.317,
+          "p90": 645.112,
+          "max": 698.844
+        },
+        "kept": {
+          "n": 41,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0,
+          "median": 0.0,
+          "p75": 0.0,
+          "p90": 0.078,
+          "max": 0.582
+        }
+      },
+      "volumes_largest_component_gt_100ml": {
+        "raw": {
+          "n": 41,
+          "denominator": 41,
+          "fraction": 1.0
+        },
+        "kept": {
+          "n": 0,
+          "denominator": 41,
+          "fraction": 0.0
+        }
+      },
+      "per_gt_max_box_iou": {
+        "raw": {
+          "n": 470,
+          "min": 3.1948907307433952e-06,
+          "p10": 6.032258731049601e-06,
+          "p25": 1.0907291179452158e-05,
+          "median": 3.2380693335405695e-05,
+          "p75": 0.0001299142681824878,
+          "p90": 0.0016485221112741708,
+          "max": 0.6666666666666666
+        },
+        "kept": {
+          "n": 470,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0,
+          "median": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "max": 0.6136363636363636
+        }
+      },
+      "per_gt_any_box_iou_ge_0_1": {
+        "raw": {
+          "n": 18,
+          "denominator": 470,
+          "fraction": 0.03829787234042553
+        },
+        "kept": {
+          "n": 6,
+          "denominator": 470,
+          "fraction": 0.01276595744680851
+        }
+      },
+      "largest_gt_100ml_component_bbox_gt_coverage_ge_0_9_and_iou_lt_0_1": {
+        "raw": 470,
+        "kept": 0
+      },
+      "oracle_given_gt_crop_query_iou": {
+        "all": {
+          "n": 469,
+          "min": 0.0,
+          "p10": 0.0003717063984367997,
+          "p25": 0.0007787151262164116,
+          "median": 0.0022934055887162685,
+          "p75": 0.00725606270134449,
+          "p90": 0.031829162687063206,
+          "max": 0.4944353401660919
+        },
+        "missed": {
+          "n": 463,
+          "min": 0.0,
+          "p10": 0.00036270385026000447,
+          "p25": 0.0007757216808386147,
+          "median": 0.0022481095511466265,
+          "p75": 0.006975146941840649,
+          "p90": 0.032267142832279216,
+          "max": 0.4944353401660919
+        },
+        "hit": {
+          "n": 6,
+          "min": 0.0012513636611402035,
+          "p10": 0.0014826288097538054,
+          "p25": 0.0019940818601753563,
+          "median": 0.008473152527585626,
+          "p75": 0.025756723480299115,
+          "p90": 0.02990831434726715,
+          "max": 0.030178217217326164
+        }
+      },
+      "oracle_missed_given_gt_crop_in_crop_share": {
+        "n": 463,
+        "min": 1.0,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "max": 1.0
+      },
+      "oracle_query_iou_missing_gt": 1
+    },
+    "isles/DWI": {
+      "selected_score_threshold": 0.7,
+      "threshold_selection_note": "Reused saved validation-selected score threshold; no threshold search performed",
+      "saved_instance_probability_threshold": 0.3,
+      "recomputed": {
+        "n_scans": 20,
+        "n_gt": 138,
+        "n_ignored": 11,
+        "n_hit": 2,
+        "n_fp": 4,
+        "sensitivity": 0.014492753623188406,
+        "fp_per_scan": 0.2
+      },
+      "aggregate_values_verified": true,
+      "detections": {
+        "raw": 973,
+        "kept": 6
+      },
+      "per_volume_largest_component_ml": {
+        "raw": {
+          "n": 20,
+          "min": 244.8,
+          "p10": 359.3582,
+          "p25": 376.30425,
+          "median": 420.0705,
+          "p75": 476.31075,
+          "p90": 520.84,
+          "max": 558.058
+        },
+        "kept": {
+          "n": 20,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0,
+          "median": 0.0,
+          "p75": 0.1875,
+          "p90": 1.7658000000000011,
+          "max": 3.647
+        }
+      },
+      "volumes_largest_component_gt_100ml": {
+        "raw": {
+          "n": 20,
+          "denominator": 20,
+          "fraction": 1.0
+        },
+        "kept": {
+          "n": 0,
+          "denominator": 20,
+          "fraction": 0.0
+        }
+      },
+      "per_gt_max_box_iou": {
+        "raw": {
+          "n": 138,
+          "min": 5.053663590248956e-06,
+          "p10": 1.2557883996546582e-05,
+          "p25": 2.1795676839890196e-05,
+          "median": 9.473834325810182e-05,
+          "p75": 0.0014398912618485932,
+          "p90": 0.0267627792737793,
+          "max": 0.631578947368421
+        },
+        "kept": {
+          "n": 138,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0,
+          "median": 0.0,
+          "p75": 0.0,
+          "p90": 0.0,
+          "max": 0.38095238095238093
+        }
+      },
+      "per_gt_any_box_iou_ge_0_1": {
+        "raw": {
+          "n": 8,
+          "denominator": 138,
+          "fraction": 0.057971014492753624
+        },
+        "kept": {
+          "n": 2,
+          "denominator": 138,
+          "fraction": 0.014492753623188406
+        }
+      },
+      "largest_gt_100ml_component_bbox_gt_coverage_ge_0_9_and_iou_lt_0_1": {
+        "raw": 136,
+        "kept": 0
+      },
+      "oracle_given_gt_crop_query_iou": {
+        "all": {
+          "n": 137,
+          "min": 0.0001174674034700729,
+          "p10": 0.0007866559782996775,
+          "p25": 0.0013917884789407253,
+          "median": 0.0036415657959878445,
+          "p75": 0.015349329449236393,
+          "p90": 0.07484070956707004,
+          "max": 0.7318315505981445
+        },
+        "missed": {
+          "n": 135,
+          "min": 0.0001174674034700729,
+          "p10": 0.0007602064404636622,
+          "p25": 0.001408991462085396,
+          "median": 0.0036415657959878445,
+          "p75": 0.014989727642387152,
+          "p90": 0.07574050873517994,
+          "max": 0.7318315505981445
+        },
+        "hit": {
+          "n": 2,
+          "min": 0.0012853470398113132,
+          "p10": 0.00308928209124133,
+          "p25": 0.005795184668386355,
+          "median": 0.010305022296961397,
+          "p75": 0.014814859925536439,
+          "p90": 0.017520762502681465,
+          "max": 0.01932469755411148
+        }
+      },
+      "oracle_missed_given_gt_crop_in_crop_share": {
+        "n": 135,
+        "min": 1.0,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "max": 1.0
+      },
+      "oracle_query_iou_missing_gt": 1
+    },
+    "pdgm/FLAIR": {
+      "selected_score_threshold": 0.7,
+      "threshold_selection_note": "Reused saved validation-selected score threshold; no threshold search performed",
+      "saved_instance_probability_threshold": 0.3,
+      "recomputed": {
+        "n_scans": 41,
+        "n_gt": 53,
+        "n_ignored": 19,
+        "n_hit": 33,
+        "n_fp": 4,
+        "sensitivity": 0.6226415094339622,
+        "fp_per_scan": 0.0975609756097561
+      },
+      "aggregate_values_verified": true,
+      "detections": {
+        "raw": 1514,
+        "kept": 37
+      },
+      "per_volume_largest_component_ml": {
+        "raw": {
+          "n": 41,
+          "min": 18.394,
+          "p10": 33.973,
+          "p25": 68.607,
+          "median": 105.145,
+          "p75": 150.428,
+          "p90": 180.153,
+          "max": 592.659
+        },
+        "kept": {
+          "n": 41,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 31.034,
+          "median": 99.266,
+          "p75": 145.403,
+          "p90": 177.189,
+          "max": 592.659
+        }
+      },
+      "volumes_largest_component_gt_100ml": {
+        "raw": {
+          "n": 24,
+          "denominator": 41,
+          "fraction": 0.5853658536585366
+        },
+        "kept": {
+          "n": 20,
+          "denominator": 41,
+          "fraction": 0.4878048780487805
+        }
+      },
+      "per_gt_max_box_iou": {
+        "raw": {
+          "n": 53,
+          "min": 2.936073423856147e-05,
+          "p10": 0.004571985990374296,
+          "p25": 0.11936352509179926,
+          "median": 0.35468993608528493,
+          "p75": 0.7744396828477998,
+          "p90": 0.8604462296515322,
+          "max": 1.0
+        },
+        "kept": {
+          "n": 53,
+          "min": 0.0,
+          "p10": 0.0,
+          "p25": 0.0013971980879656073,
+          "median": 0.3264141590924574,
+          "p75": 0.7744396828477998,
+          "p90": 0.8604462296515322,
+          "max": 1.0
+        }
+      },
+      "per_gt_any_box_iou_ge_0_1": {
+        "raw": {
+          "n": 40,
+          "denominator": 53,
+          "fraction": 0.7547169811320755
+        },
+        "kept": {
+          "n": 34,
+          "denominator": 53,
+          "fraction": 0.6415094339622641
+        }
+      },
+      "largest_gt_100ml_component_bbox_gt_coverage_ge_0_9_and_iou_lt_0_1": {
+        "raw": 11,
+        "kept": 8
+      },
+      "oracle_given_gt_crop_query_iou": {
+        "all": {
+          "n": 53,
+          "min": 0.000412469613365829,
+          "p10": 0.008830983750522138,
+          "p25": 0.34644386172294617,
+          "median": 0.7508431673049927,
+          "p75": 0.8497936725616455,
+          "p90": 0.8731542825698853,
+          "max": 0.9374982118606567
+        },
+        "missed": {
+          "n": 20,
+          "min": 0.000412469613365829,
+          "p10": 0.0008793281333055348,
+          "p25": 0.007419772329740226,
+          "median": 0.20158305019140244,
+          "p75": 0.5929277688264847,
+          "p90": 0.8048912167549134,
+          "max": 0.8342766165733337
+        },
+        "hit": {
+          "n": 33,
+          "min": 0.22342178225517273,
+          "p10": 0.5323464274406433,
+          "p25": 0.7496201395988464,
+          "median": 0.8322870135307312,
+          "p75": 0.8629102110862732,
+          "p90": 0.8780945777893067,
+          "max": 0.9374982118606567
+        }
+      },
+      "oracle_missed_given_gt_crop_in_crop_share": {
+        "n": 20,
+        "min": 1.0,
+        "p10": 1.0,
+        "p25": 1.0,
+        "median": 1.0,
+        "p75": 1.0,
+        "p90": 1.0,
+        "max": 1.0
+      },
+      "oracle_query_iou_missing_gt": 0
+    }
+  },
+  "reproduce_command": "CUDA_VISIBLE_DEVICES='' PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=1 nice -n19 /home/congcongliu/anaconda3/envs/nvgen/bin/python /home/congcongliu/src/Foundation_Model-conformance-work/scripts/aur_audit_saved_eval.py --new-eval /data0/congcong/code/Project_Doing/foundation_model-conformance/docs/verification/2026-10-09/anatobind_brain_ssl_first/eval/c2_val_20261014_1344 --old-eval /data0/congcong/code/Project_Doing/foundation_model/docs/verification/2026-10-09/anatobind_brain_ssl_first/eval/c2_val_20261011_0500 --out /tmp/aur_saved_eval_diagnostic_oracle_corrected_20261016_reproduction"
+}

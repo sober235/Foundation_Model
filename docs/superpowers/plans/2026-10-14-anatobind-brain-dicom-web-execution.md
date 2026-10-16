@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans after this plan is approved. Native inline execution; no subagents.
 
-**Goal:** 从公开 HTTPS URL 接收一张 2D 或一个 3D brain MRI DICOM input，输出可交互的 A/U/R 结果并支持下载。
+**Goal（完整产品的后续目标）:** 从公开 HTTPS URL 接收一张 2D 或一个 3D brain MRI DICOM input，输出可交互的 A/U/R 结果并支持下载。当前优先完成模型与离线验收，执行顺序以下列 Q28 更新为准。
 
 **Architecture:** 3D DICOM series 经 DICOM intake 转成带真实 geometry 的 volume，进入现有 3D AUR；孤立 2D DICOM 进入独立训练的 2D AUR checkpoint。FastAPI 提供临时 job API，vanilla JS 展示切片、A/U overlays 与 R host；Caddy 对公网提供 HTTPS。两种模型共享 A/U/R 标签和结果 schema，不共享未经验证的 checkpoint。
 
@@ -10,7 +10,9 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md`
 
-**Status:** Target added 2026-10-14; awaiting user review before implementation.
+**Status（2026-10-16 收尾更新）:** 以下保留 2026-10-14 完整产品范围和任务设计。用户 Q28（2026-10-13 09:53 UTC）已要求“先不考虑这里显示的问题，仅仅考虑模型是否能否成功即可,显示后续再说”：**模型成功优先；DICOM 解码、离线 A/U/R 验收及独立 2D 模型任务保留，API/UI/公开 URL 为后续阶段。** 本文件不表示这些任务已实施。3D 三目标修正 Task 1–6 已完成，Task 7 新 U 损失 C2 的训练/val/test 已完成，预登记的 legacy 描述性配对也已收尾；`c2_test_20261014_1344` 的 G2-A/G2-U/G3 全部失败（[结果](../../verification/2026-10-09/anatobind_brain_ssl_first/u_empty_c2_20261014/RESULTS.md)）。当前应记录失败、完成分析并提出新模型计划，不因门失败转去继续做显示。
+
+**阅读本计划的阶段约束:** Tasks 1–5 的模型、DICOM 几何和离线任务仍在范围内，Task 6 只保留离线结果契约。Tasks 7–10 的服务、显示、公网部署和公开 URL 验收全部后移；其原文是后续产品设计，不是当前可执行的并行任务。独立 2D 需要自己的数据、参照、checkpoint 和 A/U/R 验收，不能用 3D 或网页成果替代。
 
 ## Global Constraints
 
@@ -21,7 +23,7 @@
 - 所有现有标签和内部关系真值含伪标签，结果必须标 `NOT_EVIDENCE`。页面固定标注 research prototype / not a diagnosis；不要声称识别任意未知病变。
 - DICOM uploads 必须去标识。服务不持久保留 DICOM、mask、patient tags 或病例级 outputs；默认 job 完成 30 分钟清除。
 - URL 无需登录且公网可达。原始 API 只监听 `127.0.0.1`，由 Caddy 提供 HTTPS；单个 GPU worker、限长队列。
-- 3D 训练/验证依赖 `docs/superpowers/plans/2026-10-13-anatobind-aur-three-goal-conformance.md`。该计划的 G2-A/G2-U/G3 若失败，记录失败；不把 preview URL 或 UI smoke 记为 A/U/R 达标。
+- 3D 训练/验证依赖 `docs/superpowers/plans/2026-10-13-anatobind-aur-three-goal-conformance.md`。该计划的 G2-A/G2-U/G3 若失败，记录失败并停止当前模型实验，后续修改须新计划；不以 API/UI 工作接续失败模型。preview URL 或 UI smoke 不代表 A/U/R 达标。
 - 数据/模型路径默认从 `/data2/congcong/data/FM_data` 配置；DICOM 输入 job 放独立临时目录，绝不挂载整个 `FM_data` 到公网服务。
 
 ## Product contract
@@ -49,9 +51,9 @@ Single-slice output is 2D only (area mm²); do not invent slice thickness or rep
 - Consumes: the 3D training sample manifest, validation-patient manifest, G1 checkpoint and report from the existing conformance plan.
 - Produces: selected 3D checkpoint path/hash, exact sample split hashes, G2-A/G2-U/G3 verdicts and `NOT_EVIDENCE` label.
 
-- [ ] Execute the 2026-10-13 model-correction plan only after its review approval; preserve its fail-closed Q25 behavior and current live C0 protections.
+- [ ] Consolidate the actual 2026-10-13 model-correction results: Tasks 1–6 and the new-loss C2 training/val/test are complete; preserve the failed gates, completed descriptive comparison, historical legacy Q25 deviation and original run artifacts. Any further model change needs a new reviewed plan. Preserve fail-closed Q25 for the legacy recipe; the new `unmatched_empty_v1` profile has no legacy early-stop gate by preregistration.
 - [ ] Record the actual 3D checkpoint, run IDs, test reports, all three gate results and manifest hashes in `model_readiness.md`.
-- [ ] If a gate fails, leave the result marked NOT PASSED. Continue DICOM/API/UI development against synthetic fixtures, but do not enable public inference for that failed model.
+- [ ] If a gate fails, leave the result marked NOT PASSED, preserve the complete reports, and stop the current model experiment. Complete its declared analysis and propose a new model plan. Retain the DICOM decoding/offline acceptance and independent 2D work in scope; API/UI/public-URL work stays deferred under Q28.
 - [ ] Commit the readiness record with `git commit -m "docs: record 3D AUR readiness for DICOM product"`.
 
 ### Task 2: DICOM intake and geometry-preserving decoding
@@ -177,7 +179,7 @@ python scripts/aur2d_train.py --samples /data2/congcong/data/FM_data/derived/aur
 - [ ] Mark pseudo-label metrics `NOT_EVIDENCE`. If any gate fails, preserve reports and keep the public inference release disabled until a new model plan passes.
 - [ ] Run `pytest tests/test_aur2d_model.py tests/test_aur2d_train.py tests/test_aur2d_losses.py tests/test_aur2d_infer.py tests/test_aur2d_eval.py -q -p no:cacheprovider`; run one CPU synthetic forward/backward smoke and one approved idle-GPU smoke before training. Record model config, seed, manifest hash, checkpoint hash and all gates; commit source/tests with `git commit -m "feat: add 2D AnatoBind AUR model"`.
 
-### Task 6: Shared inference contract and mask assets
+### Task 6: Shared offline inference contract and mask assets
 
 **Files:**
 - Create: `anatobind/aur/service_schema.py`
@@ -185,7 +187,7 @@ python scripts/aur2d_train.py --samples /data2/congcong/data/FM_data/derived/aur
 - Create: `tests/test_aur_service_schema.py`
 
 **Interfaces:**
-- `InferenceResult2D` and `InferenceResult3D` serialize to the same JSON schema version 1.
+- Current model/offline scope: `InferenceResult2D` and `InferenceResult3D` serialize to the same JSON schema version 1. The future API may consume this contract after model work; defining it does not authorize service/UI implementation now.
 - A result has mode, geometry, sequence/sequence source, evidence status, anatomy asset, lesion list and per-lesion `host`, `host_side`, 14-class `host_probs`.
 - 2D assets are PNG masks on the original 2D pixel grid; 3D assets are NIfTI masks on the original 3D grid plus viewer-ready slice overlays.
 
@@ -193,7 +195,7 @@ python scripts/aur2d_train.py --samples /data2/congcong/data/FM_data/derived/aur
 - [ ] Preserve `NOT_EVIDENCE`, checkpoint SHA, code SHA and operating point in the result; never include source file path or DICOM identifiers.
 - [ ] Run `pytest tests/test_aur_service_schema.py -q -p no:cacheprovider`; commit with `git commit -m "feat: define shared 2D and 3D inference result schema"`.
 
-### Task 7: Public inference API and bounded job worker
+### Task 7: Public inference API and bounded job worker（后续阶段，Q28 后移）
 
 **Files:**
 - Create: `anatobind/web/__init__.py`
@@ -219,7 +221,7 @@ python scripts/aur2d_train.py --samples /data2/congcong/data/FM_data/derived/aur
 - [ ] Add tests for upload, multi-series selection, ZIP traversal rejection, job states, token isolation, upload/rate limits, timeout, cleanup and metadata/filename suppression.
 - [ ] Run `pytest tests/test_aur_web_api.py -q -p no:cacheprovider`; commit with `git commit -m "feat: add temporary DICOM inference job API"`.
 
-### Task 8: Interactive browser viewer
+### Task 8: Interactive browser viewer（后续阶段，Q28 后移）
 
 **Files:**
 - Create: `web/aur_demo/index.html`
@@ -235,7 +237,7 @@ python scripts/aur2d_train.py --samples /data2/congcong/data/FM_data/derived/aur
 - [ ] Add static contract tests for required modes, result schema fields, error states, deletion and download routes.
 - [ ] Run `pytest tests/test_aur_web_static.py -q -p no:cacheprovider`; commit with `git commit -m "feat: add interactive AUR DICOM viewer"`.
 
-### Task 9: Public HTTPS deployment
+### Task 9: Public HTTPS deployment（后续阶段，Q28 后移）
 
 **Files:**
 - Create: `deploy/Caddyfile`
@@ -251,7 +253,7 @@ python scripts/aur2d_train.py --samples /data2/congcong/data/FM_data/derived/aur
 - [ ] Record the actual public URL, commit SHA, checkpoint hashes, service host and smoke outputs in `public_url.md`. No URL is considered delivered until external-network verification passes.
 - [ ] Run `python scripts/web_healthcheck.py --base-url "$PUBLIC_BASE_URL"`; inspect systemd/Caddy logs for PHI leakage and commit deploy files/runbook with `git commit -m "ops: deploy public brain AUR DICOM demo"`.
 
-### Task 10: Final end-to-end acceptance
+### Task 10: Final end-to-end acceptance（后续公网产品阶段）
 
 **Files:**
 - Modify: `STATUS.md`
@@ -260,10 +262,12 @@ python scripts/aur2d_train.py --samples /data2/congcong/data/FM_data/derived/aur
 - [ ] Run targeted DICOM, 2D model, shared schema, API and static UI tests; then run the full CPU suite. Run one GPU smoke per dimension on approved idle hardware.
 - [ ] Test two deidentified fixtures through the public URL: one standalone 2D DICOM and one multi-slice 3D series. Confirm A/U/R masks map back to exact input geometry and the viewer reports 2D area vs 3D volume correctly.
 - [ ] Confirm model gates for each dimension, no cross-patient leakage, public URL access, upload limits, token isolation, error handling and automatic cleanup.
-- [ ] If a model gate fails, keep the app in preview-only mode with inference upload disabled, preserve reports, mark the corresponding A/U/R target NOT PASSED, and stop release claims. Do not tune on test.
+- [ ] If a model gate fails, preserve reports, mark the corresponding A/U/R target NOT PASSED, and stop the model plan and release claims. Do not tune on test or use preview/UI work as the next model task; API/UI remains deferred under Q28. A further model change needs a new reviewed plan.
 - [ ] Update `STATUS.md` with the actual public URL, mode-specific model/checkpoint IDs, gate results, privacy/retention behavior and `NOT_EVIDENCE` boundary.
 - [ ] Run `git diff --check`; commit the final E2E report and status with `git commit -m "docs: record public AUR DICOM end-to-end acceptance"`.
 
 ## Execution order and release gate
 
-Run the existing 3D conformance subplan, then DICOM input/3D adapter, 2D data/model, shared inference contract, API/UI, public deployment and external-network acceptance. API/UI development may use synthetic fixtures while training proceeds; public model inference is enabled only after the relevant 2D/3D model gates pass. The product target is complete only when both input modes work end-to-end at the public URL and the applicable A/U/R gates pass.
+Current order under Q28/Q29/Q30: the existing 3D conformance training/val/test and declared descriptive analysis are complete; preserve the failed A/U/R gates; complete failure diagnosis, then propose and review the next model plan before any further training or model change. Preserve DICOM input/geometry decoding, offline 3D acceptance, independent 2D data/reference/model/acceptance, and the shared offline inference contract. Model failure does not authorize a detour into display or service work.
+
+API/UI, public deployment and external-network acceptance are later phases after the model work. Their task text above preserves the original product requirements; it is not authorization for parallel display work while training proceeds. Public model inference requires the applicable 2D/3D gates to pass. The eventual product target is complete only when both input modes work end-to-end at the public URL and those existing A/U/R gates pass; no medical validation or arbitrary unknown-abnormality gate is added here.
