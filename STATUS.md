@@ -30,6 +30,8 @@
 
 ## 3. 下一步
 
+2026-10-16 建模复核已形成并通过独立 builder check 的[下一步诊断设计](docs/superpowers/specs/2026-10-16-anatobind-aur-modeling-next-step-design.md)：沿原六例 val 回放区分 U 单 query、presence、max 与跨窗平均；同时核查 A 分项和 R 实际粗几何上下文。此为研究设计交付，尚未执行回放、训练或模型修改，未改变 A/U/R 定义与验收门。
+
 1. 本轮描述性配对与保存 val 输出核查已收尾。后续拟固定每源 2 个 val 病例，保留 query/窗口输出，区分单 query、presence 与合并造成的损失；这是尚未执行的机制诊断，具体边界见 `docs/verification/2026-10-16/aur_saved_eval_diagnostic/NEXT_STEPS.md`。不能依据当前探索性对照宣称压空监督已经修复吞并病灶问题。
 2. 在新计划中逐项处理 A 尚差 0.0012、三源 U 未过及受控 R 低于 B0 的缺口。旧事件解码诊断是改损失的依据，本轮保存 val 核查已排除“仅 score 过滤导致主要漏检”的解释，但尚不能在训练、单 query 与合并之间确定因果。方案审阅后再实施下一轮，不用同一 test 选择新方案。
 3. 保留 DICOM 几何解码、离线 3D A/U/R 验收与单张 DICOM 所需的**独立 2D 数据、模型、参照和验收**。这些是未完成任务；不能以 3D 模型或网页替代 2D 验收。
