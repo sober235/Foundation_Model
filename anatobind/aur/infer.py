@@ -125,7 +125,7 @@ def _inside(window, shape):
 
 @torch.no_grad()
 def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5, presence_threshold=PRESENCE_THRESHOLD,
-                   entity_threshold=ENTITY_THRESHOLD):
+                   entity_threshold=ENTITY_THRESHOLD, observer=None):
     """image (z, y, x) float32 normalised; affine the RAS affine of the (x, y, z) NIfTI. Returns the entity map
     (uint8, 0 none, i + 1 for entity i), the largest entity probability per voxel (float16), the lesion probability
     (float32), the mean sequence probabilities, the mean entity presence over the windows and the number of windows.
@@ -160,6 +160,9 @@ def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5
             if bool(keep.any()):
                 les_acc[dst] += ev[b][keep].amax(0)[src] * wb
             wsum[dst] += wb
+            if observer is not None:
+                observer(window=w, event_prob=ev[b], event_presence=ev_pres[b], entity_prob=ent[b],
+                         valid=valid[b], weight=weight)
     wsum.clamp_(min=1e-12)
     ent_acc /= wsum
     les_acc /= wsum
@@ -191,7 +194,7 @@ def instances_from_probability(prob, voxel_mm3, threshold=LESION_THRESHOLD, scor
 
 
 @torch.no_grad()
-def bind_instances(model, image, affine, inst, crop, device):
+def bind_instances(model, image, affine, inst, crop, device, observer=None):
     """One crop centred on each instance of `inst` (int ids, 0 background): the event query whose thresholded mask
     overlaps the instance most inside the crop is bound (zero hard overlap: the query with the largest soft overlap,
     flagged); returns per instance the host index, the 14 host probabilities, the query, its IoU with the instance,
@@ -224,6 +227,8 @@ def bind_instances(model, image, affine, inst, crop, device):
         rows.append({"instance": k, "host": int(np.argmax(probs)), "host_probs": probs.astype(np.float32), "query": q,
                      "query_iou": float(iou[q]), "zero_overlap": zero, "window": [(int(a), int(b)) for a, b in window],
                      "in_crop_share": float(target.sum().item() / max(len(vox), 1))})
+        if observer is not None:
+            observer(model=model, out=out, target=target, query=q, window=window, result=rows[-1])
     return rows
 
 
