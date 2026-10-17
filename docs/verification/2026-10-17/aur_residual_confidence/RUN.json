@@ -153,7 +153,8 @@
       "correction": "Remove the -c element from sys.argv before runpy.run_path; CLI help verified before retry",
       "metadata_sha256": "e6dd0801ecbf30db0941054888a1da4cc49f6f7a46b9d3ab30bf4d39647abf73",
       "log_sha256": "e23adca828c5805f2726f62617bc1f90335bb34aac824ebb9f581fc6e59e7ea0"
-    }
+    },
+    "checkout_requirement": "All recorded commands ran from frozen6b261377bf3b457bbf1ba0a4fc123cb8bc8f4acf. Later report commits change HEAD; original --resume must run from a separate checkout of that frozen revision, retaining the original immutable contract."
   },
   "validation": {
     "targeted_tests": {
@@ -224,7 +225,7 @@
   ],
   "artifact_hashes": {
     "aggregate_anonymous.json": "57a641213cdcb6d5fbefe6bac8bd3e26143e676ae0d7d04b7589f10462c4523d",
-    "RESULTS.md": "e47cf763fd4bfeda39c30a1b9cdbb65c1a815a562d522b206cdd651665afb1fc",
+    "RESULTS.md": "68cd12528eb80a4ea63e651f49dadab523045b49b874e7c604353c2f4b262af0",
     "STATUS_before_confidence.md": "95d44b1a3d5618b52ae59960902889523b7618d0945105fcde1114ec58428a40"
   }
 }
