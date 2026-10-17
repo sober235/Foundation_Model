@@ -97,6 +97,16 @@ def _mask_iou(candidate, candidate_mask, earlier):
     return intersection / (candidate.n_voxels + earlier.n_voxels - intersection)
 
 
+def _possible_nms_pairs(box, n_voxels, survivor_boxes, survivor_volumes):
+    """Prior survivor indices whose intersection upper bound can reach IoU .5."""
+    box = np.asarray(box, dtype=np.int64)
+    overlap = np.maximum(0, np.minimum(box[:, 1], survivor_boxes[:, :, 1])
+                         - np.maximum(box[:, 0], survivor_boxes[:, :, 0]))
+    upper = np.minimum(np.prod(overlap, axis=1), np.minimum(n_voxels, survivor_volumes))
+    # IoU >= .5 requires intersection >= (n1+n2)/3. Keep ascending priority.
+    return np.flatnonzero(3 * upper >= n_voxels + survivor_volumes)
+
+
 class QueryCCDecoder:
     """Bounded observer for natural-window predictions, followed by deterministic decoding.
 
@@ -166,14 +176,23 @@ class QueryCCDecoder:
             self._executor.shutdown(wait=True)
         candidates = sorted(self._candidates, key=lambda c: c.priority)
         survivors = []
+        survivor_boxes = np.empty((len(candidates), 3, 2), dtype=np.int64)
+        survivor_volumes = np.empty(len(candidates), dtype=np.int64)
         for rank, candidate in enumerate(candidates, 1):
             mask = candidate.mask()
-            for earlier_rank, earlier in survivors:
+            count = len(survivors)
+            box = np.asarray(candidate.box, dtype=np.int64)
+            possible = _possible_nms_pairs(box, candidate.n_voxels,
+                                           survivor_boxes[:count], survivor_volumes[:count])
+            for index in possible:
+                earlier_rank, earlier = survivors[index]
                 iou = _mask_iou(candidate, mask, earlier)
                 if iou >= .5:
                     self.nms_trace.append(dict(rank=rank, suppressor_rank=earlier_rank, iou=iou))
                     break
             else:
+                survivor_boxes[count] = box
+                survivor_volumes[count] = candidate.n_voxels
                 survivors.append((rank, candidate))
         owner = np.zeros(self.shape, np.int32)
         for rank, candidate in survivors:
