@@ -32,10 +32,10 @@
 
 **Interfaces:** `predict_volume(..., observer=None)` calls the observer once per natural window with window, event_prob, event_presence, entity_prob, valid, weight. `bind_instances(..., observer=None)` calls it once per GT-centred bind with model/out/target/query/window/result. `identity(row)`, `select_cases(val_rows, saved_cases, per_source=2)`, `verify_detections(actual, expected)` and `WindowAudit` are consumed by Task 2.
 
-- [ ] Write failing tests: exact observer parity on a tiny real model, bind-observer parity, deterministic distinct-patient selection, no test membership, missing/mismatched detections rejected, a useful low-presence query separated from retained max, valid/padding excluded.
-- [ ] Run targeted CPU tests and observe the intended failures.
-- [ ] Implement minimal hooks and diagnostics, retaining original computation and instance identity.
-- [ ] Run diagnostics/inference tests; commit.
+- [x] Write failing tests: exact observer parity on a tiny real model, bind-observer parity, deterministic distinct-patient selection, no test membership, missing/mismatched detections rejected, a useful low-presence query separated from retained max, valid/padding excluded.
+- [x] Run targeted CPU tests and observe the intended failures.
+- [x] Implement minimal hooks and diagnostics, retaining original computation and instance identity.
+- [x] Run diagnostics/inference tests; commit.
 
 ### Task 2: Frozen replay runner
 
@@ -43,20 +43,22 @@
 
 **Interfaces:** CLI `--samples --val-patients --saved-eval --checkpoint --out --gpu --max-seconds` creates a new local run; freezes selection and provenance before inference; writes anonymous progress/summary and local-only arrays/selection. It loads existing exported model and dataset paths without modifying them.
 
-- [ ] Write failing tests for provenance/selection and baseline mismatch behavior (reuse Task 1 primitives; no GPU in unit tests).
-- [ ] Implement runner: verify hashes, select/freeze six rows, run original predict with observers, verify detections before interpretation, collect A inside/outside lesion and actual coarse R inputs, stream local arrays and per-window stats.
-- [ ] Run targeted then full CPU suite, inspect diff, commit. Independent reviewer checks Tasks 1–2 before GPU replay.
+- [x] Write failing tests for provenance/selection and baseline mismatch behavior (reuse Task 1 primitives; no GPU in unit tests).
+- [x] Implement runner: verify hashes, select/freeze six rows, run original predict with observers, verify detections before interpretation, collect A inside/outside lesion and actual coarse R inputs, stream local arrays and per-window stats.
+- [x] Run targeted then full CPU suite, inspect diff, commit. Independent reviewer checks Tasks 1–2 before GPU replay.
 
 ### Task 3: Execute and report the bounded validation diagnostic
 
 **Files:** anonymous report under `docs/verification/2026-10-16/aur_model_diagnostic/`; update STATUS. Local raw run under `~/outputs/aur_model_diagnostic/`.
 
-- [ ] Confirm idle GPU, pin it, record first-case wall time and peak memory; run sequential six-case replay under 7200-second timeout.
-- [ ] Verify all frozen cases reproduce saved baseline or explicitly stop attribution at mismatch; do not alter tolerances.
-- [ ] Combine U window measurements, A breakdown and saved-val R stratification; identify supported/unsupported/unresolved mechanisms.
-- [ ] State the next single-variable model experiment supported by evidence (or the smallest missing observation), preserving all three goals. Do not start new training or activate N7 fallback in this plan.
-- [ ] Review anonymous output and final code, run checks appropriate to any fixes, commit completed report/status.
+- [x] Confirm idle GPU, pin it, record first-case wall time and peak memory; run sequential six-case replay under 7200-second timeout.
+- [x] Verify all frozen cases reproduce saved baseline or explicitly stop attribution at mismatch; do not alter tolerances.
+- [x] Combine U window measurements, A breakdown and saved-val R stratification; identify supported/unsupported/unresolved mechanisms.
+- [x] State the next single-variable model experiment supported by evidence (or the smallest missing observation), preserving all three goals. Do not start new training or activate N7 fallback in this plan.
+- [x] Review anonymous output and final code, run checks appropriate to any fixes, commit completed report/status.
 
 ## Execution record
 
 The per-task ledger is `.superpowers/sdd/2026-10-16-anatobind-aur-model-diagnostic/progress.md`. Task 3 is not complete merely because tooling passes tests; actual replay and an honest report are required.
+
+Completed 2026-10-17: tooling reviewed,1065 passed/2 skipped; six-case replay and A/U/R cache analysis complete. NEXT_EXPERIMENT is a proposed separate decoder study, not executed.

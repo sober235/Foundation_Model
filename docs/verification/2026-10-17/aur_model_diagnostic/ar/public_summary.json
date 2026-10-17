@@ -1,0 +1,991 @@
+{
+  "evidence": "NOT_EVIDENCE",
+  "claim_type": "computed_from_completed_six_case_val_replay",
+  "scope": {
+    "n_volumes": 6,
+    "source_counts": {
+      "bmsr": 2,
+      "isles": 2,
+      "pdgm": 2
+    },
+    "n_controlled_bindings": 55,
+    "n_bindings_largest_volume": 33,
+    "new_inference_or_training_in_analysis": false
+  },
+  "verification": {
+    "n_cases": 6,
+    "n_controlled_bindings": 55,
+    "stored_coarse_dice_max_abs_error": 0.0,
+    "cpu_unquantized_vs_saved_autocast_geometry_overlap_max_abs_difference": 0.003575662365078225,
+    "stored_geometry_equals_diagnostic_json_overlap": true,
+    "all55_local_truth_matches_whole": true,
+    "zero_entities_all30_reference_present_prediction_absent": true,
+    "nearest_grid_target_empty": 4,
+    "in_crop_shares_all_one": true
+  },
+  "a_volume_macro_means": {
+    "all_host_macro": 0.7737289413006269,
+    "all_entity_macro": 0.6294916543870213,
+    "lesion_host_macro": 0.36373165500217064,
+    "lesion_entity_macro": 0.28739946332212124,
+    "outside_lesion_host_macro": 0.7791928658306985,
+    "outside_lesion_entity_macro": 0.6364456577819495
+  },
+  "a_zero_entities": [
+    {
+      "label": 5,
+      "repository_name": "L inf lat vent",
+      "n_volumes": 6,
+      "n_reference_present": 6,
+      "n_prediction_absent": 6,
+      "truth_voxels_total": 3382,
+      "pred_voxels_total": 0,
+      "presence_mean": 0.9344020088513693,
+      "presence_min": 0.6290165185928345,
+      "presence_max": 0.9997541308403015
+    },
+    {
+      "label": 44,
+      "repository_name": "R inf lat vent",
+      "n_volumes": 6,
+      "n_reference_present": 6,
+      "n_prediction_absent": 6,
+      "truth_voxels_total": 4244,
+      "pred_voxels_total": 0,
+      "presence_mean": 0.9283616642157236,
+      "presence_min": 0.5744795799255371,
+      "presence_max": 0.999647855758667
+    },
+    {
+      "label": 18,
+      "repository_name": "L amygdala",
+      "n_volumes": 6,
+      "n_reference_present": 6,
+      "n_prediction_absent": 6,
+      "truth_voxels_total": 9732,
+      "pred_voxels_total": 0,
+      "presence_mean": 0.9508925875027975,
+      "presence_min": 0.7105100750923157,
+      "presence_max": 0.9999537467956543
+    },
+    {
+      "label": 26,
+      "repository_name": "L accumbens",
+      "n_volumes": 6,
+      "n_reference_present": 6,
+      "n_prediction_absent": 6,
+      "truth_voxels_total": 3656,
+      "pred_voxels_total": 0,
+      "presence_mean": 0.9299603700637817,
+      "presence_min": 0.5829325914382935,
+      "presence_max": 0.9996027946472168
+    },
+    {
+      "label": 58,
+      "repository_name": "R accumbens",
+      "n_volumes": 6,
+      "n_reference_present": 6,
+      "n_prediction_absent": 6,
+      "truth_voxels_total": 3777,
+      "pred_voxels_total": 0,
+      "presence_mean": 0.9416740536689758,
+      "presence_min": 0.6522638201713562,
+      "presence_max": 0.9997365474700928
+    }
+  ],
+  "a_presence_gate_applied_to_whole_volume_prediction": false,
+  "r_overall": {
+    "n": 55,
+    "both_right": 20,
+    "both_wrong": 8,
+    "rescue": 12,
+    "harm": 15,
+    "r_correct": 32,
+    "b0_correct": 35,
+    "local_truth_matches": 55,
+    "overlap_choice_correct": 5,
+    "r_matches_overlap_choice": 9,
+    "gt_nearest_target_empty": 4,
+    "coarse_u_hard_empty": 4,
+    "coarse_u_hard_full": 3,
+    "fields": {
+      "saved_whole_volume_local_a": {
+        "n": 55,
+        "mean": 0.7377181495052849,
+        "median": 0.7166228684783243,
+        "min": 0.7000429984205011,
+        "max": 0.8293163152817837
+      },
+      "single_crop_dense_a": {
+        "n": 55,
+        "mean": 0.7451824499110707,
+        "median": 0.7344432748355791,
+        "min": 0.6996238038660187,
+        "max": 0.8369110126556779
+      },
+      "same_grid_nearest_dense_a": {
+        "n": 55,
+        "mean": 0.7440133664155872,
+        "median": 0.7330978621474856,
+        "min": 0.6959833054117474,
+        "max": 0.8353545495550562
+      },
+      "same_grid_centre_floor_dense_a": {
+        "n": 55,
+        "mean": 0.7401627300553801,
+        "median": 0.7317543629776329,
+        "min": 0.691264139880311,
+        "max": 0.8332852292247814
+      },
+      "same_grid_centre_ceil_dense_a": {
+        "n": 55,
+        "mean": 0.7486542732948196,
+        "median": 0.7347303160061767,
+        "min": 0.7013778324304383,
+        "max": 0.8353949860100316
+      },
+      "coarse_a_ungated": {
+        "n": 55,
+        "mean": 0.048471603360056355,
+        "median": 0.048639276608833874,
+        "min": 0.032813633178497004,
+        "max": 0.0643024455211496
+      },
+      "coarse_a_gated": {
+        "n": 55,
+        "mean": 0.04868697559691561,
+        "median": 0.0492714417096933,
+        "min": 0.03556136005372232,
+        "max": 0.0642164502492783
+      },
+      "coarse_a_gated_centre_floor_gt": {
+        "n": 55,
+        "mean": 0.05023071743714174,
+        "median": 0.04987169982325758,
+        "min": 0.035675746894288304,
+        "max": 0.06718155995385565
+      },
+      "coarse_a_gated_centre_ceil_gt": {
+        "n": 55,
+        "mean": 0.05095316312282138,
+        "median": 0.0503203430375533,
+        "min": 0.03724104471919192,
+        "max": 0.07026334150548438
+      },
+      "gating_changes_hard_a_voxel_fraction": {
+        "n": 55,
+        "mean": 0.004239169034090909,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0926953125
+      },
+      "coarse_u_mean_valid": {
+        "n": 55,
+        "mean": 0.4011371410107527,
+        "median": 0.14579490645938256,
+        "min": 3.579795348692945e-06,
+        "max": 0.9999947357177734
+      },
+      "coarse_u_std_valid": {
+        "n": 55,
+        "mean": 0.12170622788546791,
+        "median": 0.09217634785276958,
+        "min": 0.00023947358979398004,
+        "max": 0.3888003795716126
+      },
+      "coarse_u_fraction_gt_0_5": {
+        "n": 55,
+        "mean": 0.4011312144886364,
+        "median": 0.14568359375,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "coarse_u_target_iou_nn": {
+        "n": 55,
+        "mean": 0.0011916851320366078,
+        "median": 0.0,
+        "min": 0.0,
+        "max": 0.0248046875
+      },
+      "coarse_u_soft_mass_inside_target_share_nn": {
+        "n": 55,
+        "mean": 0.0011902615607822782,
+        "median": 5.622640597008647e-08,
+        "min": 0.0,
+        "max": 0.024794766155489433
+      },
+      "coarse_host_hard_channels_per_valid_voxel": {
+        "n": 55,
+        "mean": 1.3310848721590907,
+        "median": 1.336708984375,
+        "min": 0.7570703125,
+        "max": 1.698994140625
+      },
+      "coarse_host_multichannel_fraction": {
+        "n": 55,
+        "mean": 0.22597123579545453,
+        "median": 0.233330078125,
+        "min": 0.142275390625,
+        "max": 0.288603515625
+      },
+      "n_host_geometry_present": {
+        "n": 55,
+        "mean": 11.89090909090909,
+        "median": 12.0,
+        "min": 10.0,
+        "max": 13.0
+      },
+      "n_geometry_overlap_gt_0_05": {
+        "n": 55,
+        "mean": 8.036363636363637,
+        "median": 8.0,
+        "min": 3.0,
+        "max": 12.0
+      },
+      "n_geometry_zero_distance": {
+        "n": 55,
+        "mean": 8.036363636363637,
+        "median": 8.0,
+        "min": 3.0,
+        "max": 12.0
+      },
+      "geometry_overlap_max": {
+        "n": 55,
+        "mean": 0.6090763937343251,
+        "median": 0.5581731200218201,
+        "min": 0.17426888644695282,
+        "max": 1.0017313957214355
+      },
+      "geometry_overlap_true_host": {
+        "n": 55,
+        "mean": 0.19987218815428368,
+        "median": 0.0007472045836038888,
+        "min": 8.620991561684305e-14,
+        "max": 1.0004355907440186
+      },
+      "coarse_true_host_hard_dice_nn": {
+        "n": 55,
+        "mean": 0.056719778908617804,
+        "median": 0.002188868042526579,
+        "min": 0.0,
+        "max": 0.4968177068490548
+      },
+      "coarse_true_host_hard_precision_nn": {
+        "n": 43,
+        "mean": 0.2320257633398195,
+        "median": 0.09134970457902511,
+        "min": 0.0,
+        "max": 0.9333333333333333
+      },
+      "coarse_true_host_hard_recall_nn": {
+        "n": 55,
+        "mean": 0.12373477392972924,
+        "median": 0.0011082963901203294,
+        "min": 0.0,
+        "max": 0.9672850588469978
+      },
+      "coarse_true_host_prob_in_host_nn": {
+        "n": 55,
+        "mean": 0.12379498927395374,
+        "median": 0.0010675720588166672,
+        "min": 4.615224116632958e-25,
+        "max": 0.9655571965707415
+      },
+      "coarse_true_host_prob_out_host_nn": {
+        "n": 55,
+        "mean": 0.03603863146072232,
+        "median": 0.0006270162566931767,
+        "min": 2.320543598250178e-12,
+        "max": 0.20414486021891234
+      }
+    }
+  },
+  "r_by_source": [
+    {
+      "n": 13,
+      "both_right": 8,
+      "both_wrong": 1,
+      "rescue": 2,
+      "harm": 2,
+      "r_correct": 10,
+      "b0_correct": 10,
+      "local_truth_matches": 13,
+      "overlap_choice_correct": 1,
+      "r_matches_overlap_choice": 1,
+      "gt_nearest_target_empty": 0,
+      "coarse_u_hard_empty": 3,
+      "coarse_u_hard_full": 1,
+      "fields": {
+        "saved_whole_volume_local_a": {
+          "n": 13,
+          "mean": 0.7815830513334104,
+          "median": 0.764270480219888,
+          "min": 0.7483025713140161,
+          "max": 0.8293163152817837
+        },
+        "single_crop_dense_a": {
+          "n": 13,
+          "mean": 0.7833570513458367,
+          "median": 0.7711464243186856,
+          "min": 0.7142458222460604,
+          "max": 0.8369110126556779
+        },
+        "same_grid_nearest_dense_a": {
+          "n": 13,
+          "mean": 0.7835405415777195,
+          "median": 0.7729776299474155,
+          "min": 0.7222309438691774,
+          "max": 0.8353545495550562
+        },
+        "same_grid_centre_floor_dense_a": {
+          "n": 13,
+          "mean": 0.7800106750197293,
+          "median": 0.7677409258574571,
+          "min": 0.7111503498972023,
+          "max": 0.8332852292247814
+        },
+        "same_grid_centre_ceil_dense_a": {
+          "n": 13,
+          "mean": 0.7850266919003731,
+          "median": 0.7732974658131899,
+          "min": 0.7109703232813219,
+          "max": 0.8353949860100316
+        },
+        "coarse_a_ungated": {
+          "n": 13,
+          "mean": 0.05297159719056306,
+          "median": 0.05279167349171539,
+          "min": 0.032813633178497004,
+          "max": 0.06224305728919317
+        },
+        "coarse_a_gated": {
+          "n": 13,
+          "mean": 0.05330905002379827,
+          "median": 0.05279167349171539,
+          "min": 0.03556136005372232,
+          "max": 0.06348974317576281
+        },
+        "coarse_a_gated_centre_floor_gt": {
+          "n": 13,
+          "mean": 0.054761594995135776,
+          "median": 0.05565293115486193,
+          "min": 0.03791001366967887,
+          "max": 0.0650991959626058
+        },
+        "coarse_a_gated_centre_ceil_gt": {
+          "n": 13,
+          "mean": 0.055524670295085045,
+          "median": 0.056993141975000494,
+          "min": 0.04085128592847325,
+          "max": 0.06476566280339205
+        },
+        "gating_changes_hard_a_voxel_fraction": {
+          "n": 13,
+          "mean": 0.009105318509615386,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0926953125
+        },
+        "coarse_u_mean_valid": {
+          "n": 13,
+          "mean": 0.2574510668892315,
+          "median": 0.0045612821767075104,
+          "min": 3.579795348692945e-06,
+          "max": 0.9999719619750976
+        },
+        "coarse_u_std_valid": {
+          "n": 13,
+          "mean": 0.08760426433916182,
+          "median": 0.010785674180543119,
+          "min": 0.00023947358979398004,
+          "max": 0.3860061297824267
+        },
+        "coarse_u_fraction_gt_0_5": {
+          "n": 13,
+          "mean": 0.25723482572115386,
+          "median": 0.00236328125,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "coarse_u_target_iou_nn": {
+          "n": 13,
+          "mean": 4.549763293227292e-05,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.00037150734215826215
+        },
+        "coarse_u_soft_mass_inside_target_share_nn": {
+          "n": 13,
+          "mean": 4.528868073115575e-05,
+          "median": 7.59178334830557e-15,
+          "min": 8.271634467472602e-27,
+          "max": 0.0003709647065091673
+        },
+        "coarse_host_hard_channels_per_valid_voxel": {
+          "n": 13,
+          "mean": 1.2403094951923077,
+          "median": 1.27541015625,
+          "min": 0.763740234375,
+          "max": 1.598828125
+        },
+        "coarse_host_multichannel_fraction": {
+          "n": 13,
+          "mean": 0.22105618990384615,
+          "median": 0.23369140625,
+          "min": 0.142275390625,
+          "max": 0.288603515625
+        },
+        "n_host_geometry_present": {
+          "n": 13,
+          "mean": 10.538461538461538,
+          "median": 11.0,
+          "min": 10.0,
+          "max": 11.0
+        },
+        "n_geometry_overlap_gt_0_05": {
+          "n": 13,
+          "mean": 7.846153846153846,
+          "median": 8.0,
+          "min": 4.0,
+          "max": 10.0
+        },
+        "n_geometry_zero_distance": {
+          "n": 13,
+          "mean": 7.846153846153846,
+          "median": 8.0,
+          "min": 4.0,
+          "max": 10.0
+        },
+        "geometry_overlap_max": {
+          "n": 13,
+          "mean": 0.6775886576909286,
+          "median": 0.6343848705291748,
+          "min": 0.28250792622566223,
+          "max": 1.0017313957214355
+        },
+        "geometry_overlap_true_host": {
+          "n": 13,
+          "mean": 0.12442125504826272,
+          "median": 4.6186141844373196e-05,
+          "min": 1.8087638331554245e-10,
+          "max": 0.9917325973510742
+        },
+        "coarse_true_host_hard_dice_nn": {
+          "n": 13,
+          "mean": 0.034926922611766074,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.2891608088171483
+        },
+        "coarse_true_host_hard_precision_nn": {
+          "n": 6,
+          "mean": 0.0621360280847905,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.28146646392971786
+        },
+        "coarse_true_host_hard_recall_nn": {
+          "n": 13,
+          "mean": 0.087924165184913,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.8457264957264957
+        },
+        "coarse_true_host_prob_in_host_nn": {
+          "n": 13,
+          "mean": 0.08796537174221632,
+          "median": 4.4757108386636635e-10,
+          "min": 4.615224116632958e-25,
+          "max": 0.845212870804543
+        },
+        "coarse_true_host_prob_out_host_nn": {
+          "n": 13,
+          "mean": 0.035773826163625684,
+          "median": 2.8095905952126838e-08,
+          "min": 4.816216879515026e-11,
+          "max": 0.19636228727382207
+        }
+      },
+      "n_volumes": 2,
+      "source": "bmsr"
+    },
+    {
+      "n": 40,
+      "both_right": 11,
+      "both_wrong": 6,
+      "rescue": 10,
+      "harm": 13,
+      "r_correct": 21,
+      "b0_correct": 24,
+      "local_truth_matches": 40,
+      "overlap_choice_correct": 4,
+      "r_matches_overlap_choice": 8,
+      "gt_nearest_target_empty": 4,
+      "coarse_u_hard_empty": 1,
+      "coarse_u_hard_full": 0,
+      "fields": {
+        "saved_whole_volume_local_a": {
+          "n": 40,
+          "mean": 0.72066629928227,
+          "median": 0.7128256821990733,
+          "min": 0.7000429984205011,
+          "max": 0.7801189641305974
+        },
+        "single_crop_dense_a": {
+          "n": 40,
+          "mean": 0.7305997554313501,
+          "median": 0.7277505239189633,
+          "min": 0.6996238038660187,
+          "max": 0.7856236131119665
+        },
+        "same_grid_nearest_dense_a": {
+          "n": 40,
+          "mean": 0.7288713604067715,
+          "median": 0.7245487140348598,
+          "min": 0.6959833054117474,
+          "max": 0.7900463002061457
+        },
+        "same_grid_centre_floor_dense_a": {
+          "n": 40,
+          "mean": 0.7247064615720736,
+          "median": 0.7204668556297128,
+          "min": 0.691264139880311,
+          "max": 0.7795898171966738
+        },
+        "same_grid_centre_ceil_dense_a": {
+          "n": 40,
+          "mean": 0.734841915633172,
+          "median": 0.7310817263601476,
+          "min": 0.7013778324304383,
+          "max": 0.7898333545526295
+        },
+        "coarse_a_ungated": {
+          "n": 40,
+          "mean": 0.04694137267320464,
+          "median": 0.04565242817850672,
+          "min": 0.03567056246041596,
+          "max": 0.0643024455211496
+        },
+        "coarse_a_gated": {
+          "n": 40,
+          "mean": 0.047127837328084676,
+          "median": 0.045786751986006166,
+          "min": 0.03566877825134771,
+          "max": 0.0642164502492783
+        },
+        "coarse_a_gated_centre_floor_gt": {
+          "n": 40,
+          "mean": 0.0487281935852024,
+          "median": 0.047575441775502894,
+          "min": 0.035675746894288304,
+          "max": 0.06718155995385565
+        },
+        "coarse_a_gated_centre_ceil_gt": {
+          "n": 40,
+          "mean": 0.04942170580125725,
+          "median": 0.049660140323199126,
+          "min": 0.03724104471919192,
+          "max": 0.07026334150548438
+        },
+        "gating_changes_hard_a_voxel_fraction": {
+          "n": 40,
+          "mean": 0.00286962890625,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.089814453125
+        },
+        "coarse_u_mean_valid": {
+          "n": 40,
+          "mean": 0.41789248522756706,
+          "median": 0.1520111154567644,
+          "min": 9.004906256703955e-06,
+          "max": 0.9992863154411316
+        },
+        "coarse_u_std_valid": {
+          "n": 40,
+          "mean": 0.1388015420320286,
+          "median": 0.12982401654845022,
+          "min": 0.0005056139034451047,
+          "max": 0.3888003795716126
+        },
+        "coarse_u_fraction_gt_0_5": {
+          "n": 40,
+          "mean": 0.4179541015625,
+          "median": 0.1520703125,
+          "min": 0.0,
+          "max": 0.999453125
+        },
+        "coarse_u_target_iou_nn": {
+          "n": 40,
+          "mean": 0.0004406748570973472,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.012409493751282478
+        },
+        "coarse_u_soft_mass_inside_target_share_nn": {
+          "n": 40,
+          "mean": 0.0004390313796353031,
+          "median": 6.759601280949817e-08,
+          "min": 0.0,
+          "max": 0.01232934046555896
+        },
+        "coarse_host_hard_channels_per_valid_voxel": {
+          "n": 40,
+          "mean": 1.349115966796875,
+          "median": 1.354296875,
+          "min": 0.7570703125,
+          "max": 1.698994140625
+        },
+        "coarse_host_multichannel_fraction": {
+          "n": 40,
+          "mean": 0.22557592773437501,
+          "median": 0.2264111328125,
+          "min": 0.1742578125,
+          "max": 0.27740234375
+        },
+        "n_host_geometry_present": {
+          "n": 40,
+          "mean": 12.35,
+          "median": 13.0,
+          "min": 10.0,
+          "max": 13.0
+        },
+        "n_geometry_overlap_gt_0_05": {
+          "n": 40,
+          "mean": 8.1,
+          "median": 8.5,
+          "min": 3.0,
+          "max": 12.0
+        },
+        "n_geometry_zero_distance": {
+          "n": 40,
+          "mean": 8.1,
+          "median": 8.5,
+          "min": 3.0,
+          "max": 12.0
+        },
+        "geometry_overlap_max": {
+          "n": 40,
+          "mean": 0.6011073097586632,
+          "median": 0.5662248432636261,
+          "min": 0.17426888644695282,
+          "max": 1.0004355907440186
+        },
+        "geometry_overlap_true_host": {
+          "n": 40,
+          "mean": 0.23415028683066524,
+          "median": 0.0007823573832865804,
+          "min": 8.620991561684305e-14,
+          "max": 1.0004355907440186
+        },
+        "coarse_true_host_hard_dice_nn": {
+          "n": 40,
+          "mean": 0.063731085073761,
+          "median": 0.00310627521279621,
+          "min": 0.0,
+          "max": 0.4968177068490548
+        },
+        "coarse_true_host_hard_precision_nn": {
+          "n": 35,
+          "mean": 0.2411754918809202,
+          "median": 0.09230769230769231,
+          "min": 0.0,
+          "max": 0.9333333333333333
+        },
+        "coarse_true_host_hard_recall_nn": {
+          "n": 40,
+          "mean": 0.13996320887624483,
+          "median": 0.0015718335928035486,
+          "min": 0.0,
+          "max": 0.9672850588469978
+        },
+        "coarse_true_host_prob_in_host_nn": {
+          "n": 40,
+          "mean": 0.14003431411744094,
+          "median": 0.0016386828027905498,
+          "min": 1.5131505832521619e-24,
+          "max": 0.9655571965707415
+        },
+        "coarse_true_host_prob_out_host_nn": {
+          "n": 40,
+          "mean": 0.03780714407678095,
+          "median": 0.0006304259413904138,
+          "min": 2.320543598250178e-12,
+          "max": 0.20414486021891234
+        }
+      },
+      "n_volumes": 2,
+      "source": "isles"
+    },
+    {
+      "n": 2,
+      "both_right": 1,
+      "both_wrong": 1,
+      "rescue": 0,
+      "harm": 0,
+      "r_correct": 1,
+      "b0_correct": 1,
+      "local_truth_matches": 2,
+      "overlap_choice_correct": 0,
+      "r_matches_overlap_choice": 0,
+      "gt_nearest_target_empty": 0,
+      "coarse_u_hard_empty": 0,
+      "coarse_u_hard_full": 2,
+      "fields": {
+        "saved_whole_volume_local_a": {
+          "n": 2,
+          "mean": 0.7936332920827736,
+          "median": 0.7936332920827736,
+          "min": 0.7836414386354138,
+          "max": 0.8036251455301332
+        },
+        "single_crop_dense_a": {
+          "n": 2,
+          "mean": 0.7887014301795049,
+          "median": 0.7887014301795049,
+          "min": 0.7788209168716193,
+          "max": 0.7985819434873905
+        },
+        "same_grid_nearest_dense_a": {
+          "n": 2,
+          "mean": 0.7899268480380506,
+          "median": 0.7899268480380506,
+          "min": 0.7808409165172381,
+          "max": 0.799012779558863
+        },
+        "same_grid_centre_floor_dense_a": {
+          "n": 2,
+          "mean": 0.7902764574532386,
+          "median": 0.7902764574532386,
+          "min": 0.7825754512068476,
+          "max": 0.7979774636996297
+        },
+        "same_grid_centre_ceil_dense_a": {
+          "n": 2,
+          "mean": 0.7884807055916729,
+          "median": 0.7884807055916729,
+          "min": 0.7774668752437581,
+          "max": 0.7994945359395876
+        },
+        "coarse_a_ungated": {
+          "n": 2,
+          "mean": 0.049826257198797096,
+          "median": 0.049826257198797096,
+          "min": 0.0492714417096933,
+          "max": 0.05038107268790089
+        },
+        "coarse_a_gated": {
+          "n": 2,
+          "mean": 0.049826257198797096,
+          "median": 0.049826257198797096,
+          "min": 0.0492714417096933,
+          "max": 0.05038107268790089
+        },
+        "coarse_a_gated_centre_floor_gt": {
+          "n": 2,
+          "mean": 0.05083049034896746,
+          "median": 0.05083049034896746,
+          "min": 0.05036073023271,
+          "max": 0.05130025046522491
+        },
+        "coarse_a_gated_centre_ceil_gt": {
+          "n": 2,
+          "mean": 0.051867512934390084,
+          "median": 0.051867512934390084,
+          "min": 0.051124936498892555,
+          "max": 0.05261008936988761
+        },
+        "gating_changes_hard_a_voxel_fraction": {
+          "n": 2,
+          "mean": 0.0,
+          "median": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "coarse_u_mean_valid": {
+          "n": 2,
+          "mean": 0.9999897384643555,
+          "median": 0.9999897384643555,
+          "min": 0.9999847412109375,
+          "max": 0.9999947357177734
+        },
+        "coarse_u_std_valid": {
+          "n": 2,
+          "mean": 0.001462708005244004,
+          "median": 0.001462708005244004,
+          "min": 0.0006685859130643336,
+          "max": 0.0022568300974236746
+        },
+        "coarse_u_fraction_gt_0_5": {
+          "n": 2,
+          "mean": 1.0,
+          "median": 1.0,
+          "min": 1.0,
+          "max": 1.0
+        },
+        "coarse_u_target_iou_nn": {
+          "n": 2,
+          "mean": 0.023662109374999997,
+          "median": 0.023662109374999997,
+          "min": 0.02251953125,
+          "max": 0.0248046875
+        },
+        "coarse_u_soft_mass_inside_target_share_nn": {
+          "n": 2,
+          "mean": 0.023657188904054074,
+          "median": 0.023657188904054074,
+          "min": 0.022519611652618714,
+          "max": 0.024794766155489433
+        },
+        "coarse_host_hard_channels_per_valid_voxel": {
+          "n": 2,
+          "mean": 1.5605029296875,
+          "median": 1.5605029296875,
+          "min": 1.458232421875,
+          "max": 1.6627734375
+        },
+        "coarse_host_multichannel_fraction": {
+          "n": 2,
+          "mean": 0.26582519531250004,
+          "median": 0.26582519531250004,
+          "min": 0.252490234375,
+          "max": 0.27916015625
+        },
+        "n_host_geometry_present": {
+          "n": 2,
+          "mean": 11.5,
+          "median": 11.5,
+          "min": 11.0,
+          "max": 12.0
+        },
+        "n_geometry_overlap_gt_0_05": {
+          "n": 2,
+          "mean": 8.0,
+          "median": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        },
+        "n_geometry_zero_distance": {
+          "n": 2,
+          "mean": 8.0,
+          "median": 8.0,
+          "min": 8.0,
+          "max": 8.0
+        },
+        "geometry_overlap_max": {
+          "n": 2,
+          "mean": 0.3231283575296402,
+          "median": 0.3231283575296402,
+          "min": 0.3137516379356384,
+          "max": 0.33250507712364197
+        },
+        "geometry_overlap_true_host": {
+          "n": 2,
+          "mean": 0.004741279815789312,
+          "median": 0.004741279815789312,
+          "min": 0.0006933630211278796,
+          "max": 0.008789196610450745
+        },
+        "coarse_true_host_hard_dice_nn": {
+          "n": 2,
+          "mean": 0.05814722153529016,
+          "median": 0.05814722153529016,
+          "min": 0.012313585989875496,
+          "max": 0.10398085708070481
+        },
+        "coarse_true_host_hard_precision_nn": {
+          "n": 2,
+          "mean": 0.5815747196356433,
+          "median": 0.5815747196356433,
+          "min": 0.5293466223698782,
+          "max": 0.6338028169014085
+        },
+        "coarse_true_host_hard_recall_nn": {
+          "n": 2,
+          "mean": 0.031935031840722966,
+          "median": 0.031935031840722966,
+          "min": 0.006217187068250898,
+          "max": 0.05765287661319503
+        },
+        "coarse_true_host_prob_in_host_nn": {
+          "n": 2,
+          "mean": 0.031901006360503456,
+          "median": 0.031901006360503456,
+          "min": 0.006343991777796838,
+          "max": 0.05745802094321008
+        },
+        "coarse_true_host_prob_out_host_nn": {
+          "n": 2,
+          "mean": 0.0023896135706781337,
+          "median": 0.0023896135706781337,
+          "min": 0.0002614818486542613,
+          "max": 0.004517745292702006
+        }
+      },
+      "n_volumes": 2,
+      "source": "pdgm"
+    }
+  ],
+  "a_control_equal_volume_mean_of_binding_means": {
+    "saved_whole_volume_local_a": 0.7767723081764119,
+    "single_crop_dense_a": 0.7769174518333845,
+    "same_grid_nearest_dense_a": 0.7767868641608777,
+    "same_grid_centre_floor_dense_a": 0.7745303457256165,
+    "same_grid_centre_ceil_dense_a": 0.7786560781511322,
+    "coarse_a_ungated": 0.05030339163974476,
+    "coarse_a_gated": 0.05042125515746034,
+    "coarse_a_gated_centre_floor_gt": 0.051786503550676655,
+    "coarse_a_gated_centre_ceil_gt": 0.052731440408035075
+  },
+  "sampling_control": {
+    "nearest_target_empty": 4,
+    "centre_floor_target_empty": 4,
+    "centre_ceil_target_empty": 16
+  },
+  "coarse_overlap_choices": {
+    "thalamus_right": 27,
+    "cerebellum_right": 9,
+    "basal_ganglia_right": 8,
+    "cortex_left": 8,
+    "white_matter_right": 3
+  },
+  "high_dense_query_iou": {
+    "n_ge_0_5": 3,
+    "coarse_u_valid_fraction_gt_0_5_min": 0.9993359375,
+    "coarse_u_valid_fraction_gt_0_5_max": 1.0
+  },
+  "limitations": [
+    "Six deterministic validation cases only; 33/55 bindings come from one case. No causal or population claim.",
+    "Nearest downsampled hard pseudoGT and hard dense maps are sampling controls, not calibrated dense/coarse equivalence; tiny targets may vanish.",
+    "Coarse hard A Dice uses argmax plus >=0.5; actual R consumes independent soft host masks, so both are reported.",
+    "Single-crop dense A and whole-volume A are ungated by presence; R coarse A is multiplied by entity presence.",
+    "Whole-volume inside/outside Dice averages different present-class sets and is not an additive decomposition.",
+    "No relation logits under any substituted geometry have been computed.",
+    "Tiny coarse-GT support is phase-sensitive: four lesions vanish under original nearest sampling, four/16 under fixed lower/upper center sampling. Coarse U IoU is descriptive and not a replacement for full-resolution matching.",
+    "A large dense/coarse gap persists under all fixed sampling controls, but feature-coordinate alignment and continuous probability calibration have not been fully ruled out.",
+    "Low whole-query IoU does not prove U training failure; a query can contain a useful separate component and instance information can be damaged by max/aggregation.",
+    "All annotations are pseudo-references; six cases cannot establish causality or generalization."
+  ],
+  "next_single_variable_val_diagnostic": {
+    "status": "proposed_not_executed",
+    "name": "controlled R, replace only coarse A geometry input with same-crop dense predicted A probabilities",
+    "population": "original full validation controlled-R set, all716 instances; no test selection",
+    "replacement": "For the original selected query and crop, compute dense_p=sigmoid(entity_masks(out).float()); block-average dense_p over fixed (2,4,4) patch footprints to (64,40,40), cast to original coarse mask dtype, multiply the original native entity-presence sigmoid. Replace only the original coarse entity probabilities before host_masks_from_entities. Recompute geometry with the unchanged original coarse U, valid and coords, then call the unchanged relation head.",
+    "fixed": "checkpoint; crop; input precision; embeddings/tokens; selected query ids; U masks/presence; query selection;14-host vocabulary; reference set; original B0; no training; no threshold search",
+    "controls": "Baseline must reproduce; cohort and query ids/IoU remain fixed; emitted A and U predictions remain baseline-identical. Average pooling preserves small probability mass and matches the feature-grid footprint; never substitute nearest hard pseudoGT in the main comparison.",
+    "readouts": "paired ABA(R), rescue/harm versus baseline R and unchanged B0, source/size/truth-host strata, geometry overlap/centroid/distance changes; report dense/coarse A support before and after",
+    "interpretation": "A paired change tests sensitivity to A-geometry source on this fixed checkpoint. Null or adverse change does not exonerate A: coarse U and relation-head input-distribution mismatch remain. It is a diagnostic only and cannot count as a formal R pass or establish true human binding accuracy."
+  },
+  "provenance": {
+    "source_summary_sha256": "25175661e014b41191e07ef98c4889bfe37150587fcaa6df1ea7b212c977cbc4",
+    "local_input_hash_manifest_sha256": "707d5c1af8e49fbada40a75c863baa85677f36612b484916af5e0ca4d6928d22",
+    "analysis_script_sha256": "e85f8e0d8b22ccfeaf41e1fdfaeed36550fa6b8d52d731cf848d19e83aba4d03",
+    "publication_script_sha256": "0444e9393385ff7d4c0f6c3205691943fa798a834a4288fb915348cfab751f95",
+    "implementation_hashes": {
+      "scripts/aur_diagnose_model.py": "4f68bbebd38c670ee9c194457e51c1d94ef95240e63ee9a0fa04eb48f10eff46",
+      "anatobind/aur/model.py": "fec0fb2f3d3ab46267cc7eff677b322086e938965e1077177a359416529977ef",
+      "anatobind/aur/relation.py": "b1b30ef7d4cc1dc505dedb1308dcdd47660dc335035a23e02c4a942a5128958e",
+      "anatobind/aur/heads.py": "a5d94b3b6dfc86529a1abffe1ad826b070104bb114445d1c98f364d8419fced6"
+    }
+  }
+}

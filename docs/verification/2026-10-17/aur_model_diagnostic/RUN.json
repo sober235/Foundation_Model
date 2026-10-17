@@ -1,0 +1,51 @@
+{
+  "evidence": "NOT_EVIDENCE",
+  "checkpoint_sha256": "38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde",
+  "samples_sha256": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+  "val_patients_sha256": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34",
+  "selection_sha256": "0b6db149fa1973012ad1002a66515357cec2e5375078649af7a3ad8ffda82c0d",
+  "code_sha": "b240962d72e589e1bc13292cfbbaac3c1efdddc1",
+  "sources": {
+    "bmsr": 2,
+    "isles": 2,
+    "pdgm": 2
+  },
+  "crop": [
+    128,
+    160,
+    160
+  ],
+  "batch_size": 2,
+  "max_seconds": 7200,
+  "instance_threshold": 0.3,
+  "presence_threshold": 0.5,
+  "score_thresholds": {
+    "bmsr": 0.7,
+    "isles": 0.6,
+    "pdgm": 0.75
+  },
+  "saved_cases_sha256": "5950f91d1070dc47f9f3770c3f03bc6a5a3e5b3d0113a2d0109b3e3522f379bf",
+  "saved_aggregate_sha256": "9b83bc1d8d6b3116962e400d5b6aaf103c17408e004adee842fc8824baa05670",
+  "selected_input_hashes_sha256": "7e9efd1522a4c86441ae309dd9efc7601064925269e3f37efab5ade15f5aff96",
+  "status": "complete",
+  "elapsed_seconds": 180.31,
+  "reproduced_volumes": 6,
+  "controlled_instances": 55,
+  "natural_windows": 83,
+  "peak_cuda_gib": 9.017600059509277,
+  "physical_gpu": 2,
+  "full_cpu_tests": {
+    "passed": 1065,
+    "skipped": 2,
+    "seconds": 155.2
+  },
+  "private_outputs": "/home/congcongliu/outputs/aur_model_diagnostic/20261017_replay_b240962",
+  "limitations": [
+    "six validation patients only",
+    "A/R SynthSeg pseudo-reference",
+    "representative float caches float16; all-query hard masks retained",
+    "coarse reference nearest-resampled; not official A Dice"
+  ],
+  "a_saved_score_max_absolute_error": 0.0,
+  "a_numeric_comparisons": 282
+}

@@ -1,0 +1,5 @@
+# Cached-output analysis code
+
+Archived CPU-only scripts used for the six-case numerical analyses. They read the frozen local replay directory and write anonymous detailed scratch outputs to the original `/tmp/aur-six-*-analysis-20261017` destinations. They do not load model weights or perform inference. Run from the project root with the nvgen Python, `PYTHONNOUSERSITE=1 PYTHONPATH=. CUDA_VISIBLE_DEVICES=""`, nice19, and at most four numerical-library threads.
+
+Run `u_analyze.py`, then `u_query_cc.py`, and independently `ar_analyze.py`; the scripts retain their original absolute input/scratch paths. Raw per-window/per-binding tables stay local. Public source-level summaries and manually reviewed prose are in the parent `u/` and `ar/` directories; do not copy detailed scratch tables into git. The final next-experiment contract is `../NEXT_EXPERIMENT.md`; an earlier analysis suggestion was corrected to require original per-query float32 scores rather than cached global-max probabilities. `SHA256.json` pins these source snapshots.

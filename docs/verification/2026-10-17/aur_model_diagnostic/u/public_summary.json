@@ -1,0 +1,364 @@
+{
+  "evidence": "NOT_EVIDENCE; observational six-case pseudo-label validation diagnostic",
+  "code_sha": "b240962d72e589e1bc13292cfbbaac3c1efdddc1",
+  "n_cases": 6,
+  "n_gt": 55,
+  "n_natural_windows": 83,
+  "n_visible_gt_window_pairs": 408,
+  "n_fully_visible_gt_window_pairs": 333,
+  "all_gt_have_a_fully_visible_natural_window": true,
+  "groups": {
+    "all": {
+      "0.3": {
+        "n_gt": 55,
+        "n_visible_gt_window_pairs": 408,
+        "n_fully_visible_gt_window_pairs": 333,
+        "gt_with_any_fully_visible_window": 55,
+        "gt_any_whole_query_mask_iou_ge05": 3,
+        "gt_any_full_window_all_query_cc_iou_ge05": 18,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 15,
+        "gt_any_full_window_max_map_cc_iou_ge05": 7,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 12,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 45,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 8,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 3,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 11,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 36,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.021450459652706845,
+          0.21367521367521367,
+          0.4140127388535032,
+          0.5381325730577334,
+          0.8823193107482848
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.0012329848096271454,
+          0.15565277457978355,
+          0.3392857142857143,
+          0.5075757575757576,
+          0.8823193107482848
+        ],
+        "gt_any_window_positive_voxels": 206590,
+        "gt_final_positive_voxels": 199543,
+        "gt_averaging_suppressed_any_window_positive_voxels": 7047,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.03411104119270052,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      },
+      "0.5": {
+        "n_gt": 55,
+        "n_visible_gt_window_pairs": 408,
+        "n_fully_visible_gt_window_pairs": 333,
+        "gt_with_any_fully_visible_window": 55,
+        "gt_any_whole_query_mask_iou_ge05": 3,
+        "gt_any_full_window_all_query_cc_iou_ge05": 19,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 19,
+        "gt_any_full_window_max_map_cc_iou_ge05": 13,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 11,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 31,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 6,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 0,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 4,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 35,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.03274215552523874,
+          0.2497304139903418,
+          0.3870967741935484,
+          0.5255555555555556,
+          0.9052022182518504
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.008861209964412812,
+          0.206838971976187,
+          0.38095238095238093,
+          0.5255555555555556,
+          0.9052022182518504
+        ],
+        "gt_any_window_positive_voxels": 198880,
+        "gt_final_positive_voxels": 189058,
+        "gt_averaging_suppressed_any_window_positive_voxels": 9822,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.049386564762670955,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      }
+    },
+    "bmsr": {
+      "0.3": {
+        "n_gt": 13,
+        "n_visible_gt_window_pairs": 90,
+        "n_fully_visible_gt_window_pairs": 82,
+        "gt_with_any_fully_visible_window": 13,
+        "gt_any_whole_query_mask_iou_ge05": 0,
+        "gt_any_full_window_all_query_cc_iou_ge05": 5,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 4,
+        "gt_any_full_window_max_map_cc_iou_ge05": 2,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 3,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 16,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 2,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 1,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 4,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 8,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.039473684210526314,
+          0.2885714285714286,
+          0.4666666666666667,
+          0.5434782608695652,
+          0.7709459459459459
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.0012329848096271454,
+          0.02,
+          0.29545454545454547,
+          0.5434782608695652,
+          0.7709459459459459
+        ],
+        "gt_any_window_positive_voxels": 3550,
+        "gt_final_positive_voxels": 3451,
+        "gt_averaging_suppressed_any_window_positive_voxels": 99,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.027887323943661974,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      },
+      "0.5": {
+        "n_gt": 13,
+        "n_visible_gt_window_pairs": 90,
+        "n_fully_visible_gt_window_pairs": 82,
+        "gt_with_any_fully_visible_window": 13,
+        "gt_any_whole_query_mask_iou_ge05": 0,
+        "gt_any_full_window_all_query_cc_iou_ge05": 5,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 5,
+        "gt_any_full_window_max_map_cc_iou_ge05": 3,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 3,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 15,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 2,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 0,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 0,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 8,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.11461318051575932,
+          0.3076923076923077,
+          0.4230769230769231,
+          0.6653185035389282,
+          0.7667953667953668
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.008861209964412812,
+          0.1875,
+          0.31645569620253167,
+          0.6653185035389282,
+          0.7667953667953668
+        ],
+        "gt_any_window_positive_voxels": 3419,
+        "gt_final_positive_voxels": 3244,
+        "gt_averaging_suppressed_any_window_positive_voxels": 175,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.05118455688797894,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      }
+    },
+    "isles": {
+      "0.3": {
+        "n_gt": 40,
+        "n_visible_gt_window_pairs": 302,
+        "n_fully_visible_gt_window_pairs": 245,
+        "gt_with_any_fully_visible_window": 40,
+        "gt_any_whole_query_mask_iou_ge05": 1,
+        "gt_any_full_window_all_query_cc_iou_ge05": 11,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 9,
+        "gt_any_full_window_max_map_cc_iou_ge05": 3,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 9,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 29,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 6,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 2,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 7,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 28,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.021450459652706845,
+          0.19951923076923078,
+          0.38221896383186704,
+          0.5033783783783784,
+          0.6283481234226166
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.021450459652706845,
+          0.1858974358974359,
+          0.33913438256658596,
+          0.4787723619393311,
+          0.6283481234226166
+        ],
+        "gt_any_window_positive_voxels": 55015,
+        "gt_final_positive_voxels": 50182,
+        "gt_averaging_suppressed_any_window_positive_voxels": 4833,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.08784876851767699,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      },
+      "0.5": {
+        "n_gt": 40,
+        "n_visible_gt_window_pairs": 302,
+        "n_fully_visible_gt_window_pairs": 245,
+        "gt_with_any_fully_visible_window": 40,
+        "gt_any_whole_query_mask_iou_ge05": 1,
+        "gt_any_full_window_all_query_cc_iou_ge05": 12,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 12,
+        "gt_any_full_window_max_map_cc_iou_ge05": 8,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 8,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 16,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 4,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 0,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 4,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 27,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.03274215552523874,
+          0.23352272727272727,
+          0.37468671679197996,
+          0.5070119863013699,
+          0.6441717791411042
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.028431372549019607,
+          0.21166690866850588,
+          0.37468671679197996,
+          0.5070119863013699,
+          0.6441717791411042
+        ],
+        "gt_any_window_positive_voxels": 50840,
+        "gt_final_positive_voxels": 44224,
+        "gt_averaging_suppressed_any_window_positive_voxels": 6616,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.13013375295043272,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      }
+    },
+    "pdgm": {
+      "0.3": {
+        "n_gt": 2,
+        "n_visible_gt_window_pairs": 16,
+        "n_fully_visible_gt_window_pairs": 6,
+        "gt_with_any_fully_visible_window": 2,
+        "gt_any_whole_query_mask_iou_ge05": 2,
+        "gt_any_full_window_all_query_cc_iou_ge05": 2,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 2,
+        "gt_any_full_window_max_map_cc_iou_ge05": 2,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 0,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 0,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 0,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 0,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 0,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 0,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.8671701660236302,
+          0.8709574522047938,
+          0.8747447383859575,
+          0.8785320245671212,
+          0.8823193107482848
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.8671701660236302,
+          0.8709574522047938,
+          0.8747447383859575,
+          0.8785320245671212,
+          0.8823193107482848
+        ],
+        "gt_any_window_positive_voxels": 148025,
+        "gt_final_positive_voxels": 145910,
+        "gt_averaging_suppressed_any_window_positive_voxels": 2115,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.014288127005573383,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      },
+      "0.5": {
+        "n_gt": 2,
+        "n_visible_gt_window_pairs": 16,
+        "n_fully_visible_gt_window_pairs": 6,
+        "gt_with_any_fully_visible_window": 2,
+        "gt_any_whole_query_mask_iou_ge05": 2,
+        "gt_any_full_window_all_query_cc_iou_ge05": 2,
+        "gt_any_full_window_kept_query_cc_iou_ge05": 2,
+        "gt_any_full_window_max_map_cc_iou_ge05": 2,
+        "gt_same_full_window_kept_query_cc_ge05_but_max_map_cc_lt05": 0,
+        "full_window_pairs_kept_query_cc_ge05_but_max_map_cc_lt05": 0,
+        "gt_kept_query_cc_good_but_no_max_map_cc_good_in_any_full_window": 0,
+        "gt_all_query_cc_good_but_no_kept_query_cc_good_in_any_full_window": 0,
+        "full_window_pairs_all_query_cc_ge05_but_kept_query_cc_lt05": 0,
+        "gt_no_good_whole_query_mask_or_full_window_query_cc": 0,
+        "per_gt_best_all_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.8568430175087002,
+          0.8689328176944877,
+          0.8810226178802754,
+          0.8931124180660629,
+          0.9052022182518504
+        ],
+        "per_gt_best_kept_query_cc_iou_quantiles_min_q25_median_q75_max": [
+          0.8568430175087002,
+          0.8689328176944877,
+          0.8810226178802754,
+          0.8931124180660629,
+          0.9052022182518504
+        ],
+        "gt_any_window_positive_voxels": 144621,
+        "gt_final_positive_voxels": 141590,
+        "gt_averaging_suppressed_any_window_positive_voxels": 3031,
+        "gt_averaging_suppression_fraction_of_any_window_positive": 0.020958228749628337,
+        "final_positive_gt_voxels_without_any_positive_window": 0
+      }
+    }
+  },
+  "validation": {
+    "all_six_reproduced": true,
+    "probability_reconstruction_allclose": true,
+    "hard_mask_counts_and_best_query_intersections": true,
+    "whole_component_gt_intersections": true,
+    "packed_kept_unions_equal_saved_max_threshold_masks": true,
+    "gaussian_probability_reconstruction_max_abs_error": 0.0,
+    "query_cc_oracles_exact": true,
+    "query_cc_labels_computed": 1226,
+    "query_cc_labels_provably_pruned": 7350,
+    "query_cc_pruning_bound": "CC IoU <= total query GT intersection / GT count",
+    "gpu_or_new_inference_or_training_used": false,
+    "cpu_niceness": 19,
+    "thread_limit": 4
+  },
+  "semantics": {
+    "local_queries": "natural-window local GT mask IoU; 64 all queries; >=0.3 or >0.5",
+    "presence": "strict >0.5",
+    "maximum": "voxelwise max over retained queries in the SAME window",
+    "max_cc": "best 26-connected component of retained max in SAME window; no size floor applied for local diagnostic",
+    "averaging": "Gaussian weighted mean of natural-window maxima, reconstructed exactly; any-window upper bound is optimistic",
+    "matching": "No full-volume bbox matches or gate claims are computed by this script",
+    "oracle_aggregation": "Per-GT any-window oracle columns may select different windows; same-window loss columns explicitly match window, mask threshold and local GT.",
+    "query_component_analysis": "Exact oracle over 26-CCs of each of all64 thresholded query masks on fully visible natural-window GT.",
+    "averaging_suppression": "GT-voxel suppression versus optimistic any-window support; not instance sensitivity.",
+    "official_u": "One-to-one full-volume bbox IoU >=0.1 with frozen source score thresholds; not computed here.",
+    "float16": "Representative float16 probabilities not used for threshold decisions."
+  },
+  "next_experiment": {
+    "name": "frozen query-preserving decoding counterfactual with full-volume FP accounting",
+    "status": "proposal only; not run",
+    "reason": "At threshold .3, 12 GT have a fully visible same window with retained query CC IoU >=.5 but max-map CC IoU <.5; eight have a good retained query CC but no good max-map CC in any fully visible window.",
+    "invariants": [
+      "A32",
+      "unified U INSTANCE output",
+      "R13+nohost",
+      "mask threshold .3",
+      "presence strictly>.5",
+      "current physical-volume floor",
+      "frozen source score thresholds",
+      "no host-conditioned lesion decoder",
+      "no GT candidate selection",
+      "no threshold or stitching search on six cases"
+    ],
+    "measure": [
+      "official bbox hits and FP/scan",
+      "component-score rejection",
+      "splits and merges",
+      "candidate count and global FP burden",
+      "unchanged baseline reproduction"
+    ],
+    "limitation": "Local oracle successes do not predict achievable detector gain; no training intervention is established."
+  },
+  "limitations": [
+    "two selected validation cases per source",
+    "pseudo-label targets",
+    "correlated overlapping windows",
+    "33 of 55 GT in one case",
+    "source morphology and lesion-size differences",
+    "GT-selected local oracles",
+    "local CC analysis before physical-volume floor and component-score filtering",
+    "only two exact hard-mask thresholds cached",
+    "all-query float32 probability volumes not cached"
+  ]
+}

@@ -1,55 +1,44 @@
-# STATUS：2026-10-16（三目标修正训练已全测，A/U/R 三门未过）
+# STATUS：2026-10-17（六例建模机制诊断完成，A/U/R 模型门仍未过）
 
-每次交接前整体重写本文件。五段固定：已验证、待拍板、下一步、坑与别重做、为什么。当前状态取自已保存报告与链日志；本次文档收尾没有重跑训练、推理或测试。上一版完整保存在 `docs/verification/2026-10-09/anatobind_brain_ssl_first/status_archive/STATUS_2026-10-14_before_task7_closeout.md`，其中的“待启动”“在跑”“待定”均为当时状态。
+当前研究阶段：用户批准按 2026-10-16 的建模诊断设计继续；工具、冻结六例回放、缓存分析和结果归档均已完成。没有重新训练或改动模型权重。原 2026-10-16 状态完整保存在 `docs/verification/2026-10-17/aur_model_diagnostic/STATUS_2026-10-16_before_replay.md`。
 
 ## 1. 已完成且已验证
 
-- **目标仍是 A 解剖、U 异常实例、R 每个异常的所属宿主。** A 输出 32 个解剖掩膜、按 13 宿主宏 Dice 判门；U 是已标注训练分布的统一 abnormality 实例；R 输出 13 类分侧宿主 + no-host。没有疾病分类或新的主要终点。用户取消周四节点，按顺序连续推进，以模型成功为优先。
-- **三目标修正 Task 1–6 已完成。** 分支 `codex/aur-three-goal-conformance-2026-10-13`；Task 1–4 包含 Q25 fail-closed 门控与未匹配 U query 压空监督，评审修复后已有全量 CPU 测试记录 **1056 passed、2 skipped**（训练启动代码 `56f65f71491cb1940c496f68c5427fc678cbe10d`；运行约定及哈希见下）。该数字来自既有记录，本轮未重跑。
-- **Task 7 的 C2 训练、验证选阈值、测试全测已完成。** 运行 `c2_stage2_240k_20261014_1344` → `c2_stage3_80k_20261014_1344`；profile=`unmatched_empty_v1`，seed 0，全局 batch 24，卡 0、2。测试 `c2_test_20261014_1344` 覆盖全部 1,056 行，链在 **2026-10-15 01:56:58 UTC（02:56:58 BST）**结束。验证 `c2_val_20261014_1344` 选定 BMSR/ISLES/PDGM 阈值 0.70/0.60/0.75，test 固定使用。**预登记的 legacy C2 描述性对照也已完成，Task 7 的训练、验证、全测与描述性对照均已收尾；最终三门均失败。** 本轮不需要新训 C0。
+- **三个目标不变：A32 解剖掩膜、统一异常的 U 实例掩膜、每个 U 的 R13 分侧主宿主 + no-host。** G2-A/G2-U/G3 不变；没有日期节点，模型成功优先。
+- 最近训练结果仍是 `unmatched_empty_v1` C2：test A 0.7988 <0.80；U PDGM/BMSR/ISLES 0.6538/0.0146/0.0242，三源不过；controlled R 0.5606 <B0 0.7545。新诊断不改变这些裁决。
+- **执行计划** `docs/superpowers/plans/2026-10-16-anatobind-aur-model-diagnostic.md`；**设计** `docs/superpowers/specs/2026-10-16-anatobind-aur-modeling-next-step-design.md`。实现代码到 `b240962`：非扰动 inference observers、全部 query 的阈值掩膜/数值证据、GT/预测组件/R fail-closed 复现、val-only 选例与哈希冻结。
+- **独立代码评审完成，三条 Important 均已修复并回归验证。完整 CPU 测试 1065 passed、2 skipped，155.20 秒。** 首次测试卡住是沙箱禁止 DataLoader 共享张量所需的本地 socket；相同测试及完整套件在沙箱外、隐藏 GPU 后通过，未改测试/模型绕过。
+- **6/6 验证卷的 U 组件与 GT 几何、55/55 controlled R 的实例集合/宿主/概率/query IoU 复现；282 项 A 保存分数完全一致。** 每源两名患者，83 个自然窗口，A800 GPU 2，180.31 秒、峰值分配 9.018 GiB。两小时硬超时未触发；没有 test 推理或阈值搜索。
+- **U：观察到 query max 破坏实例。** 主 mask 阈值0.3下，在完整可见窗口中有好组件（mask IoU≥0.5）的 GT 数：全部 query 18/55、presence 保留 query 15/55、max 图7/55。12/55有同窗保留 query 的好组件被 max 损伤；3/55在所有完整窗口丢掉好的 presence 前候选。所有55GT至少有一个完整可见自然窗口。整 query IoU低可能来自断开假阳块，不能直接归因训练失败。
+- **A：五类实际未输出。** 标签5/44/18/26/58在六例中真值均非零、预测均为零。A整卷推理不使用 entity presence筛选，不能用presence解释。完整保存val上这些标签也全部有限Dice为0。
+- **R：粗几何与正式dense感知失配。** 55裁块的同网格dense A平均宿主Dice0.7440，coarse ungated/gated约0.0485/0.0487；中心采样控制保留该差距。三个dense选中query较好的绑定，其coarse U前景占约99.93–100%有效crop。局部与整卷GT宿主55/55一致，未观察到这个目标差异。小病灶粗采样有丢失，不能把coarse IoU直接当dense检测性能。
+- **所有结果仍 NOT_EVIDENCE。** 六例中33个GT来自一卷，不代表人群；A/R仍是SynthSeg伪参照。不能把GT-best局部组件覆盖当作可部署检测、正式U灵敏度、真实关系或临床验证。
 
-| 最终门 | 本轮 test | 门槛 | 结论 |
-|---|---|---|---|
-| G2-A | 13 宿主宏 Dice 0.7988（1,032 个 A 监督卷） | ≥ 0.80 | 不过 |
-| G2-U：PDGM FLAIR | 灵敏度 0.6538，FP/scan 0.218 | ≥ 0.8115（参照 0.8615 − 0.05） | 不过 |
-| G2-U：BMSR T1c | 灵敏度 0.0146，FP/scan 0.098 | ≥ 0.6816（参照 0.7316 − 0.05） | 不过 |
-| G2-U：ISLES DWI | 灵敏度 0.0242，FP/scan 1.120 | ≥ 0.5803（参照 0.6303 − 0.05） | 不过 |
-| G3：受控 R | ABA(R) 0.5606 对 ABA(B0) 0.7545（1,336 个实例） | R ≥ B0 | 不过 |
+**报告入口：** `docs/verification/2026-10-17/aur_model_diagnostic/RESULTS.md`，运行哈希/资源 `RUN.json`，匿名分组分析 `u/REPORT.md`、`ar/REPORT.md`。完整405行保存val的A/R分析在 `docs/verification/2026-10-16/aur_model_diagnostic/saved_val_ar/REPORT.md`。
 
-- **描述性配对已完成（2026-10-16）：** 同一 1,056 行，2,000 次患者级 bootstrap；相对 legacy C2，A +0.0027 [0.0016, 0.0040]，受控 R +0.0464 [0.0050, 0.0861]；U 的 BMSR +0.0097 [−0.0016, 0.0242]、ISLES +0.0173 [0.0038, 0.0347]、PDGM FLAIR −0.1000 [−0.1575, −0.0462]。ISLES 的 FP/scan 同时从 0.180 增至 1.120，不能把该点差当等误报提升；R 的 B0 也从 0.6692 增至 0.7545。完整结果见 `eval/compare_c2empty_c2legacy_20261016/COMPARE.md`。历史臂越过 Q25 失败检查、每臂一次运行、U 工作点不同，比较只作描述性分析。
-- **保存的 val U 诊断已完成（仅既有输出，无新推理）：** 新 BMSR/ISLES 在 score 过滤前的已存连通块仅覆盖 16/470、6/138 个 GT 框（box IoU ≥ 0.1）；仅降 score 无法补回主要漏检。最大连通块中位 473.7/350.4 mL，不能据 bbox 推断 mask 吞没病灶或断言根因；另一 oracle 指标（GT 中心裁块、全部 query、无 presence 过滤、mask > 0.5）下漏检病灶 query mask IoU 中位也仅 0.00216/0.00319；它与整卷 mask > 0.3 加 box IoU 检测不同，不能直接等同或定位根因。报告 `docs/verification/2026-10-16/aur_saved_eval_diagnostic/REPORT.md`，进一步机制诊断仍未执行。
-- **证据边界：全部为 `NOT_EVIDENCE`。** A/R 依赖 SynthSeg 伪参照，U 依赖现有病灶标签；Level R 尚未人标，不能宣称临床验证、关系真值过门或未知异常识别成功。端到端已检出子集 R 0.7417 对 B0 0.7250（120 个病灶）只报告，不替代受控 G3。
-- **记录入口：** `docs/verification/2026-10-09/anatobind_brain_ssl_first/README.md`；启动前约定 `u_empty_c2_20261014/README.md`，结果与复核命令 `u_empty_c2_20261014/RESULTS.md`，原始报告 `eval/c2_{val,test}_20261014_1344/REPORT.md`（这些短路径均相对该索引目录）。
-- **历史保留：** G0/G0.5 通过；第二轮 Stage I G1 通过（不是 A/U/R 最终成功）。legacy 的现行配方 C0、新配方 C0、新配方 C2 三臂最终三门均不过；新配方 C2 曾越过失败的 Q25 检查，只能作探索性结果。历史配对在 `stage2/STAGE2_V2.md`。Part 1、S4、S7、nnDetection/小病灶线与旧状态的详细记录见归档和原始验证索引。
+## 2. 待解决的模型决定
 
-## 2. 待用户拍板
-
-- **后续模型方案尚未制定和审阅。** 本轮终点三门未过，按预注册停止当前实验，不在 test 上调阈值或追加改动。描述性比较与保存的 val 输出核查已完成，根因仍未定；下一步机制诊断和补 A/U/R 缺口的新计划尚未执行。
-- **已定的优先级无需重问：** Q28（2026-10-13 09:53 UTC）要求先考虑模型能否成功，显示后续再说；网页、API、公开 URL 后移，DICOM 解码与离线 A/U/R 验收保留。Q29 按问题顺序推进，独立 2D 模型仍是后续任务；C0/C2 配对按现行运行约定是可选描述性分析，本轮没有新训 C0。Q30 取消日期节点，连续推进。
-- Level R 真实读者安排、历史 S4 三条出路与 S7 措辞事项仍未解决；细节保存在归档，不影响如实记录本轮失败。
+- 下一项优先候选已收敛为**冻结权重、保留query身份的U解码对照**，完整误报核算先于任何新训练。不是已经完成的修复；跨窗去重、重叠体素归属和R token来源须在实施设计中写定，不能让GT挑候选或根据结果随意选规则。
+- A的五类缺失仍需检查监督正点覆盖、dense概率与身份竞争；当前没有证明是训练样本不足或presence过滤。
+- R需单独控制几何来源，先固定token/query/U，仅替换A几何来源检验敏感性。当前粗语义差距不等于已证明全部R错误的因果原因；不与U解码改动混在同一实验。
+- N7语义头不是本轮选择；旧60k iterations触发与当前240k crops不可直接换算。若后续启用，按原规格先说明并确认。Level R人标仍需真实读者，不能伪造或用伪标签代替。
 
 ## 3. 下一步
 
-2026-10-16 建模复核已形成并通过独立 builder check 的[下一步诊断设计](docs/superpowers/specs/2026-10-16-anatobind-aur-modeling-next-step-design.md)：沿原六例 val 回放区分 U 单 query、presence、max 与跨窗平均；同时核查 A 分项和 R 实际粗几何上下文。此为研究设计交付，尚未执行回放、训练或模型修改，未改变 A/U/R 定义与验收门。
-
-1. 本轮描述性配对与保存 val 输出核查已收尾。后续拟固定每源 2 个 val 病例，保留 query/窗口输出，区分单 query、presence 与合并造成的损失；这是尚未执行的机制诊断，具体边界见 `docs/verification/2026-10-16/aur_saved_eval_diagnostic/NEXT_STEPS.md`。不能依据当前探索性对照宣称压空监督已经修复吞并病灶问题。
-2. 在新计划中逐项处理 A 尚差 0.0012、三源 U 未过及受控 R 低于 B0 的缺口。旧事件解码诊断是改损失的依据，本轮保存 val 核查已排除“仅 score 过滤导致主要漏检”的解释，但尚不能在训练、单 query 与合并之间确定因果。方案审阅后再实施下一轮，不用同一 test 选择新方案。
-3. 保留 DICOM 几何解码、离线 3D A/U/R 验收与单张 DICOM 所需的**独立 2D 数据、模型、参照和验收**。这些是未完成任务；不能以 3D 模型或网页替代 2D 验收。
-4. API、UI、公开 HTTPS URL 在模型工作之后安排；模型门失败不触发继续做显示。产品历史范围与后续阶段见 `docs/superpowers/plans/2026-10-14-anatobind-brain-dicom-web-execution.md`。Level R 另等真实读者。
+1. 按 `docs/verification/2026-10-17/aur_model_diagnostic/NEXT_EXPERIMENT.md`，为GT-free、query保留解码写实施设计，明确跨窗去重、评分、重叠归属与R实例/token合同。
+2. 固定同一checkpoint，先在原六例核验实例来源和误报，再固定规则在完整val比较同FP预算下的U；A不变，controlled和端到端R分别报告。该对照尚未实现/运行；不能用本次oracle成绩代替。
+3. 根据实际收益决定后续单一模型修正。A监督/掩膜竞争、R粗几何来源分别保留，任何一项不过都不能宣布A/U/R完成；不用历史test选模型。
+4. 模型成立后再做DICOM几何读入、离线3D验收与独立2D数据/模型/参照；网页/API/公开URL继续后置。
 
 ## 4. 坑与别重做
 
-- **Q25 与新 profile 分开。** legacy Q25 C2 第 1000 步必须 readout ≥ 0.65 且 A point Dice > 0.045；缺数据或检查失败均停链。`unmatched_empty_v1` 不继承该早停门，`C2_STEP1000_GATE=0` 是启动前约定，不是绕门；最终 G2-A/G2-U/G3 仍适用。
-- **val 报告有已知模板措辞缺陷。** `c2_val_20261014_1344/REPORT.md` 标题误写 test-set，阈值选择列误写 test-selected。链日志明确先在 val 选阈值，再把固定阈值传给 test，test 报告也写 validation-selected。保留原始报告并作此说明；仅凭模板文字不能断言发生 test 泄漏。
-- **工作点与子集不可混用。** 描述性两臂 U 比较使用各自 val 选阈值；最终 U 门按既定 S7 参照 FP 工作点规则判定。端到端 R 仅计检出子集，不能代替受控轨道。BMSR/ISLES 的 1 mm 重采样与原生参照网格差异仍标 approximate。
-- **逐例表与盲读材料留本地。** 不复制、输出或提交 `cases.json`、`level_r_key.json`、`level_r_sheet.csv`、病例标识；公开记录只用汇总值。原始报告保持原样。
-- **时区写明。** 链日志一直是 BST（UTC+1）；本轮完成的 10-15 02:56:58 BST 是 01:56:58 UTC。旧 shell 的“本机”时区不统一，见归档，不能直接与 UTC 混用。
-- **运行约束沿用 CLAUDE.md。** 数据只读 `/data2/congcong/data/FM_data`，用 nvgen 绝对路径；测试隐藏 GPU；多卡确认空闲，四卡需 `NCCL_P2P_DISABLE=1`；输出目录不得预建；恢复不能变更 schedule。没有本轮进程清单就不把旧卡位记录当现状。
-- **历史产物只归档。** 不删除旧运行与未跟踪原件，不回写 frozen_probe，不覆盖已有门判定。旧性能、GPU 冲突、可删清单与方案裁决在完整 STATUS 归档中。
+- 六例选例、checkpoint、数据与原评价哈希已冻结。复现失败要停止归因，不放宽容差。公开只收汇总；逐例/逐query/盲读材料留本地。
+- 原始局部缓存约13GiB，在 `/home/congcongliu/outputs/aur_model_diagnostic/20261017_replay_b240962/`；浮点代表缓存float16，仅用于核查，不能替代原float32组件score。全部query的0.3/0.5 hard masks及数值测量均保留。
+- 控制query的整mask IoU、其独立CC IoU、max后CC IoU、整卷bbox IoU是不同量；局部GT-best选择只作oracle。跨窗平均压掉3.41%的any-window支持GT体素，不是实例灵敏度。
+- R所读coarse mask不等于正式dense A/U；saved local A Dice也不等于R的实际粗A。最近邻粗采样会漏小病灶，保留同网格/中心相位控制。
+- 原val REPORT的test-set/test-selected是历史模板措辞问题；实际先val选阈值后test固定，不据措辞断言泄漏。
+- 数据只读 `/data2/congcong/data/FM_data`；nvgen绝对路径；CPU测试隐藏GPU；确认空卡；不覆盖历史产物。没有本轮资源快照就不把旧卡位当现状。
 
-## 5. 关键决定的为什么
+## 5. 为什么这样推进
 
-- 模型成功指 A/U/R 三门按既定定义通过；接近 A 门槛、G1 通过、端到端子集好看或网页能显示都不改变本轮失败结论。
-- 未匹配 U query 压空仅增加系数 0.1 的 BCE，首轮保持存在性损失、匹配、推理阈值与跨窗合并规则不变，以便检查该单一变化；失败后需要新计划，不能事后继续试改。
-- 不给新 profile 套 legacy Q25 门，是因为旧阈值按旧配方登记。新 profile 在运行前明确使用最终三门，新增早停规则须在新运行前登记。
-- 保留完整历史和原始模板缺陷，才能区分历史执行偏离、实际选阈值流程与当前证据；Level R 人标之前，伪参照结果始终不升级为真实关系或临床证据。
+本轮证据已经定位到一个可观察的解码信息损失，并排除了若干简单解释；还没有证明GT-free实例解码能兼顾误报和R身份。因此先做冻结权重的单变量对照，而不是同时换loss、训练、U架构和R几何。A32/U实例/R主宿主始终是交付目标，任何诊断工具、oracle或子集好看都不能替代它们。
