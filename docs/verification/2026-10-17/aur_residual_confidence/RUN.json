@@ -1,0 +1,230 @@
+{
+  "evidence": "NOT_EVIDENCE",
+  "code_sha": "6b261377bf3b457bbf1ba0a4fc123cb8bc8f4acf",
+  "production_inference_source_sha": "1874af20a460cf86c46029cc83d2df0801a10910",
+  "task": "Frozen residual child confidence mechanism replay; no adopted scoring change",
+  "goals": [
+    "A32 anatomy identity masks",
+    "Unified annotated-abnormality U instance masks",
+    "R13 sided host plus no-host14 probabilities"
+  ],
+  "checkpoint_sha256": "38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde",
+  "samples_sha256": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+  "val_patients_sha256": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34",
+  "reference_summary_sha256": "fd0625692194035cfb36167a00500bc366a3e7991db9bd465942e0960f160730",
+  "private_output": "/home/congcongliu/outputs/aur_residual_confidence_20261017/replay_6b26137",
+  "private_contract_sha256": "80d483bacdb44bd90bc8364b8614c263552cb0bb1056a9dac3c93697dec4f9d7",
+  "private_complete_sha256": "c33bd9bdec7388a21856fe7af620190d21bb5b4d5662cb0ece6ea5bc6852e34b",
+  "private_records_content_sha256": "d85c9632844d6cc6d41d6914aae38694a2211a42531efda3b2efb55d09db578b",
+  "private_input_manifest_sha256": "cef0e0abe925cb39fc4302d96164b646d2816fd76e9e406a3b55dc14861cc46e",
+  "diagnostic_source_sha256": {
+    "scripts/aur_diagnose_confidence.py": "8a17e3fdbd5340402b44a314895bfc159425226882f726f4379028c787411b09",
+    "anatobind/aur/confidence_diagnostics.py": "c15dc99e4d38f5fb3b8d9da2b0e50b60f0c6477bda3216f25dfcae783ea35464"
+  },
+  "unchanged_original_product_dependencies": 36,
+  "frozen": {
+    "rows": 6,
+    "patients_per_source": 2,
+    "crop": [
+      128,
+      160,
+      160
+    ],
+    "batch_size": 2,
+    "score_points": {
+      "bmsr": 0.7,
+      "isles": 0.6,
+      "pdgm": 0.75
+    },
+    "score_variants": [
+      "parent_score",
+      "child_raw_mean",
+      "child_fused_mean"
+    ],
+    "decoder_rules": {
+      "presence_threshold": 0.5,
+      "presence_comparison": ">",
+      "mask_threshold": 0.3,
+      "mask_comparison": ">=",
+      "connectivity": 26,
+      "min_volume_mm3": 10.0,
+      "profile": "query_cc_v1",
+      "fusion": "independent_window_query_components",
+      "score": "raw_float32_parent_component_mean_float64_accumulation",
+      "priority": [
+        "descending_score",
+        "window_start_zyx",
+        "query",
+        "component"
+      ],
+      "nms_iou": 0.5,
+      "nms_comparison": ">=",
+      "nms_masks": "original_valid_global_masks",
+      "ownership": "all_nms_survivors_in_priority_order_before_residual_components",
+      "residual_score": "inherit_parent",
+      "backfill": false,
+      "residual_nms": false,
+      "score_filter": "after_completed_ownership_and_residual_floor"
+    },
+    "threshold_selection": false,
+    "production_decoder_promotion": false,
+    "training": false,
+    "new_test_inference": false
+  },
+  "observed": {
+    "controls": {
+      "A_saved_scores_exact": true,
+      "controlled_R_instances": 55,
+      "controlled_R_outputs_and_origins_exact": true,
+      "first_windows": 83,
+      "replay_windows": 83,
+      "present_query_planes_per_pass": 815,
+      "returned_maps_exact": true,
+      "raw_probability_planes_exact": true
+    },
+    "all_row_controls": {
+      "A_saved_scores_exact": true,
+      "original_U_rows_exact": true,
+      "returned_maps_exact": true,
+      "controlled_R_outputs_and_origins_exact": true
+    },
+    "all_measurement_checks": {
+      "raw_probability_planes_exact": true,
+      "original_parent_means_exact": true,
+      "decoded_rows_and_map_unchanged": true
+    },
+    "measured_children": 7528,
+    "active_parents": 2285
+  },
+  "resources": {
+    "gpu_physical_index": 3,
+    "gpu_name": "NVIDIA A100 80GB PCIe",
+    "gpu_initial_memory_mib": 2,
+    "gpu_initial_utilization": 0,
+    "allocation": "No scheduler allocation or inherited CUDA_VISIBLE_DEVICES; idle compatible GPU selected immediately before launch",
+    "nice": 19,
+    "numeric_threads": 1,
+    "decoder_workers": 4,
+    "detached_child": true,
+    "outer_timeout_seconds": 1800,
+    "inner_watchdog_seconds": 1800,
+    "process_wall_seconds": 186.78782787313685,
+    "script_elapsed_seconds": 179.9,
+    "recorded_row_seconds": 175.6630863933824,
+    "peak_cuda_allocated_gib": 9.017600059509277,
+    "max_rss_kib": 3088884,
+    "timing_note": "Row sum, script elapsed and outer wall have different scopes; no speed claim versus the prior run"
+  },
+  "launch": {
+    "command_argv": [
+      "timeout",
+      "1800",
+      "/usr/bin/time",
+      "-v",
+      "/home/congcongliu/anaconda3/envs/nvgen/bin/python",
+      "-c",
+      "import torch,runpy,sys; assert torch.__version__.startswith(\"2.5.1\"), torch.__version__; assert torch.cuda.is_available() and torch.cuda.device_count()==1; print(\"Runtime:\",torch.__version__,torch.cuda.get_device_name(0),flush=True); sys.argv=sys.argv[1:]; runpy.run_path(sys.argv[0],run_name=\"__main__\")",
+      "/home/congcongliu/src/Foundation_Model-aur-diagnostic/scripts/aur_diagnose_confidence.py",
+      "--out",
+      "/home/congcongliu/outputs/aur_residual_confidence_20261017/replay_6b26137",
+      "--gpu",
+      "0",
+      "--max-seconds",
+      "1800"
+    ],
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "3",
+      "PYTHONNOUSERSITE": "1",
+      "PYTHONPATH": "/home/congcongliu/src/Foundation_Model-aur-diagnostic",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "CUDA_LAUNCH_BLOCKING": "1"
+    },
+    "method": "Stdlib launcher; subprocess.run(start_new_session=True); environment set before child interpreter startup",
+    "metadata_sha256": "1dbf49ee0ffdfcfb3d7af6fa4141904122f9e57848d1d9e10769601fbf76fe54",
+    "log_sha256": "500e081e5920ec9d46029d624f8a091701c277f43ecddfa5bb495fd99e4f53cf",
+    "exit_code": 0,
+    "prior_failed_attempt": {
+      "exit_code": 1,
+      "wall_seconds": 2.566884480882436,
+      "stage": "External launcher argv forwarding; before diagnostic/model loading; no inference records produced",
+      "correction": "Remove the -c element from sys.argv before runpy.run_path; CLI help verified before retry",
+      "metadata_sha256": "e6dd0801ecbf30db0941054888a1da4cc49f6f7a46b9d3ab30bf4d39647abf73",
+      "log_sha256": "e23adca828c5805f2726f62617bc1f90335bb34aac824ebb9f581fc6e59e7ea0"
+    }
+  },
+  "validation": {
+    "targeted_tests": {
+      "passed": 40,
+      "seconds": 5.34,
+      "log": "/tmp/aur-confidence-review-green2.log",
+      "sha256": "987fa3cd72f324aa51bbaa13910305c6be2bc0747ec01e4cfc5c1b9251224f16"
+    },
+    "full_cpu_tests": {
+      "passed": 1151,
+      "skipped": 2,
+      "seconds": 158.53,
+      "log": "/tmp/aur-confidence-full-tests-review2.log",
+      "sha256": "8507631e63d9eaef3290e6d1559bf1920db1db1eb39aef202a8788cc7e88ae58",
+      "command": "env CUDA_VISIBLE_DEVICES='' PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider",
+      "coverage_gap": "nndet environment test and CUDA-only unit test skipped; real GPU replay performed separately"
+    },
+    "completed_resume": {
+      "exit_code": 0,
+      "gpu_hidden": true,
+      "model_loaded": false,
+      "log": "/tmp/aur-confidence-real-resume.log",
+      "sha256": "08ce3e6082085069f808ee3d9fe2cbd551f8f0f298df8e16ffcfea7c4d3d7212",
+      "command": "env CUDA_VISIBLE_DEVICES='' PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 nice -n19 /home/congcongliu/anaconda3/envs/nvgen/bin/python scripts/aur_diagnose_confidence.py --out /home/congcongliu/outputs/aur_residual_confidence_20261017/replay_6b26137 --gpu 0 --max-seconds 1800 --resume"
+    },
+    "code_review": {
+      "rounds": 2,
+      "resolved_P2": 2,
+      "outstanding": 0,
+      "regressions_RED": 11,
+      "findings": [
+        "Resume window/parent evidence completeness",
+        "Predefined size/retention score stratification"
+      ]
+    },
+    "scientific_review": {
+      "outstanding_actionable_findings": 0,
+      "corrected_wording_findings": 2,
+      "corrections": [
+        "Parent score uses original full parent mask; raw/fused means share final child voxels",
+        "Removed-minus-retained denominator uses only active parents with removed voxels, across all outcomes"
+      ],
+      "independent_checks": [
+        "Rebuilt complete aggregate from private records",
+        "Revalidated saved controls against original reference metadata",
+        "All fixed-point counts, subgroup values and matching denominators",
+        "Artifact/provenance/resource/test/resume logs",
+        "Updated STATUS/CLAUDE and prospective patient separation"
+      ]
+    },
+    "privacy_and_links": {
+      "known_selected_identities": "PASS; JSON string fields and delimited Markdown values only",
+      "aggregate_private_field_schema": "PASS",
+      "relative_markdown_links": "PASS"
+    },
+    "final_code_invariance": "All measured diagnostic source hashes and36original product hashes unchanged after GPU freeze; subsequent tracked changes are documentation/anonymous aggregates only"
+  },
+  "notes": [
+    "Six cases are not representative and are previously exposed development validation.",
+    "No calibration, threshold selection or production decoder change; no full-val/test efficacy claim.",
+    "The fused control mixes natural windows/queries and differs from the originating-query raw probability.",
+    "Removed parent voxels combine ownership and post-ownership floor losses, not separately identified.",
+    "Raw means are not calibrated correctness probabilities. A/R use pseudo references.",
+    "All6cases are the same previously exposed development validation sample; no independent benchmark claim.",
+    "Original 405-row fixed query_cc_v1 FAIL remains; default legacy_max unchanged.",
+    "Parent-unit decomposition differs from child-weighted outcome summaries.",
+    "No inference-source, R geometry or loss/weight changes; no downstream R accuracy claim."
+  ],
+  "artifact_hashes": {
+    "aggregate_anonymous.json": "57a641213cdcb6d5fbefe6bac8bd3e26143e676ae0d7d04b7589f10462c4523d",
+    "RESULTS.md": "e47cf763fd4bfeda39c30a1b9cdbb65c1a815a562d522b206cdd651665afb1fc",
+    "STATUS_before_confidence.md": "95d44b1a3d5618b52ae59960902889523b7618d0945105fcde1114ec58428a40"
+  }
+}
