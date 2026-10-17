@@ -1,0 +1,33 @@
+{
+  "before_code": "4f9fdbf",
+  "after_code": "1874af2",
+  "paired_rows": 6,
+  "all_saved_result_fields_exact": true,
+  "before_run": {
+    "status": "complete",
+    "mode": "six",
+    "shard": [
+      0,
+      1
+    ],
+    "rows": 6,
+    "seconds": 507.78,
+    "recorded_row_seconds": 498.0,
+    "peak_cuda_gib": 9.017600059509277,
+    "all_reproduction_checks_passed": true
+  },
+  "after_run": {
+    "status": "complete",
+    "mode": "six",
+    "shard": [
+      0,
+      1
+    ],
+    "rows": 6,
+    "seconds": 406.6,
+    "recorded_row_seconds": 396.68,
+    "peak_cuda_gib": 9.017600059509277,
+    "all_reproduction_checks_passed": true
+  },
+  "scope": "Saved per-row results only; voxelwise maps not saved in these records. Synthetic NMS tests verify map equivalence. Shared-host timings are observed end-to-end replay costs, not isolated timing attribution."
+}

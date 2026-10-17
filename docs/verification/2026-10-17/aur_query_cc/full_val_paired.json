@@ -1,0 +1,695 @@
+{
+  "invariance": {
+    "rows": 405,
+    "A_exact_rows": 405,
+    "controlled_instances": 716,
+    "controlled_exact_instances": 716,
+    "controlled_membership_mismatch_rows": 0,
+    "origin_query_window_unavailable_in_legacy_instances": 716,
+    "A_saved_scores_exact": true,
+    "controlled_shared_fields_exact": true
+  },
+  "source_sequence": {
+    "bmsr/T1c": {
+      "score": 0.7,
+      "U": {
+        "legacy_max": {
+          "n_scans": 41,
+          "n_gt": 470,
+          "n_hit": 2,
+          "n_fp": 2,
+          "n_kept": 5,
+          "n_ignored_gt": 61,
+          "n_excused_detections": 1,
+          "sensitivity": 0.00425531914893617,
+          "fp_per_scan": 0.04878048780487805,
+          "within_S7_FP_budget": true
+        },
+        "query_cc_v1": {
+          "n_scans": 41,
+          "n_gt": 470,
+          "n_hit": 78,
+          "n_fp": 697,
+          "n_kept": 776,
+          "n_ignored_gt": 61,
+          "n_excused_detections": 1,
+          "sensitivity": 0.16595744680851063,
+          "fp_per_scan": 17.0,
+          "within_S7_FP_budget": false
+        }
+      },
+      "U_paired_gt": {
+        "n": 470,
+        "both_success": 2,
+        "rescued_by_query": 76,
+        "harmed_by_query": 0,
+        "both_fail": 392
+      },
+      "U_size_strata": {
+        "5-10": {
+          "n_gt": 148,
+          "legacy_hits": 1,
+          "query_hits": 39,
+          "both_hit": 1,
+          "rescued_by_query": 38,
+          "harmed_by_query": 0,
+          "both_missed": 109,
+          "legacy_sensitivity": 0.006756756756756757,
+          "query_sensitivity": 0.2635135135135135
+        },
+        "<5": {
+          "n_gt": 279,
+          "legacy_hits": 1,
+          "query_hits": 14,
+          "both_hit": 1,
+          "rescued_by_query": 13,
+          "harmed_by_query": 0,
+          "both_missed": 265,
+          "legacy_sensitivity": 0.0035842293906810036,
+          "query_sensitivity": 0.05017921146953405
+        },
+        ">=10": {
+          "n_gt": 43,
+          "legacy_hits": 0,
+          "query_hits": 25,
+          "both_hit": 0,
+          "rescued_by_query": 25,
+          "harmed_by_query": 0,
+          "both_missed": 18,
+          "legacy_sensitivity": 0.0,
+          "query_sensitivity": 0.5813953488372093
+        }
+      },
+      "U_query_minus_legacy": {
+        "n_hit": 76,
+        "n_fp": 695,
+        "n_kept": 771,
+        "sensitivity": 0.16170212765957445,
+        "fp_per_scan": 16.951219512195124
+      },
+      "R": {
+        "legacy_max": {
+          "eligible_gt": 469,
+          "matched_gt": 2,
+          "bound_matched_gt": 2,
+          "correct_e2e_gt": 1,
+          "detection_coverage": 0.0042643923240938165,
+          "binding_coverage": 0.0042643923240938165,
+          "e2e_success_over_all_eligible_gt": 0.0021321961620469083
+        },
+        "query_cc_v1": {
+          "eligible_gt": 469,
+          "matched_gt": 78,
+          "bound_matched_gt": 78,
+          "correct_e2e_gt": 46,
+          "detection_coverage": 0.16631130063965885,
+          "binding_coverage": 0.16631130063965885,
+          "e2e_success_over_all_eligible_gt": 0.09808102345415778
+        }
+      },
+      "R_e2e_paired_all_eligible_gt": {
+        "n": 469,
+        "both_success": 1,
+        "rescued_by_query": 45,
+        "harmed_by_query": 0,
+        "both_fail": 423
+      },
+      "R_common_matched_and_bound_gt": {
+        "n": 2,
+        "both_success": 1,
+        "rescued_by_query": 0,
+        "harmed_by_query": 0,
+        "both_fail": 1
+      },
+      "R_vs_B0_on_common_matched_and_bound_gt": {
+        "legacy_max": {
+          "both_right": 1,
+          "R_harms_B0": 1
+        },
+        "query_cc_v1": {
+          "both_right": 1,
+          "R_harms_B0": 1
+        }
+      },
+      "R_state_transitions_all_eligible_gt": {
+        "matched_correct->matched_correct": 1,
+        "matched_wrong->matched_wrong": 1,
+        "missed->matched_correct": 45,
+        "missed->matched_wrong": 31,
+        "missed->missed": 391
+      },
+      "S7_comparable_sequence": true,
+      "S7": {
+        "thr": 0.65,
+        "n_scans": 41,
+        "n_gt": 464,
+        "n_hit": 323,
+        "n_fp": 36,
+        "sensitivity": 0.6961206896551724,
+        "fp_per_scan": 0.8780487804878049
+      }
+    },
+    "isles/DWI": {
+      "score": 0.6,
+      "U": {
+        "legacy_max": {
+          "n_scans": 20,
+          "n_gt": 138,
+          "n_hit": 4,
+          "n_fp": 24,
+          "n_kept": 28,
+          "n_ignored_gt": 11,
+          "n_excused_detections": 0,
+          "sensitivity": 0.028985507246376812,
+          "fp_per_scan": 1.2,
+          "within_S7_FP_budget": true
+        },
+        "query_cc_v1": {
+          "n_scans": 20,
+          "n_gt": 138,
+          "n_hit": 60,
+          "n_fp": 10802,
+          "n_kept": 10862,
+          "n_ignored_gt": 11,
+          "n_excused_detections": 0,
+          "sensitivity": 0.43478260869565216,
+          "fp_per_scan": 540.1,
+          "within_S7_FP_budget": false
+        }
+      },
+      "U_paired_gt": {
+        "n": 138,
+        "both_success": 4,
+        "rescued_by_query": 56,
+        "harmed_by_query": 0,
+        "both_fail": 78
+      },
+      "U_size_strata": {
+        ">=10": {
+          "n_gt": 29,
+          "legacy_hits": 1,
+          "query_hits": 26,
+          "both_hit": 1,
+          "rescued_by_query": 25,
+          "harmed_by_query": 0,
+          "both_missed": 3,
+          "legacy_sensitivity": 0.034482758620689655,
+          "query_sensitivity": 0.896551724137931
+        },
+        "5-10": {
+          "n_gt": 41,
+          "legacy_hits": 2,
+          "query_hits": 19,
+          "both_hit": 2,
+          "rescued_by_query": 17,
+          "harmed_by_query": 0,
+          "both_missed": 22,
+          "legacy_sensitivity": 0.04878048780487805,
+          "query_sensitivity": 0.4634146341463415
+        },
+        "<5": {
+          "n_gt": 68,
+          "legacy_hits": 1,
+          "query_hits": 15,
+          "both_hit": 1,
+          "rescued_by_query": 14,
+          "harmed_by_query": 0,
+          "both_missed": 53,
+          "legacy_sensitivity": 0.014705882352941176,
+          "query_sensitivity": 0.22058823529411764
+        }
+      },
+      "U_query_minus_legacy": {
+        "n_hit": 56,
+        "n_fp": 10778,
+        "n_kept": 10834,
+        "sensitivity": 0.40579710144927533,
+        "fp_per_scan": 538.9
+      },
+      "R": {
+        "legacy_max": {
+          "eligible_gt": 137,
+          "matched_gt": 4,
+          "bound_matched_gt": 4,
+          "correct_e2e_gt": 1,
+          "detection_coverage": 0.029197080291970802,
+          "binding_coverage": 0.029197080291970802,
+          "e2e_success_over_all_eligible_gt": 0.0072992700729927005
+        },
+        "query_cc_v1": {
+          "eligible_gt": 137,
+          "matched_gt": 59,
+          "bound_matched_gt": 59,
+          "correct_e2e_gt": 29,
+          "detection_coverage": 0.4306569343065693,
+          "binding_coverage": 0.4306569343065693,
+          "e2e_success_over_all_eligible_gt": 0.2116788321167883
+        }
+      },
+      "R_e2e_paired_all_eligible_gt": {
+        "n": 137,
+        "both_success": 1,
+        "rescued_by_query": 28,
+        "harmed_by_query": 0,
+        "both_fail": 108
+      },
+      "R_common_matched_and_bound_gt": {
+        "n": 4,
+        "both_success": 1,
+        "rescued_by_query": 0,
+        "harmed_by_query": 0,
+        "both_fail": 3
+      },
+      "R_vs_B0_on_common_matched_and_bound_gt": {
+        "legacy_max": {
+          "R_rescues_B0": 1,
+          "R_harms_B0": 1,
+          "both_wrong": 2
+        },
+        "query_cc_v1": {
+          "R_rescues_B0": 1,
+          "R_harms_B0": 2,
+          "both_wrong": 1
+        }
+      },
+      "R_state_transitions_all_eligible_gt": {
+        "matched_correct->matched_correct": 1,
+        "matched_wrong->matched_wrong": 3,
+        "missed->matched_correct": 28,
+        "missed->matched_wrong": 27,
+        "missed->missed": 78
+      },
+      "S7_comparable_sequence": true,
+      "S7": {
+        "thr": 0.5,
+        "n_scans": 20,
+        "n_gt": 175,
+        "n_hit": 104,
+        "n_fp": 32,
+        "sensitivity": 0.5942857142857143,
+        "fp_per_scan": 1.6
+      }
+    },
+    "pdgm/FLAIR": {
+      "score": 0.75,
+      "U": {
+        "legacy_max": {
+          "n_scans": 41,
+          "n_gt": 53,
+          "n_hit": 27,
+          "n_fp": 6,
+          "n_kept": 33,
+          "n_ignored_gt": 19,
+          "n_excused_detections": 0,
+          "sensitivity": 0.5094339622641509,
+          "fp_per_scan": 0.14634146341463414,
+          "within_S7_FP_budget": true
+        },
+        "query_cc_v1": {
+          "n_scans": 41,
+          "n_gt": 53,
+          "n_hit": 45,
+          "n_fp": 194,
+          "n_kept": 239,
+          "n_ignored_gt": 19,
+          "n_excused_detections": 0,
+          "sensitivity": 0.8490566037735849,
+          "fp_per_scan": 4.7317073170731705,
+          "within_S7_FP_budget": false
+        }
+      },
+      "U_paired_gt": {
+        "n": 53,
+        "both_success": 27,
+        "rescued_by_query": 18,
+        "harmed_by_query": 0,
+        "both_fail": 8
+      },
+      "U_size_strata": {
+        ">=10": {
+          "n_gt": 48,
+          "legacy_hits": 27,
+          "query_hits": 45,
+          "both_hit": 27,
+          "rescued_by_query": 18,
+          "harmed_by_query": 0,
+          "both_missed": 3,
+          "legacy_sensitivity": 0.5625,
+          "query_sensitivity": 0.9375
+        },
+        "<5": {
+          "n_gt": 4,
+          "legacy_hits": 0,
+          "query_hits": 0,
+          "both_hit": 0,
+          "rescued_by_query": 0,
+          "harmed_by_query": 0,
+          "both_missed": 4,
+          "legacy_sensitivity": 0.0,
+          "query_sensitivity": 0.0
+        },
+        "5-10": {
+          "n_gt": 1,
+          "legacy_hits": 0,
+          "query_hits": 0,
+          "both_hit": 0,
+          "rescued_by_query": 0,
+          "harmed_by_query": 0,
+          "both_missed": 1,
+          "legacy_sensitivity": 0.0,
+          "query_sensitivity": 0.0
+        }
+      },
+      "U_query_minus_legacy": {
+        "n_hit": 18,
+        "n_fp": 188,
+        "n_kept": 206,
+        "sensitivity": 0.339622641509434,
+        "fp_per_scan": 4.585365853658536
+      },
+      "R": {
+        "legacy_max": {
+          "eligible_gt": 53,
+          "matched_gt": 27,
+          "bound_matched_gt": 27,
+          "correct_e2e_gt": 20,
+          "detection_coverage": 0.5094339622641509,
+          "binding_coverage": 0.5094339622641509,
+          "e2e_success_over_all_eligible_gt": 0.37735849056603776
+        },
+        "query_cc_v1": {
+          "eligible_gt": 53,
+          "matched_gt": 45,
+          "bound_matched_gt": 45,
+          "correct_e2e_gt": 30,
+          "detection_coverage": 0.8490566037735849,
+          "binding_coverage": 0.8490566037735849,
+          "e2e_success_over_all_eligible_gt": 0.5660377358490566
+        }
+      },
+      "R_e2e_paired_all_eligible_gt": {
+        "n": 53,
+        "both_success": 19,
+        "rescued_by_query": 11,
+        "harmed_by_query": 1,
+        "both_fail": 22
+      },
+      "R_common_matched_and_bound_gt": {
+        "n": 27,
+        "both_success": 19,
+        "rescued_by_query": 0,
+        "harmed_by_query": 1,
+        "both_fail": 7
+      },
+      "R_vs_B0_on_common_matched_and_bound_gt": {
+        "legacy_max": {
+          "R_harms_B0": 3,
+          "both_right": 15,
+          "both_wrong": 4,
+          "R_rescues_B0": 5
+        },
+        "query_cc_v1": {
+          "R_harms_B0": 4,
+          "both_right": 13,
+          "both_wrong": 4,
+          "R_rescues_B0": 6
+        }
+      },
+      "R_state_transitions_all_eligible_gt": {
+        "matched_correct->matched_correct": 19,
+        "matched_correct->matched_wrong": 1,
+        "matched_wrong->matched_wrong": 7,
+        "missed->matched_correct": 11,
+        "missed->matched_wrong": 7,
+        "missed->missed": 8
+      },
+      "S7_comparable_sequence": true,
+      "S7": {
+        "thr": 0.6,
+        "n_scans": 41,
+        "n_gt": 53,
+        "n_hit": 48,
+        "n_fp": 15,
+        "sensitivity": 0.9056603773584906,
+        "fp_per_scan": 0.36585365853658536
+      }
+    },
+    "pdgm/T1c": {
+      "score": 0.75,
+      "U": {
+        "legacy_max": {
+          "n_scans": 41,
+          "n_gt": 57,
+          "n_hit": 7,
+          "n_fp": 1,
+          "n_kept": 8,
+          "n_ignored_gt": 15,
+          "n_excused_detections": 0,
+          "sensitivity": 0.12280701754385964,
+          "fp_per_scan": 0.024390243902439025
+        },
+        "query_cc_v1": {
+          "n_scans": 41,
+          "n_gt": 57,
+          "n_hit": 34,
+          "n_fp": 111,
+          "n_kept": 145,
+          "n_ignored_gt": 15,
+          "n_excused_detections": 0,
+          "sensitivity": 0.5964912280701754,
+          "fp_per_scan": 2.707317073170732
+        }
+      },
+      "U_paired_gt": {
+        "n": 57,
+        "both_success": 7,
+        "rescued_by_query": 27,
+        "harmed_by_query": 0,
+        "both_fail": 23
+      },
+      "U_size_strata": {
+        ">=10": {
+          "n_gt": 44,
+          "legacy_hits": 7,
+          "query_hits": 34,
+          "both_hit": 7,
+          "rescued_by_query": 27,
+          "harmed_by_query": 0,
+          "both_missed": 10,
+          "legacy_sensitivity": 0.1590909090909091,
+          "query_sensitivity": 0.7727272727272727
+        },
+        "5-10": {
+          "n_gt": 11,
+          "legacy_hits": 0,
+          "query_hits": 0,
+          "both_hit": 0,
+          "rescued_by_query": 0,
+          "harmed_by_query": 0,
+          "both_missed": 11,
+          "legacy_sensitivity": 0.0,
+          "query_sensitivity": 0.0
+        },
+        "<5": {
+          "n_gt": 2,
+          "legacy_hits": 0,
+          "query_hits": 0,
+          "both_hit": 0,
+          "rescued_by_query": 0,
+          "harmed_by_query": 0,
+          "both_missed": 2,
+          "legacy_sensitivity": 0.0,
+          "query_sensitivity": 0.0
+        }
+      },
+      "U_query_minus_legacy": {
+        "n_hit": 27,
+        "n_fp": 110,
+        "n_kept": 137,
+        "sensitivity": 0.47368421052631576,
+        "fp_per_scan": 2.682926829268293
+      },
+      "R": {
+        "legacy_max": {
+          "eligible_gt": 57,
+          "matched_gt": 7,
+          "bound_matched_gt": 7,
+          "correct_e2e_gt": 5,
+          "detection_coverage": 0.12280701754385964,
+          "binding_coverage": 0.12280701754385964,
+          "e2e_success_over_all_eligible_gt": 0.08771929824561403
+        },
+        "query_cc_v1": {
+          "eligible_gt": 57,
+          "matched_gt": 34,
+          "bound_matched_gt": 34,
+          "correct_e2e_gt": 23,
+          "detection_coverage": 0.5964912280701754,
+          "binding_coverage": 0.5964912280701754,
+          "e2e_success_over_all_eligible_gt": 0.40350877192982454
+        }
+      },
+      "R_e2e_paired_all_eligible_gt": {
+        "n": 57,
+        "both_success": 5,
+        "rescued_by_query": 18,
+        "harmed_by_query": 0,
+        "both_fail": 34
+      },
+      "R_common_matched_and_bound_gt": {
+        "n": 7,
+        "both_success": 5,
+        "rescued_by_query": 0,
+        "harmed_by_query": 0,
+        "both_fail": 2
+      },
+      "R_vs_B0_on_common_matched_and_bound_gt": {
+        "legacy_max": {
+          "R_rescues_B0": 1,
+          "both_right": 4,
+          "R_harms_B0": 1,
+          "both_wrong": 1
+        },
+        "query_cc_v1": {
+          "both_right": 5,
+          "R_harms_B0": 1,
+          "both_wrong": 1
+        }
+      },
+      "R_state_transitions_all_eligible_gt": {
+        "matched_correct->matched_correct": 5,
+        "matched_wrong->matched_wrong": 2,
+        "missed->matched_correct": 18,
+        "missed->matched_wrong": 9,
+        "missed->missed": 23
+      },
+      "S7_comparable_sequence": false
+    }
+  },
+  "schema": "aur_query_cc_paired_aggregate_v1",
+  "evidence": "NOT_EVIDENCE",
+  "mode": "val",
+  "scope": "complete frozen validation",
+  "rows": 405,
+  "source_score_thresholds": {
+    "bmsr": 0.7,
+    "isles": 0.6,
+    "pdgm": 0.75
+  },
+  "provenance": [
+    {
+      "contract_sha256": "7fdfc3cdce3c86c0afeea35795bcb23f6cbbee902c5bd3b98402ffdadb498d51",
+      "complete_sha256": "477087df41e5320f12279027397b3086f633484f1cf5c18774dbfcd505039b6a",
+      "row_records_content_sha256": "1a977090a578e433177f087f066af9f0dd595ab280b8da8fd44cca27d628105d"
+    },
+    {
+      "contract_sha256": "c6c571d2ddf0f0892e5e3c311f906523fd53e0b9c81c98529cb863b276832314",
+      "complete_sha256": "ebc6d30d1e028c73a3df620b62255fde7fcf559cad27ab26194237764d4ffd7c",
+      "row_records_content_sha256": "7143ea02f85d0e3f8ee4add34ae7d4588f1a6496fe3a10539148c3d71a304f9d"
+    },
+    {
+      "contract_sha256": "f637c4e075f9f50f3522eea5ae910bd4adf3a66c903b0422e4759ccba79b4762",
+      "complete_sha256": "e134272ed0f603987cae2773456ca997f8d31a8f0667b4e48589143cf9ef6efb",
+      "row_records_content_sha256": "83024c2f3897b24b407c32adab3b5068e3c9fad9530a68916dfce42a74357e5a"
+    }
+  ],
+  "comparison": "Same pre-fixed numeric source score; observed FP is NOT equalized. Parent component and fused-map scores have different calibration.",
+  "legacy_matching_normalization": {
+    "changed_cached_binding_truths": 31,
+    "method": "runner.fixed_legacy_e2e; saved predictions unchanged"
+  },
+  "frozen_code_sha": "1874af20a460cf86c46029cc83d2df0801a10910",
+  "checkpoint_sha256": "38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde",
+  "analysis_script_sha256": "3744f87773bd79605e7691bc88e44d6cf4293fdf8133cd9dbd340e181de8f510",
+  "analysis_dependency_sha256": {
+    "scripts/aur_compare_decoders.py": "ab03a8297b23ff5e6d5cae28e0e8341d9be3ca62cc981871e51ee8959db3378c",
+    "anatobind/aur/eval.py": "75e585d51fc43cf0c49c896a58e059b02ab4cb3db63106780b1ea83b54aa0088",
+    "anatobind/eval/detection_metrics.py": "54c5634af3e79b4939c27593d99e1e8f57542f6cbd24b532e16e9f41a02b5b9b",
+    "anatobind/eval/matching.py": "729682d7aadcfd7c63597286b567583297f3f9eb5eee22cbd33e376c7e777fbb"
+  },
+  "inference_resources": {
+    "recorded_row_seconds": {
+      "n": 405,
+      "sum": 4051.377509437967,
+      "median": 2.0672481432557106,
+      "p95_nearest_rank": 25.3380461842753,
+      "max": 256.17335956403986
+    },
+    "peak_cuda_allocated_gib": 9.016756534576416,
+    "windows": 4302,
+    "completed_process_elapsed_seconds": [
+      1026.4,
+      989.13,
+      686.72
+    ],
+    "timing_note": "Query replay only; saved legacy timing is not a paired baseline. Sum of row times is not multi-shard wall time."
+  },
+  "decoder_counts": {
+    "raw_components": {
+      "n": 143,
+      "sum": 1449524,
+      "median": 3013,
+      "p95_nearest_rank": 26501,
+      "max": 36156
+    },
+    "eligible_candidates": {
+      "n": 143,
+      "sum": 411605,
+      "median": 886,
+      "p95_nearest_rank": 8163,
+      "max": 10561
+    },
+    "suppressed_candidates": {
+      "n": 143,
+      "sum": 124749,
+      "median": 267,
+      "p95_nearest_rank": 2732,
+      "max": 3909
+    },
+    "fully_occluded_candidates": {
+      "n": 143,
+      "sum": 190134,
+      "median": 265,
+      "p95_nearest_rank": 4234,
+      "max": 5478
+    },
+    "tiny_fragments": {
+      "n": 143,
+      "sum": 880788,
+      "median": 3126,
+      "p95_nearest_rank": 14972,
+      "max": 21731
+    },
+    "final_instances": {
+      "n": 143,
+      "sum": 135646,
+      "median": 534,
+      "p95_nearest_rank": 1940,
+      "max": 2518
+    }
+  },
+  "retained_fraction": {
+    "n": 135646,
+    "sum": 26927.877675348038,
+    "median": 0.005649472002325488,
+    "p95_nearest_rank": 1.0,
+    "max": 1.0
+  },
+  "limitations": [
+    "All A/R labels are pseudo references; no clinical or human Level R evidence.",
+    "Six probe is not representative; no source-general conclusion before full val.",
+    "A invariance covers saved numerical scores, not voxelwise maps absent from records.",
+    "Controlled exact invariance covers saved shared fields; legacy has no saved query/window origin.",
+    "R common-match comparisons condition on intersection; all-GT E2E is reported separately.",
+    "No threshold optimization; source budgets compared only on registered S7 sequence.",
+    "Budget failure at these fixed scores does not reject query-preserving decoding at other calibration; no such calibration is evaluated here.",
+    "BMSR and ISLES use AUR-resampled versus native S7 grids (approximate comparison).",
+    "CUDA peak is allocated memory, not reserved memory or total device footprint."
+  ],
+  "analysis_resources": {
+    "seconds": 4.1870306436903775,
+    "max_rss_gib": 0.979827880859375,
+    "cpu_threads": 4,
+    "gpu_hidden": true
+  }
+}

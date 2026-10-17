@@ -1,0 +1,1465 @@
+{
+  "schema": "aur_query_cc_fp_morphology_aggregate_v1",
+  "evidence": "NOT_EVIDENCE",
+  "interpretation": "Post-hoc exploratory error analysis; descriptive associations, not causal proof or threshold selection.",
+  "rows": 405,
+  "fixed_scores": {
+    "bmsr": 0.7,
+    "isles": 0.6,
+    "pdgm": 0.75
+  },
+  "fraction_bins": [
+    "<=0.1",
+    "(0.1,0.5]",
+    ">0.5"
+  ],
+  "physical_child_strata_equivalent_diameter_mm": [
+    "<5",
+    "5-10",
+    ">=10"
+  ],
+  "source_sequence": {
+    "bmsr/T1c": {
+      "score": 0.7,
+      "registered_S7_sequence": true,
+      "n_scans": 41,
+      "retained_detections": 776,
+      "classes": {
+        "TP": {
+          "n_children": 78,
+          "share_of_retained_detections": 0.10051546391752578,
+          "child_voxels": {
+            "n": 78,
+            "sum": 162569,
+            "median": 298.0,
+            "p95_nearest_rank": 8736,
+            "max": 54425,
+            "min": 22,
+            "mean": 2084.2179487179487
+          },
+          "child_volume_mm3": {
+            "n": 78,
+            "sum": 162569.0,
+            "median": 298.0,
+            "p95_nearest_rank": 8736.0,
+            "max": 54425.0,
+            "min": 22.0,
+            "mean": 2084.2179487179487
+          },
+          "parent_voxels_child_weighted": {
+            "n": 78,
+            "sum": 164061,
+            "median": 298.0,
+            "p95_nearest_rank": 8736,
+            "max": 54425,
+            "min": 22,
+            "mean": 2103.346153846154
+          },
+          "retained_fraction_child_weighted": {
+            "n": 78,
+            "sum": 77.27001568703767,
+            "median": 1.0,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 0.5728592889334001,
+            "mean": 0.9906412267568933
+          },
+          "inherited_score_child_weighted": {
+            "n": 78,
+            "sum": 61.08908249560659,
+            "median": 0.763962002771218,
+            "p95_nearest_rank": 0.9028643891568432,
+            "max": 0.9321555281828399,
+            "min": 0.7011511232380708,
+            "mean": 0.7831933653282898
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            ">0.5": {
+              "<5": 10,
+              "5-10": 40,
+              ">=10": 28
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.0
+            },
+            "(0.1,0.5]": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.0
+            },
+            ">0.5": {
+              "<5": 0.1282051282051282,
+              "5-10": 0.5128205128205128,
+              ">=10": 0.358974358974359
+            }
+          },
+          "n_distinct_parents_nonexclusive": 78,
+          "parent_voxels_parent_weighted": {
+            "n": 78,
+            "sum": 164061,
+            "median": 298.0,
+            "p95_nearest_rank": 8736,
+            "max": 54425,
+            "min": 22,
+            "mean": 2103.346153846154
+          },
+          "inherited_score_parent_weighted": {
+            "n": 78,
+            "sum": 61.08908249560659,
+            "median": 0.763962002771218,
+            "p95_nearest_rank": 0.9028643891568432,
+            "max": 0.9321555281828399,
+            "min": 0.7011511232380708,
+            "mean": 0.7831933653282899
+          },
+          "all_final_children_per_parent": {
+            "n": 78,
+            "sum": 78,
+            "median": 1.0,
+            "p95_nearest_rank": 1,
+            "max": 1,
+            "min": 1,
+            "mean": 1.0
+          },
+          "same_class_children_per_parent": {
+            "n": 78,
+            "sum": 78,
+            "median": 1.0,
+            "p95_nearest_rank": 1,
+            "max": 1,
+            "min": 1,
+            "mean": 1.0
+          },
+          "n_children_from_parent_with_multiple_final_children": 0,
+          "n_distinct_parents_with_multiple_final_children": 0
+        },
+        "FP": {
+          "n_children": 697,
+          "share_of_retained_detections": 0.8981958762886598,
+          "child_voxels": {
+            "n": 697,
+            "sum": 2093617,
+            "median": 202,
+            "p95_nearest_rank": 11900,
+            "max": 145530,
+            "min": 10,
+            "mean": 3003.7546628407463
+          },
+          "child_volume_mm3": {
+            "n": 697,
+            "sum": 2093617.0,
+            "median": 202.0,
+            "p95_nearest_rank": 11900.0,
+            "max": 145530.0,
+            "min": 10.0,
+            "mean": 3003.7546628407463
+          },
+          "parent_voxels_child_weighted": {
+            "n": 697,
+            "sum": 10283294,
+            "median": 1651,
+            "p95_nearest_rank": 75663,
+            "max": 145531,
+            "min": 10,
+            "mean": 14753.649928263989
+          },
+          "retained_fraction_child_weighted": {
+            "n": 697,
+            "sum": 429.1664566821769,
+            "median": 0.9980475683351083,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 0.0001321649947794827,
+            "mean": 0.6157337972484603
+          },
+          "inherited_score_child_weighted": {
+            "n": 697,
+            "sum": 503.1694447173488,
+            "median": 0.7150292953560664,
+            "p95_nearest_rank": 0.766326536849084,
+            "max": 0.8677878511787781,
+            "min": 0.7000385729166178,
+            "mean": 0.7219073812300555
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 166,
+              "5-10": 40,
+              ">=10": 13
+            },
+            "(0.1,0.5]": {
+              "<5": 12,
+              "5-10": 29,
+              ">=10": 14
+            },
+            ">0.5": {
+              "<5": 54,
+              "5-10": 150,
+              ">=10": 219
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.2381635581061693,
+              "5-10": 0.05738880918220947,
+              ">=10": 0.018651362984218076
+            },
+            "(0.1,0.5]": {
+              "<5": 0.01721664275466284,
+              "5-10": 0.04160688665710186,
+              ">=10": 0.020086083213773313
+            },
+            ">0.5": {
+              "<5": 0.07747489239598278,
+              "5-10": 0.2152080344332855,
+              ">=10": 0.31420373027259685
+            }
+          },
+          "n_distinct_parents_nonexclusive": 480,
+          "parent_voxels_parent_weighted": {
+            "n": 480,
+            "sum": 2347719,
+            "median": 615.5,
+            "p95_nearest_rank": 21425,
+            "max": 145531,
+            "min": 10,
+            "mean": 4891.08125
+          },
+          "inherited_score_parent_weighted": {
+            "n": 480,
+            "sum": 349.1087985225268,
+            "median": 0.7210175934752258,
+            "p95_nearest_rank": 0.7725461507111453,
+            "max": 0.8677878511787781,
+            "min": 0.7000385729166178,
+            "mean": 0.7273099969219314
+          },
+          "all_final_children_per_parent": {
+            "n": 480,
+            "sum": 697,
+            "median": 1.0,
+            "p95_nearest_rank": 2,
+            "max": 42,
+            "min": 1,
+            "mean": 1.4520833333333334
+          },
+          "same_class_children_per_parent": {
+            "n": 480,
+            "sum": 697,
+            "median": 1.0,
+            "p95_nearest_rank": 2,
+            "max": 42,
+            "min": 1,
+            "mean": 1.4520833333333334
+          },
+          "n_children_from_parent_with_multiple_final_children": 260,
+          "n_distinct_parents_with_multiple_final_children": 43
+        },
+        "ignored_excused": {
+          "n_children": 1,
+          "share_of_retained_detections": 0.001288659793814433,
+          "child_voxels": {
+            "n": 1,
+            "sum": 15,
+            "median": 15,
+            "p95_nearest_rank": 15,
+            "max": 15,
+            "min": 15,
+            "mean": 15.0
+          },
+          "child_volume_mm3": {
+            "n": 1,
+            "sum": 15.0,
+            "median": 15.0,
+            "p95_nearest_rank": 15.0,
+            "max": 15.0,
+            "min": 15.0,
+            "mean": 15.0
+          },
+          "parent_voxels_child_weighted": {
+            "n": 1,
+            "sum": 15,
+            "median": 15,
+            "p95_nearest_rank": 15,
+            "max": 15,
+            "min": 15,
+            "mean": 15.0
+          },
+          "retained_fraction_child_weighted": {
+            "n": 1,
+            "sum": 1.0,
+            "median": 1.0,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 1.0,
+            "mean": 1.0
+          },
+          "inherited_score_child_weighted": {
+            "n": 1,
+            "sum": 0.7667298277219137,
+            "median": 0.7667298277219137,
+            "p95_nearest_rank": 0.7667298277219137,
+            "max": 0.7667298277219137,
+            "min": 0.7667298277219137,
+            "mean": 0.7667298277219137
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            ">0.5": {
+              "<5": 1,
+              "5-10": 0,
+              ">=10": 0
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.0
+            },
+            "(0.1,0.5]": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.0
+            },
+            ">0.5": {
+              "<5": 1.0,
+              "5-10": 0.0,
+              ">=10": 0.0
+            }
+          },
+          "n_distinct_parents_nonexclusive": 1,
+          "parent_voxels_parent_weighted": {
+            "n": 1,
+            "sum": 15,
+            "median": 15,
+            "p95_nearest_rank": 15,
+            "max": 15,
+            "min": 15,
+            "mean": 15.0
+          },
+          "inherited_score_parent_weighted": {
+            "n": 1,
+            "sum": 0.7667298277219137,
+            "median": 0.7667298277219137,
+            "p95_nearest_rank": 0.7667298277219137,
+            "max": 0.7667298277219137,
+            "min": 0.7667298277219137,
+            "mean": 0.7667298277219137
+          },
+          "all_final_children_per_parent": {
+            "n": 1,
+            "sum": 1,
+            "median": 1,
+            "p95_nearest_rank": 1,
+            "max": 1,
+            "min": 1,
+            "mean": 1.0
+          },
+          "same_class_children_per_parent": {
+            "n": 1,
+            "sum": 1,
+            "median": 1,
+            "p95_nearest_rank": 1,
+            "max": 1,
+            "min": 1,
+            "mean": 1.0
+          },
+          "n_children_from_parent_with_multiple_final_children": 0,
+          "n_distinct_parents_with_multiple_final_children": 0
+        }
+      },
+      "parent_summary": {
+        "n_distinct_active_parents": 559,
+        "final_child_multiplicity_per_active_parent": {
+          "n": 559,
+          "sum": 776,
+          "median": 1,
+          "p95_nearest_rank": 2,
+          "max": 42,
+          "min": 1,
+          "mean": 1.3881932021466905
+        },
+        "n_parents_by_class_membership": {
+          "TP": 78,
+          "FP": 480,
+          "ignored_excused": 1
+        }
+      }
+    },
+    "isles/DWI": {
+      "score": 0.6,
+      "registered_S7_sequence": true,
+      "n_scans": 20,
+      "retained_detections": 10862,
+      "classes": {
+        "TP": {
+          "n_children": 60,
+          "share_of_retained_detections": 0.005523844595838704,
+          "child_voxels": {
+            "n": 60,
+            "sum": 199023,
+            "median": 333.0,
+            "p95_nearest_rank": 19441,
+            "max": 21994,
+            "min": 10,
+            "mean": 3317.05
+          },
+          "child_volume_mm3": {
+            "n": 60,
+            "sum": 199023.0,
+            "median": 333.0,
+            "p95_nearest_rank": 19441.0,
+            "max": 21994.0,
+            "min": 10.0,
+            "mean": 3317.05
+          },
+          "parent_voxels_child_weighted": {
+            "n": 60,
+            "sum": 516561,
+            "median": 3672.0,
+            "p95_nearest_rank": 31885,
+            "max": 49495,
+            "min": 45,
+            "mean": 8609.35
+          },
+          "retained_fraction_child_weighted": {
+            "n": 60,
+            "sum": 36.47279406562828,
+            "median": 0.9176997016904209,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 0.0004965678399298963,
+            "mean": 0.6078799010938046
+          },
+          "inherited_score_child_weighted": {
+            "n": 60,
+            "sum": 42.18706024349582,
+            "median": 0.6873880725890488,
+            "p95_nearest_rank": 0.844551937550841,
+            "max": 0.8964565810810354,
+            "min": 0.6002576583058622,
+            "mean": 0.7031176707249304
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 6,
+              "5-10": 7,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 2,
+              "5-10": 4,
+              ">=10": 6
+            },
+            ">0.5": {
+              "<5": 4,
+              "5-10": 17,
+              ">=10": 14
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.1,
+              "5-10": 0.11666666666666667,
+              ">=10": 0.0
+            },
+            "(0.1,0.5]": {
+              "<5": 0.03333333333333333,
+              "5-10": 0.06666666666666667,
+              ">=10": 0.1
+            },
+            ">0.5": {
+              "<5": 0.06666666666666667,
+              "5-10": 0.2833333333333333,
+              ">=10": 0.23333333333333334
+            }
+          },
+          "n_distinct_parents_nonexclusive": 60,
+          "parent_voxels_parent_weighted": {
+            "n": 60,
+            "sum": 516561,
+            "median": 3672.0,
+            "p95_nearest_rank": 31885,
+            "max": 49495,
+            "min": 45,
+            "mean": 8609.35
+          },
+          "inherited_score_parent_weighted": {
+            "n": 60,
+            "sum": 42.18706024349582,
+            "median": 0.6873880725890488,
+            "p95_nearest_rank": 0.844551937550841,
+            "max": 0.8964565810810354,
+            "min": 0.6002576583058622,
+            "mean": 0.7031176707249306
+          },
+          "all_final_children_per_parent": {
+            "n": 60,
+            "sum": 228,
+            "median": 1.0,
+            "p95_nearest_rank": 13,
+            "max": 31,
+            "min": 1,
+            "mean": 3.8
+          },
+          "same_class_children_per_parent": {
+            "n": 60,
+            "sum": 60,
+            "median": 1.0,
+            "p95_nearest_rank": 1,
+            "max": 1,
+            "min": 1,
+            "mean": 1.0
+          },
+          "n_children_from_parent_with_multiple_final_children": 24,
+          "n_distinct_parents_with_multiple_final_children": 24
+        },
+        "FP": {
+          "n_children": 10802,
+          "share_of_retained_detections": 0.9944761554041613,
+          "child_voxels": {
+            "n": 10802,
+            "sum": 7917441,
+            "median": 36.0,
+            "p95_nearest_rank": 3490,
+            "max": 81570,
+            "min": 10,
+            "mean": 732.9606554341789
+          },
+          "child_volume_mm3": {
+            "n": 10802,
+            "sum": 7917441.0,
+            "median": 36.0,
+            "p95_nearest_rank": 3490.0,
+            "max": 81570.0,
+            "min": 10.0,
+            "mean": 732.9606554341789
+          },
+          "parent_voxels_child_weighted": {
+            "n": 10802,
+            "sum": 216964412,
+            "median": 16359.0,
+            "p95_nearest_rank": 55576,
+            "max": 92895,
+            "min": 16,
+            "mean": 20085.5778559526
+          },
+          "retained_fraction_child_weighted": {
+            "n": 10802,
+            "sum": 1039.3677111126185,
+            "median": 0.0030534527487164516,
+            "p95_nearest_rank": 0.85431654676259,
+            "max": 1.0,
+            "min": 0.00011447148515304837,
+            "mean": 0.09621993252292355
+          },
+          "inherited_score_child_weighted": {
+            "n": 10802,
+            "sum": 6880.611482303557,
+            "median": 0.6293209424009522,
+            "p95_nearest_rank": 0.6975885217925212,
+            "max": 0.8879824195874885,
+            "min": 0.6000640974387882,
+            "mean": 0.6369756973063754
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 6601,
+              "5-10": 2050,
+              ">=10": 429
+            },
+            "(0.1,0.5]": {
+              "<5": 71,
+              "5-10": 236,
+              ">=10": 557
+            },
+            ">0.5": {
+              "<5": 17,
+              "5-10": 165,
+              ">=10": 676
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.6110905387891131,
+              "5-10": 0.1897796704314016,
+              ">=10": 0.03971486761710794
+            },
+            "(0.1,0.5]": {
+              "<5": 0.0065728568783558605,
+              "5-10": 0.021847805961858913,
+              ">=10": 0.05156452508794668
+            },
+            ">0.5": {
+              "<5": 0.0015737826328457694,
+              "5-10": 0.015274949083503055,
+              ">=10": 0.06258100351786706
+            }
+          },
+          "n_distinct_parents_nonexclusive": 2487,
+          "parent_voxels_parent_weighted": {
+            "n": 2487,
+            "sum": 21506492,
+            "median": 3996,
+            "p95_nearest_rank": 31633,
+            "max": 92895,
+            "min": 16,
+            "mean": 8647.56413349417
+          },
+          "inherited_score_parent_weighted": {
+            "n": 2487,
+            "sum": 1615.313233910285,
+            "median": 0.6386582010078833,
+            "p95_nearest_rank": 0.7311085836723957,
+            "max": 0.8879824195874885,
+            "min": 0.6000640974387882,
+            "mean": 0.6495027076438624
+          },
+          "all_final_children_per_parent": {
+            "n": 2487,
+            "sum": 10826,
+            "median": 2,
+            "p95_nearest_rank": 17,
+            "max": 57,
+            "min": 1,
+            "mean": 4.353035786087656
+          },
+          "same_class_children_per_parent": {
+            "n": 2487,
+            "sum": 10802,
+            "median": 2,
+            "p95_nearest_rank": 17,
+            "max": 57,
+            "min": 1,
+            "mean": 4.343385605146763
+          },
+          "n_children_from_parent_with_multiple_final_children": 9720,
+          "n_distinct_parents_with_multiple_final_children": 1405
+        },
+        "ignored_excused": {
+          "n_children": 0,
+          "share_of_retained_detections": 0.0,
+          "child_voxels": {
+            "n": 0
+          },
+          "child_volume_mm3": {
+            "n": 0
+          },
+          "parent_voxels_child_weighted": {
+            "n": 0
+          },
+          "retained_fraction_child_weighted": {
+            "n": 0
+          },
+          "inherited_score_child_weighted": {
+            "n": 0
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            ">0.5": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            },
+            "(0.1,0.5]": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            },
+            ">0.5": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            }
+          },
+          "n_distinct_parents_nonexclusive": 0,
+          "parent_voxels_parent_weighted": {
+            "n": 0
+          },
+          "inherited_score_parent_weighted": {
+            "n": 0
+          },
+          "all_final_children_per_parent": {
+            "n": 0
+          },
+          "same_class_children_per_parent": {
+            "n": 0
+          },
+          "n_children_from_parent_with_multiple_final_children": 0,
+          "n_distinct_parents_with_multiple_final_children": 0
+        }
+      },
+      "parent_summary": {
+        "n_distinct_active_parents": 2523,
+        "final_child_multiplicity_per_active_parent": {
+          "n": 2523,
+          "sum": 10862,
+          "median": 2,
+          "p95_nearest_rank": 17,
+          "max": 57,
+          "min": 1,
+          "mean": 4.305192231470472
+        },
+        "n_parents_by_class_membership": {
+          "TP": 36,
+          "FP": 2463,
+          "TP+FP": 24
+        }
+      }
+    },
+    "pdgm/FLAIR": {
+      "score": 0.75,
+      "registered_S7_sequence": true,
+      "n_scans": 41,
+      "retained_detections": 239,
+      "classes": {
+        "TP": {
+          "n_children": 45,
+          "share_of_retained_detections": 0.18828451882845187,
+          "child_voxels": {
+            "n": 45,
+            "sum": 3145025,
+            "median": 56502,
+            "p95_nearest_rank": 191017,
+            "max": 256065,
+            "min": 63,
+            "mean": 69889.44444444444
+          },
+          "child_volume_mm3": {
+            "n": 45,
+            "sum": 3145025.0,
+            "median": 56502.0,
+            "p95_nearest_rank": 191017.0,
+            "max": 256065.0,
+            "min": 63.0,
+            "mean": 69889.44444444444
+          },
+          "parent_voxels_child_weighted": {
+            "n": 45,
+            "sum": 3556436,
+            "median": 60399,
+            "p95_nearest_rank": 191017,
+            "max": 256065,
+            "min": 9825,
+            "mean": 79031.91111111111
+          },
+          "retained_fraction_child_weighted": {
+            "n": 45,
+            "sum": 39.72112589252839,
+            "median": 1.0,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 0.0014891152764317961,
+            "mean": 0.8826916865006308
+          },
+          "inherited_score_child_weighted": {
+            "n": 45,
+            "sum": 40.03198229597922,
+            "median": 0.9055112160407992,
+            "p95_nearest_rank": 0.9446965214113026,
+            "max": 0.9471483369769318,
+            "min": 0.7743354197188563,
+            "mean": 0.8895996065773163
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 1,
+              "5-10": 1,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 3
+            },
+            ">0.5": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 40
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.022222222222222223,
+              "5-10": 0.022222222222222223,
+              ">=10": 0.0
+            },
+            "(0.1,0.5]": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.06666666666666667
+            },
+            ">0.5": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.8888888888888888
+            }
+          },
+          "n_distinct_parents_nonexclusive": 44,
+          "parent_voxels_parent_weighted": {
+            "n": 44,
+            "sum": 3514129,
+            "median": 63944.5,
+            "p95_nearest_rank": 191017,
+            "max": 256065,
+            "min": 9825,
+            "mean": 79866.56818181818
+          },
+          "inherited_score_parent_weighted": {
+            "n": 44,
+            "sum": 39.123255808075506,
+            "median": 0.9031039788566357,
+            "p95_nearest_rank": 0.9446965214113026,
+            "max": 0.9471483369769318,
+            "min": 0.7743354197188563,
+            "mean": 0.8891649047289888
+          },
+          "all_final_children_per_parent": {
+            "n": 44,
+            "sum": 85,
+            "median": 1.0,
+            "p95_nearest_rank": 7,
+            "max": 13,
+            "min": 1,
+            "mean": 1.9318181818181819
+          },
+          "same_class_children_per_parent": {
+            "n": 44,
+            "sum": 45,
+            "median": 1.0,
+            "p95_nearest_rank": 1,
+            "max": 2,
+            "min": 1,
+            "mean": 1.0227272727272727
+          },
+          "n_children_from_parent_with_multiple_final_children": 8,
+          "n_distinct_parents_with_multiple_final_children": 7
+        },
+        "FP": {
+          "n_children": 194,
+          "share_of_retained_detections": 0.8117154811715481,
+          "child_voxels": {
+            "n": 194,
+            "sum": 384566,
+            "median": 45.0,
+            "p95_nearest_rank": 7279,
+            "max": 69573,
+            "min": 10,
+            "mean": 1982.298969072165
+          },
+          "child_volume_mm3": {
+            "n": 194,
+            "sum": 384566.0,
+            "median": 45.0,
+            "p95_nearest_rank": 7279.0,
+            "max": 69573.0,
+            "min": 10.0,
+            "mean": 1982.298969072165
+          },
+          "parent_voxels_child_weighted": {
+            "n": 194,
+            "sum": 9285953,
+            "median": 50845.0,
+            "p95_nearest_rank": 112287,
+            "max": 181282,
+            "min": 107,
+            "mean": 47865.737113402065
+          },
+          "retained_fraction_child_weighted": {
+            "n": 194,
+            "sum": 45.169039397823454,
+            "median": 0.0011488727406402674,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 6.619520967332665e-05,
+            "mean": 0.23283009998878085
+          },
+          "inherited_score_child_weighted": {
+            "n": 194,
+            "sum": 166.24503932907368,
+            "median": 0.8603369759721834,
+            "p95_nearest_rank": 0.9394593515863,
+            "max": 0.9489126574230766,
+            "min": 0.7501722099970008,
+            "mean": 0.8569331924179066
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 107,
+              "5-10": 30,
+              ">=10": 6
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 7
+            },
+            ">0.5": {
+              "<5": 0,
+              "5-10": 18,
+              ">=10": 26
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.5515463917525774,
+              "5-10": 0.15463917525773196,
+              ">=10": 0.030927835051546393
+            },
+            "(0.1,0.5]": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.03608247422680412
+            },
+            ">0.5": {
+              "<5": 0.0,
+              "5-10": 0.09278350515463918,
+              ">=10": 0.13402061855670103
+            }
+          },
+          "n_distinct_parents_nonexclusive": 68,
+          "parent_voxels_parent_weighted": {
+            "n": 68,
+            "sum": 1627855,
+            "median": 2642.0,
+            "p95_nearest_rank": 106925,
+            "max": 181282,
+            "min": 107,
+            "mean": 23939.04411764706
+          },
+          "inherited_score_parent_weighted": {
+            "n": 68,
+            "sum": 56.18955632748294,
+            "median": 0.8205723019659551,
+            "p95_nearest_rank": 0.9372490536299607,
+            "max": 0.9489126574230766,
+            "min": 0.7501722099970008,
+            "mean": 0.8263170048159251
+          },
+          "all_final_children_per_parent": {
+            "n": 68,
+            "sum": 202,
+            "median": 1.0,
+            "p95_nearest_rank": 12,
+            "max": 15,
+            "min": 1,
+            "mean": 2.9705882352941178
+          },
+          "same_class_children_per_parent": {
+            "n": 68,
+            "sum": 194,
+            "median": 1.0,
+            "p95_nearest_rank": 12,
+            "max": 15,
+            "min": 1,
+            "mean": 2.8529411764705883
+          },
+          "n_children_from_parent_with_multiple_final_children": 150,
+          "n_distinct_parents_with_multiple_final_children": 24
+        },
+        "ignored_excused": {
+          "n_children": 0,
+          "share_of_retained_detections": 0.0,
+          "child_voxels": {
+            "n": 0
+          },
+          "child_volume_mm3": {
+            "n": 0
+          },
+          "parent_voxels_child_weighted": {
+            "n": 0
+          },
+          "retained_fraction_child_weighted": {
+            "n": 0
+          },
+          "inherited_score_child_weighted": {
+            "n": 0
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            ">0.5": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            },
+            "(0.1,0.5]": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            },
+            ">0.5": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            }
+          },
+          "n_distinct_parents_nonexclusive": 0,
+          "parent_voxels_parent_weighted": {
+            "n": 0
+          },
+          "inherited_score_parent_weighted": {
+            "n": 0
+          },
+          "all_final_children_per_parent": {
+            "n": 0
+          },
+          "same_class_children_per_parent": {
+            "n": 0
+          },
+          "n_children_from_parent_with_multiple_final_children": 0,
+          "n_distinct_parents_with_multiple_final_children": 0
+        }
+      },
+      "parent_summary": {
+        "n_distinct_active_parents": 105,
+        "final_child_multiplicity_per_active_parent": {
+          "n": 105,
+          "sum": 239,
+          "median": 1,
+          "p95_nearest_rank": 10,
+          "max": 15,
+          "min": 1,
+          "mean": 2.276190476190476
+        },
+        "n_parents_by_class_membership": {
+          "FP": 61,
+          "TP+FP": 7,
+          "TP": 37
+        }
+      }
+    },
+    "pdgm/T1c": {
+      "score": 0.75,
+      "registered_S7_sequence": false,
+      "n_scans": 41,
+      "retained_detections": 145,
+      "classes": {
+        "TP": {
+          "n_children": 34,
+          "share_of_retained_detections": 0.23448275862068965,
+          "child_voxels": {
+            "n": 34,
+            "sum": 857584,
+            "median": 15731.0,
+            "p95_nearest_rank": 74108,
+            "max": 86234,
+            "min": 172,
+            "mean": 25223.058823529413
+          },
+          "child_volume_mm3": {
+            "n": 34,
+            "sum": 857584.0,
+            "median": 15731.0,
+            "p95_nearest_rank": 74108.0,
+            "max": 86234.0,
+            "min": 172.0,
+            "mean": 25223.058823529413
+          },
+          "parent_voxels_child_weighted": {
+            "n": 34,
+            "sum": 936841,
+            "median": 16702.0,
+            "p95_nearest_rank": 74108,
+            "max": 86234,
+            "min": 624,
+            "mean": 27554.147058823528
+          },
+          "retained_fraction_child_weighted": {
+            "n": 34,
+            "sum": 30.76381909487696,
+            "median": 1.0,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 0.27564102564102566,
+            "mean": 0.9048182086728518
+          },
+          "inherited_score_child_weighted": {
+            "n": 34,
+            "sum": 29.5550635261097,
+            "median": 0.8757963328959651,
+            "p95_nearest_rank": 0.9513962940092012,
+            "max": 0.9621196528634384,
+            "min": 0.7507501003096131,
+            "mean": 0.8692665742973437
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 1,
+              ">=10": 3
+            },
+            ">0.5": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 30
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.0
+            },
+            "(0.1,0.5]": {
+              "<5": 0.0,
+              "5-10": 0.029411764705882353,
+              ">=10": 0.08823529411764706
+            },
+            ">0.5": {
+              "<5": 0.0,
+              "5-10": 0.0,
+              ">=10": 0.8823529411764706
+            }
+          },
+          "n_distinct_parents_nonexclusive": 34,
+          "parent_voxels_parent_weighted": {
+            "n": 34,
+            "sum": 936841,
+            "median": 16702.0,
+            "p95_nearest_rank": 74108,
+            "max": 86234,
+            "min": 624,
+            "mean": 27554.147058823528
+          },
+          "inherited_score_parent_weighted": {
+            "n": 34,
+            "sum": 29.5550635261097,
+            "median": 0.8757963328959651,
+            "p95_nearest_rank": 0.9513962940092012,
+            "max": 0.9621196528634384,
+            "min": 0.7507501003096131,
+            "mean": 0.8692665742973439
+          },
+          "all_final_children_per_parent": {
+            "n": 34,
+            "sum": 50,
+            "median": 1.0,
+            "p95_nearest_rank": 5,
+            "max": 8,
+            "min": 1,
+            "mean": 1.4705882352941178
+          },
+          "same_class_children_per_parent": {
+            "n": 34,
+            "sum": 34,
+            "median": 1.0,
+            "p95_nearest_rank": 1,
+            "max": 1,
+            "min": 1,
+            "mean": 1.0
+          },
+          "n_children_from_parent_with_multiple_final_children": 5,
+          "n_distinct_parents_with_multiple_final_children": 5
+        },
+        "FP": {
+          "n_children": 111,
+          "share_of_retained_detections": 0.7655172413793103,
+          "child_voxels": {
+            "n": 111,
+            "sum": 323435,
+            "median": 45,
+            "p95_nearest_rank": 20709,
+            "max": 94374,
+            "min": 10,
+            "mean": 2913.828828828829
+          },
+          "child_volume_mm3": {
+            "n": 111,
+            "sum": 323435.0,
+            "median": 45.0,
+            "p95_nearest_rank": 20709.0,
+            "max": 94374.0,
+            "min": 10.0,
+            "mean": 2913.828828828829
+          },
+          "parent_voxels_child_weighted": {
+            "n": 111,
+            "sum": 2677997,
+            "median": 16241,
+            "p95_nearest_rank": 67423,
+            "max": 106237,
+            "min": 39,
+            "mean": 24126.099099099098
+          },
+          "retained_fraction_child_weighted": {
+            "n": 111,
+            "sum": 25.223508608489276,
+            "median": 0.0030863491918337485,
+            "p95_nearest_rank": 1.0,
+            "max": 1.0,
+            "min": 9.412916403889417e-05,
+            "mean": 0.2272388162926961
+          },
+          "inherited_score_child_weighted": {
+            "n": 111,
+            "sum": 92.72953674889087,
+            "median": 0.8317061926405254,
+            "p95_nearest_rank": 0.9213936778409637,
+            "max": 0.9213936778409637,
+            "min": 0.7504698030459576,
+            "mean": 0.8354012319719881
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 60,
+              "5-10": 14,
+              ">=10": 3
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 1,
+              ">=10": 9
+            },
+            ">0.5": {
+              "<5": 1,
+              "5-10": 7,
+              ">=10": 16
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": 0.5405405405405406,
+              "5-10": 0.12612612612612611,
+              ">=10": 0.02702702702702703
+            },
+            "(0.1,0.5]": {
+              "<5": 0.0,
+              "5-10": 0.009009009009009009,
+              ">=10": 0.08108108108108109
+            },
+            ">0.5": {
+              "<5": 0.009009009009009009,
+              "5-10": 0.06306306306306306,
+              ">=10": 0.14414414414414414
+            }
+          },
+          "n_distinct_parents_nonexclusive": 41,
+          "parent_voxels_parent_weighted": {
+            "n": 41,
+            "sum": 664747,
+            "median": 6174,
+            "p95_nearest_rank": 55045,
+            "max": 106237,
+            "min": 39,
+            "mean": 16213.341463414634
+          },
+          "inherited_score_parent_weighted": {
+            "n": 41,
+            "sum": 33.2948245595903,
+            "median": 0.7934361227921077,
+            "p95_nearest_rank": 0.9073921944911874,
+            "max": 0.9213936778409637,
+            "min": 0.7504698030459576,
+            "mean": 0.8120688916973247
+          },
+          "all_final_children_per_parent": {
+            "n": 41,
+            "sum": 116,
+            "median": 1,
+            "p95_nearest_rank": 8,
+            "max": 11,
+            "min": 1,
+            "mean": 2.8292682926829267
+          },
+          "same_class_children_per_parent": {
+            "n": 41,
+            "sum": 111,
+            "median": 1,
+            "p95_nearest_rank": 7,
+            "max": 11,
+            "min": 1,
+            "mean": 2.707317073170732
+          },
+          "n_children_from_parent_with_multiple_final_children": 89,
+          "n_distinct_parents_with_multiple_final_children": 19
+        },
+        "ignored_excused": {
+          "n_children": 0,
+          "share_of_retained_detections": 0.0,
+          "child_voxels": {
+            "n": 0
+          },
+          "child_volume_mm3": {
+            "n": 0
+          },
+          "parent_voxels_child_weighted": {
+            "n": 0
+          },
+          "retained_fraction_child_weighted": {
+            "n": 0
+          },
+          "inherited_score_child_weighted": {
+            "n": 0
+          },
+          "fraction_by_physical_size_children": {
+            "<=0.1": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            "(0.1,0.5]": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            },
+            ">0.5": {
+              "<5": 0,
+              "5-10": 0,
+              ">=10": 0
+            }
+          },
+          "fraction_by_physical_size_share_within_class": {
+            "<=0.1": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            },
+            "(0.1,0.5]": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            },
+            ">0.5": {
+              "<5": null,
+              "5-10": null,
+              ">=10": null
+            }
+          },
+          "n_distinct_parents_nonexclusive": 0,
+          "parent_voxels_parent_weighted": {
+            "n": 0
+          },
+          "inherited_score_parent_weighted": {
+            "n": 0
+          },
+          "all_final_children_per_parent": {
+            "n": 0
+          },
+          "same_class_children_per_parent": {
+            "n": 0
+          },
+          "n_children_from_parent_with_multiple_final_children": 0,
+          "n_distinct_parents_with_multiple_final_children": 0
+        }
+      },
+      "parent_summary": {
+        "n_distinct_active_parents": 70,
+        "final_child_multiplicity_per_active_parent": {
+          "n": 70,
+          "sum": 145,
+          "median": 1.0,
+          "p95_nearest_rank": 7,
+          "max": 11,
+          "min": 1,
+          "mean": 2.0714285714285716
+        },
+        "n_parents_by_class_membership": {
+          "FP": 36,
+          "TP": 29,
+          "TP+FP": 5
+        }
+      }
+    }
+  },
+  "provenance": [
+    {
+      "contract_sha256": "7fdfc3cdce3c86c0afeea35795bcb23f6cbbee902c5bd3b98402ffdadb498d51",
+      "complete_sha256": "477087df41e5320f12279027397b3086f633484f1cf5c18774dbfcd505039b6a",
+      "row_records_content_sha256": "1a977090a578e433177f087f066af9f0dd595ab280b8da8fd44cca27d628105d"
+    },
+    {
+      "contract_sha256": "c6c571d2ddf0f0892e5e3c311f906523fd53e0b9c81c98529cb863b276832314",
+      "complete_sha256": "ebc6d30d1e028c73a3df620b62255fde7fcf559cad27ab26194237764d4ffd7c",
+      "row_records_content_sha256": "7143ea02f85d0e3f8ee4add34ae7d4588f1a6496fe3a10539148c3d71a304f9d"
+    },
+    {
+      "contract_sha256": "f637c4e075f9f50f3522eea5ae910bd4adf3a66c903b0422e4759ccba79b4762",
+      "complete_sha256": "e134272ed0f603987cae2773456ca997f8d31a8f0667b4e48589143cf9ef6efb",
+      "row_records_content_sha256": "83024c2f3897b24b407c32adab3b5068e3c9fad9530a68916dfce42a74357e5a"
+    }
+  ],
+  "frozen_code_sha": "1874af20a460cf86c46029cc83d2df0801a10910",
+  "analysis_script_sha256": "e41f8a7b95d0d2a9fbed18b64b926576f2f7ba4fc4d2f90f2fe6b095786395c4",
+  "paired_loader_sha256": "3744f87773bd79605e7691bc88e44d6cf4293fdf8133cd9dbd340e181de8f510",
+  "matching_source_sha256": {
+    "anatobind/aur/eval.py": "75e585d51fc43cf0c49c896a58e059b02ab4cb3db63106780b1ea83b54aa0088",
+    "anatobind/eval/detection_metrics.py": "54c5634af3e79b4939c27593d99e1e8f57542f6cbd24b532e16e9f41a02b5b9b",
+    "anatobind/eval/matching.py": "729682d7aadcfd7c63597286b567583297f3f9eb5eee22cbd33e376c7e777fbb",
+    "anatobind/eval/lesion_components.py": "2d39b918318b94f378d33007059cbb018d3d3e4e0430cad6a88d7539d4d68f28"
+  },
+  "notes": [
+    "Final surviving children only: rejected/tiny fragments and pre-ownership parent shapes are not observed.",
+    "Parent counts within TP/FP/excused classes are nonexclusive; a parent may produce mixed outcomes.",
+    "All siblings inherit parent score; metadata and complete sibling retention are checked.",
+    "Small or low-retained-fraction FP does not establish ownership as its cause; candidate scores differ in calibration from legacy fused means.",
+    "No post-ownership child probability mean is saved; no claim that residual probabilities are low.",
+    "No thresholds are swept or reselected, and no loss change follows from this diagnostic alone."
+  ],
+  "analysis_resources": {
+    "seconds_excluding_imports": 4.025991175789386,
+    "max_rss_gib": 0.9811935424804688,
+    "cpu_threads": 4,
+    "gpu_hidden": true
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "rows": 405,
+  "matching": "one-to-one bbox IoU >=0.1 after fixed score filtering",
+  "thresholds": {
+    "bmsr": 0.7,
+    "isles": 0.6,
+    "pdgm": 0.75
+  },
+  "changed_associations_per_source_sequence": {
+    "bmsr/FLAIR": {},
+    "bmsr/T1": {},
+    "bmsr/T1c": {
+      "retained_bindings": 5
+    },
+    "isles/ADC": {},
+    "isles/DWI": {
+      "retained_bindings": 18
+    },
+    "pdgm/FLAIR": {
+      "retained_bindings": 33,
+      "changed_truth_association": 1,
+      "newly_matched": 1
+    },
+    "pdgm/T1": {},
+    "pdgm/T1c": {
+      "retained_bindings": 8,
+      "changed_truth_association": 1,
+      "newly_matched": 1
+    },
+    "pdgm/T2": {}
+  },
+  "A_U_controlled_R_predictions_and_aggregates_unchanged": true,
+  "historical_e2e_matched_n": 38,
+  "normalized_e2e_matched_n": 40,
+  "historical_e2e_ABA_R": 0.6578947368421053,
+  "normalized_e2e_ABA_R": 0.675,
+  "saved_cases_sha256": "5950f91d1070dc47f9f3770c3f03bc6a5a3e5b3d0113a2d0109b3e3522f379bf",
+  "comparison_code_sha": "1874af20a460cf86c46029cc83d2df0801a10910",
+  "evidence": "NOT_EVIDENCE"
+}

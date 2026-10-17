@@ -1,0 +1,125 @@
+{
+  "all_assertions_passed": true,
+  "environment": {
+    "cuda_visible_devices": "",
+    "torch_interop_threads": 1,
+    "torch_threads": 1,
+    "torch_version": "2.5.1+cu121"
+  },
+  "source": {
+    "current_code_sha": "1874af20a460cf86c46029cc83d2df0801a10910",
+    "files": [
+      "anatobind/aur/model.py",
+      "anatobind/aur/heads.py",
+      "anatobind/aur/train.py",
+      "anatobind/aur/losses.py",
+      "anatobind/aur/relation.py",
+      "anatobind/aur/ssl/model.py",
+      "anatobind/aur/ssl/checkpoint.py",
+      "scripts/stage23_chain.sh"
+    ],
+    "historical_code_sha": "77fd6ebc81ec945f77f7c9316f05119294b1aca7",
+    "historical_source_equal": true,
+    "relevant_worktree_clean": true
+  },
+  "stage1_actual_contrast_weight": 0.0,
+  "stages": {
+    "II": {
+      "backbone_warm_scale": 0.1,
+      "backbone_warm_steps": 667,
+      "checkpoint_sha256": "c78413dcaac18de3d5b09e30c868ced346b3207c95097620dce35d76affd733d",
+      "checkpoint_sha256_matches_frozen": true,
+      "code_sha": "77fd6ebc81ec945f77f7c9316f05119294b1aca7",
+      "completed_seen_crops": 240000,
+      "completed_steps": 10000,
+      "embedded_config_equals_run_config_after_json_normalization": true,
+      "global_batch": 24,
+      "lambda_h": 0.2,
+      "lambda_r": 1.0,
+      "learning_rates": {
+        "backbone": 6.124e-05,
+        "heads": 0.0006124
+      },
+      "regenerated_parameter_group_counts": {
+        "backbone": 12929792,
+        "heads": 7660040
+      },
+      "reported_params": 22719625,
+      "reported_trainable_params": 20589832,
+      "seed": 0,
+      "selected_seen_crops": 240000,
+      "selected_step": 10000,
+      "stage": "II",
+      "u_mask_profile": "unmatched_empty_v1",
+      "warmup_steps": 667,
+      "weight_decay": 0.05,
+      "world": 2
+    },
+    "III": {
+      "backbone_warm_scale": 1.0,
+      "backbone_warm_steps": 0,
+      "checkpoint_sha256": "38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde",
+      "checkpoint_sha256_matches_frozen": true,
+      "code_sha": "77fd6ebc81ec945f77f7c9316f05119294b1aca7",
+      "completed_seen_crops": 80016,
+      "completed_steps": 3334,
+      "embedded_config_equals_run_config_after_json_normalization": true,
+      "global_batch": 24,
+      "lambda_h": 0.2,
+      "lambda_r": 1.0,
+      "learning_rates": {
+        "backbone": 6.124e-05,
+        "heads": 0.0003062,
+        "relation": 0.0006124
+      },
+      "regenerated_parameter_group_counts": {
+        "backbone": 12929856,
+        "heads": 7742280,
+        "relation": 2047489
+      },
+      "reported_params": 22719625,
+      "reported_trainable_params": 22719625,
+      "seed": 0,
+      "selected_seen_crops": 72000,
+      "selected_step": 3000,
+      "stage": "III",
+      "u_mask_profile": "unmatched_empty_v1",
+      "warmup_steps": 133,
+      "weight_decay": 0.05,
+      "world": 2
+    }
+  },
+  "tensor_comparisons": {
+    "masks.embed_coarse.": {
+      "stage2_bitwise_equal_seed0_init": true,
+      "stage3_bitwise_equal_stage2": false,
+      "stage3_vs_stage2_max_abs_delta": 0.04983770474791527,
+      "tensor_count": 4
+    },
+    "masks.embed_full.": {
+      "stage2_bitwise_equal_seed0_init": false,
+      "stage3_bitwise_equal_stage2": false,
+      "stage3_vs_stage2_max_abs_delta": 0.07634910941123962,
+      "tensor_count": 4
+    },
+    "masks.lateral.": {
+      "stage2_bitwise_equal_seed0_init": false,
+      "stage3_bitwise_equal_stage2": false,
+      "stage3_vs_stage2_max_abs_delta": 0.036593180149793625,
+      "tensor_count": 8
+    },
+    "masks.smooth.": {
+      "stage2_bitwise_equal_seed0_init": false,
+      "stage3_bitwise_equal_stage2": false,
+      "stage3_vs_stage2_max_abs_delta": 0.058282025158405304,
+      "tensor_count": 8
+    },
+    "relation.": {
+      "stage2_bitwise_equal_seed0_init": true,
+      "stage3_bitwise_equal_stage2": false,
+      "stage3_vs_stage2_max_abs_delta": 0.31437575817108154,
+      "tensor_count": 37
+    }
+  },
+  "verification": "CPU weight/config/source inspection only; no forward/backward or volume I/O"
+}

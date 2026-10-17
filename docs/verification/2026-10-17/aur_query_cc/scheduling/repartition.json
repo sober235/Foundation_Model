@@ -1,0 +1,108 @@
+{
+  "reason": "Original stride2 sequence ordering put all20ISLES/DWI volumes in the even shard. Completed odd shard retained; even shard split into0/4and2/4 for resource balance.",
+  "preparation": {
+    "reason": "Scheduling-only rebalance: alternating sequence order put all ISLES DWI on even shard.",
+    "method": "Official frozen runner intercepted before model loading; imported records verified against raw manifest and saved reference.",
+    "code_sha": "1874af20a460cf86c46029cc83d2df0801a10910",
+    "completed_odd_rows": 202,
+    "final_rows": 405,
+    "final_membership_exact": true,
+    "new_shards": [
+      {
+        "shard": [
+          0,
+          4
+        ],
+        "n_rows": 102,
+        "imported_validated_records": 32,
+        "contract_sha256": "c6c571d2ddf0f0892e5e3c311f906523fd53e0b9c81c98529cb863b276832314"
+      },
+      {
+        "shard": [
+          2,
+          4
+        ],
+        "n_rows": 101,
+        "imported_validated_records": 31,
+        "contract_sha256": "f637c4e075f9f50f3522eea5ae910bd4adf3a66c903b0422e4759ccba79b4762"
+      }
+    ],
+    "U_rows_per_new_shard": [
+      {
+        "bmsr/T1c": 10,
+        "isles/DWI": 10
+      },
+      {
+        "bmsr/T1c": 11,
+        "isles/DWI": 10
+      }
+    ],
+    "weights_rules_scores_and_inputs_unchanged": true,
+    "original_raw_input_hashes_preserved": true,
+    "model_forward_calls": 0
+  },
+  "final_import": {
+    "final_imports": [
+      {
+        "shard": [
+          0,
+          4
+        ],
+        "newly_copied": 2,
+        "total_imported_verified": 34
+      },
+      {
+        "shard": [
+          2,
+          4
+        ],
+        "newly_copied": 3,
+        "total_imported_verified": 34
+      }
+    ],
+    "sum_imported": 68,
+    "source_atomic_records": 68,
+    "original_manifest_hashes_preserved": true,
+    "all_imported_reference_checks_passed": true,
+    "code_sha": "1874af20a460cf86c46029cc83d2df0801a10910"
+  },
+  "original_partial_status": {
+    "status": "rebalanced_partial_not_complete",
+    "completed_atomic_records": 68,
+    "last_progress": {
+      "completed": 68,
+      "total": 203,
+      "source": "isles",
+      "row_seconds": 204.83,
+      "elapsed_seconds": 1385.86,
+      "peak_cuda_gib": 9.017,
+      "reproduction": "PASS"
+    },
+    "reason": "Remaining even rows split into0/4 and2/4, reusing completed records; final exact405membership asserted."
+  },
+  "final_shards": [
+    [
+      1,
+      2
+    ],
+    [
+      0,
+      4
+    ],
+    [
+      2,
+      4
+    ]
+  ],
+  "final_rows": [
+    202,
+    102,
+    101
+  ],
+  "notes": [
+    "Original0/2partial is archived and excluded from final merge.",
+    "Imported row timing and CUDA peaks remain original frozen measurements; new process elapsed times include revalidation/skipping.",
+    "Aggregate membership is exact405unique rows; no weights/rules/score/inputbyte changes.",
+    "Preparation originally reviewed with oneP2unprocessed-input-freeze finding, corrected and independently re-reviewed with zero outstanding findings before execution."
+  ]
+}
