@@ -1,6 +1,8 @@
 """Raw child scores must measure their own voxels, with exact frozen replay."""
 from copy import deepcopy
 import importlib
+import hashlib
+import json
 
 import numpy as np
 import pytest
@@ -147,6 +149,48 @@ def test_no_present_query_completes_with_empty_measurements():
         feed(a, p, presence=[.5], replay=True)
         r = a.finish_replay()
         assert not inst.any() and rows == [] and r['children'] == [] and r['parents'] == []
+
+
+def test_window_integrity_digest_survives_JSON_key_normalization():
+    p = np.full((11, 1, 1, 3), .6, np.float32);p[10] = .8
+    presence = np.zeros(11, np.float32);presence[[2, 10]] = 1
+    with audit((1, 1, 3)) as a:
+        feed(a, p, presence=presence);a.decode(p[10]);feed(a, p, presence=presence, replay=True)
+        result = a.finish_replay()
+        wire = json.loads(json.dumps(result['window_hashes']))
+        expected = hashlib.sha256(json.dumps(wire, sort_keys=True).encode()).hexdigest()
+        assert result['checks']['window_hashes_sha256'] == expected
+
+
+def test_real_model_observer_matches_production_decoder_and_preserves_A_R():
+    from anatobind.aur import infer as I
+    from anatobind.aur.model import AnatoBindBrain
+    torch.manual_seed(19)
+    model = AnatoBindBrain(embed=32, depths=(1, 1, 1, 1), heads=(1, 1, 1, 1), window=(2, 4, 4),
+        patch=(2, 4, 4), d_model=16, n_events=4, mask_dim=4, pixel_dim=8, dec_layers=1,
+        dec_heads=2, rel_layers=1, rel_heads=2, use_checkpoint=False).eval()
+    with torch.no_grad():
+        model.events.presence.weight.zero_();model.events.presence.bias.fill_(2)
+        model.masks.embed_full[-1].weight.zero_();model.masks.embed_full[-1].bias.zero_()
+    image = np.random.default_rng(8).normal(size=(8, 18, 18)).astype(np.float32)
+    args = model, image, np.eye(4), (8, 16, 16), torch.device('cpu')
+    gt = np.zeros(image.shape, np.int32);gt[2:5, 6:9, 6:9] = 1
+    before_r = I.bind_instances(model, image, np.eye(4), gt, (8, 16, 16), torch.device('cpu'))
+    expected = I.predict_volume(*args, batch_size=2, decoder_profile='query_cc_v1', voxel_mm3=1.)
+    with audit(image.shape, voxel_mm3=1.) as a:
+        first = I.predict_volume(*args, batch_size=2, observer=a.observe_first)
+        inst, rows, stats = a.decode(first['lesion_prob'])
+        second = I.predict_volume(*args, batch_size=2, observer=a.observe_replay)
+        result = a.finish_replay()
+    np.testing.assert_array_equal(inst, expected['query_instances'])
+    assert rows == expected['query_detections'] and stats == expected['decoder_stats']
+    for key in first:
+        np.testing.assert_array_equal(first[key], second[key])
+        np.testing.assert_array_equal(first[key], expected[key])
+    assert result['checks']['first_windows'] == expected['n_windows'] == 4
+    after_r = I.bind_instances(model, image, np.eye(4), gt, (8, 16, 16), torch.device('cpu'))
+    assert before_r[0]['query'] == after_r[0]['query'] and before_r[0]['window'] == after_r[0]['window']
+    np.testing.assert_array_equal(before_r[0]['host_probs'], after_r[0]['host_probs'])
 
 
 @pytest.mark.parametrize('fault', ['count', 'containment'])

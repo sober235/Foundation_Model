@@ -203,7 +203,8 @@ class ResidualConfidenceAudit:
         if self._parent_measurements.keys() != self._parents.keys():
             raise ValueError('Replay is missing parent measurements')
         self._phase = 'finished'
-        events = deepcopy(self._events)
+        # Hash the representation readers receive after JSON converts integer keys.
+        events = json.loads(json.dumps(self._events))
         return dict(children=deepcopy(self._children), parents=list(self._parent_measurements.values()),
             window_hashes=events, checks=dict(first_windows=len(events), replay_windows=self._replayed,
                 present_query_planes=sum(len(r['queries']) for r in events), raw_probability_planes_exact=True,
