@@ -96,3 +96,30 @@ def test_empty_presence_windows_still_contribute_weight_and_observer_reconstruct
     assert audit.window_rows[1]['n_present'] == 0
     with pytest.raises(ValueError, match='probability'):
         audit.verify_probability(np.array([[[.8]]], np.float32))
+
+
+def test_provenance_refuses_test_split_and_changed_checkpoint(tmp_path):
+    D = importlib.import_module('anatobind.aur.diagnostics')
+    from anatobind.aur.ssl.checkpoint import file_sha256
+    samples, ckpt = tmp_path / 'samples.json', tmp_path / 'weights.pt'
+    samples.write_text('[]')
+    ckpt.write_bytes(b'frozen')
+    run = dict(split='val', samples_sha256=file_sha256(samples), checkpoint_sha256=file_sha256(ckpt))
+    D.verify_provenance(run, samples, ckpt)
+    with pytest.raises(ValueError, match='validation'):
+        D.verify_provenance({**run, 'split': 'test'}, samples, ckpt)
+    ckpt.write_bytes(b'changed')
+    with pytest.raises(ValueError, match='hash'):
+        D.verify_provenance(run, samples, ckpt)
+
+
+def test_component_intersection_reports_real_voxels_not_bbox_containment(tmp_path):
+    D = importlib.import_module('anatobind.aur.diagnostics')
+    inst = np.zeros((1, 3, 3), np.int32)
+    inst[0, 1, 1] = 1
+    audit = D.WindowAudit(inst, np.zeros_like(inst, bool), tmp_path)
+    component = np.ones_like(inst)
+    component[0, 1, 1] = 0  # surrounding ring has enclosing bbox, but no lesion voxel
+    result = audit.finish(np.zeros(inst.shape), component, [dict(instance=1, score=.8, n_voxels=8)], .7)
+    assert result['gt'][0]['components'] == []
+    assert result['gt'][0]['threshold_fn'] == 1

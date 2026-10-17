@@ -7,6 +7,7 @@ import numpy as np
 import torch
 
 from anatobind.aur import infer as I
+from anatobind.aur.ssl.checkpoint import file_sha256
 
 GROUPS = (('bmsr', 'T1c'), ('isles', 'DWI'), ('pdgm', 'FLAIR'))
 
@@ -60,6 +61,13 @@ def verify_detections(actual, expected):
         for k, atol in (('volume_mm3', 1e-3), ('score', 1e-5)):
             if not np.isfinite(x[k]) or not np.isfinite(y[k]) or abs(x[k] - y[k]) > atol:
                 raise ValueError('baseline reproduction: numeric mismatch')
+
+
+def verify_provenance(run, samples, checkpoint):
+    if run.get('split') != 'val':
+        raise ValueError('only saved validation evaluations are accepted')
+    if file_sha256(samples) != run['samples_sha256'] or file_sha256(checkpoint) != run['checkpoint_sha256']:
+        raise ValueError('input hash differs from frozen evaluation')
 
 
 class WindowAudit:
@@ -151,12 +159,12 @@ class WindowAudit:
         for k in sorted(int(k) for k in self.total if k > 0):
             sel = self.instance == k
             overlaps = []
+            intersections = np.bincount(component_map[sel], minlength=len(dets) + 1)
             for d in dets:
-                c = component_map == d['instance']
-                inter = int((c & sel).sum())
+                inter = int(intersections[d['instance']])
                 if inter:
                     overlaps.append(dict(component=d['instance'], intersection=inter,
-                                         mask_iou=inter / int((c | sel).sum()), score=d['score'],
+                                         mask_iou=inter / (int(sel.sum()) + d['n_voxels'] - inter), score=d['score'],
                                          passes_score=d['score'] >= score_threshold))
             p = probability[sel]
             rows.append(dict(instance=k, n_voxels=int(sel.sum()), mean_prob=float(p.mean()),
