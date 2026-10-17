@@ -36,11 +36,17 @@ def parser():
     ap.add_argument("--batch-size", type=int, default=1)
     ap.add_argument("--instance-threshold", type=float, default=I.LESION_THRESHOLD, help="lesion-map threshold of the evaluated operating point")
     ap.add_argument("--score-threshold", type=float, default=None, help="drop lesions whose mean probability is below this (the evaluated score threshold)")
+    ap.add_argument("--decoder-profile", choices=("legacy_max", "query_cc_v1"), default="legacy_max")
+    ap.add_argument("--decoder-workers", type=int, default=4)
     return ap
 
 
 def main(argv=None):
     a = parser().parse_args(argv)
+    from anatobind.aur.query_decoder import decoder_rules
+    rules = decoder_rules(a.decoder_profile)
+    if a.decoder_profile != "legacy_max" and a.instance_threshold != I.LESION_THRESHOLD:
+        raise ValueError("query decoder threshold is fixed at 0.3")
     if a.out.exists():
         raise FileExistsError(f"{a.out} exists; the output directory must be new")
     if a.cpu:
@@ -53,9 +59,10 @@ def main(argv=None):
     model, meta = I.model_from_export(a.checkpoint, device)
     crop = tuple(a.crop) if a.crop else tuple(meta.get("config", {}).get("crop", CROP))
     image, affine, orig = I.load_input(a.nifti)
-    pred = I.predict_volume(model, image, affine, crop, device, batch_size=a.batch_size)
     voxel_mm3 = abs(float(np.linalg.det(affine[:3, :3])))
-    inst, rows = I.instances_from_probability(pred["lesion_prob"], voxel_mm3, a.instance_threshold, score_threshold=a.score_threshold)
+    pred = I.predict_volume(model, image, affine, crop, device, batch_size=a.batch_size,
+                            decoder_profile=a.decoder_profile, voxel_mm3=voxel_mm3, decoder_workers=a.decoder_workers)
+    inst, rows = I.decoded_instances(pred, voxel_mm3, a.instance_threshold, score_threshold=a.score_threshold)
     bound = I.bind_instances(model, image, affine, inst, crop, device)
     lesions = I.lesion_records(rows, bound)
     seq = a.seq if a.seq else SEQ_TYPES[int(np.argmax(pred["seq_probs"]))]
@@ -63,6 +70,7 @@ def main(argv=None):
               "stage": meta.get("stage"), "crop": list(crop), "sequence": seq, "sequence_source": "given" if a.seq else "predicted",
               "seq_probs": {s: float(p) for s, p in zip(SEQ_TYPES, pred["seq_probs"])}, "n_windows": pred["n_windows"],
               "anatomy_source": I.ANATOMY_SOURCE, "evidence": "NOT_EVIDENCE",
+              "decoder_profile": a.decoder_profile, "decoder_rules": rules,
               "operating_point": {"instance_threshold": a.instance_threshold, "score_threshold": a.score_threshold,
                                   "note": "pass the thresholds the evaluation report chose; without --score-threshold every component above the map threshold is kept"},
               "entity_presence_mean_over_windows": [float(p) for p in pred["entity_presence"]], "n_lesions": len(lesions), "lesions": lesions,

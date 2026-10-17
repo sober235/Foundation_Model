@@ -46,6 +46,8 @@ def parser():
     ap.add_argument("--crop", type=int, nargs=3, default=None)
     ap.add_argument("--batch-size", type=int, default=2)
     ap.add_argument("--instance-threshold", type=float, default=E.INSTANCE_THRESHOLD)
+    ap.add_argument("--decoder-profile", choices=("legacy_max", "query_cc_v1"), default="legacy_max")
+    ap.add_argument("--decoder-workers", type=int, default=4)
     return ap
 
 
@@ -71,6 +73,10 @@ def select_rows(rows, split, val_patients, sources, limit):
 
 def main(argv=None):
     a = parser().parse_args(argv)
+    from anatobind.aur.query_decoder import decoder_rules
+    rules = decoder_rules(a.decoder_profile)
+    if a.decoder_profile != "legacy_max" and a.instance_threshold != E.INSTANCE_THRESHOLD:
+        raise ValueError("query decoder threshold is fixed at 0.3")
     if a.out.exists():
         raise FileExistsError(f"{a.out} exists; the output directory must be new")
     if a.cpu:
@@ -103,7 +109,9 @@ def main(argv=None):
     crop = tuple(a.crop) if a.crop else tuple(meta.get("config", {}).get("crop", CROP))
     results, t0 = [], time.time()
     for i, r in enumerate(rows):
-        results.append(E.evaluate_case(model, r, crop, device, batch_size=a.batch_size, instance_threshold=a.instance_threshold, bind_predicted=not a.no_e2e))
+        results.append(E.evaluate_case(model, r, crop, device, batch_size=a.batch_size, instance_threshold=a.instance_threshold,
+                                      bind_predicted=not a.no_e2e, decoder_profile=a.decoder_profile, decoder_workers=a.decoder_workers,
+                                      bind_score_threshold=fixed.get(r['source']) if a.decoder_profile != 'legacy_max' else None))
         if (i + 1) % 10 == 0 or i + 1 == len(rows):
             print(f"[{i + 1}/{len(rows)}] {r['source']} {r['case']} {r['sequence']} elapsed {time.time() - t0:.0f} s", flush=True)
     if shard is not None:                                          # a shard: the cases only; the merge builds the reference and the report
@@ -113,6 +121,8 @@ def main(argv=None):
                                                       "code_sha": code_sha(), "split": a.split, "samples": str(a.samples), "samples_sha256": file_sha256(a.samples),
                                                       "crop": list(crop), "n_rows": len(rows), "sources": a.sources, "limit": a.limit,
                                                       "instance_threshold": a.instance_threshold, "stage": meta.get("stage"), "e2e": not a.no_e2e,
+                                                      "decoder_profile": a.decoder_profile, "decoder_rules": rules, "decoder_workers": a.decoder_workers,
+                                                      "binding_score_floors": fixed if a.decoder_profile != "legacy_max" and not a.no_e2e else {},
                                                       "seconds": round(time.time() - t0, 1)}, indent=1))
         print(f"shard {shard[0]}/{shard[1]}: {len(results)} rows", flush=True)
         return 0
@@ -121,6 +131,8 @@ def main(argv=None):
                   "samples": str(a.samples), "samples_sha256": file_sha256(a.samples), "crop": list(crop), "n_rows": len(rows),
                   "sources": a.sources, "limit": a.limit, "instance_threshold": a.instance_threshold, "fixed_thresholds": fixed,
                   "stage": meta.get("stage"), "e2e": not a.no_e2e,
+                  "decoder_profile": a.decoder_profile, "decoder_rules": rules, "decoder_workers": a.decoder_workers,
+                  "binding_score_floors": fixed if a.decoder_profile != "legacy_max" and not a.no_e2e else {},
                   "seconds": round(time.time() - t0, 1)}
     E.write_report(a.out, agg, results)
     (a.out / "reference.json").write_text(json.dumps(reference, indent=1, default=str))

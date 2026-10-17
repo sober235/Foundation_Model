@@ -125,7 +125,8 @@ def _inside(window, shape):
 
 @torch.no_grad()
 def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5, presence_threshold=PRESENCE_THRESHOLD,
-                   entity_threshold=ENTITY_THRESHOLD, observer=None):
+                   entity_threshold=ENTITY_THRESHOLD, observer=None, decoder_profile="legacy_max", voxel_mm3=None,
+                   decoder_workers=4):
     """image (z, y, x) float32 normalised; affine the RAS affine of the (x, y, z) NIfTI. Returns the entity map
     (uint8, 0 none, i + 1 for entity i), the largest entity probability per voxel (float16), the lesion probability
     (float32), the mean sequence probabilities, the mean entity presence over the windows and the number of windows.
@@ -133,6 +134,16 @@ def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5
     mask crosses to the host; only the three result maps do."""
     shape = tuple(image.shape)
     crop = tuple(crop)
+    collector = None
+    if decoder_profile != "legacy_max":
+        if decoder_profile != "query_cc_v1":
+            raise ValueError(f"unknown decoder profile {decoder_profile}")
+        if voxel_mm3 is None or not np.isfinite(voxel_mm3) or voxel_mm3 <= 0:
+            raise ValueError("query decoder requires positive voxel_mm3")
+        if presence_threshold != PRESENCE_THRESHOLD:
+            raise ValueError("query decoder presence threshold is frozen at 0.5")
+        from anatobind.aur.query_decoder import QueryCCDecoder
+        collector = QueryCCDecoder(shape, voxel_mm3, workers=decoder_workers)
     ws = windows(shape, crop, overlap)
     weight = torch.from_numpy(gaussian_weight(crop)).to(device)
     ent_acc = torch.zeros((N_ENTITIES,) + shape, device=device)
@@ -160,6 +171,9 @@ def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5
             if bool(keep.any()):
                 les_acc[dst] += ev[b][keep].amax(0)[src] * wb
             wsum[dst] += wb
+            if collector is not None:
+                collector(window=w, event_prob=ev[b], event_presence=ev_pres[b], entity_prob=ent[b],
+                          valid=valid[b], weight=weight)
             if observer is not None:
                 observer(window=w, event_prob=ev[b], event_presence=ev_pres[b], entity_prob=ent[b],
                          valid=valid[b], weight=weight)
@@ -168,9 +182,13 @@ def predict_volume(model, image, affine, crop, device, batch_size=1, overlap=0.5
     les_acc /= wsum
     best, arg = ent_acc.max(0)
     entity = torch.where(best >= entity_threshold, arg + 1, torch.zeros_like(arg)).to(torch.uint8)
-    return {"entity": entity.cpu().numpy(), "entity_max_prob": best.to(torch.float16).cpu().numpy(), "lesion_prob": les_acc.float().cpu().numpy(),
-            "seq_probs": (seq / len(ws)).float().cpu().numpy(), "entity_presence": (presence / len(ws)).float().cpu().numpy(),
-            "n_windows": len(ws)}
+    result = {"entity": entity.cpu().numpy(), "entity_max_prob": best.to(torch.float16).cpu().numpy(), "lesion_prob": les_acc.float().cpu().numpy(),
+              "seq_probs": (seq / len(ws)).float().cpu().numpy(), "entity_presence": (presence / len(ws)).float().cpu().numpy(),
+              "n_windows": len(ws)}
+    if collector is not None:
+        inst, rows, stats = collector.finish()
+        result.update(decoder_profile=decoder_profile, query_instances=inst, query_detections=rows, decoder_stats=stats)
+    return result
 
 
 def instances_from_probability(prob, voxel_mm3, threshold=LESION_THRESHOLD, score_threshold=None):
@@ -191,6 +209,19 @@ def instances_from_probability(prob, voxel_mm3, threshold=LESION_THRESHOLD, scor
         inst[sel] = k
         rows.append({"instance": k, "box": [int(v) for v in r["box"]], "n_voxels": r["n_voxels"], "volume_mm3": float(r["mm3"]), "score": score})
     return inst, rows
+
+
+def decoded_instances(pred, voxel_mm3, threshold=LESION_THRESHOLD, score_threshold=None):
+    """Dispatch completed instances; score filtering never precedes query ownership/splitting."""
+    profile = pred.get("decoder_profile", "legacy_max")
+    if profile == "legacy_max":
+        return instances_from_probability(pred["lesion_prob"], voxel_mm3, threshold, score_threshold)
+    if profile != "query_cc_v1":
+        raise ValueError(f"unknown decoder profile {profile}")
+    if threshold != LESION_THRESHOLD:
+        raise ValueError("query decoder mask threshold is frozen at 0.3")
+    from anatobind.aur.query_decoder import filter_instances
+    return filter_instances(pred["query_instances"], pred["query_detections"], score_threshold)
 
 
 @torch.no_grad()
@@ -283,6 +314,10 @@ def lesion_records(rows, bound):
                     "n_voxels": int(r["n_voxels"]), "box": [int(v) for v in r["box"]], "score": float(r["score"]),
                     "query_iou": float(b["query_iou"]) if b else None, "zero_overlap": (bool(b["zero_overlap"]) if b.get("zero_overlap") is not None else None) if b else None,
                     "in_crop_share": float(b["in_crop_share"]) if b else None})
+        if "detector_origin" in r:
+            out[-1]["detector_origin"] = r["detector_origin"]
+            out[-1]["binding_origin"] = ({"query": int(b["query"]), "window": b["window"],
+                                           "in_crop_share": float(b["in_crop_share"])} if b else None)
     return out
 
 

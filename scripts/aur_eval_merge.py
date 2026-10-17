@@ -19,6 +19,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from aur_eval import select_rows  # noqa: E402
 
 
+def validate_decoder_metadata(infos):
+    """Old shards are legacy; reject profile/rule or other inference-contract mixtures."""
+    from anatobind.aur.query_decoder import decoder_rules
+    contracts = []
+    for info in infos:
+        profile = info.get("decoder_profile", "legacy_max")
+        expected = decoder_rules(profile)
+        rules = info.get("decoder_rules", expected if profile == "legacy_max" else None)
+        if rules != expected:
+            raise ValueError("decoder rules missing or incompatible with frozen contract")
+        contracts.append((profile, rules))
+    if any(c != contracts[0] for c in contracts[1:]):
+        raise ValueError("decoder profiles/rules differ across shards")
+    fields = ("checkpoint_sha256", "split", "samples_sha256", "crop", "sources", "limit", "instance_threshold", "stage", "e2e")
+    if any(any(i.get(k) != infos[0].get(k) for k in fields) for i in infos[1:]):
+        raise ValueError("inference contract differs across shards")
+    if any(i.get("binding_score_floors", {}) != infos[0].get("binding_score_floors", {}) for i in infos[1:]):
+        raise ValueError("binding score contract differs across shards")
+    return contracts[0]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--shards", type=Path, nargs="+", required=True)
@@ -32,6 +53,9 @@ def main(argv=None):
     if a.out.exists():
         raise FileExistsError(f"{a.out} exists")
     infos = [json.loads((d / "shard.json").read_text()) for d in a.shards]
+    profile, rules = validate_decoder_metadata(infos)
+    if infos[0]["split"] != a.split:
+        raise ValueError("requested split differs from shard contract")
     if len({i["checkpoint_sha256"] for i in infos}) != 1 or len({i["split"] for i in infos}) != 1:
         raise ValueError("the shards come from different checkpoints or splits")
     results = [c for d in a.shards for c in json.loads((d / "cases.json").read_text())]
@@ -55,6 +79,8 @@ def main(argv=None):
                                                "instance_threshold", "stage", "e2e")},
                   "n_rows": len(results), "n_shards": len(infos), "shards": [str(d) for d in a.shards], "fixed_thresholds": fixed,
                   "code_sha_shards": sorted({i["code_sha"] for i in infos}), "code_sha_merge": code_sha(), "seconds_shards": [i["seconds"] for i in infos]}
+    agg["run"].update(decoder_profile=profile, decoder_rules=rules)
+    agg["run"]["binding_score_floors"] = infos[0].get("binding_score_floors", {})
     E.write_report(a.out, agg, results)
     (a.out / "reference.json").write_text(json.dumps(reference, indent=1, default=str))
     print(E.markdown(agg))

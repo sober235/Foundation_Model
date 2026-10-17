@@ -15,7 +15,7 @@ import numpy as np
 from scipy import ndimage
 
 from anatobind.aur.dataset import load_volume
-from anatobind.aur.infer import bind_instances, instances_from_probability, predict_volume
+from anatobind.aur.infer import bind_instances, decoded_instances, instances_from_probability, predict_volume
 from anatobind.aur.labels import ENTITY_LABELS, HOST_NAMES, HOST_SIDE, HOST_TISSUE, NO_HOST, N_HOSTS, SEQ_TYPES, entity_to_synthseg, host_map
 from anatobind.aur.targets import host_targets
 from anatobind.eval.detection_metrics import scan_matches as _scan_matches
@@ -187,23 +187,56 @@ def local_host_dice(pred_seg, true_seg, window):
     return host_dice(pred_seg[sl], true_seg[sl])["host_macro"]
 
 
-def evaluate_case(model, row, crop, device, batch_size=1, instance_threshold=INSTANCE_THRESHOLD, bind_predicted=True):
+def predicted_binding_subset(inst, dets, score_threshold):
+    """Compact only the binding workload; return compact-id -> original detection-id provenance."""
+    if score_threshold is None:
+        return inst, {d["instance"]: d["instance"] for d in dets}
+    if not np.isfinite(score_threshold) or not 0 <= score_threshold <= 1:
+        raise ValueError("binding score threshold must be in [0,1]")
+    active = [d for d in dets if d["score"] >= score_threshold]
+    mapping = {i + 1: d["instance"] for i, d in enumerate(active)}
+    lookup = np.zeros(int(inst.max(initial=0)) + 1, np.int32)
+    for new, old in mapping.items():
+        lookup[old] = new
+    return lookup[inst], mapping
+
+
+def predicted_detection_truth(gt, dets, host_truth, score_threshold):
+    """Match after the operating score filter; filtered boxes cannot steal a retained detection's GT."""
+    hits, _, kept = scan_matches(scan("fixed-point", gt, dets), score_threshold)
+    return {kept[d]["instance"]: int(host_truth[gt[g]["instance"] - 1]) for g, d in hits.items()}
+
+
+def evaluate_case(model, row, crop, device, batch_size=1, instance_threshold=INSTANCE_THRESHOLD, bind_predicted=True,
+                  decoder_profile="legacy_max", decoder_workers=4, bind_score_threshold=None):
     """The three tracks on one sample row (a volume of one sequence). R, controlled: every pseudo-label instance bound
     from its own crop, against the host truth, with B0 (the lookup on the predicted anatomy), the local A Dice of the
     bind window and the best detection on it (for the gap and the end-to-end track at aggregation). R, end to end: the
     predicted instances bound the same way, with B0 on the predicted anatomy, matched to the truth at aggregation."""
     vol = load_volume(row)
-    pred = predict_volume(model, vol["image"], vol["affine"], crop, device, batch_size=batch_size)
+    if decoder_profile != "legacy_max" and instance_threshold != INSTANCE_THRESHOLD:
+        raise ValueError("query decoder threshold is fixed at 0.3")
+    active_profile = decoder_profile if vol["u_supervised"] else "legacy_max"
+    pred = predict_volume(model, vol["image"], vol["affine"], crop, device, batch_size=batch_size,
+                          **({"decoder_profile": active_profile, "voxel_mm3": vol["voxel_mm3"],
+                              "decoder_workers": decoder_workers} if active_profile != "legacy_max" else {}))
     pred_seg, true_seg = entity_to_synthseg(pred["entity"]), entity_to_synthseg(vol["entity"])
     res = {"case": row["case"], "patient": row.get("patient", row["case"]), "source": row["source"], "sequence": row["sequence"], "n_windows": pred["n_windows"],
            "a_supervised": bool(vol["a_supervised"]), "u_supervised": bool(vol["u_supervised"]), "r_supervised": bool(vol["r_supervised"]),
            "seq_pred": int(np.argmax(pred["seq_probs"])), "seq_truth": int(vol["seq"]), "seq_probs": [float(p) for p in pred["seq_probs"]],
            "a": host_dice(pred_seg, true_seg), "u": None, "r": None, "e2e": None}
+    if decoder_profile != "legacy_max":
+        res["decoder_profile"] = decoder_profile
+        res["decoder_stats"] = pred.get("decoder_stats", {"skipped": "no U supervision on this evaluation row"})
+        if bind_predicted and bind_score_threshold is not None:
+            res["e2e_score_floor"] = bind_score_threshold
     if not vol["u_supervised"]:
         return res
     gt = instance_rows(vol["instance"], vol["voxel_mm3"]) + ignored_rows(vol["small"], vol["voxel_mm3"])
-    det_inst, dets = instances_from_probability(pred["lesion_prob"], vol["voxel_mm3"], instance_threshold)
+    det_inst, dets = decoded_instances(pred, vol["voxel_mm3"], instance_threshold)
     res["u"] = {"gt": gt, "dets": dets}
+    if decoder_profile != "legacy_max":
+        res["legacy_reference_u"] = {"dets": instances_from_probability(pred["lesion_prob"], vol["voxel_mm3"], instance_threshold)[1]}
     counted = [g for g in gt if not g.get("ignore")]
     if not counted or not vol["r_supervised"]:
         return res
@@ -223,17 +256,32 @@ def evaluate_case(model, row, crop, device, batch_size=1, instance_threshold=INS
                           "in_crop_share": b["in_crop_share"], "volume_mm3": by_id[k]["volume_mm3"], "stratum": by_id[k]["stratum"],
                           "box": by_id[k]["box"], "local_dice": local_host_dice(pred_seg, true_seg, b["window"]),
                           "matched_score": float(d["score"]) if d else None, "matched_det": int(d["instance"]) if d else None})
+        if decoder_profile != "legacy_max":
+            instances[-1]["binding_origin"] = {"query": b["query"], "window": b["window"], "in_crop_share": b["in_crop_share"]}
     res["r"] = {"instances": instances}
     if bind_predicted and dets:
-        pb = bind_instances(model, vol["image"], vol["affine"], det_inst, crop, device)
-        b0_pred = host_targets(det_inst, pred_seg, vol["spacing"])["host"]
-        det_truth = {d["instance"]: int(truth[gt[g]["instance"] - 1]) for g, d in best_det.items()}
-        res["e2e"] = [{"det": p["instance"], "r": int(p["host"]), "b0": int(b0_pred[p["instance"] - 1]), "score": next(d["score"] for d in dets if d["instance"] == p["instance"]),
+        bind_inst, original_ids = predicted_binding_subset(det_inst, dets, bind_score_threshold)
+        pb = bind_instances(model, vol["image"], vol["affine"], bind_inst, crop, device)
+        compact_b0 = host_targets(bind_inst, pred_seg, vol["spacing"])["host"]
+        b0_pred = {original_ids[i + 1]: int(h) for i, h in enumerate(compact_b0)}
+        for binding in pb:
+            binding["instance"] = original_ids[binding["instance"]]
+        det_truth = (predicted_detection_truth(gt, dets, truth, bind_score_threshold)
+                     if bind_score_threshold is not None else
+                     {d["instance"]: int(truth[gt[g]["instance"] - 1]) for g, d in best_det.items()})
+        res["e2e"] = [{"det": p["instance"], "r": int(p["host"]), "b0": int(b0_pred[p["instance"]]), "score": next(d["score"] for d in dets if d["instance"] == p["instance"]),
                        "truth": det_truth.get(p["instance"]), "query_iou": p["query_iou"], "zero_overlap": p["zero_overlap"]} for p in pb]
+        if decoder_profile != "legacy_max":
+            by_det = {d["instance"]: d for d in dets}
+            for result, binding in zip(res["e2e"], pb):
+                result["detector_origin"] = by_det[binding["instance"]]["detector_origin"]
+                result["binding_origin"] = {"query": binding["query"], "window": binding["window"],
+                                             "in_crop_share": binding["in_crop_share"]}
     return res
 
 
-def evaluate_u_external(model, image_path, label_path, crop, device, values=None, instance_threshold=INSTANCE_THRESHOLD, batch_size=1):
+def evaluate_u_external(model, image_path, label_path, crop, device, values=None, instance_threshold=INSTANCE_THRESHOLD, batch_size=1,
+                        decoder_profile="legacy_max", decoder_workers=4):
     """U on an external volume with its own lesion label on the same grid (the SibBMS 10-subject check, spec §7, report
     only): both reoriented to RAS, the label's voxels > 0 (or `values`) as lesion, components under the volume floor
     as ignored truths, the whole-volume lesion map's components as detections. Returns a detection scan plus the
@@ -250,8 +298,12 @@ def evaluate_u_external(model, image_path, label_path, crop, device, values=None
     label = to_zyx(np.asarray(lab.dataobj).astype(np.int16))
     vals = tuple(int(v) for v in np.unique(label) if v > 0) if values is None else tuple(values)
     inst, small = lesion_instances(label, vals, voxel_mm3)
-    pred = predict_volume(model, image, affine, crop, device, batch_size=batch_size)
-    _, dets = instances_from_probability(pred["lesion_prob"], voxel_mm3, instance_threshold)
+    if decoder_profile != "legacy_max" and instance_threshold != INSTANCE_THRESHOLD:
+        raise ValueError("query decoder threshold is fixed at 0.3")
+    pred = predict_volume(model, image, affine, crop, device, batch_size=batch_size,
+                          **({"decoder_profile": decoder_profile, "voxel_mm3": voxel_mm3,
+                              "decoder_workers": decoder_workers} if decoder_profile != "legacy_max" else {}))
+    _, dets = decoded_instances(pred, voxel_mm3, instance_threshold)
     counts = {str(int(v)): float((label == v).sum() * voxel_mm3) for v in np.unique(label) if v > 0}
     return {"gt": instance_rows(inst, voxel_mm3) + ignored_rows(small, voxel_mm3), "dets": dets, "label_values": counts,
             "voxel_mm3": voxel_mm3, "shape": list(image.shape)}
@@ -298,6 +350,10 @@ def aggregate(results, reference, a_gate=A_GATE, u_margin=U_MARGIN, fixed_thresh
     selected on this set and labelled so). U is pooled per (source, sequence); the gate reads the sequence whose
     lesion labels are the reference's. A's gate reads the A-supervised rows only."""
     fixed_thresholds = fixed_thresholds or {}
+    for row in results:
+        floor = row.get("e2e_score_floor")
+        if floor is not None and (row["source"] not in fixed_thresholds or fixed_thresholds[row["source"]] < floor):
+            raise ValueError("binding results are incomplete below their recorded score threshold")
     sources = sorted({r["source"] for r in results})
     # A
     a_rows = [r for r in results if r.get("a") and r.get("a_supervised", True)]

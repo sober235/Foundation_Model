@@ -30,6 +30,12 @@ R controlled 保持原 GT 中心裁块、query 选择、粗几何、候选竞争
 
 所有实际入口（infer、evaluate_case、外部U评价、eval脚本和shard合并）显式传 profile；旧 metadata 缺 profile 视为 legacy。合并拒绝混合 profile/规则，即使checkpoint相同。原脚本不传profile时行为不变。
 
+### 评价工作量与固定工作点匹配
+
+评价中的 A-only 行沿用原 forward，U 无监督时不计算未被计分的候选；这不改变通用推理入口。预测实例的 R 只需绑定固定来源 score 阈值以上的已完成实例，U 仍保留全部原始候选供误报计算，controlled R 仍覆盖全部监督 GT。绑定前临时重排实例 id，之后映回原检测 id，避免空 id 破坏宿主查表。记录绑定 score 下限，聚合器拒绝用更低阈值或未固定阈值解释这些部分绑定记录。
+
+已用合成例确认：在全部检测上先匹配、再做 score 过滤，会让低分高IoU框抢走被保留高分框的真值。本次固定工作点对照在 score 过滤后匹配端到端 GT；保存的 legacy 输出用同一固定阈值重新关联 GT，不重跑或更改预测。A、U检测数和controlled R原门不受这个计分修正影响。旧默认路径保持兼容，报告披露这项端到端计分归一化。
+
 ## 验收和运行顺序
 
 - TDD：query间桥接不合并、跨窗重复抑制、IoU等号边界、优先级稳定、有效区裁剪、ownership后分裂/体积下限、无回填、score过滤后id与来源、空输入、并发顺序及来源正确。
