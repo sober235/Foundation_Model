@@ -14,7 +14,8 @@ import torch.nn.functional as F
 
 from anatobind.aur import infer as I, eval as E
 from anatobind.aur.dataset import load_volume
-from anatobind.aur.diagnostics import WindowAudit, identity, select_cases, verify_detections, verify_provenance
+from anatobind.aur.diagnostics import (WindowAudit, identity, select_cases, verify_detections, verify_provenance,
+                                      verify_truth, verify_bindings, valid_host_dice)
 from anatobind.aur.labels import ENTITY_LABELS, entity_to_synthseg
 from anatobind.aur.relation import geometry, host_masks_from_entities
 from anatobind.aur.ssl.checkpoint import file_sha256, code_sha
@@ -75,12 +76,14 @@ class BindAudit:
         for name, p in (('coarse_ungated', raw_a), ('coarse_gated', gated_a.float())):
             mx, ix = p.max(0)
             m = torch.where(mx >= .5, ix + 1, 0).to(torch.uint8).cpu().numpy()
-            scores[name] = E.host_dice(entity_to_synthseg(m), entity_to_synthseg(coarse_truth))
+            scores[name] = valid_host_dice(entity_to_synthseg(m), entity_to_synthseg(coarse_truth), valid.cpu().numpy())
         k = result['instance']
         local_host = host_targets(target.cpu().numpy().astype(np.int32), true_seg, self.volume['spacing'])['host'][0]
         row = dict(instance=k, query=query, query_iou=result['query_iou'], in_crop_share=result['in_crop_share'],
                    truth=int(self.volume['hosts']['host'][k - 1]), local_truth=int(local_host), r=result['host'],
-                   r_probs=result['host_probs'], window=window, full_local_a=E.host_dice(entity_to_synthseg(amap), true_seg),
+                   r_probs=result['host_probs'], window=window,
+                   single_crop_dense_a=valid_host_dice(entity_to_synthseg(amap), true_seg,
+                                                       I.extract(np.ones(self.volume['image'].shape, bool), window, fill=False)[0]),
                    coarse_a=scores, coarse_overlap_choice=int(geo[0, :, 0].argmax()),
                    coarse_overlap=geo[0, :, 0].cpu().numpy(), coarse_u_mean=float(coarse_u.mean()),
                    entity_presence=out['entity_presence'][0].float().sigmoid().cpu().numpy())
@@ -113,6 +116,8 @@ def main():
     a.out.mkdir(parents=True)
     os.chmod(a.out, 0o700)
     write(a.out / 'selection_private.json', rows)
+    write(a.out / 'selected_input_hashes_private.json',
+          [{key: file_sha256(r[key]) for key in ('image', 'anatomy', 'lesion') if r.get(key)} for r in rows])
     selection_sha = file_sha256(a.out / 'selection_private.json')
     # Freeze configuration before image loading or model inference.
     contract = dict(evidence='NOT_EVIDENCE', checkpoint_sha256=CKPT_SHA, samples_sha256=SAMPLES_SHA,
@@ -120,6 +125,9 @@ def main():
                     code_sha=code_sha(), sources={s: 2 for s in SCORES}, crop=[128, 160, 160], batch_size=2,
                     max_seconds=a.max_seconds, saved_eval=str(a.saved_eval), instance_threshold=.3,
                     presence_threshold=.5, score_thresholds=SCORES, gpu=a.gpu)
+    contract.update(saved_cases_sha256=file_sha256(a.saved_eval / 'cases.json'),
+                    saved_aggregate_sha256=file_sha256(a.saved_eval / 'aggregate.json'),
+                    selected_input_hashes_sha256=file_sha256(a.out / 'selected_input_hashes_private.json'))
     write(a.out / 'contract.json', contract)
     device = torch.device('cuda', a.gpu)
     model, _ = I.model_from_export(a.checkpoint, device)
@@ -145,6 +153,8 @@ def main():
             audit.verify_probability(pred['lesion_prob'])
             components, dets = I.instances_from_probability(pred['lesion_prob'], vol['voxel_mm3'])
             expected = saved_by_id[identity(row)]
+            verify_truth(E.instance_rows(vol['instance'], vol['voxel_mm3']) + E.ignored_rows(vol['small'], vol['voxel_mm3']),
+                         expected['u']['gt'])
             verify_detections(dets, expected['u']['dets'])
             pred_seg, true_seg = entity_to_synthseg(pred['entity']), entity_to_synthseg(vol['entity'])
             inside = vol['a_ignore']
@@ -154,17 +164,21 @@ def main():
                            entity_counts={str(l): dict(truth=int((true_seg == l).sum()), pred=int((pred_seg == l).sum()),
                                                       presence=float(pred['entity_presence'][j])) for j, l in enumerate(ENTITY_LABELS)})
             ba = BindAudit(vol, pred_seg, case_dir, deadline)
-            bound = I.bind_instances(model, vol['image'], vol['affine'], vol['instance'], (128, 160, 160), device, observer=ba)
-            old_r = {r['instance']: r for r in (expected.get('r') or {}).get('instances', [])}
-            for r in bound:
-                if r['instance'] in old_r:
+            old_r_rows = (expected.get('r') or {}).get('instances', [])
+            bound = []
+            if vol['r_supervised']:
+                bound = I.bind_instances(model, vol['image'], vol['affine'], vol['instance'], (128, 160, 160), device, observer=ba)
+                verify_bindings(bound, old_r_rows)
+                old_r = {r['instance']: r for r in old_r_rows}
+                for r in ba.rows:
                     old = old_r[r['instance']]
-                    if r['host'] != old['r'] or abs(r['query_iou'] - old['query_iou']) > 1e-5:
-                        raise ValueError('baseline reproduction: controlled R mismatch')
+                    r.update(b0=old['b0'], saved_whole_volume_local_a=old['local_dice'])
+            elif old_r_rows:
+                raise ValueError('baseline reproduction: R supervision mismatch')
             u = audit.finish(pred['lesion_prob'], components, dets, SCORES[row['source']])
             np.savez(case_dir / 'volume.npz', entity=pred['entity'], lesion_prob=pred['lesion_prob'], instance=vol['instance'],
                      predicted_components=components, true_entity=vol['entity'], a_ignore=vol['a_ignore'], affine=vol['affine'])
-            write(case_dir / 'diagnostic.json', dict(a=anatomy, u=u, r=ba.rows, detections=dets))
+            write(case_dir / 'diagnostic.json', dict(a=anatomy, u=u, r=ba.rows, r_baseline_available=bool(vol['r_supervised']), detections=dets))
             item = dict(anonymous_case=i + 1, source=row['source'], sequence=row['sequence'], reproduced=True,
                         n_gt=len(vol['hosts']['host']), n_windows=pred['n_windows'], n_detections=len(dets),
                         seconds=round(time.monotonic() - start, 2), peak_cuda_gib=torch.cuda.max_memory_allocated(device) / 2**30,

@@ -83,6 +83,11 @@ def test_window_measurement_separates_presence_loss_and_excludes_padding(tmp_pat
     assert g['at_0.3']['best_all_presence'] == pytest.approx(.2)
     assert g['at_0.3']['max_iou'] == 0.
     assert g['visible_fraction'] == 1.
+    assert audit.window_rows[0]['at_0.3']['query_voxels'] == [1, 1]
+    assert g['at_0.3']['all_query_iou'] == [1., 0.]
+    cache = np.load(tmp_path / 'window_000.npz')
+    restored = np.unpackbits(cache['all_query_hard_03_packed'], axis=1, count=8).reshape(2, 2, 2, 2)
+    assert int(restored.sum()) == 2 and restored[0, 0, 0, 0] == 1
 
 
 def test_empty_presence_windows_still_contribute_weight_and_observer_reconstruction(tmp_path):
@@ -123,3 +128,23 @@ def test_component_intersection_reports_real_voxels_not_bbox_containment(tmp_pat
     result = audit.finish(np.zeros(inst.shape), component, [dict(instance=1, score=.8, n_voxels=8)], .7)
     assert result['gt'][0]['components'] == []
     assert result['gt'][0]['threshold_fn'] == 1
+
+
+def test_anatomy_diagnostic_excludes_padded_voxels():
+    D = importlib.import_module('anatobind.aur.diagnostics')
+    pred = np.array([2, 2, 2])
+    true = np.array([2, 0, 0])
+    assert D.valid_host_dice(pred, true, np.array([1, 0, 0], bool))['host_macro'] == 1.
+
+
+def test_replay_rejects_missing_relation_instances_and_changed_gt():
+    D = importlib.import_module('anatobind.aur.diagnostics')
+    old = dict(instance=1, r=2, query_iou=.2, r_probs=[0., 0., 1.], in_crop_share=1.)
+    bound = dict(instance=1, host=2, query_iou=.2, host_probs=np.array([0., 0., 1.]), in_crop_share=1.)
+    D.verify_bindings([bound], [old])
+    with pytest.raises(ValueError, match='reproduction'):
+        D.verify_bindings([], [old])
+    gt = dict(instance=1, box=[0, 0, 0, 1, 1, 10], n_voxels=10, volume_mm3=10.)
+    D.verify_truth([gt], [gt])
+    with pytest.raises(ValueError, match='reproduction'):
+        D.verify_truth([{**gt, 'ignore': True}], [gt])

@@ -70,6 +70,36 @@ def verify_provenance(run, samples, checkpoint):
         raise ValueError('input hash differs from frozen evaluation')
 
 
+def verify_truth(actual, expected):
+    key = lambda r: (bool(r.get('ignore')), tuple(r['box']), r['n_voxels'])
+    a, b = sorted(actual, key=key), sorted(expected, key=key)
+    if len(a) != len(b):
+        raise ValueError('baseline reproduction: GT count mismatch')
+    for x, y in zip(a, b):
+        if key(x) != key(y) or x.get('instance') != y.get('instance'):
+            raise ValueError('baseline reproduction: GT geometry/ignore mismatch')
+        if not np.isclose(x['volume_mm3'], y['volume_mm3'], atol=1e-3, rtol=0):
+            raise ValueError('baseline reproduction: GT volume mismatch')
+
+
+def verify_bindings(actual, expected):
+    a, b = {r['instance']: r for r in actual}, {r['instance']: r for r in expected}
+    if len(a) != len(actual) or len(b) != len(expected) or a.keys() != b.keys():
+        raise ValueError('baseline reproduction: controlled R membership mismatch')
+    for k, x in a.items():
+        y = b[k]
+        if (x['host'] != y['r'] or not np.isclose(x['query_iou'], y['query_iou'], atol=1e-5, rtol=0)
+                or not np.isclose(x['in_crop_share'], y['in_crop_share'], atol=1e-6, rtol=0)
+                or not np.allclose(x['host_probs'], y['r_probs'], atol=1e-5, rtol=0)):
+            raise ValueError('baseline reproduction: controlled R output mismatch')
+
+
+def valid_host_dice(pred, truth, valid):
+    from anatobind.aur.eval import host_dice
+    valid = np.asarray(valid, bool)
+    return host_dice(np.asarray(pred)[valid], np.asarray(truth)[valid])
+
+
 class WindowAudit:
     """Stream measurements and representative query arrays; reconstruct the original window mean independently.
 
@@ -100,11 +130,16 @@ class WindowAudit:
         max_np = maximum.cpu().numpy()
         self.acc[dst] += max_np[src] * wb[src]
         self.wsum[dst] += wb[src]
-        row = dict(window=[list(w) for w in window], n_present=int(keep.sum()), gt=[])
+        row = dict(window=[list(w) for w in window], n_present=int(keep.sum()),
+                   query_presence=event_presence.cpu().tolist(), gt=[])
         qsave = set()
+        packed = {}
         for threshold in (.3, .5):
             hard = ((event_prob >= threshold) if threshold == .3 else (event_prob > threshold)) & ok
             nv = hard.flatten(1).sum(1)
+            row[f'at_{threshold}'] = dict(query_voxels=nv.cpu().tolist())
+            packed[f'all_query_hard_{"03" if threshold == .3 else "05"}_packed'] = np.packbits(
+                hard.cpu().numpy().reshape(len(hard), -1), axis=1)
             max_hard = (maximum >= threshold if threshold == .3 else maximum > threshold) & ok
             for k in np.unique(local):
                 if k <= 0:
@@ -124,6 +159,8 @@ class WindowAudit:
                 qk = int(kept_iou.argmax()) if keep.any() else -1
                 union = int((max_hard | sel).sum())
                 entry = dict(best_all_iou=float(iou[q]), best_all_query=q, best_all_presence=float(event_presence[q]),
+                             all_query_iou=iou.cpu().tolist(), all_query_gt_intersection=inter.cpu().tolist(),
+                             all_query_gt_mean_prob=event_prob[:, sel].mean(1).cpu().tolist(),
                              best_kept_iou=float(iou[qk]) if qk >= 0 else 0., best_kept_query=qk,
                              max_iou=float((max_hard & sel).sum()) / max(union, 1),
                              max_gt_tp=int((max_hard & sel).sum()), max_gt_fn=int((~max_hard & sel).sum()),
@@ -144,7 +181,7 @@ class WindowAudit:
                  window=np.asarray(window), query_ids=np.asarray(qids),
                  representative_prob_float16=event_prob[qids].cpu().numpy().astype(np.float16),
                  presence=event_presence.cpu().numpy(), maximum=maximum.cpu().numpy(),
-                 valid=valid.cpu().numpy().astype(np.uint8), weight=weight.cpu().numpy(), instance=local)
+                 valid=valid.cpu().numpy().astype(np.uint8), weight=weight.cpu().numpy(), instance=local, **packed)
         self.window_rows.append(row)
 
     def verify_probability(self, probability):
