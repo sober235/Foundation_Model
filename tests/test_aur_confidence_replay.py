@@ -193,6 +193,53 @@ def test_interrupted_resume_revalidates_control_values_not_only_cache_checksum(t
     with pytest.raises(ValueError):m.run(a)
 
 
+@pytest.mark.parametrize('fault', ['missing_parent', 'missing_windows', 'window_digest', 'query_count',
+    'query_membership', 'parent_rank', 'child_count', 'voxel_accounting', 'nonfinite_mean', 'retained_mean'])
+def test_resume_rejects_internally_incomplete_measurements(tmp_path,monkeypatch,fault):
+    m,a,vol,p,b=setup_source(tmp_path,monkeypatch);install_fake_forward(m,monkeypatch,vol,p,b);m.run(a)
+    prepared=m.prepare_reference(a);row=prepared['rows'][0]
+    record=json.loads((a.out/'row_records'/(m.token(row)+'.json')).read_text())
+    measurement=record['payload']['measurement'];parent=measurement['parents'][0]
+    if fault=='missing_parent':measurement['parents']=[]
+    elif fault=='missing_windows':measurement['window_hashes']=[]
+    elif fault=='window_digest':measurement['checks']['window_hashes_sha256']='0'*64
+    elif fault=='query_count':measurement['checks']['present_query_planes']+=1
+    elif fault=='query_membership':
+        measurement['window_hashes'][0]['queries']={'99':'0'*64}
+        measurement['checks']['window_hashes_sha256']=hashlib.sha256(
+            json.dumps(measurement['window_hashes'],sort_keys=True).encode()).hexdigest()
+    elif fault=='parent_rank':parent['rank']+=1
+    elif fault=='child_count':parent['final_children']+=1
+    elif fault=='voxel_accounting':parent['removed_voxels']+=1
+    elif fault=='nonfinite_mean':parent['retained_raw_mean']=float('nan')
+    else:parent['retained_raw_mean']-=.1
+    record['payload_sha256']=m.digest(record['payload'])
+    with pytest.raises(ValueError):m.validate_cached(record,row,prepared)
+
+
+def test_aggregate_preserves_outcomes_with_physical_size_and_retention_score_summaries():
+    m=module();dets=[];children=[]
+    for k,(volume,fraction,raw,fused) in enumerate([(10.,.1,.4,.3),(100.,.5,.5,.4),(1000.,1.,.8,.7)],1):
+        dets.append(dict(instance=k,box=[k*10,0,0,k*10+1,1,1],score=.9,volume_mm3=volume,
+                         stratum=E.size_stratum(volume)))
+        children.append(dict(instance=k,parent_score=.9,child_raw_mean=raw,child_fused_mean=fused,
+                             retained_fraction=fraction))
+    record=dict(source='bmsr',sequence='T1c',gt=[],detections=dets,
+        measurement=dict(children=children,parents=[],checks=dict(first_windows=1,replay_windows=1,
+            present_query_planes=1,raw_probability_planes_exact=True)),
+        controls=dict(A_saved_scores_exact=True,controlled_R_instances=0,
+            controlled_R_outputs_and_origins_exact=True,returned_maps_exact=True),seconds=0.,peak_cuda_gib=0.)
+    original=deepcopy(record)
+    summary=m.aggregate_records([record])['source_sequence']['bmsr/T1c']['original_point_groups']['FP']
+    for key,gap in zip(E.STRATA,(.5,.4,.1)):
+        group=summary['physical_size_strata'][key]
+        assert group['n_children']==1 and group['parent_minus_raw']['mean']==pytest.approx(gap)
+    for key,gap in zip(('<=0.1','(0.1,0.5]','>0.5'),(.6,.5,.2)):
+        group=summary['retained_fraction_score_summaries'][key]
+        assert group['n_children']==1 and group['parent_minus_fused']['mean']==pytest.approx(gap)
+    assert record==original
+
+
 def test_controlled_R_origin_change_fails_even_if_host_probabilities_match(tmp_path,monkeypatch):
     m,a,vol,p,b=setup_source(tmp_path,monkeypatch);_,replay=install_fake_forward(m,monkeypatch,vol,p,b)
     refs=m.prepare_reference(a);row=refs['rows'][0];ref=refs['records'][identity(row)]

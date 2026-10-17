@@ -52,8 +52,8 @@ Produces: private contract/selection/manifests/reference content hashes/atomic r
 - [x] Write failing tests for changed unfinished raw inputs, changed reference/selection/record hashes, mixed code/rules/checkpoint resume, exact controls including actual R origins, missing/extra child IDs, original-row immutability under score replacement, official filtered real-first/ignored-second matching, and aggregate identity-sentinel exclusion.
 - [x] Run RED; implement minimal frozen prep/replay/aggregation/resume; run GREEN including Task1 tests.
 - [x] Exercise runner with a small fake model only at the expensive model/I/O boundary while keeping real observer/decoder/matching/control checks; verify complete output and resumed no-inference behavior. Test hard deadline through existing tested helper rather than duplicating its implementation.
-- [ ] Run project fullCPU suite once after integrated code; create exact diff/review package and independent whole-change review. Resolve substantive findings with focused regressions/re-review,max3rounds; broaden suite only after changes/failures.
-- [ ] Commit final tested code before GPU freeze. Record code SHA and validate product inference/model/training files remain unchanged from starting revision.
+- [x] Run project fullCPU suite once after integrated code; create exact diff/review package and independent whole-change review. Resolve substantive findings with focused regressions/re-review,max3rounds; broaden suite only after changes/failures. Initial1140passed2skipped; twoP2findings fixed with11RED→40GREEN regressions. Round2review0outstanding; refreshed fullsuite1151passed2skipped158.53s. Logs `/tmp/aur-confidence-{review-red,review-green2,full-tests-review2}.log`.
+- [x] Commit final tested code before GPU freeze. Record code SHA and validate product inference/model/training files remain unchanged from starting revision. The next commit freezes the runner fixes; all36original product dependencies match the pinned1874source hashes. Same six input preflightPASS83windows/55R.
 
 ### Task3: Execute, interpret and hand off
 

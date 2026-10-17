@@ -103,12 +103,23 @@ def describe(values):
                 q05=float(np.quantile(v, .05)), q95=float(np.quantile(v, .95)))
 
 
+def child_summary(children, floor):
+    return dict(n_children=len(children),
+        scores={s: describe([c[s] for c in children]) for s in SCORE_NAMES},
+        parent_minus_raw=describe([c['parent_score'] - c['child_raw_mean'] for c in children]),
+        parent_minus_fused=describe([c['parent_score'] - c['child_fused_mean'] for c in children]),
+        retained_fraction=describe([c['retained_fraction'] for c in children]),
+        raw_below_fixed_score=sum(c['child_raw_mean'] < floor for c in children),
+        fused_below_fixed_score=sum(c['child_fused_mean'] < floor for c in children))
+
+
 def aggregate_records(records):
     groups = defaultdict(list)
     for r in records:
         groups[r['source'] + '/' + r['sequence']].append(r)
     out = dict(evidence='NOT_EVIDENCE', scope='Previously exposed six development-val cases; mechanism diagnostic only',
-               n_rows=len(records), score_points=SCORES, source_sequence={})
+               n_rows=len(records), score_points=SCORES, source_sequence={},
+               physical_size_definition='Original final child volume; equivalent spherical diameter in mm: <5, 5-10, >=10')
     for key, cases in sorted(groups.items()):
         floor = SCORES[cases[0]['source']]
         variants = {}
@@ -119,22 +130,21 @@ def aggregate_records(records):
         parents = []
         for case in cases:
             labels = classify_original(case['gt'], case['detections'], floor)
+            strata = {d['instance']: E.size_stratum(d['volume_mm3']) for d in case['detections']}
             for c in case['measurement']['children']:
-                child_groups[labels[c['instance']]].append(c)
+                child_groups[labels[c['instance']]].append({**c, 'stratum': strata[c['instance']]})
             parents.extend(case['measurement']['parents'])
         summaries = {}
         for label in ('TP', 'FP', 'ignored_excused', 'below_original_threshold'):
             children = child_groups[label]
-            summaries[label] = dict(n_children=len(children),
-                scores={s: describe([c[s] for c in children]) for s in SCORE_NAMES},
-                parent_minus_raw=describe([c['parent_score'] - c['child_raw_mean'] for c in children]),
-                parent_minus_fused=describe([c['parent_score'] - c['child_fused_mean'] for c in children]),
-                retained_fraction=describe([c['retained_fraction'] for c in children]),
-                retained_fraction_bins={b: sum((c['retained_fraction'] <= .1 if b == '<=0.1' else
-                    .1 < c['retained_fraction'] <= .5 if b == '(0.1,0.5]' else c['retained_fraction'] > .5)
-                    for c in children) for b in ('<=0.1', '(0.1,0.5]', '>0.5')},
-                raw_below_fixed_score=sum(c['child_raw_mean'] < floor for c in children),
-                fused_below_fixed_score=sum(c['child_fused_mean'] < floor for c in children))
+            bins = {'<=0.1': [c for c in children if c['retained_fraction'] <= .1],
+                    '(0.1,0.5]': [c for c in children if .1 < c['retained_fraction'] <= .5],
+                    '>0.5': [c for c in children if c['retained_fraction'] > .5]}
+            summaries[label] = dict(**child_summary(children, floor),
+                retained_fraction_bins={b: len(cs) for b, cs in bins.items()},
+                retained_fraction_score_summaries={b: child_summary(cs, floor) for b, cs in bins.items()},
+                physical_size_strata={s: child_summary([c for c in children if c['stratum'] == s], floor)
+                                      for s in E.STRATA})
         removed = [p for p in parents if p['removed_voxels']]
         out['source_sequence'][key] = dict(n_scans=len(cases), fixed_score_threshold=floor,
             hypothetical_score_filters_after_frozen_ownership=variants, original_point_groups=summaries,
@@ -289,6 +299,61 @@ def replay_case(model, row, reference, crop, device):
         peak_cuda_gib=torch.cuda.max_memory_allocated(device) / 2**30 if device.type == 'cuda' else 0.)
 
 
+def validate_measurement(measurement, detections, n_windows):
+    """Recheck saved decomposition and window evidence instead of trusting flags."""
+    windows, checks = measurement['window_hashes'], measurement['checks']
+    window_digest = hashlib.sha256(json.dumps(windows, sort_keys=True).encode()).hexdigest()
+    if len(windows) != n_windows or checks['window_hashes_sha256'] != window_digest:
+        raise ValueError('Cached window count/digest differs')
+    by_window = {}
+    def valid_hash(value):
+        return isinstance(value, str) and len(value) == 64 and set(value) <= set('0123456789abcdef')
+    for event in windows:
+        window = event['window']
+        if (len(window) != 3 or any(len(p) != 2 or p[0] >= p[1] or
+                any(not isinstance(v, int) for v in p) for p in window)):
+            raise ValueError('Cached window coordinates are invalid')
+        key = tuple(tuple(p) for p in window)
+        queries = event['queries']
+        if (key in by_window or not valid_hash(event['presence_sha256']) or not valid_hash(event['valid_sha256'])
+                or any(not str(q).isdigit() or str(int(q)) != str(q) or not valid_hash(h)
+                       for q, h in queries.items())):
+            raise ValueError('Cached window/query membership or hashes are invalid')
+        by_window[key] = {int(q) for q in queries}
+    if checks['present_query_planes'] != sum(len(qs) for qs in by_window.values()):
+        raise ValueError('Cached present-query count differs')
+    children = {c['instance']: c for c in measurement['children']}
+    by_parent = defaultdict(list)
+    for det in detections:
+        origin = det['detector_origin'];window = tuple(tuple(p) for p in origin['window'])
+        if window not in by_window or origin['query'] not in by_window[window]:
+            raise ValueError('Cached child origin is absent from measured windows/queries')
+        by_parent[origin['rank']].append(det)
+    parents = {p['rank']: p for p in measurement['parents']}
+    if len(parents) != len(measurement['parents']) or parents.keys() != by_parent.keys():
+        raise ValueError('Cached active-parent membership differs')
+    def probability(value):
+        return value is not None and np.isfinite(value) and 0 <= value <= 1
+    for rank, dets in by_parent.items():
+        parent = parents[rank];origin = dets[0]['detector_origin']
+        retained = sum(d['n_voxels'] for d in dets)
+        removed = origin['parent_voxels'] - retained
+        if (parent['parent_score'] != origin['parent_score'] or parent['parent_voxels'] != origin['parent_voxels']
+                or parent['final_children'] != len(dets) or parent['retained_voxels'] != retained
+                or retained <= 0 or removed < 0 or parent['removed_voxels'] != removed
+                or any(d['score'] != parent['parent_score'] or d['detector_origin']['parent_voxels'] !=
+                       parent['parent_voxels'] for d in dets)
+                or not probability(parent['retained_raw_mean'])
+                or (not probability(parent['removed_raw_mean']) if removed else parent['removed_raw_mean'] is not None)):
+            raise ValueError('Cached parent counts/probabilities differ')
+        child_mean = sum(children[d['instance']]['child_raw_mean'] * d['n_voxels'] for d in dets) / retained
+        reconstructed = (retained * parent['retained_raw_mean'] +
+                         (removed * parent['removed_raw_mean'] if removed else 0)) / parent['parent_voxels']
+        if not (np.isclose(child_mean, parent['retained_raw_mean'], rtol=0, atol=1e-12)
+                and np.isclose(reconstructed, parent['parent_score'], rtol=0, atol=1e-12)):
+            raise ValueError('Cached parent/child probability decomposition differs')
+
+
 def validate_cached(record, row, prepared):
     payload, meta = record['payload'], record['meta']
     key = token(row);contract = prepared['contract']
@@ -322,6 +387,7 @@ def validate_cached(record, row, prepared):
             raise ValueError('Cached child geometry metadata changed')
     score_copies(payload['detections'], payload['measurement']['children'], 'child_raw_mean')
     score_copies(payload['detections'], payload['measurement']['children'], 'child_fused_mean')
+    validate_measurement(payload['measurement'], payload['detections'], expected['n_windows'])
 
 
 def run(a):
