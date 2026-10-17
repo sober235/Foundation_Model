@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from anatobind.aur import eval as E  # noqa: E402
-from anatobind.aur.ssl.checkpoint import code_sha  # noqa: E402
+from anatobind.aur.ssl.checkpoint import code_sha, file_sha256  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from aur_eval import select_rows  # noqa: E402
@@ -37,6 +37,8 @@ def validate_decoder_metadata(infos):
         raise ValueError("inference contract differs across shards")
     if any(i.get("binding_score_floors", {}) != infos[0].get("binding_score_floors", {}) for i in infos[1:]):
         raise ValueError("binding score contract differs across shards")
+    if any(i.get("reference_sha256") != infos[0].get("reference_sha256") for i in infos[1:]):
+        raise ValueError("reference contract differs across shards")
     return contracts[0]
 
 
@@ -48,6 +50,7 @@ def main(argv=None):
     ap.add_argument("--val-patients", type=Path, default=None)
     ap.add_argument("--u-threshold", action="append", default=[], metavar="SOURCE=THR")
     ap.add_argument("--no-reference", action="store_true")
+    ap.add_argument("--reference-json", type=Path, default=None, help="frozen reference snapshot, required by hashed reference shards")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
     if a.out.exists():
@@ -68,7 +71,14 @@ def main(argv=None):
     results.sort(key=lambda r: order[key(r)])
     fixed = {s: float(t) for s, t in (item.split("=") for item in a.u_threshold)}
     reference = {}
-    if not a.no_reference:
+    snapshot=a.reference_json or (Path(infos[0]["reference_json"]) if infos[0].get("reference_json") else None)
+    if not a.no_reference and snapshot is not None:
+        if infos[0].get("reference_sha256") and file_sha256(snapshot)!=infos[0]["reference_sha256"]:
+            raise ValueError("reference snapshot hash differs from frozen shards")
+        reference=json.loads(snapshot.read_text())
+    elif not a.no_reference:
+        if infos[0].get("reference_sha256"):
+            raise ValueError("frozen reference snapshot is required")
         for source in sorted({r["source"] for r in expected if r["source"] in E.REFERENCE}):
             cases = sorted({r["case"] for r in expected if r["source"] == source and r.get("u_supervised")})
             if cases:
@@ -81,6 +91,8 @@ def main(argv=None):
                   "code_sha_shards": sorted({i["code_sha"] for i in infos}), "code_sha_merge": code_sha(), "seconds_shards": [i["seconds"] for i in infos]}
     agg["run"].update(decoder_profile=profile, decoder_rules=rules)
     agg["run"]["binding_score_floors"] = infos[0].get("binding_score_floors", {})
+    if snapshot is not None and not a.no_reference:
+        agg["run"].update(reference_json=str(snapshot),reference_sha256=file_sha256(snapshot))
     E.write_report(a.out, agg, results)
     (a.out / "reference.json").write_text(json.dumps(reference, indent=1, default=str))
     print(E.markdown(agg))

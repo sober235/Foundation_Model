@@ -111,6 +111,10 @@ def test_fixed_score_floor_limits_only_predicted_binding_not_u_or_controlled_r(t
     assert len(res['legacy_reference_u']['dets']) == 1
     with pytest.raises(ValueError, match='binding.*threshold'):
         E.aggregate([res], {}, fixed_thresholds={'pdgm':.7})
+    # Raising the threshold also changes Hungarian assignment, not merely coverage.
+    res['e2e_score_floor']=.7
+    with pytest.raises(ValueError, match='binding.*threshold'):
+        E.aggregate([res], {}, fixed_thresholds={'pdgm':.8})
 
 
 def test_binding_subset_compacts_map_but_retains_detector_ids():

@@ -228,8 +228,8 @@ def evaluate_case(model, row, crop, device, batch_size=1, instance_threshold=INS
     if decoder_profile != "legacy_max":
         res["decoder_profile"] = decoder_profile
         res["decoder_stats"] = pred.get("decoder_stats", {"skipped": "no U supervision on this evaluation row"})
-        if bind_predicted and bind_score_threshold is not None:
-            res["e2e_score_floor"] = bind_score_threshold
+    if bind_predicted and bind_score_threshold is not None:
+        res["e2e_score_floor"] = bind_score_threshold
     if not vol["u_supervised"]:
         return res
     gt = instance_rows(vol["instance"], vol["voxel_mm3"]) + ignored_rows(vol["small"], vol["voxel_mm3"])
@@ -352,8 +352,8 @@ def aggregate(results, reference, a_gate=A_GATE, u_margin=U_MARGIN, fixed_thresh
     fixed_thresholds = fixed_thresholds or {}
     for row in results:
         floor = row.get("e2e_score_floor")
-        if floor is not None and (row["source"] not in fixed_thresholds or fixed_thresholds[row["source"]] < floor):
-            raise ValueError("binding results are incomplete below their recorded score threshold")
+        if floor is not None and (row["source"] not in fixed_thresholds or fixed_thresholds[row["source"]] != floor):
+            raise ValueError("binding matches require their exact recorded score threshold")
     sources = sorted({r["source"] for r in results})
     # A
     a_rows = [r for r in results if r.get("a") and r.get("a_supervised", True)]

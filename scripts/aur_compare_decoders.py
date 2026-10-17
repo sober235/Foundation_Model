@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 """Fixed-weight query-CC counterfactual on frozen validation only; resumable private per-row records."""
 import argparse
+from contextlib import contextmanager
 import copy
 import hashlib
 import json
 import os
 from pathlib import Path
 import sys
+import signal
+import tempfile
+import threading
 import time
+import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import numpy as np
@@ -53,6 +58,8 @@ def equal_a(x,y):
     if isinstance(x,dict) and isinstance(y,dict):
         x={str(k):v for k,v in x.items()};y={str(k):v for k,v in y.items()}
         return x.keys()==y.keys() and all(equal_a(x[k],y[k]) for k in x)
+    if isinstance(x,(tuple,list)) and isinstance(y,(tuple,list)):
+        return len(x)==len(y) and all(equal_a(a,b) for a,b in zip(x,y))
     if isinstance(x,(int,float,np.number)) and isinstance(y,(int,float,np.number)):
         return bool(np.isclose(x,y,atol=1e-10,rtol=0,equal_nan=True))
     return x==y
@@ -78,12 +85,57 @@ def verify_reference(actual,saved):
 def fixed_legacy_e2e(row):
     """Re-label cached legacy bindings at the fixed operating point; no model output is changed."""
     result=copy.deepcopy(row)
+    if result['source'] in SCORES and result.get('u'):
+        result['e2e_score_floor']=SCORES[result['source']]
     if not result.get('e2e') or not result.get('r'):return result
     truth=np.zeros(max(g['instance'] or 0 for g in result['u']['gt']),np.int64)
     for r in result['r']['instances']:truth[r['instance']-1]=r['truth']
     match=E.predicted_detection_truth(result['u']['gt'],result['u']['dets'],truth,SCORES[result['source']])
     for r in result['e2e']:r['truth']=match.get(r['det'])
     return result
+
+
+def input_manifest(rows):
+    """Hash ALL selected image/label bytes before checkpoint loading, caching shared files."""
+    cache={};manifest={}
+    for row in rows:
+        token=hashlib.sha256(json.dumps(identity(row),separators=(',',':')).encode()).hexdigest()
+        hashes={}
+        for key in ('image','anatomy','lesion'):
+            if row.get(key):
+                path=str(row[key])
+                if path not in cache:cache[path]=file_sha256(path)
+                hashes[key]=cache[path]
+        manifest[token]=hashes
+    return manifest
+
+
+@contextmanager
+def hard_deadline(seconds):
+    """OS termination from a watchdog also interrupts a native/GPU work item; safe rows are atomic."""
+    if not np.isfinite(seconds) or seconds<=0:raise ValueError('deadline must be positive')
+    timer=threading.Timer(seconds,os.kill,args=(os.getpid(),signal.SIGTERM));timer.daemon=True;timer.start()
+    try:yield
+    finally:timer.cancel()
+
+
+def finalize_report(path,aggregate,results,reference):
+    """Verify complete stages or preserve interrupted stages, then atomically install a whole report."""
+    path=Path(path)
+    required=('aggregate.json','cases.json','REPORT.md','reference.json')
+    if path.exists():
+        if all((path/name).is_file() for name in required):
+            if not (equal_a(json.loads((path/'aggregate.json').read_text()),aggregate)
+                    and equal_a(json.loads((path/'cases.json').read_text()),results)
+                    and equal_a(json.loads((path/'reference.json').read_text()),reference)):
+                raise ValueError('completed report differs from frozen results')
+            return
+        path.rename(path.with_name(path.name+'.incomplete-'+uuid.uuid4().hex))
+    path.parent.mkdir(parents=True,exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=path.parent,prefix='.'+path.name+'-') as tmp:
+        staging=Path(tmp)/'report'
+        E.write_report(staging,aggregate,results);write(staging/'reference.json',reference)
+        staging.rename(path)
 
 
 def main():
@@ -99,6 +151,12 @@ def main():
     p.add_argument('--resume',action='store_true')
     p.add_argument('--max-seconds',type=int,default=28800)
     a=p.parse_args()
+    a.started=time.monotonic()
+    with hard_deadline(min(a.max_seconds,7200 if a.mode=='six' else 86400)):
+        return run(a)
+
+
+def run(a):
     old=json.loads((a.saved_eval/'cases.json').read_text())
     old_run=json.loads((a.saved_eval/'aggregate.json').read_text())['run']
     verify_provenance(old_run,a.samples,a.checkpoint)
@@ -110,25 +168,37 @@ def main():
     k,n=map(int,a.shard.split('/'))
     if not 0<=k<n or a.mode=='six' and (k,n)!=(0,1):raise ValueError('invalid shard')
     rows=rows[k::n]
+    manifest=input_manifest(rows)
+    baseline_reference=json.loads((a.saved_eval/'reference.json').read_text())
+    if a.mode=='six':
+        reference={s:E.reference_summary(s,E.reference_scans(s,sorted({r['case'] for r in rows if r['source']==s}))) for s in SCORES}
+    else:reference=baseline_reference
+    reference_sha=hashlib.sha256(json.dumps(reference,indent=1,default=serial).encode()).hexdigest()
     selection_hash=hashlib.sha256(json.dumps([identity(r) for r in rows],ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
     contract=dict(code_sha=code_sha(),checkpoint_sha256=CKPT_SHA,samples_sha256=SAMPLES_SHA,
                   val_patients_sha256=file_sha256(a.val_patients),saved_cases_sha256=file_sha256(a.saved_eval/'cases.json'),
                   selection_sha256=selection_hash,mode=a.mode,shard=[k,n],n_rows=len(rows),crop=[128,160,160],batch_size=2,
                   decoder_profile='query_cc_v1',decoder_rules=decoder_rules('query_cc_v1'),score_thresholds=SCORES,
-                  e2e_matching='one-to-one after fixed score filter for BOTH decoders')
+                  e2e_matching='one-to-one after fixed score filter for BOTH decoders',
+                  raw_inputs_sha256=hashlib.sha256(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
+                  reference_sha256=reference_sha,saved_reference_sha256=file_sha256(a.saved_eval/'reference.json'),
+                  saved_aggregate_sha256=file_sha256(a.saved_eval/'aggregate.json'))
     freeze_contract(a.out,contract,a.resume)
     if (a.out/'COMPLETE.json').exists():print('Frozen evaluation already complete',flush=True);return 0
     write(a.out/'selection_private.json',rows)
+    write(a.out/'input_manifest_private.json',manifest)
+    write(a.out/'reference_frozen.json',reference)
     records=a.out/'row_records';records.mkdir(exist_ok=True)
     expected={identity(r):r for r in old}
     model,_=I.model_from_export(a.checkpoint,torch.device('cuda',a.gpu))
-    t0=time.monotonic();deadline=t0+min(a.max_seconds,7200 if a.mode=='six' else 86400)
+    t0=a.started;deadline=t0+min(a.max_seconds,7200 if a.mode=='six' else 86400)
     results=[];row_times=[];peak=0.
     for i,row in enumerate(rows):
         if time.monotonic()>deadline:raise TimeoutError('frozen replay time cap exceeded')
         token=hashlib.sha256(json.dumps(identity(row),separators=(',',':')).encode()).hexdigest()
         path=records/(token+'.json')
         hashes={key:file_sha256(row[key]) for key in ('image','anatomy','lesion') if row.get(key)}
+        if hashes!=manifest[token]:raise ValueError('raw input changed after initial freeze')
         if path.exists():
             record=json.loads(path.read_text())
             if record['input_sha256']!=hashes or record['code_sha']!=contract['code_sha']:
@@ -150,21 +220,18 @@ def main():
     info=dict(shard=[k,n],checkpoint=str(a.checkpoint),checkpoint_sha256=CKPT_SHA,code_sha=contract['code_sha'],split='val',
               samples=str(a.samples),samples_sha256=SAMPLES_SHA,crop=[128,160,160],n_rows=len(results),sources=None,limit=None,
               instance_threshold=.3,stage='III',e2e=True,decoder_profile='query_cc_v1',decoder_rules=contract['decoder_rules'],
-              binding_score_floors=SCORES,seconds=round(time.monotonic()-t0,2))
+              binding_score_floors=SCORES,seconds=round(sum(row_times),2),seconds_basis='sum of frozen per-row timings')
+    info.update(reference_json=str(a.out/'reference_frozen.json'),reference_sha256=reference_sha)
     write(a.out/'shard.json',info)
     if n==1:
-        if a.mode=='val':reference=json.loads((a.saved_eval/'reference.json').read_text())
-        else:
-            reference={s:E.reference_summary(s,E.reference_scans(s,sorted({r['case'] for r in rows if r['source']==s}))) for s in SCORES}
         aggregate=E.aggregate(results,reference,fixed_thresholds=SCORES)
         aggregate['run']={**info,'mode':a.mode,'fixed_thresholds':SCORES}
-        E.write_report(a.out/'query',aggregate,results)
-        write(a.out/'query/reference.json',reference)
+        finalize_report(a.out/'query',aggregate,results,reference)
         legacy=[fixed_legacy_e2e(expected[identity(r)]) for r in rows]
         old_agg=E.aggregate(legacy,reference,fixed_thresholds=SCORES)
         old_agg['run']={**info,'decoder_profile':'legacy_max','decoder_rules':decoder_rules('legacy_max'),
                         'note':'A/U/R predictions reused; e2e GT matching normalized at fixed scores'}
-        E.write_report(a.out/'legacy_fixed',old_agg,legacy)
+        finalize_report(a.out/'legacy_fixed',old_agg,legacy,reference)
     done=dict(status='complete',mode=a.mode,shard=[k,n],rows=len(results),seconds=round(time.monotonic()-t0,2),
               recorded_row_seconds=round(sum(row_times),2),peak_cuda_gib=peak,all_reproduction_checks_passed=True)
     write(a.out/'COMPLETE.json',done);print(json.dumps(done),flush=True)
