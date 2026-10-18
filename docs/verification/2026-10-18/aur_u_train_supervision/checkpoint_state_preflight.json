@@ -1,0 +1,12 @@
+{
+  "algorithm": "SHA256 over lexically sorted [name,str(torch.dtype),shape] compact JSON then contiguous raw bytes",
+  "checkpoint_sha256": "38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde",
+  "controls": {
+    "cpu_only": true,
+    "images_loaded": false,
+    "model_constructed": false
+  },
+  "model_state_sha256": "5fbb0d6f9513fdebf66831033c6a8d32710a05ce2ec900656c062a61546e482f",
+  "n_tensors": 371,
+  "n_values": 22719625
+}
