@@ -1,0 +1,83 @@
+{
+  "purpose": "Read-only preflight for proposed TRAIN U-supervision diagnostic; no image loading, model construction, forward or training",
+  "baseline_code_sha": "bf2a9246dd2471b13374d6d322f83556c043baab",
+  "input_sha256": {
+    "samples": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+    "val_patients": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34",
+    "checkpoint": "38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde"
+  },
+  "checkpoint_metadata": {
+    "stage": "III",
+    "step": 3000,
+    "seen_crops": 72000,
+    "seed": 0
+  },
+  "checkpoint_training_config": {
+    "stage": "III",
+    "u_mask_profile": "unmatched_empty_v1",
+    "points": 16384,
+    "crop": [
+      128,
+      160,
+      160
+    ],
+    "crops_per_volume": 2,
+    "lesion_share": 0.5,
+    "seed": 0,
+    "lambda_r": 1.0,
+    "lambda_h": 0.2,
+    "model": {}
+  },
+  "selection_seed": 20261018,
+  "selection_order": "SHA256(JSON([seed,source,patient,sequence], compact separators)), then train row position",
+  "eligibility": [
+    {
+      "source": "bmsr",
+      "sequence": "T1c",
+      "eligible_rows": 318,
+      "eligible_patients": 225,
+      "selected_patients": 2
+    },
+    {
+      "source": "isles",
+      "sequence": "DWI",
+      "eligible_rows": 180,
+      "eligible_patients": 180,
+      "selected_patients": 2
+    },
+    {
+      "source": "pdgm",
+      "sequence": "FLAIR",
+      "eligible_rows": 359,
+      "eligible_patients": 356,
+      "selected_patients": 2
+    }
+  ],
+  "n_selected_rows": 6,
+  "n_selected_patients": 6,
+  "val_patient_intersection": 0,
+  "test_patient_intersection": 0,
+  "selected_row_positions_sha256": "719779c337e9240e828abb1db94cb48c42e8c1c1f305624620974252de084858",
+  "frozen_source_sha256": {
+    "anatobind/aur/losses.py": "f6ec91ccafe0cf3991d92443f00ef77af7e170b92ae718851382bee023989136",
+    "anatobind/aur/train.py": "06e376afb4a40da721d3856b4d7caca21672f39f01c29cdc9a41abf5379cb555",
+    "anatobind/aur/dataset.py": "e4a54395251a18d05abe95edd2b4efab84fd68ebb24fb7bba2fcaed633846c37",
+    "anatobind/aur/model.py": "fec0fb2f3d3ab46267cc7eff677b322086e938965e1077177a359416529977ef",
+    "anatobind/aur/heads.py": "a5d94b3b6dfc86529a1abffe1ad826b070104bb114445d1c98f364d8419fced6",
+    "anatobind/aur/query_decoder.py": "b2ed85fa16c9632fc0097702ea1a842d8afb45fd8a7ee751d5ce32bc3b27460b",
+    "anatobind/aur/infer.py": "30ab2bb40195f9f877a87b92e039d849a948f8e3a308bf69ddeb593d81d5d7a5"
+  },
+  "focused_baseline_tests": {
+    "command": "env CUDA_VISIBLE_DEVICES='' PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/test_aur_losses.py -q -p no:cacheprovider",
+    "passed": 12,
+    "failed": 0,
+    "seconds": 1.88
+  },
+  "evidence": "NOT_EVIDENCE",
+  "limitations": [
+    "Metadata eligibility and frozen checkpoint configuration only; no patient images or outcomes inspected.",
+    "Source-qualified split exclusion is not cross-source biological deduplication.",
+    "TRAIN has been available to the base model; this is not independent evaluation."
+  ],
+  "selection_private_sha256": "7f542122cc1dd1623f616681d47b96c7003e1488718ab33f964533bfb5a42bfb"
+}
