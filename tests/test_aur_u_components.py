@@ -37,7 +37,7 @@ def test_real_first_and_one_ignored_identity_excuses_exactly_one_detection():
     out = detection_outcomes(gt, [det(4), det(11, B), det(23, [10, 10, 10, 15, 15, 15]), det(40, C)], .5)
     assert [r['status'] for r in out] == ['TP', 'ignored_excused', 'FP', 'FP']
     assert [(r['official_gt_index'], r['official_gt_instance']) for r in out] == [
-        (1, 7), (2, 120), (None, None), (None, None)]
+        (1, 7), (2, None), (None, None), (None, None)]
 
 
 def fixture():
@@ -286,3 +286,42 @@ def test_aggregate_validates_query_targets_and_target_count_context():
     r['draws'][0]['target_effective_point_counts'] = [0, 1]
     with pytest.raises(ValueError):
         aggregate_records([r])
+
+
+def test_actual_anonymous_ignored_rows_allow_no_detections_without_mutation():
+    from anatobind.aur.eval import ignored_rows
+    gt = ignored_rows(np.ones((2, 2, 2), dtype=bool), 1.)
+    before = copy.deepcopy(gt)
+    assert len(gt) == 1 and gt[0]['instance'] is None
+    assert detection_outcomes(gt, [], .5) == []
+    assert gt == before
+
+
+def test_actual_disconnected_ignored_rows_keep_indices_and_real_first_priority():
+    from anatobind.aur.eval import ignored_rows
+    small = np.zeros((8, 8, 8), dtype=bool)
+    small[:2, :2, :2] = True
+    small[5:7, 5:7, 5:7] = True
+    ignored = ignored_rows(small, 1.)
+    assert len(ignored) == 2 and [g['instance'] for g in ignored] == [None, None]
+    gt = [ignored[0], dict(instance=73, box=ignored[0]['box']), ignored[1]]
+    before = copy.deepcopy(gt)
+    rows = [det(4, ignored[0]['box']), det(19, ignored[1]['box']),
+            det(51, [5, 5, 5, 8, 8, 8]), det(99, C, score=.49)]
+    out = detection_outcomes(gt, rows, .5)
+    assert [(o['instance'], o['status']) for o in out] == [
+        (4, 'TP'), (19, 'ignored_excused'), (51, 'FP'), (99, 'below_threshold')]
+    assert [(o['official_gt_index'], o['official_gt_instance']) for o in out] == [
+        (1, 73), (2, None), (None, None), (None, None)]
+    assert gt == before
+    # Both anonymous ignored components can independently excuse one detection.
+    excused = detection_outcomes(ignored, [det(7, ignored[0]['box']), det(32, ignored[1]['box'])], .5)
+    assert [(o['official_gt_index'], o['official_gt_instance'], o['status']) for o in excused] == [
+        (0, None, 'ignored_excused'), (1, None, 'ignored_excused')]
+
+
+def test_real_gt_still_requires_unique_positive_original_identity():
+    with pytest.raises(ValueError):
+        detection_outcomes([dict(instance=None, box=A)], [], .5)
+    with pytest.raises(ValueError):
+        detection_outcomes([dict(instance=7, box=A), dict(instance=7, box=B)], [], .5)

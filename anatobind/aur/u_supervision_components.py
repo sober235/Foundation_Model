@@ -54,11 +54,16 @@ def detection_outcomes(gt_rows, detection_rows, score_threshold):
     """Classify every original detection, in row order, at one inclusive cutoff.
 
     ``official_gt_index`` indexes the supplied GT rows, including ignored rows;
-    ``official_gt_instance`` is their unmodified identity. Missing GT instance
-    fields are rejected to prevent an implicit identity renumbering.
+    ``official_gt_instance`` preserves real GT identity and is None for ignored
+    rows, which may have anonymous ``instance=None`` in the official evaluator.
+    Only real GT rows require unique positive IDs; ignored identities are never
+    fabricated or used to join training targets.
     """
     threshold = _number(score_threshold)
-    _ids(gt_rows)
+    _ids([row for row in gt_rows if not row.get('ignore')])
+    for row in gt_rows:
+        if row.get('ignore') and row['instance'] is not None and _int(row['instance']) == 0:
+            raise ValueError('Ignored GT identity must be positive or anonymous')
     ids = _ids(detection_rows)
     for row in detection_rows:
         _number(row['score'])
@@ -76,7 +81,7 @@ def detection_outcomes(gt_rows, detection_rows, score_threshold):
     for identity, row in zip(ids, detection_rows):
         status, g = by_id.get(identity, ('below_threshold', None))
         result.append(dict(instance=identity, status=status, official_gt_index=g,
-                           official_gt_instance=None if g is None else int(gt_rows[g]['instance']),
+                           official_gt_instance=int(gt_rows[g]['instance']) if status == 'TP' else None,
                            detector_origin=deepcopy(row['detector_origin'])))
     counts = Counter(row['status'] for row in result)
     if (counts['TP'] != len(hits) or counts['FP'] != fp or counts['ignored_excused'] != len(excused)
