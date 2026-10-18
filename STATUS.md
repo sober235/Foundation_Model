@@ -1,6 +1,6 @@
-# STATUS：2026-10-17（U 子实例置信度诊断完成；不直接替换评分）
+# STATUS：2026-10-18（U排序上界已核验；暂缓既有标量的单调校准拟合）
 
-当前阶段：按已确定架构完成原六例val的冻结残余置信度诊断。每遍83个窗口、815个present-query概率平面严格复现，7528个最终子实例已测量，55个controlled R输出及来源完全一致。ISLES的分数继承有数值放大，但BMSR直接换子均值反而增加FP；没有采用评分变体。本轮前状态保存在 `docs/verification/2026-10-17/aur_residual_confidence/STATUS_before_confidence.md`；完整405行val裁决仍有效，本轮没有重跑它、训练或新test推理。
+当前阶段：复用原六例的7528个U子实例存档，CPU穷尽17,350个分数保留集合。在同患者S7误报预算内，parent/raw/fused三种分数的命中上界均为BMSR0/13、ISLES1/40、PDGM2/2；这是已暴露dev样本上的乐观上界，不是新工作点。暂缓仅对这些最终标量做单调校准拟合，不排除新特征、改变排序或更好掩膜。无新前向、训练或test结果。本轮前状态见 `docs/verification/2026-10-18/aur_score_order/STATUS_before_score_order.md`，完整405val裁决仍有效。
 
 ## 1. 三个目标及当前裁决
 
@@ -12,19 +12,22 @@
 | U | BMSR/ISLES/PDGM-FLAIR检出2→78、4→60、27→45；FP/scan变为17.0、540.1、4.7317 | 三源均超S7预算，也均低于参考敏感度减0.05；该固定profile不采用 |
 | R | 716个controlled实例的共享保存字段完全不变；ABA0.568436对B00.698324 | controlled门仍失败，未修复R |
 
-最新报告 `docs/verification/2026-10-17/aur_residual_confidence/RESULTS.md`，同目录 `RUN.json` 和 `aggregate_anonymous.json` 保存命令/哈希/匿名分层数据。完整405行对照仍见 `docs/verification/2026-10-17/aur_query_cc/RESULTS.md`、同目录 `full_val_paired.json` 和 query/legacy匿名汇总。六例为已暴露开发val，仅机制诊断；A/R采用伪参照，整体NOT_EVIDENCE。没有Level R人标、独立校准/总体过门或临床成功主张。
+最新报告 `docs/verification/2026-10-18/aur_score_order/RESULTS.md`，同目录 `RUN.json`、`aggregate_anonymous.json`、`manifest_exposure_anonymous.json` 保存命令/哈希/匿名结果与患者清单资格审计。置信度测量仍见 `docs/verification/2026-10-17/aur_residual_confidence/RESULTS.md`；完整405行对照仍见 `docs/verification/2026-10-17/aur_query_cc/RESULTS.md`。六例为已暴露开发val，仅机制诊断；A/R采用伪参照，整体NOT_EVIDENCE。没有Level R人标、独立校准/总体过门或临床成功主张。
 
 原六例固定阈值下，parent→子raw均值的事后过滤结果：BMSR命中2/13不变、FP16→23；ISLES命中11/40→10/40、FP1511→171；PDGM命中2/2不变、FP6→0。三种分数校准不同，反事实保留全部原mask/NMS/ownership，仅过滤后重匹配，不是新的正式解码性能结果。
 
+本轮使用同六例S7预算0.5/1.5/0 FP/scan（总FP≤1/3/0），参考命中8/13、18/40、2/2；不能混用完整405预算0.8780/1.6/0.3659。三个分数上界相同不代表全部排序相同；单调最终标量映射不增加可保留集合，但此结论不覆盖体素变换或新特征。S7native/AUR1mm差异仍在，不作新正式门裁决。
+
 ## 2. 已完成的实现与控制
 
-- 最新诊断代码6b26137，原推理/模型/训练36个依赖文件与冻结1874源码一致。7528个子实例测量parent/raw/fused三项分数；原U行、GT、解码统计、legacy检测、六例A保存分数、55个R共享字段及query/window来源精确复现。两遍当前A/U图和上下文精确相同，历史未保存图不作跨轮声明。隐藏GPU的完整缓存恢复核验通过，未加载模型。
+- 最新排序分析代码88c38b6，38个冻结依赖保持一致；原固定工作点和A/U/R存档控制逐项复现，17,350个集合全部按原Hungarian+ignored规则重匹配，不保存最大化阈值。无模型前向，存档不变不等于新A/R质量提升。
+- 前轮置信度测量代码6b26137，原推理/模型/训练36个依赖文件与冻结1874源码一致。7528个子实例测量parent/raw/fused三项分数；原U行、GT、解码统计、legacy检测、六例A保存分数、55个R共享字段及query/window来源精确复现。两遍当前A/U图和上下文精确相同，历史未保存图不作跨轮声明。隐藏GPU的完整缓存恢复核验通过，未加载模型。
 - 冻结实现代码1874af2，checkpoint SHA256 `38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde`；实际best选自Stage III step3000/72,000crops，80,016crops为已完成训练预算，权重本轮未改。
 - query_cc_v1：独立窗口/query的26CC，presence>0.5、mask>=0.3、共享10mm³floor、原mask IoU>=0.5贪心NMS、按固定优先级归属体素后再拆残余组件，子组件继承父分数；无GT挑选、无候选上限、无回填。detector来源和重裁块后实际R query来源分别记录。设计与计划在 `docs/superpowers/{specs,plans}/2026-10-17-aur-query-cc-decoder*`。
 - 405/405保存A分数严格相等；716/716controlled R共享字段严格相等。旧缓存未保存A体素图、controlled query/window来源，不能声称这些未保存对象也已逐项验证。
 - 旧端到端缓存先匹配再过滤分数的问题已在本对照中统一为先固定阈值过滤、后一对一bbox IoU>=0.1匹配；2个保留检测恢复GT关联，旧匹配池38→40，预测未改变。原始缓存保留。
 - 716个controlled合格GT的正确端到端宿主27→128；共同匹配的40个GT正确数27→26（0rescue、1harm）。新增成功主要来自检测覆盖，不能说R头质量提高。U共718个非忽略GT，有2个没有controlled记录；分母分开报告。
-- 最新完整CPU测试1151 passed、2 skipped，158.53秒；40项新增针对性测试通过。隐藏GPU、nice19、线程2，沙箱外解决DataLoader本地socket限制。两项代码审阅发现已通过11项RED回归修复，复审0项未解决；科学审阅记录见最新RUN.json。上轮1111项和A/R审计仍为其对应历史版本的验证记录。
+- 最新完整CPU测试1170 passed、2 skipped，163.48秒；本轮19项针对性测试通过。隐藏GPU、nice19、线程2，沙箱外解决DataLoader本地socket限制。真实native参考额外元数据引起的比较缺陷已RED→GREEN修正；独立代码审阅0项未解决，科学审阅见最新RUN.json。前轮1151项、再前轮1111项及A/R审计保留为对应版本的历史记录。
 
 ## 3. 误报与 A/R 机制线索
 
@@ -35,7 +38,7 @@
 
 ## 4. 下一项模型工作
 
-1. **U置信度核验已完成，下一步预先冻结单变量评分/校准对照**：TRAIN侧按患者分折仅约束校准器，基模型已经见过TRAIN；需另行锁定与模型/校准开发隔离的评价患者，规定分来源FP/敏感度验收。已暴露六例与完整val保持dev身份，不用于挑最终阈值。显式检验BMSR新入选FP和ISLES剩余高分FP；若只能复用既有val，仍只作开发诊断。mask、ownership和R保持固定；当前默认legacy_max和完整405行FAIL不变。
+1. **U置信度与排序可行性检查已完成，暂缓最终标量单调校准拟合**：本轮候选下一项是TRAIN侧高分误报的query匹配、存在性与掩膜监督诊断，找能改善实例排序/质量的模型环节；不凭六例直接改loss或追加训练。清单U-supervised TRAIN761来源限定患者/1216行，val86/143，历史test212/354；TRAIN折只约束校准器，基模型已见TRAIN，未建立新独立评价队列。A/R继续保留独立任务，当前实验不证明U优先级全局最优。默认legacy_max和完整405行FAIL不变。
 2. **R单独做固定token/query/crop/权重的几何来源对照**：仅将预测coarse A/U几何换为同一F1网格上的预测dense A/U几何，预先固定池化、valid、gate和坐标规则，记录逐特征和宿主logit变化。联合A/U替换不能区分二者贡献；冻结R头的分布变化也限制阴性结果解释。该实验尚未执行。
 3. **A用同一冻结TRAIN裁块审计全部32query的dense概率和胜出类别margin**，分开检查正点遗漏、身份/优化塌缩及类别竞争，再设计单一采样或损失变量。不要仅据18/54相同的正点均值及零点频次直接跳到改loss。
 
@@ -43,6 +46,7 @@
 
 ## 5. 资源与别重做
 
+- 新排序分析仅CPU：17,350集合、wall55.38秒、脚本49.68秒、RSS847320KiB，CUDA隐藏/nice19/线程1，600秒内外限时；不重复拟合仅改变同一标量刻度的模型来期待改善可达排序上界。已规划SibBMS10人子集含7TRAIN/3历史test，不能包装成新评价；来源限定清单互斥不代表已证明跨来源生物学去重。
 - 新六例回放已在空闲A100物理卡3完成：成功wall186.79秒、行时间合计175.66秒、峰值CUDA allocated9.0176GiB，CPU nice19/数值线程1/decoder4。首次外部启动器参数转发失败发生在模型加载前，2.57秒；修正入口并核验help后重启，日志保留。不要重新跑这六例来补已完成的数值测量；相同冻结合同可直接验证恢复。
 - 完整val4302自然窗口，累计冻结单行推理4051.38秒，峰值已记录单行CUDA分配9.017GiB；并行墙钟跨度约4282.42秒含调度/空闲，不能与缓存legacy时间作速度对比。六例NMS加速前后全部保存结果相同，实测507.78→406.60秒为共享主机观测。
 - 先检查分片的source/sequence/U监督分布。排序后步长2使全部20个DWI落一端；本次保留已完成odd202行，验证原始全部输入哈希后复用even68行，最终以1/2、0/4、2/4三完整分片合并202+102+101=405，原0/2partial不入结果。见 `scheduling/repartition.json`。

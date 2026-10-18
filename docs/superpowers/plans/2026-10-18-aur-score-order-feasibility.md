@@ -34,17 +34,21 @@ Interfaces:
 - `analyze(prepared)->dict`: evaluates all3scores/source groups using existing score_copies and official evaluator; includes original controls and explicit limitations.
 - CLI `--run PATH --out NEW [--max-seconds 600]`: atomic contract/aggregate/COMPLETE only after successful preparation and counts, no resume/overwrite. Outputs anonymous schema only.
 
-- [ ] Write and observe RED hand fixtures: TP+FP equal-score tie at zeroFP budget; empty-set/emptyinputs/zero/one boundaries; ignoredGT real-first matching; monotone scalar map preserves ceiling; nondecreasing tie merging cannot improve ceiling; input order/rows immutable. Include analytical Hungarian case GTz[0,21],[89,100],Pz[0,2.31],[0,100],[0,200], y/x[0,1], where adding lower-score P3 reduces hits2→1.
-- [ ] Implement minimal pure bound and run GREEN using real official matching.
-- [ ] Write RED archive fixtures using the existing synthetic six-case confidence fixture at expensive-forward boundary only: intact complete load; changed record/hash/membership/referencebudget; checksum-consistent measurement/control corruption; reproduced fixedpoint mismatch; no identity/threshold leakage and no overwrite.
-- [ ] Implement archive validation/analysis/CLI; run focused GREEN and fullCPU suite. Independent whole-change code review, resolve substantive findings with RED/GREEN,maximum3rounds. Commit before analyzing actual ceiling outcomes.
+- [x] Write and observe RED hand fixtures: TP+FP equal-score tie at zeroFP budget; empty-set/emptyinputs/zero/one boundaries; ignoredGT real-first matching; monotone scalar map preserves ceiling; nondecreasing tie merging cannot improve ceiling; input order/rows immutable. Include analytical Hungarian case GTz[0,21],[89,100],Pz[0,2.31],[0,100],[0,200], y/x[0,1], where adding lower-score P3 reduces hits2→1.
+- [x] Implement minimal pure bound and run GREEN using real official matching.
+- [x] Write RED archive fixtures using the existing synthetic six-case confidence fixture at expensive-forward boundary only: intact complete load; changed record/hash/membership/referencebudget; checksum-consistent measurement/control corruption; reproduced fixedpoint mismatch; no identity/threshold leakage and no overwrite.
+- [x] Implement archive validation/analysis/CLI; run focused GREEN and fullCPU suite. Independent whole-change code review, resolve substantive findings with RED/GREEN,maximum3rounds. Commit before analyzing actual ceiling outcomes.
 
 ### Task2: Run, interpret and hand off
 
 Files: report/data/commands under `docs/verification/2026-10-18/aur_score_order/`; update STATUS.md/CLAUDE.md/this plan with actual results. No model or threshold setting changes.
 
-- [ ] Readonly metadata audit and independent method audit incorporated; buildercheck says nothingimportantleft. State choices as agent choices; do not imply optimal research priority.
-- [ ] Execute boundedCPU analysis from frozen code and same archived inputs; require6/55/7528/2285 and17,350sets with every reproduction/control check passing. Preserve originalrunbytes.
-- [ ] Report each source and all3scores, same-six reference budgets/sensitivity, optimistic observed ceilings, calibration limitations and data exposure. Do not promote an observed optimum or infer new mask/R quality.
-- [ ] Independent scientific review; JSON/hash/schema/known-identity/link checks; document test and coverage evidence.
-- [ ] Commit,localmainfast-forward,distincthandofftag;preserveworktree/privateartifactsanddo notpublishremote.
+- [x] Readonly metadata audit and independent method audit incorporated; buildercheck says nothingimportantleft. State choices as agent choices; do not imply optimal research priority.
+- [x] Execute boundedCPU analysis from frozen code and same archived inputs; require6/55/7528/2285 and17,350sets with every reproduction/control check passing. Preserve originalrunbytes.
+- [x] Report each source and all3scores, same-six reference budgets/sensitivity, optimistic observed ceilings, calibration limitations and data exposure. Do not promote an observed optimum or infer new mask/R quality.
+- [x] Independent scientific review; JSON/hash/schema/known-identity/link checks; document test and coverage evidence.
+- [x] Commit,localmainfast-forward,distincthandofftag;preserveworktree/privateartifactsanddo notpublishremote.
+
+## Observed handoff evidence
+
+19targetedPASS4.91s;fullCPU1170passed2skipped163.48s. NativeS7projectionregressionRED→GREEN, realarchivepreflightPASS. CPUanalysis88c38b6completed17350sets, all3scoreceilingsBMSR0/13,ISLES1/40,PDGM2/2 under same-patientbudgets.5/1.5/0. Independent all-set scientificrecomputeexact48.83s,0outstanding; publicidentity/schema/link/hashchecksPASS. No selectedthreshold/fittedcalibrator/newinference. Localhandofftag:handoff/2026-10-18-aur-score-order; main/tagagreementcheckedatclosure.

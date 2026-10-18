@@ -1,0 +1,162 @@
+{
+  "evidence": "NOT_EVIDENCE",
+  "code_sha": "88c38b6c60799ffd7e1284b85fe7d58f46f904ab",
+  "analysis_source_sha256": "913125f95b814e1f7d0542b521cc1d995a02b15dbea131ab3566252f51553fdd",
+  "task": "Per-source exact retained-set feasibility before monotone final-scalar calibration",
+  "goals": [
+    "A32 identity masks",
+    "Unified annotated-abnormality U instance masks",
+    "Per-instanceR13sidedhost+no-host"
+  ],
+  "private_output": "/home/congcongliu/outputs/aur_score_order_20261018/bounds_88c38b6",
+  "private_contract_sha256": "51fd8db1d6d83be4e0ed716b1b712fa15c797d94ca687e7c893949e686f8f73f",
+  "private_complete_sha256": "535c071f4018fa2bd83f939ee8408c5f587162d98390bb817092bf932ca0734d",
+  "archive_provenance": {
+    "archive_contract_sha256": "80d483bacdb44bd90bc8364b8614c263552cb0bb1056a9dac3c93697dec4f9d7",
+    "archive_complete_sha256": "c33bd9bdec7388a21856fe7af620190d21bb5b4d5662cb0ece6ea5bc6852e34b",
+    "archive_records_sha256": "d85c9632844d6cc6d41d6914aae38694a2211a42531efda3b2efb55d09db578b",
+    "native_reference_sha256": "0c3ef43fda4237800d0cb6835210ef34bd98fe47de8c45e46c12820ff2a74312",
+    "public_anchor_sha256": "985ca0e9e0fa82a22373f0ba1ef9f73fc07bad1a733f07ed6348594c8df20c50",
+    "query_summary_sha256": "fd0625692194035cfb36167a00500bc366a3e7991db9bd465942e0960f160730",
+    "measurement_code_sha": "6b261377bf3b457bbf1ba0a4fc123cb8bc8f4acf",
+    "frozen_source_files": 38
+  },
+  "controls": {
+    "A_saved_scores_exact": true,
+    "controlled_R_instances": 55,
+    "controlled_R_outputs_and_origins_exact": true,
+    "first_windows": 83,
+    "replay_windows": 83,
+    "present_query_planes_per_pass": 815,
+    "returned_maps_exact": true,
+    "raw_probability_planes_exact": true
+  },
+  "observed": {
+    "rows": 6,
+    "real_GT": 55,
+    "children": 7528,
+    "active_parents": 2285,
+    "operating_sets": 17350,
+    "empty_sets": 9,
+    "same_patient_reference_FP_budgets": {
+      "bmsr/T1c": 0.5,
+      "isles/DWI": 1.5,
+      "pdgm/FLAIR": 0.0
+    },
+    "archived_measurement_windows_per_pass": 83,
+    "archived_measurement_planes_per_pass": 815,
+    "new_model_forward_calls": 0
+  },
+  "launch": {
+    "command_argv": [
+      "timeout",
+      "600",
+      "/usr/bin/time",
+      "-v",
+      "/home/congcongliu/anaconda3/envs/nvgen/bin/python",
+      "/home/congcongliu/src/Foundation_Model-aur-diagnostic/scripts/aur_audit_score_order.py",
+      "--out",
+      "/home/congcongliu/outputs/aur_score_order_20261018/bounds_88c38b6",
+      "--max-seconds",
+      "600"
+    ],
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "PYTHONNOUSERSITE": "1",
+      "PYTHONPATH": "/home/congcongliu/src/Foundation_Model-aur-diagnostic",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1"
+    },
+    "nice": 19,
+    "detached_child": true,
+    "outer_timeout_seconds": 600,
+    "inner_timeout_seconds": 600,
+    "utc_started": "2026-10-18T04:48:09.487448+00:00",
+    "utc_finished": "2026-10-18T04:49:04.863632+00:00",
+    "exit_code": 0,
+    "wall_seconds": 55.375966547988355,
+    "script_seconds": 49.6791832591407,
+    "max_RSS_KiB": 847320,
+    "metadata_sha256": "443b7523c3699838e77ef85c8ac5a48ba7f58d236c8f84c665a0bf9489b6263b",
+    "log_sha256": "499885b98b96fdb0af74ed3919336c316ab01fce7b5568b86b0615b065ad9fb4"
+  },
+  "validation": {
+    "targeted_tests": {
+      "passed": 19,
+      "seconds": 4.91,
+      "log": "/tmp/aur-order-schema-green.log",
+      "sha256": "dde2bf169e19b890cdcb7200ba98a59f4fcfaa26c198f24d7977f83a90d95b01"
+    },
+    "full_CPU_tests": {
+      "passed": 1170,
+      "skipped": 2,
+      "seconds": 163.48,
+      "log": "/tmp/aur-order-full-tests-fixed.log",
+      "sha256": "c63890d03e75729dffee0f5dfd2182eec7846cb42aff8461a34ceb4216d73171",
+      "command": "env CUDA_VISIBLE_DEVICES='' PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -p no:cacheprovider",
+      "coverage_gap": "nndet environment test and CUDA-only unit test skipped; this analysis uses no new GPU/model inference"
+    },
+    "code_review": {
+      "outstanding_actionable_findings": 0,
+      "root_schema_issue_corrected": true,
+      "correction": "Compare all7published S7 metrics exactly; retain full native-reference hash and metadata",
+      "regression_RED_log": "/tmp/aur-order-schema-red.log",
+      "regression_RED_log_sha256": "66a5ec4ba4bd6935d6725f9491addb8f7e2b3045ec867a91fa0a7e9c2fb0f6a6"
+    },
+    "readonly_archive_preflight": "PASS before outcome enumeration;6/55/7528 and referencebudgets verified",
+    "manifest_audit": "Readonly pinnedJSON3files+directoryname membership; no image/clinical-label arrays",
+    "scientific_review": {
+      "outstanding_actionable_findings": 0,
+      "independently_rematched_sets": 17350,
+      "seconds": 48.83,
+      "method": "Reconstruct score rows directly from case-local measurement dictionaries, enumerate unique levels in ascending order, and call official scan_matches, counting empty separately; do not call score_copies or score_order_bound",
+      "checks": [
+        "All9maxima, feasible-set counts and operating-set counts exact",
+        "Manifest recomputation exact",
+        "Source/artifact/private contract+COMPLETE/test+launch log hashes",
+        "Output0700 and anonymous schema"
+      ],
+      "coverage_limits": [
+        "No biological identity deduplication proof",
+        "No new mask improvement or independent-cohort efficacy",
+        "Next-experiment merit not established by this sample"
+      ]
+    },
+    "privacy_links_hashes": {
+      "selected_identity_strings": "PASS",
+      "anonymous_no_threshold_schema": "PASS",
+      "relative_markdown_links": "PASS"
+    }
+  },
+  "metadata_audit": {
+    "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 nice -n19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -s docs/verification/2026-10-18/aur_score_order/analysis/manifest_exposure.py --out NEW.json",
+    "source_sha256": "4b507b88602bc94c1a051cd32f1f863cb3dc8a33ca1ef87776782f8702b8ddbd",
+    "log_sha256": "667decac2e89640d726097986a8a560f188b7df7c70ff9856092fd0a58266daf",
+    "scope": "Source-qualified manifest eligibility, not exact sampled-crop exposure or biological cross-source deduplication"
+  },
+  "interpretation": {
+    "threshold_or_score_selection": false,
+    "calibrator_fitted": false,
+    "production_profile_promoted": false,
+    "calibration_result": "Monotone remapping of each archived final scalar cannot improve its attainable source-specific retained-set ceiling",
+    "BMSR_ISLES_observed_bounds": "0/13 and1/40 for all3scores; motivates deferring scalar-monotone fitting on these data",
+    "limitations": [
+      "Exposed development sample; maximization is optimistic and not a selected operating point.",
+      "Only per-source final-scalar monotone maps share these retained sets; voxel transforms/new features/nonmonotone models are excluded.",
+      "Official summed-IoU Hungarian then cutoff matching is preserved; no conventional ROC interpolation or monotonic-hit assumption.",
+      "No score/mask/R improvement, calibration fit, independent evaluation or clinical claim; complete405valFAIL/defaultlegacy_max unchanged.",
+      "S7 native/AUR1mm grid differences persist despite same-patient reference.",
+      "Cases were selected under prior lesion-supervised rule; not normal-scan or population evidence.",
+      "Existing val/six and historical test are exposed; no fresh independent evaluation cohort established."
+    ]
+  },
+  "artifact_hashes": {
+    "aggregate_anonymous.json": "5a9853091e21e3488bf7d7f58085f299c2ba007abf834ced77338ba45d238cd5",
+    "manifest_exposure_anonymous.json": "808602bdfe7cf2f8bf601faff485edc106ced38d21d934412522807aaa4690c5",
+    "RESULTS.md": "59c8e63c5749a14138c588bdb550966dd9d7de5378e73c3eb27185c83c7f7179",
+    "STATUS_before_score_order.md": "8bdd6cdbed930f91bc43d26863e84c5392b6db1a3ab002d25af140787a464733",
+    "analysis/manifest_exposure.py": "4b507b88602bc94c1a051cd32f1f863cb3dc8a33ca1ef87776782f8702b8ddbd"
+  }
+}

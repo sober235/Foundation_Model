@@ -1,0 +1,188 @@
+{
+ "evidence": "NOT_EVIDENCE",
+ "scope": "Optimistic exact retained-set ceiling on previously exposed six development cases",
+ "n_rows": 6,
+ "source_sequence": {
+  "bmsr/T1c": {
+   "reference": {
+    "n_scans": 2,
+    "n_gt": 13,
+    "n_hit": 8,
+    "n_fp": 1,
+    "sensitivity": 0.6153846153846154,
+    "fp_per_scan": 0.5
+   },
+   "score_order_bounds": {
+    "parent_score": {
+     "n_scans": 2,
+     "n_gt": 13,
+     "n_ignored_gt": 2,
+     "n_detections": 3983,
+     "n_unique_scores": 888,
+     "n_operating_sets": 889,
+     "n_feasible_sets": 2,
+     "fp_per_scan_budget": 0.5,
+     "integer_fp_cap": 1,
+     "max_observed_hits_within_budget": 0,
+     "optimistic_sensitivity": 0.0
+    },
+    "child_raw_mean": {
+     "n_scans": 2,
+     "n_gt": 13,
+     "n_ignored_gt": 2,
+     "n_detections": 3983,
+     "n_unique_scores": 3983,
+     "n_operating_sets": 3984,
+     "n_feasible_sets": 2,
+     "fp_per_scan_budget": 0.5,
+     "integer_fp_cap": 1,
+     "max_observed_hits_within_budget": 0,
+     "optimistic_sensitivity": 0.0
+    },
+    "child_fused_mean": {
+     "n_scans": 2,
+     "n_gt": 13,
+     "n_ignored_gt": 2,
+     "n_detections": 3983,
+     "n_unique_scores": 3983,
+     "n_operating_sets": 3984,
+     "n_feasible_sets": 2,
+     "fp_per_scan_budget": 0.5,
+     "integer_fp_cap": 1,
+     "max_observed_hits_within_budget": 0,
+     "optimistic_sensitivity": 0.0
+    }
+   }
+  },
+  "isles/DWI": {
+   "reference": {
+    "n_scans": 2,
+    "n_gt": 40,
+    "n_hit": 18,
+    "n_fp": 3,
+    "sensitivity": 0.45,
+    "fp_per_scan": 1.5
+   },
+   "score_order_bounds": {
+    "parent_score": {
+     "n_scans": 2,
+     "n_gt": 40,
+     "n_ignored_gt": 4,
+     "n_detections": 2889,
+     "n_unique_scores": 950,
+     "n_operating_sets": 951,
+     "n_feasible_sets": 5,
+     "fp_per_scan_budget": 1.5,
+     "integer_fp_cap": 3,
+     "max_observed_hits_within_budget": 1,
+     "optimistic_sensitivity": 0.025
+    },
+    "child_raw_mean": {
+     "n_scans": 2,
+     "n_gt": 40,
+     "n_ignored_gt": 4,
+     "n_detections": 2889,
+     "n_unique_scores": 2889,
+     "n_operating_sets": 2890,
+     "n_feasible_sets": 5,
+     "fp_per_scan_budget": 1.5,
+     "integer_fp_cap": 3,
+     "max_observed_hits_within_budget": 1,
+     "optimistic_sensitivity": 0.025
+    },
+    "child_fused_mean": {
+     "n_scans": 2,
+     "n_gt": 40,
+     "n_ignored_gt": 4,
+     "n_detections": 2889,
+     "n_unique_scores": 2889,
+     "n_operating_sets": 2890,
+     "n_feasible_sets": 5,
+     "fp_per_scan_budget": 1.5,
+     "integer_fp_cap": 3,
+     "max_observed_hits_within_budget": 1,
+     "optimistic_sensitivity": 0.025
+    }
+   }
+  },
+  "pdgm/FLAIR": {
+   "reference": {
+    "n_scans": 2,
+    "n_gt": 2,
+    "n_hit": 2,
+    "n_fp": 0,
+    "sensitivity": 1.0,
+    "fp_per_scan": 0.0
+   },
+   "score_order_bounds": {
+    "parent_score": {
+     "n_scans": 2,
+     "n_gt": 2,
+     "n_ignored_gt": 0,
+     "n_detections": 656,
+     "n_unique_scores": 447,
+     "n_operating_sets": 448,
+     "n_feasible_sets": 3,
+     "fp_per_scan_budget": 0.0,
+     "integer_fp_cap": 0,
+     "max_observed_hits_within_budget": 2,
+     "optimistic_sensitivity": 1.0
+    },
+    "child_raw_mean": {
+     "n_scans": 2,
+     "n_gt": 2,
+     "n_ignored_gt": 0,
+     "n_detections": 656,
+     "n_unique_scores": 656,
+     "n_operating_sets": 657,
+     "n_feasible_sets": 3,
+     "fp_per_scan_budget": 0.0,
+     "integer_fp_cap": 0,
+     "max_observed_hits_within_budget": 2,
+     "optimistic_sensitivity": 1.0
+    },
+    "child_fused_mean": {
+     "n_scans": 2,
+     "n_gt": 2,
+     "n_ignored_gt": 0,
+     "n_detections": 656,
+     "n_unique_scores": 656,
+     "n_operating_sets": 657,
+     "n_feasible_sets": 3,
+     "fp_per_scan_budget": 0.0,
+     "integer_fp_cap": 0,
+     "max_observed_hits_within_budget": 2,
+     "optimistic_sensitivity": 1.0
+    }
+   }
+  }
+ },
+ "controls": {
+  "A_saved_scores_exact": true,
+  "controlled_R_instances": 55,
+  "controlled_R_outputs_and_origins_exact": true,
+  "first_windows": 83,
+  "replay_windows": 83,
+  "present_query_planes_per_pass": 815,
+  "returned_maps_exact": true,
+  "raw_probability_planes_exact": true
+ },
+ "provenance": {
+  "archive_contract_sha256": "80d483bacdb44bd90bc8364b8614c263552cb0bb1056a9dac3c93697dec4f9d7",
+  "archive_complete_sha256": "c33bd9bdec7388a21856fe7af620190d21bb5b4d5662cb0ece6ea5bc6852e34b",
+  "archive_records_sha256": "d85c9632844d6cc6d41d6914aae38694a2211a42531efda3b2efb55d09db578b",
+  "native_reference_sha256": "0c3ef43fda4237800d0cb6835210ef34bd98fe47de8c45e46c12820ff2a74312",
+  "public_anchor_sha256": "985ca0e9e0fa82a22373f0ba1ef9f73fc07bad1a733f07ed6348594c8df20c50",
+  "query_summary_sha256": "fd0625692194035cfb36167a00500bc366a3e7991db9bd465942e0960f160730",
+  "measurement_code_sha": "6b261377bf3b457bbf1ba0a4fc123cb8bc8f4acf",
+  "frozen_source_files": 38
+ },
+ "n_operating_sets_total": 17350,
+ "limitations": [
+  "Exposed development sample; maximization is optimistic and not a selected operating point.",
+  "Only per-source final-scalar monotone maps share these retained sets; voxel transforms/new features/nonmonotone models are excluded.",
+  "Official summed-IoU Hungarian then cutoff matching is preserved; no conventional ROC interpolation or monotonic-hit assumption.",
+  "No score/mask/R improvement, calibration fit, independent evaluation or clinical claim; complete405valFAIL/defaultlegacy_max unchanged."
+ ],
+ "seconds": 49.6791832591407
+}
