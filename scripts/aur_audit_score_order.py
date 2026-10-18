@@ -102,7 +102,8 @@ def load_archive(run,anchor_path=PUBLIC_CONFIDENCE_RUN,query_reference=QUERY_SIX
         source=key.split('/')[0];registered=public['source_sequence'][key]
         cases=[r for r in payloads if r['source']+'/'+r['sequence']==key]
         ref=native[source]
-        if (registered['S7_comparable_sequence'] is not True or not F.exact(ref,registered['S7'])
+        metrics={k:ref[k] for k in ('thr','n_scans','n_gt','n_hit','n_fp','sensitivity','fp_per_scan')}
+        if (registered['S7_comparable_sequence'] is not True or not F.exact(metrics,registered['S7'])
                 or ref['n_scans']!=len(cases) or ref['n_gt']!=sum(not g.get('ignore') for r in cases for g in r['gt'])
                 or ref['fp_per_scan']!=ref['n_fp']/ref['n_scans']):
             raise ValueError('Reference registration/patient counts/budget differ')

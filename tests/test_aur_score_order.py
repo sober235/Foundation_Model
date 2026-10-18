@@ -91,18 +91,21 @@ def test_invalid_scores_and_budgets_are_rejected(value):
         with pytest.raises(ValueError):m.score_order_bound([],value)
 
 
-def frozen_fixture(tmp_path,monkeypatch):
+def frozen_fixture(tmp_path,monkeypatch,native_metadata=False):
     from test_aur_confidence_replay import setup_source,install_fake_forward
     old,a,vol,p,b=setup_source(tmp_path,monkeypatch)
     reference={s:dict(n_scans=2,n_gt=2,n_hit=2,n_fp=n,fp_per_scan=n/2,sensitivity=1.,thr=.5)
                for s,n in [('bmsr',1),('isles',3),('pdgm',0)]}
+    public_metrics=deepcopy(reference)
+    if native_metadata:
+        for s,r in reference.items():r.update(source=s,disease='annotation-source metadata')
     write=lambda p,v:p.write_text(json.dumps(v))
     sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
     write(a.reference_six/'reference_frozen.json',reference)
     contract=json.loads((a.reference_six/'contract.json').read_text());contract['reference_sha256']=sha(a.reference_six/'reference_frozen.json')
     write(a.reference_six/'contract.json',contract)
     summary=json.loads(old.REFERENCE_SUMMARY.read_text());summary['provenance'][0]['contract_sha256']=sha(a.reference_six/'contract.json')
-    summary['source_sequence']={s+'/'+q:dict(S7=reference[s],S7_comparable_sequence=True)
+    summary['source_sequence']={s+'/'+q:dict(S7=public_metrics[s],S7_comparable_sequence=True)
                                for s,q in [('bmsr','T1c'),('isles','DWI'),('pdgm','FLAIR')]}
     write(old.REFERENCE_SUMMARY,summary)
     install_fake_forward(old,monkeypatch,vol,p,b);old.run(a)
@@ -117,6 +120,14 @@ def frozen_fixture(tmp_path,monkeypatch):
     m=module()
     load=lambda:m.load_archive(a.out,anchor_path=anchor,query_reference=a.reference_six,query_summary=old.REFERENCE_SUMMARY)
     return m,a,anchor,old,load
+
+
+def test_native_reference_metadata_does_not_change_its_published_metric_projection(tmp_path,monkeypatch):
+    m,_,_,_,load=frozen_fixture(tmp_path,monkeypatch,native_metadata=True)
+    prepared=load()
+    assert prepared['reference']['bmsr']['source']=='bmsr'
+    assert {s:r['fp_per_scan'] for s,r in prepared['reference'].items()}=={'bmsr':.5,'isles':1.5,'pdgm':0.}
+    assert m.analyze(prepared)['n_rows']==6
 
 
 def test_frozen_archive_reproduces_old_points_and_outputs_only_anonymous_bounds(tmp_path,monkeypatch):
