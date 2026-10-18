@@ -289,12 +289,13 @@ def test_replay_rejects_crop_tensor_hash_corruption(tiny,tmp_path):
     with pytest.raises(ValueError): archive.replay_archive(out,contract)
 
 
-def test_all_queries_must_have_finite_dense_probabilities(tiny,monkeypatch):
+@pytest.mark.parametrize('nonfinite',[float('nan'),float('inf'),float('-inf')])
+def test_all_queries_must_have_finite_dense_probabilities(tiny,monkeypatch,nonfinite):
     runner,archive,model,crop=tiny
     original=model.event_masks
     def masks(out,points=None):
         value=original(out,points)
-        if points is None: value[0,0,0,0,0]=float('nan')
+        if points is None: value[0,0,0,0,0]=nonfinite
         return value
     monkeypatch.setattr(model,'event_masks',masks)
     original_forward=model.forward
@@ -324,6 +325,37 @@ def test_collection_uses_official_ignored_rows_without_fake_gt_ids(tiny):
     assert meta['n_instances']==1
     assert np.count_nonzero((arrays['valid']>.5)&(arrays['point_weight']<.5))==18
     assert archive.reconstruct_crop(meta,arrays)==meta['summaries']
+
+
+def test_expiry_during_completion_hashing_leaves_no_marker(tiny,tmp_path,monkeypatch):
+    archive,out,contract=make_archive(tiny,tmp_path)
+    (out/'COMPLETE.json').unlink()
+    (out/'aggregate.json').unlink()
+    clock={'now':0.}
+    original=archive.archive_hashes
+    def hashes(path):
+        result=original(path)
+        clock['now']=2.
+        return result
+    monkeypatch.setattr(archive.time,'monotonic',lambda:clock['now'])
+    monkeypatch.setattr(archive,'archive_hashes',hashes)
+    with pytest.raises(TimeoutError): archive.complete_archive(out,contract,deadline=1.)
+    assert not (out/'COMPLETE.json').exists()
+
+
+def test_expiry_during_completion_marker_write_removes_marker(tiny,tmp_path,monkeypatch):
+    archive,out,contract=make_archive(tiny,tmp_path)
+    (out/'COMPLETE.json').unlink()
+    (out/'aggregate.json').unlink()
+    clock={'now':0.}
+    original=archive.atomic_json
+    def write(path,value):
+        original(path,value)
+        if path.name=='COMPLETE.json': clock['now']=2.
+    monkeypatch.setattr(archive.time,'monotonic',lambda:clock['now'])
+    monkeypatch.setattr(archive,'atomic_json',write)
+    with pytest.raises(TimeoutError): archive.complete_archive(out,contract,deadline=1.)
+    assert not (out/'COMPLETE.json').exists()
 
 
 def test_replay_uses_official_tolerant_volume_floor(tiny,monkeypatch):

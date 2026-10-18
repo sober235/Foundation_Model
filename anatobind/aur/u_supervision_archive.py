@@ -258,9 +258,14 @@ def _rebuild(out, expected_contract, *, complete):
 def complete_archive(out, expected_contract, *, deadline=None):
     result=_rebuild(out,expected_contract,complete=False)
     atomic_json(Path(out)/'aggregate.json',result)
+    files=archive_hashes(out)
     if deadline is not None and time.monotonic()>=deadline:
         raise TimeoutError('Diagnostic time budget exhausted before completion')
-    atomic_json(Path(out)/'COMPLETE.json',dict(schema=1,files=archive_hashes(out)))
+    marker=Path(out)/'COMPLETE.json'
+    atomic_json(marker,dict(schema=1,files=files))
+    if deadline is not None and time.monotonic()>=deadline:
+        marker.unlink(missing_ok=True)
+        raise TimeoutError('Diagnostic time budget exhausted during completion')
     return result
 
 

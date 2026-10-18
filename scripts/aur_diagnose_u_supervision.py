@@ -138,8 +138,12 @@ def collect_crop(model,crop,voxel_mm3,*,source,sequence,selection_ordinal,crop_o
         with I._autocast(device):
             out=model(*args)
             presence=out['event_presence'].float()
+            dense_logits=model.event_masks(out).float()
+            if not bool(torch.isfinite(presence).all()) or not bool(torch.isfinite(dense_logits).all()):
+                raise ValueError('Nonfinite raw dense query or presence logits')
             ev_pres=presence.sigmoid()[0]
-            event=model.event_masks(out).float().sigmoid()[0]
+            event=dense_logits.sigmoid()[0]
+            del dense_logits
             for draw in range(2):
                 generator=torch.Generator().manual_seed(A.RECIPE['seed']+1000*selection_ordinal+10*crop_ordinal+draw)
                 pts=sample_points(crop['valid'][None].cpu(),A.RECIPE['points'],generator,instance=crop['instance'][None].cpu())
