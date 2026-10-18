@@ -1,6 +1,6 @@
 # Paired TRAIN U background-allocation tangent experiment
 
-Status: proposed on 2026-10-18; implementation and execution await approval of this complete description. This document does not authorize training or change a model verdict.
+Status: approved by the user on 2026-10-18 ("yes" to implementing and executing this complete description). This approval does not authorize training or change a model verdict.
 
 Builder review: a fresh-context ML research/software engineer read this complete design and relevant source on 2026-10-18, with no private-file access. Outcome: "nothing important left". This is a buildability review, not implementation, numerical verification or approval by the user.
 
