@@ -128,6 +128,15 @@
       "selected_identity_strings": "PASS",
       "anonymous_no_threshold_schema": "PASS",
       "relative_markdown_links": "PASS"
+    },
+    "supplemental_skipped_coverage": {
+      "record": "supplemental_tests.json",
+      "tested_code_sha": "86c4ed7e896c20dc3438d2da941f02c34854c7ec",
+      "nndet_passed": 2,
+      "CUDA_passed": 1,
+      "failed": 0,
+      "skipped": 0,
+      "note": "Earlier CPU1170passed2skipped unchanged; both skipped entries now covered in their required environments"
     }
   },
   "metadata_audit": {
@@ -155,7 +164,8 @@
   "artifact_hashes": {
     "aggregate_anonymous.json": "5a9853091e21e3488bf7d7f58085f299c2ba007abf834ced77338ba45d238cd5",
     "manifest_exposure_anonymous.json": "808602bdfe7cf2f8bf601faff485edc106ced38d21d934412522807aaa4690c5",
-    "RESULTS.md": "59c8e63c5749a14138c588bdb550966dd9d7de5378e73c3eb27185c83c7f7179",
+    "supplemental_tests.json": "50d655d6b6f988405fdb66bf5ba2e1280741642888d8dd54f19095e880c42b0e",
+    "RESULTS.md": "a2ef730d0a68833ffdfb7092b2feca03ec72a3ea17037ceb7e328fbf3eeacbb1",
     "STATUS_before_score_order.md": "8bdd6cdbed930f91bc43d26863e84c5392b6db1a3ab002d25af140787a464733",
     "analysis/manifest_exposure.py": "4b507b88602bc94c1a051cd32f1f863cb3dc8a33ca1ef87776782f8702b8ddbd"
   }
