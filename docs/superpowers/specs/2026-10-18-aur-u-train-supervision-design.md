@@ -1,8 +1,8 @@
 # Frozen TRAIN diagnostic of U matching and supervision
 
-Status: proposed design; metadata preflight complete; implementation and image-based measurements await approval of this description. This is the next bounded diagnostic proposed after `bf2a924`, not a completed model repair.
+Status: approved by the user on2026-10-18 ("yes" to implementation and execution); metadata preflight complete. This is the next bounded diagnostic after `bf2a924`, not a completed model repair.
 
-Design review: a fresh-context ML research engineer independently read this description, preflight and relevant source context. Builder-check outcome: "nothing important left". User approval of the experiment is still pending; this review is not code or scientific-result validation.
+Design review: a fresh-context ML research engineer independently read this description, preflight and relevant source context. Builder-check outcome: "nothing important left". This review is not code or scientific-result validation.
 
 ## Intent and scope
 
