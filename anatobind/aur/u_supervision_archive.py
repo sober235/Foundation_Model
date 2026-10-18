@@ -139,8 +139,9 @@ def validate_arrays(meta, arrays):
             or stats['eligible_candidates']>stats['raw_components']):
         raise ValueError('Decoder conservation counts differ')
     from anatobind.aur.eval import instance_rows
+    from anatobind.eval.lesion_components import min_voxels_for
     dense={r['instance']:r for r in instance_rows(det,meta['voxel_mm3'])}
-    floor=int(np.ceil(10./meta['voxel_mm3']-1e-9))
+    floor=min_voxels_for(meta['voxel_mm3'])
     for row in rows:
         actual=dense[row['instance']]
         if any(row[k]!=actual[k] for k in ('box','n_voxels','volume_mm3')) or row['n_voxels']<floor:
