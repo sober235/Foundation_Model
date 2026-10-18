@@ -1,0 +1,125 @@
+{
+  "scope": "Manifest eligibility, not exact sampled-crop exposure or biological cross-source deduplication",
+  "manifest_sha256": {
+    "samples_1mm_v1.json": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+    "ssl_manifest_v1/val_patients.json": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34",
+    "ssl_manifest_v1/samples_ssl.json": "91f84fd479a94be6872e83cdc2a5a2efad14dc214a88e7003f3e948f6d46bb0e"
+  },
+  "stage_II_III": {
+    "train": {
+      "rows": 3499,
+      "source_qualified_patients": 894
+    },
+    "val": {
+      "rows": 405,
+      "source_qualified_patients": 101
+    },
+    "test": {
+      "rows": 1056,
+      "source_qualified_patients": 249
+    }
+  },
+  "U_supervised": {
+    "train": {
+      "rows": 1216,
+      "source_qualified_patients": 761
+    },
+    "val": {
+      "rows": 143,
+      "source_qualified_patients": 86
+    },
+    "test": {
+      "rows": 354,
+      "source_qualified_patients": 212
+    }
+  },
+  "U_per_source_sequence": {
+    "bmsr/T1c": {
+      "train": {
+        "rows": 318,
+        "source_qualified_patients": 225
+      },
+      "val": {
+        "rows": 41,
+        "source_qualified_patients": 26
+      },
+      "test": {
+        "rows": 102,
+        "source_qualified_patients": 63
+      }
+    },
+    "isles/DWI": {
+      "train": {
+        "rows": 180,
+        "source_qualified_patients": 180
+      },
+      "val": {
+        "rows": 20,
+        "source_qualified_patients": 20
+      },
+      "test": {
+        "rows": 50,
+        "source_qualified_patients": 50
+      }
+    },
+    "pdgm/FLAIR": {
+      "train": {
+        "rows": 359,
+        "source_qualified_patients": 356
+      },
+      "val": {
+        "rows": 41,
+        "source_qualified_patients": 40
+      },
+      "test": {
+        "rows": 101,
+        "source_qualified_patients": 99
+      }
+    },
+    "pdgm/T1c": {
+      "train": {
+        "rows": 359,
+        "source_qualified_patients": 356
+      },
+      "val": {
+        "rows": 41,
+        "source_qualified_patients": 40
+      },
+      "test": {
+        "rows": 101,
+        "source_qualified_patients": 99
+      }
+    }
+  },
+  "stage_I": {
+    "train": {
+      "rows": 5501,
+      "source_qualified_patients": 1895
+    },
+    "val": {
+      "rows": 629,
+      "source_qualified_patients": 213
+    }
+  },
+  "principal_split_intersections": {
+    "train/val": 0,
+    "train/test": 0,
+    "val/test": 0
+  },
+  "principal_patients_eligible_for_stage_I_gradient": {
+    "train": 894,
+    "val": 0,
+    "test": 0
+  },
+  "principal_cross_source_patient_string_clashes": 0,
+  "stage_I_cross_source_patient_string_clashes": 2,
+  "planned_SibBMS_annotation_patient_split": {
+    "train": 7,
+    "test": 3
+  },
+  "limitations": [
+    "TRAIN folds constrain calibrator only; base model already trained onTRAIN.",
+    "Existing val/six and historical test are previously inspected; no fresh independent evaluation cohort established.",
+    "Source-qualified manifest disjointness does not prove biological identity resolution across sources."
+  ]
+}
