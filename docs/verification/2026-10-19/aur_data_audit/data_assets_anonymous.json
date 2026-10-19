@@ -1,0 +1,384 @@
+{
+  "schema": 1,
+  "claim": "measured assets and TRAIN-only repair, not model performance",
+  "inventory": {
+    "files": 342889,
+    "directories": 21438,
+    "apparent_bytes": 7518492879178,
+    "errors": 0
+  },
+  "aliases": {
+    "indexed_file_alias": 17997,
+    "in_root_directory_alias": 1172
+  },
+  "unique_regular_inodes": 334044,
+  "duplicate_hardlink_paths": 8845,
+  "archives": {
+    "count": 182,
+    "zip_central_directories_read": 11,
+    "tar_gz_payloads_not_audited": 171
+  },
+  "source_assets": {
+    "pdgm": {
+      "raw_patients": 495,
+      "raw_sessions": 501,
+      "raw_sequence_or_mask_files": {
+        "T2": 501,
+        "tumor_segmentation": 501,
+        "FLAIR": 501,
+        "T1c": 501,
+        "T1": 501
+      },
+      "overlaps": {
+        "supervised_train": 356,
+        "supervised_validation": 40,
+        "historical_test": 99,
+        "ssl_train": 356,
+        "ssl_validation": 40
+      },
+      "not_in_known_supervised_or_ssl": 0,
+      "source_qualified_not_biological_dedup": true,
+      "novel_independence_proven": false
+    },
+    "bmsr": {
+      "raw_patients": 314,
+      "raw_sessions": 461,
+      "raw_sequence_or_mask_files": {
+        "subtraction": 461,
+        "seg": 461,
+        "T1pre": 461,
+        "T1post": 461,
+        "FLAIR": 461
+      },
+      "overlaps": {
+        "supervised_train": 225,
+        "supervised_validation": 26,
+        "historical_test": 63,
+        "ssl_train": 225,
+        "ssl_validation": 26
+      },
+      "not_in_known_supervised_or_ssl": 0,
+      "source_qualified_not_biological_dedup": true,
+      "novel_independence_proven": false
+    },
+    "isles": {
+      "raw_patients": 250,
+      "raw_sessions": 250,
+      "raw_sequence_or_mask_files": {
+        "flair": 250,
+        "adc": 250,
+        "dwi": 250,
+        "msk": 250
+      },
+      "overlaps": {
+        "supervised_train": 180,
+        "supervised_validation": 20,
+        "historical_test": 50,
+        "ssl_train": 180,
+        "ssl_validation": 20
+      },
+      "not_in_known_supervised_or_ssl": 0,
+      "source_qualified_not_biological_dedup": true,
+      "novel_independence_proven": false
+    },
+    "sibbms": {
+      "raw_patients": 193,
+      "raw_sessions": 372,
+      "raw_sequence_or_mask_files": {
+        "T2w": 369,
+        "FLAIR": 366,
+        "T1w": 641
+      },
+      "overlaps": {
+        "supervised_train": 133,
+        "supervised_validation": 15,
+        "historical_test": 37,
+        "ssl_train": 133,
+        "ssl_validation": 15
+      },
+      "not_in_known_supervised_or_ssl": 8,
+      "source_qualified_not_biological_dedup": true,
+      "novel_independence_proven": false
+    },
+    "hcp": {
+      "raw_patients": 1113,
+      "raw_sessions": 1113,
+      "raw_sequence_or_mask_files": {
+        "T1w": 1113,
+        "T2w": 1113
+      },
+      "overlaps": {
+        "supervised_train": 0,
+        "supervised_validation": 0,
+        "historical_test": 0,
+        "ssl_train": 1001,
+        "ssl_validation": 112
+      },
+      "not_in_known_supervised_or_ssl": 0,
+      "source_qualified_not_biological_dedup": true,
+      "novel_independence_proven": false
+    },
+    "oasis": {
+      "raw_patients": 416,
+      "raw_sessions": 436,
+      "raw_sequence_or_mask_files": {
+        "T1": 6864
+      },
+      "overlaps": {
+        "supervised_train": 0,
+        "supervised_validation": 0,
+        "historical_test": 0,
+        "ssl_train": 0,
+        "ssl_validation": 0
+      },
+      "not_in_known_supervised_or_ssl": 416,
+      "source_qualified_not_biological_dedup": true,
+      "novel_independence_proven": false
+    }
+  },
+  "role_counts": {
+    "supervised_train": {
+      "rows": 3499,
+      "source_qualified_patients": 894
+    },
+    "development_validation": {
+      "rows": 405,
+      "source_qualified_patients": 101
+    },
+    "historical_test": {
+      "rows": 1056,
+      "source_qualified_patients": 249
+    },
+    "ssl_train": {
+      "rows": 5501,
+      "source_qualified_patients": 1895
+    },
+    "ssl_validation": {
+      "rows": 629,
+      "source_qualified_patients": 213
+    }
+  },
+  "A_training": {
+    "audited_train_unique_maps": 2108,
+    "separately_audited_development_val_maps": 128,
+    "historical_test_dense_maps_read": 0,
+    "A_eligible_maps": 1068,
+    "A_eligible_rows": 3420,
+    "classes_with_effective_training_voxels": 32,
+    "focus_aseg_labels": [
+      5,
+      44,
+      18,
+      26,
+      58
+    ],
+    "focus_effective_map_presence": [
+      1063,
+      1057,
+      1066,
+      1065,
+      1064
+    ],
+    "focus_effective_voxels": [
+      588264,
+      630313,
+      1981124,
+      740213,
+      764405
+    ]
+  },
+  "repair": {
+    "all_new_arrays_independently_verified": true,
+    "all_new_grids_match_current_anatomy": true,
+    "all_source_old_bytes_unchanged": true,
+    "counts": {
+      "r_boolean_changed_rows": 3,
+      "source_empty_DWI_rows_marked_U_unknown": 3,
+      "u_boolean_changed_rows": 3,
+      "updated_lesion_reference_rows": 70
+    },
+    "development_val_dense_maps_read_for_repair": 0,
+    "elapsed_seconds": 31.675343326292932,
+    "eligible_components_ge_10mm3": 459,
+    "historical_test_dense_maps_read": 0,
+    "native_manifest_sha256": "d68549f48d4142e4b74de4d4bf55ddc0a4cc2ce0ce050c75ec50c1f16de451dc",
+    "new_manifest_R_flag_and_U_rows": 1174,
+    "new_manifest_U_supervised_rows": 1213,
+    "new_manifest_rows": 3499,
+    "new_manifest_sha256": "40feb9b06a56657935a62873a7e52bb57446935b6b107e2a31f7f24fccd24f28",
+    "original_supervised_manifest_sha256": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+    "policy": "TRAIN-only new derived version; 35 lossy masks replaced from native source. Three source-empty DWI maps are U unknown and R unavailable in this manifest only; no healthy-negative claim. ADC U flags and all A/image/split fields preserved. Historical sources/manifests/caches/metrics unchanged.",
+    "restored_foreground_voxels": 770019,
+    "restored_maps": 35,
+    "restored_maps_with_eligible_components": 35,
+    "source_snapshot_sha256": {
+      "labels.py": "5169e74134faa6afc1b65310faaac14b3f055a3fed95ce813452a7306b2220a5",
+      "resample.py": "0a96b4abd8c181167d2edd1ac78594bc3057600cdf6df09b83e6d613fa9fe666"
+    },
+    "validation_manifest_sha256": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34"
+  },
+  "final_decoder_replay": {
+    "passed": true,
+    "new_loader_total_instances": 459,
+    "new_loader_total_a_ignore_voxels": 770019,
+    "same_frozen_inputs_not_independent_new_evidence": true
+  },
+  "fastMRI": {
+    "brain": {
+      "volumes": 5847,
+      "patient_ids": 5847,
+      "slice_frames": 92590,
+      "rss_volumes": 5847,
+      "per_acquisition": {
+        "AXFLAIR": {
+          "volumes": 451,
+          "slice_frames": 7150
+        },
+        "AXT1": {
+          "volumes": 340,
+          "slice_frames": 5268
+        },
+        "AXT1POST": {
+          "volumes": 1236,
+          "slice_frames": 19540
+        },
+        "AXT1PRE": {
+          "volumes": 327,
+          "slice_frames": 5170
+        },
+        "AXT2": {
+          "volumes": 3493,
+          "slice_frames": 55462
+        }
+      },
+      "annotation_volumes": 997,
+      "annotation_patient_ids": 997,
+      "annotated_flair_patient_ids": 447,
+      "annotation_stems_without_h5": 0,
+      "prior_outline_or_exclusion_patient_ids": 447,
+      "prior_patient_id_overlap": 447,
+      "not_in_prior_outline_or_exclusion_patient_ids": 5400,
+      "not_in_current_aur_or_ssl": 5847,
+      "historical_registry_was_development": true,
+      "novel_independence_proven": false,
+      "full_2d_aur_human_truth_available": false,
+      "native_patient_pose_proven": false,
+      "metadata_only": true
+    },
+    "knee": {
+      "volumes": 1172,
+      "patient_ids": 556,
+      "slice_frames": 41877,
+      "rss_volumes": 1172,
+      "per_acquisition": {
+        "CORPDFS_FBK": {
+          "volumes": 588,
+          "slice_frames": 20999
+        },
+        "CORPD_FBK": {
+          "volumes": 584,
+          "slice_frames": 20878
+        }
+      }
+    }
+  },
+  "geometry": {
+    "regular_file_prefixes": 342889,
+    "dicom_headers": 113409,
+    "h5_metadata_and_xml": 7174,
+    "raw_and_annotation_nifti_headers": 55044,
+    "all_audited_nifti_headers": 79570,
+    "unreferenced_legacy_nifti_not_fully_audited": 31391,
+    "raw_fastMRI_dicom_frames": 112609,
+    "raw_brain_frames": 70732,
+    "raw_knee_frames": 41877,
+    "raw_complete_IPP_IOP_frames": 0,
+    "derived_geometry_frames": 800,
+    "strict_header_qualified_frames": 0,
+    "matched_h5_dicom_candidate_volumes": 5640,
+    "same_frame_of_reference_uid_pairs": 0,
+    "spacing_differs_from_encoded_space_frames": 76032,
+    "native_DICOM_patient_geometry_verified": false,
+    "representative_pixel_frames": 9,
+    "original_strict_linear_pass": 3,
+    "posthoc_observed_range_fit_pass": 9,
+    "posthoc_fit_proves_lossless_native_geometry": false
+  },
+  "initialization": {
+    "backbone": {
+      "exists": true,
+      "bytes": 51771026,
+      "file_sha256": "98d518aa5dc8910a2a0b248823f68cff4523411100d526d564018c20f96fac08",
+      "sidecar_exists": true,
+      "sidecar_sha256": "8fcd964cbdb78ccd037761262ea252651fb32872aa3f11cd76e568dd131b9e5f",
+      "export_step": 8500,
+      "export_seen_crops": 306000,
+      "source_code_revision": "5e674b2c8ef58d367b3efdf627e4db0453c868d3",
+      "manifest_hash_matches": true,
+      "embed": 64,
+      "legacy_key_count": 160,
+      "copied_key_count": 160,
+      "initialized_2d_adapter_key_count": 2,
+      "state_sha256": "78f8523785696abd96c293015d8621cebf49c22bd8982bcf2d8dee0e888adaa6",
+      "strict_shape_dtype_migration_pass": true,
+      "new_2d_adapters_untrained": true,
+      "2d_g1_proven": false,
+      "unified_stage_i_resume_compatible": false,
+      "historical_g1_report_exists": true,
+      "historical_g1_report_sha256": "8e06a19eab77fd0b99b2e1c77034ebc7268d8f12d4f06a871f11fa2d48072981",
+      "historical_3d_g1_pass": true
+    },
+    "full_stage_one_warm_start": {
+      "selected_step_recovery_exists": true,
+      "final_step_recovery_exists": true,
+      "selected_step_recovery_bytes": 160141848,
+      "final_step_recovery_bytes": 160141848,
+      "selected_step_recovery_sha256": "dcca715e75299418d2fba4120778b0e486d8d9ab17ab863fb3946d563bdb562c",
+      "final_step_recovery_sha256": "c49a9f35000d02ef45aed46e006a8cd09bd90dc3399526d7bfdc433a8aaeb28e",
+      "model_keys": 176,
+      "backbone_keys": 160,
+      "nonbackbone_model_keys": 16,
+      "optimizer_present": true,
+      "scheduler_present": true,
+      "rng_torch_present": true,
+      "rng_cuda_present": false,
+      "rng_python_present": false,
+      "rng_numpy_present": false,
+      "step": 8500,
+      "seen_crops": 306000,
+      "strict_legacy_stage_one_keys_shapes_pass": true,
+      "selected_export_backbone_identical": true,
+      "full_legacy_stage_one_warm_start_pass": true,
+      "unified_new_adapter_keys": 4,
+      "full_model_state_sha256": "a98cc5fc8df05d86f45d8e3d492a7d5c47a9fe7f17092e168d697b3212596ee7",
+      "warm_start_is_exact_optimizer_resume": false,
+      "original_3d_complete_rng_resume_guaranteed": false,
+      "forward_performed": false,
+      "cuda_used": false
+    }
+  },
+  "level_R": {
+    "file_sha256": "98311373dc28f597e8614fd59326c59877a6f4951f0a6d0e807881cecee9ab7d",
+    "bytes": 249856,
+    "level_r_schema": true,
+    "read_only": true,
+    "table_counts": {
+      "adjudications": 0,
+      "labels": 0,
+      "lesions": 1297,
+      "orders": 2594,
+      "readers": 3,
+      "releases": 0
+    },
+    "reader_count": 2,
+    "annotated_lesions": 0,
+    "two_reader_lesions": 0,
+    "required_label_columns_present": true
+  },
+  "formal_training_started": false,
+  "new_model_forward": false,
+  "gpu_used": false,
+  "new_independent_full_AUR_cohort_proven": false,
+  "clinical_or_performance_success_claim": false,
+  "source_data_or_historical_caches_changed": false
+}

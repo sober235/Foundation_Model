@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "code_baseline": "6e5af4eac0d9ecae56076ce38943438f2ddd7ff9",
+  "implementation_revision": "62650153c0c48d55d16d8a2fd166a310d2810edc",
+  "source_root_read_only": "/data2/congcong/data/FM_data",
+  "cold_backup_read": false,
+  "private_evidence_root": "/home/congcongliu/outputs/aur_data_audit_20261019",
+  "private_training_manifest": "/home/congcongliu/outputs/aur_data_audit_20261019/labels/repair_train_v1/samples_train_repaired_v1_private.json",
+  "training_manifest_sha256": "40feb9b06a56657935a62873a7e52bb57446935b6b107e2a31f7f24fccd24f28",
+  "source_file_sha256": {
+    "AGENTS.md": "a70e795b429a7e4f6190954797d4480bf18b5a5f0be3af889658cde1626cba77",
+    "anatobind/aur/labels.py": "cdec3d9828df77cf64004ec7ec98a413fbf87f651f4167d78fe8a91a593bcb38",
+    "anatobind/aur/resample.py": "0a96b4abd8c181167d2edd1ac78594bc3057600cdf6df09b83e6d613fa9fe666",
+    "anatobind/aur/dataset.py": "7c4af5f2e15af315bd71508cf80495385daa5f61734c62c735d7dae10ecfbc80",
+    "anatobind/aur/eval.py": "96165a5aea485459e9ec1d54453b0dc1f88f66bbacf77b15add72f8bbb6ada30",
+    "anatobind/aur/fastmri.py": "f42b2ac6d7a7789c8e56f2bf139d83e095dcad8dc2a8037669aa165feac3719e",
+    "tests/test_aur_labels.py": "12627c4e5ca9136273c17ffedac821397446acc4bcd6d2d13a91ddeac7639d00",
+    "tests/test_aur_resample.py": "b81730ba7c669bbe9471b0a79d52ac2819bdaf42f94e1d416add1fb77219efea",
+    "tests/test_aur_dataset.py": "dbe2de0fcd7443338c694a95445cc2e5bbf232e606256800bc8689e0f367b937",
+    "tests/test_aur_eval.py": "365869e1cf528cb7d406b17a76520134015da6a8fd85a058e32f1433ffad3a35",
+    "tests/test_aur_fastmri.py": "952ce2768ac4d2f4a63745e96b37280124eff98fe7813902221d587fe1b72313"
+  },
+  "design_document_sha256": {
+    "docs/superpowers/specs/2026-10-19-aur-data-grounded-gap-closure.md": "6fad87e07a873439b33fede4078b8d635b435d3c3b2838fbeb986f942c58b221",
+    "docs/superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md": "d0eac6fca388baaa58894071e5677b6a24abacaada59785a78d9dcafee237b2a",
+    "docs/verification/2026-10-19/aur_data_audit/RESULTS.md": "ea807b309b4f77c0dabb4bf89240207f605cf88bc0610c9e43a8915db3ef774f"
+  },
+  "private_evidence_sha256": {
+    "inventory/census.py": "e1b9a7c0211408bfd0f6cbc7e41dde48d0524348871cce54621df7b2101ee18d",
+    "inventory/complete.json": "a80b13770d6df8f5fd2129687d73bfb143905b7c01a16e1e0833c97012bfb9de",
+    "inventory/containers_and_aliases.py": "d8415a70a82c753967483666aaf351abd4f1900679e3b085e4a0639fda9c1d92",
+    "inventory/containers_anonymous.json": "3cf578301bb9d6e36e233aa351e864953ff89fe7bbfdf975f45d95e112b1a6f6",
+    "labels/audit_complete.json": "9456df66daa09a28b97117a4eebd4aef21deea2644a0a97fe104a3f76f829506",
+    "labels/REPORT.md": "042a619a7eb8fa2e49ba77c0278b20c26700d11f45b2a0f3d7bf5abcfb2f2acb",
+    "labels/isles_native_compare_anonymous.json": "0ab8ff5b1dd4a97fe57fa376bad4414f4c99a843ea98c4dff3081b07867c7bdc",
+    "labels/isles_reproduce_anonymous.json": "9adf77807569edcda2aad59e2edcf3055e2ef89fd123cbeb9442eae8e47d1ecc",
+    "labels/isles_grid_recheck_anonymous.json": "cce9fa9f1438732f2d2a8d7d83b4a4d1ddb9e86f759a601fe0af5e296696acd1",
+    "labels/train_qualification_anonymous.json": "3ed0bfda7bb4adff4584abafc5935f97e8d6ff1c169e1ef11f89dd3f1aba631d",
+    "labels/repair_train_v1/anonymous_summary.json": "da3a26e84e78308ec44a989d37bd3ea4505e9b94bebe48b7cbccc143d8d88f36",
+    "labels/repair_train_v1/code_contract.json": "05d135bf9f7930a49577c6952530db9393206beb36dc8e71a6ee3312fddd8b39",
+    "labels/repair_train_v1/complete.json": "f6d0b1de9eb01bb3234bb3571fac6ac48522f6cff0217f3f792ac0dc9b7fbb46",
+    "labels/integration_v1/anonymous_summary.json": "9f72b79c7aa28267a2e33944bc8366b6a8fcab45313f806564ba3d364ba549bc",
+    "labels/integration_v1/code_contract.json": "8af1b2f4cd684118ee23ae06beeafadaf5c25316484aaf28a6e6d328184c2d3c",
+    "labels/integration_v2_final_decoder/anonymous_summary.json": "7c1cba35377b3186aa53bcb04c1004ba559149ac147a8d872cb7acfebefe877b",
+    "labels/integration_v2_final_decoder/code_contract.json": "18e50058a5b641c79e2b072a4445787cc09af5e02411ff7410c6b0b8f1c07e0e",
+    "labels/integration_v2_final_decoder/complete.json": "4461a9ab5e188f18362130eef401acb970f634bda8c9969b90ae3e4b8872b44d",
+    "readiness/report.md": "8d98b8d0ffd592360b1880e1c5e788db80c3db7cec4c8a20a2877e55dbd5f928",
+    "readiness/summary_anonymous.json": "1cb78227de39af60b980e5535a844797690b8fc43d1484dffab5f772bb45ff8d",
+    "readiness/h5_xml_geometry_summary_anonymous.json": "645945316eda0a6db027e0d36680678db5411deb3c0fe22b6201e24860e290a7",
+    "geometry/REPORT.md": "8e86bdf00a4d02cdaa22a23a862e8107e4c1dee559d797555c5460ee0a3e398c",
+    "geometry/RUN.json": "5a8e6548e56565fc7eb1d4485a52c9da4b9d692ce35262d2108f016886eb988a",
+    "geometry/dicom_complete_summary.json": "a93039eae0f0b008edd78c579a22832d45bb13de22c79ba4694d1a07f777c1c8",
+    "geometry/qualified_h5_dicom_links_summary.json": "5082ac8b0031e3e636e91bf6db3d6e973507c38be375b546f805365ebf6d5654",
+    "code_review/review.md": "aa9a8a13eb94891bf46f33ed84cd7f772ddc005d0beee951ff916fa0e6cb55ca",
+    "code_review/review_round2.md": "0f7ff97913c0e9fccbd3ec639a95b0fa9acb87ef29d00a0b87cc93dec88ada39",
+    "assemble_public.py": "119560b6b6fadaf5273fa94d21da0da83d33f5842421bee51c18e02aff4f5b72",
+    "verify_public.py": "14defdf632f2ed5ffd9e2542c7545bea97fd7ccaa28f51863b97609472838bc6",
+    "code_review/design_review.md": "fd5ecb9b37431da93c1b717a4d2ae9b203466eea75c1f27ec00a506765c8303b",
+    "code_review/design_review_round2.md": "827d3f5e3cdcea3ddb4638c32e924dcaa0a68a67d43581647d6c8f7a88a6a76d"
+  },
+  "validation": {
+    "targeted": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/test_aur_labels.py tests/test_aur_resample.py tests/test_aur_dataset.py tests/test_aur_eval.py tests/test_aur_fastmri.py -q -p no:cacheprovider",
+      "passed": 45,
+      "seconds": 12.19,
+      "exit_code": 0
+    },
+    "full_cpu": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+      "passed": 1528,
+      "skipped": 5,
+      "seconds": 202.88,
+      "exit_code": 0,
+      "sandbox": "outside sandbox after permission approval; CPU/CUDA visibility unchanged",
+      "skips": {
+        "nndet_environment_module": 1,
+        "cuda_bf16": 1,
+        "cuda_recovery": 3
+      },
+      "dedicated_environments_rerun_this_task": false
+    },
+    "aborted_sandbox_full_suite": {
+      "passed_before_interrupt": 377,
+      "skipped_before_interrupt": 2,
+      "seconds": 394.33,
+      "exit_code": 2,
+      "reason": "DataLoader multiprocessing waited without progress; interrupted own parent process before outside-sandbox rerun",
+      "accepted_as_complete": false
+    },
+    "red_before_fix": {
+      "near_integer_and_invalid_label_failures": 7,
+      "review_dtype_regression_failures": 6
+    },
+    "code_review": {
+      "rounds": 2,
+      "initial_actionable_findings": 1,
+      "resolved": 1,
+      "incremental_actionable_findings": 0,
+      "independent_synthetic_boundary_checks": 57
+    },
+    "geometry_review": {
+      "initial_actionable_findings": 3,
+      "resolved": 3,
+      "incremental_actionable_findings": 0,
+      "no_source_arrays_or_headers_reread_by_reviewer": true
+    },
+    "design_review": {
+      "initial_spec_actionable_findings": 0,
+      "plan_actionable_findings": 1,
+      "resolved": 1,
+      "remaining": 0,
+      "weak_R_generator_implemented": false
+    }
+  },
+  "privacy_boundary": "Anonymous aggregate publication only; early tracked adapter read exposed nine hard-coded exclusion case identifiers. No whole-session anonymity claim. Medical arrays/manifests/UID records stay private.",
+  "model_training_or_quality_claim": false
+}

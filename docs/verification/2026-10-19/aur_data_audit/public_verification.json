@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "source_file_contract_matches": true,
+  "training_manifest_hash_matches": true,
+  "new_document_local_links_checked": 8,
+  "broken_local_links": 0,
+  "new_public_identifier_hits": 0,
+  "identifier_scan_scope": "new documents/JSON and tracked added lines; manifest case/patient strings of length>=6 except numeric-only IDs, plus the legacy exclusion keys; not a whole-session anonymity guarantee",
+  "final_private_permission_violations": 0,
+  "private_permission_entries_normalized": 0,
+  "private_hardlinks_skipped": 0,
+  "private_symlinks_skipped": 0,
+  "raw_source_paths_chmodded": false
+}

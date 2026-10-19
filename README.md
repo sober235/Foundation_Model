@@ -23,4 +23,4 @@ PDF 包含整体架构图和 loss function、16 个子模块的技术说明与�
 
 2026-10-19 已实现可选的统一 2D/3D 模型、单 checkpoint、严格迁移、可恢复交替训练、classic MR 几何读入与原网格推理；完成三位 TRAIN 患者的小配置 I→II→III pilot 和冻结模型 A/R 诊断。正式统一训练、原生 DICOM 验收及 Level R 人标仍未完成，不能把技术闭环当作模型质量达标。
 
-最新状态见 [STATUS.md](STATUS.md)，实现、数值限制及证据见[本轮报告](docs/verification/2026-10-19/aur_unified_input/RESULTS.md)。上述 PDF 描述早期方案，不代表当前实现或性能。
+随后完成148训练数据审计，修复35例TRAIN ISLES标签截断丢失，恢复459个合格病灶组件；原数据与历史结果保留。完整Stage I权重已验证可复用；原生DICOM几何、可靠二维R和医生真值仍有缺口。最新状态见 [STATUS.md](STATUS.md)，数据组成、修复与1528项CPU检查见[数据审计报告](docs/verification/2026-10-19/aur_data_audit/RESULTS.md)，统一模型实现及数值限制见[此前报告](docs/verification/2026-10-19/aur_unified_input/RESULTS.md)。上述 PDF 描述早期方案，不代表当前实现或性能。

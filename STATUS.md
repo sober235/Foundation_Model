@@ -1,4 +1,20 @@
-# STATUS：2026-10-19（统一2D/3D技术闭环已实施；正式全模型训练仍NOT READY）
+# STATUS：2026-10-19（148数据审计完成，35例TRAIN标签丢失已修复；正式训练仍NOT READY）
+
+## 最新：实际训练数据与缺口修复
+
+用户要求深入理解148的FM_data并弥补缺口。[数据审计报告](docs/verification/2026-10-19/aur_data_audit/RESULTS.md)、[设计](docs/superpowers/specs/2026-10-19-aur-data-grounded-gap-closure.md)与[实施计划](docs/superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md)优先于下面的旧资产未知描述。
+
+- 全目录342889文件前缀、113409 DICOM header、7174 H5 metadata/XML、55044原始/标注NIfTI header及全部当前引用已核；OASIS436 Analyze标签/强度对已核。内部别名与硬链接不计新增患者，未全审的legacy派生/压缩payload边界见报告。
+- 发现35个TRAIN ISLES阳性mask被近整数proxy scaling后的直接int16截断变成空；180TRAIN原重采样逐体素复现。代码`6265015`统一安全离散标签解码，新私有35mask/3499行TRAIN清单恢复770019体素、459个合格组件，70条引用更新；3个原生空DWI仅在新清单关闭U/R。原数据/旧清单/缓存/hash不变；恢复lesion也修正A-ignore。后续须使用RUN.json指明的新manifest，不能继续用旧全零派生。
+- 全TRAIN有效A监督1068图/3420行，32类均有有效体素；5/44/18/26/58并非无标签。二维观察级weak-R资格尚待实现，当前真实2D默认R继续关闭。
+- Stage I完整176-key SSL权重已验证严格warm-start，骨干与step8500 best导出相同；统一模型4个新增二维tensor未训练。历史RNG不完整，不是exact resume。正式image-only双维SSL、双mode G1、runner/预算仍未完成。
+- raw fastMRI112609帧全缺IPP/IOP，H5XML不能补患者affine；5640卷候选关联但FOR全不匹配，76032帧encoded/recon尺度解释不同。800个derived几何对象UID/构栈不合格；不能据此宣称原生脑DICOM验收完成。
+- 找到真实Level R库：1297 lesions/165登记患者、2读者，labels/adjudications/releases均0。OASIS416、SibBMS8及fastMRI未入旧outline的5400个元数据ID只是候选，不是已证明的新独立A/U/R队列。
+- 最终CPU1528 passed/5 skipped/202.88秒；独立代码review2轮后0项，设计review0项；本轮无GPU/新model forward/正式训练/新val或test成绩。私有数据入口与证据在`~/outputs/aur_data_audit_20261019/`，医学数组和清单不入Git。早期一次源码输出硬编码病例标识的偏差已记入报告，不声称全会话匿名。
+
+下一步执行新计划Task2–6的数据资格/纯图像SSL/双mode G1与正式编排，先测完整模型预算后开Stage I；原生DICOM上游资料与医生R另行补证。旧完整模型质量FAIL仍保留。
+
+## 此前同日：统一输入技术闭环
 
 本轮用户授权执行后续建议，已完成[统一输入实施计划](docs/superpowers/plans/2026-10-19-aur-unified-input-execution.md)中的代码、有限TRAIN pilot、A/R诊断与评价准备。完整结果、原失败与数值限制见[本轮报告](docs/verification/2026-10-19/aur_unified_input/RESULTS.md)和同目录RUN.json。
 

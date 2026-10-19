@@ -18,6 +18,8 @@
 
 ## 最新执行入口（2026-10-19，优先于上面的历史准备措辞）
 
+**同日后续数据审计已完成：** [148训练数据报告](docs/verification/2026-10-19/aur_data_audit/RESULTS.md)及[数据驱动实施计划](docs/superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md)为最新入口。发现并修复35个TRAIN ISLES近整数标签被截断的缺陷，代码`6265015`；新私有TRAIN清单3499行恢复459实例、修正70条lesion引用和对应A-ignore，3原生空DWI仅在新版本U/R关闭。当前旧/data2派生不覆盖，后续训练必须显式使用新manifest（位置/hash见RUN.json）；旧全零图不能自行round恢复。完整Stage I 176 keys可warm-start，4个新增二维tensor未训练，不能宣称旧RNG完整恢复。全TRAIN32个A类都有有效标签；真实2D R资格仍未实现。完整DICOM/H5审计确认现存raw fastMRI缺IPP/IOP及尺度歧义，未完成原生脑验收；真实Level R库存在但labels=0。新的CPU检查1528 passed/5 skipped/202.88秒、独立代码复核0剩余，本轮无GPU/正式训练或新val/test成绩。详细未审范围、输出隐私偏差及旧版本承诺见新报告。
+
 用户已授权并执行[统一2D/3D实施计划](docs/superpowers/plans/2026-10-19-aur-unified-input-execution.md)。同模型/单checkpoint、真实depth1、SSL与监督交替训练、strict迁移/恢复、classic DICOM几何和原网格推理已实现；三源各1患者的tiny TRAIN I→II→III各24步已完成。**正式全模型训练仍NOT READY，旧完整模型的三门FAIL保留**。先读最新STATUS及[执行报告](docs/verification/2026-10-19/aur_unified_input/RESULTS.md)/RUN.json，不重新做已完成的GPU测量。
 
 原完整C2的A/R新三crop测量已经完成：原native replay因距离数值消减FAIL，稳定距离CPU派生v2另行通过；严格保留原数据/FAIL和派生合同，不将它们混成原回放成功。私有结果在`~/outputs/aur_unified_input_20261019/`，医学数组、选例、逐query记录不入Git。新CPU派生仅回放缓存，不再读影像或重跑forward。CUDA恢复状态精确不代表未来backward逐位确定；数值环境改变须拒绝resume。
