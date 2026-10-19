@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "claim_type": "computed_execution_record",
+  "starting_revision": "86e938e22aad9ef349bd3b36e558a10f836edea0",
+  "starting_worktree_diff_empty": true,
+  "worktree": "/home/congcongliu/src/Foundation_Model-aur-diagnostic",
+  "runtime_file_sha256": {
+    "anatobind/aur/swin.py": "c93894cae7fce10293493911f070f1ec9d9190f552d05204b368629328d6516e",
+    "anatobind/aur/heads.py": "759d80433507bda22de81a621e8cc476b2b6daf4ff1b3aa1812019c7f8e0c44f",
+    "anatobind/aur/model.py": "effc27393aee54289ba1b683ecfac43dd0cbd3f504a6c991a84fc6f94c683795",
+    "anatobind/aur/ssl/heads.py": "1504dfa11b37a824d5868a9439d245cfd270246996b762144d4d253d99ebb2ae",
+    "anatobind/aur/ssl/model.py": "1bd2a6b8696a38319dc41cfec71631fb97bc2b4350fecfaf0f695ddbba6f4aeb",
+    "anatobind/aur/unified.py": "5d6f40faa4dbda03271ab4fe0f3dcd9ece1a98b15cbf5a11150f9e0d9ecb340d",
+    "anatobind/aur/unified_data.py": "35a59cadb5d2b04e8aea0916f965bb5640f52815a5093c7d4f2409b938d5c514",
+    "anatobind/aur/unified_infer.py": "30c831259008657afd9620827d11359fa9f4eeda3de0d7da4c7448a496f8d46d",
+    "anatobind/aur/unified_train.py": "d888fa9990dd21ba1984022bea92c70032447a7f03a95ff96463665db563c113",
+    "anatobind/aur/dicom.py": "41b43974cff892e8437178c16ef2bcd878b4a27c01ad3377f01cc1af5c4d1d94",
+    "anatobind/aur/ar_diagnostics.py": "3e7b32ded918cb08fde8e4ede14c0339b66f0dd5b879cf830470563ae1129e0a",
+    "scripts/aur_unified_pilot.py": "17454b3468488e1d0de1f5e7213d2e95bd631acf95375c88ec5dfffdf5984fde",
+    "scripts/inspect_aur_dicom.py": "519195e5b0bd032666724d656049025a091aae830a30f6cdc2df5d1f67eb9fc6",
+    "scripts/aur_diagnose_a_queries.py": "49005c63ffc0dab9b2fb8bd4ebd1a38103e9075100811194c8587892420640bc",
+    "scripts/aur_diagnose_r_geometry.py": "3261a2029847a769cc606205c031ce302ca403887c02f6dba5a4b95c19af00dd",
+    "requirements-ci.txt": "b693a9ba88695cb49bd708f483295bf1fe1c69d2465ab869c723db6f76dd9f14"
+  },
+  "science_graph_tool_available": false,
+  "evidence_storage": "versioned anonymous JSON/Markdown; medical records private outside Git",
+  "authorization": "User requested superpowers7-executing-plans and execution of proposed follow-ups; GPU standing authorization retained",
+  "baseline": {
+    "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 19 timeout 600 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+    "passed": 1345,
+    "skipped": 2,
+    "seconds": 177.86,
+    "outside_sandbox": true
+  },
+  "final_checks": {
+    "cpu_full": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 19 timeout 600 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+      "passed": 1512,
+      "skipped": 5,
+      "seconds": 196.97,
+      "outside_sandbox": true,
+      "skips": [
+        "nnDetection dedicated environment module",
+        "original CUDA bf16 inference case",
+        "three unified CUDA restoration cases"
+      ]
+    },
+    "cuda": {
+      "command": "env CUDA_VISIBLE_DEVICES=0 PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 19 timeout 120 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/test_aur_unified_cuda.py tests/test_aur_infer.py::test_the_autocast_path_runs_the_heads_inside_the_context_on_cuda -q -rs -p no:cacheprovider",
+      "passed": 4,
+      "seconds": 14.04,
+      "outside_sandbox": true
+    },
+    "nndet": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 19 bash -c 'source scripts/nndet_env.sh && python -m pytest tests/test_nndet_runner.py -q -rs -p no:cacheprovider --noconftest'",
+      "passed": 2,
+      "warnings": 6,
+      "seconds": 1.91,
+      "warnings_scope": "third-party CUDA-disabled and scipy deprecated imports"
+    },
+    "last_anonymous_error_copy": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/test_aur_unified_pilot_cli.py::test_output_normalization_errors_never_echo_private_paths -q -rs -p no:cacheprovider",
+      "passed": 1,
+      "seconds": 3.37
+    },
+    "ar_independent": {
+      "passed": 18,
+      "seconds": 5.43
+    },
+    "historical_fixtures": {
+      "passed": 45,
+      "seconds": 5.9
+    }
+  },
+  "failed_or_interrupted_checks_preserved": [
+    {
+      "check": "sandbox full baseline/focused DDP",
+      "result": "local gloo address/DataLoader communication unavailable; interrupted then corresponding outside-sandbox suites passed",
+      "focused_counts": {
+        "failed": 2,
+        "passed": 68,
+        "seconds": 138.53
+      }
+    },
+    {
+      "check": "new model and training RED",
+      "model_missing_feature_failed": 18,
+      "training_missing_feature_failed": 18
+    },
+    {
+      "check": "first full regression after model feature",
+      "failed": 23,
+      "passed": 1175,
+      "skipped": 5,
+      "seconds": 148.51,
+      "result": "interrupted; synthetic confidence fixtures incorrectly used immutable real historical source hashes; fixed only temporary test fixtures, preserving production guard"
+    },
+    {
+      "check": "first CUDA selector",
+      "result": "wrong old test name; exit4/no tests; corrected to actual source name"
+    },
+    {
+      "check": "original CUDA future-parameter assertion",
+      "failed": 3,
+      "passed": 1,
+      "seconds": 14.23,
+      "result": "same-seed uninterrupted controls also drift; exact restored state verified; future parameter bitwise assertion declined with evidence, no tolerance widening"
+    },
+    {
+      "check": "native full-model A/R replay",
+      "result": "FAIL retained; three distance feature4 elements beyond original CPU/CUDA tolerance; all native logits passed; no original COMPLETE marker accepted"
+    },
+    {
+      "check": "stable derived analysis v1",
+      "result": "superseded because it did not reject unrelated native drift; v2 guards all other14 geo features and both native logit arrays"
+    },
+    {
+      "check": "review regressions",
+      "result": "TRAIN-only rows, nested diffusion, temporal ambiguity, private output routing, quoted home paths and symlink-loop anonymous errors all reproduced RED before fixes"
+    }
+  ],
+  "experiments": {
+    "tiny_train_pilot": "pilot_anonymous.json",
+    "cuda_numerical_controls": "cuda_recovery_anonymous.json",
+    "stable_ar_analysis": "ar_anonymous.json",
+    "evaluation_metadata": "evaluation_readiness.json",
+    "native_ar_members_unchanged": 9,
+    "derived_ar_members_unchanged": 17,
+    "native_ar_replay_passed": false,
+    "stable_cpu_derived_replay_passed": true,
+    "new_validation_or_test_inference": false,
+    "new_formal_training": false,
+    "default_decoder_changed": false
+  },
+  "review": {
+    "automatic_round_cap": 3,
+    "core_fresh_context_review": true,
+    "core_independent_regression": {
+      "passed": 94,
+      "seconds": 26.94
+    },
+    "ar_fresh_context_review_unresolved": 0,
+    "confirmed_findings_resolved": [
+      "strict explicit TRAIN membership",
+      "nested diffusion ambiguity",
+      "unassigned multi-time declarations",
+      "same normalized path validated/written",
+      "anonymous pre-output normalization failures",
+      "diagnostic CLI privacy/source closure/private output",
+      "stable analysis rejects non-distance native drift"
+    ],
+    "last_core_path_fix": "author self-review and RED/GREEN13-case CLI regression after third round; no fourth automatic review cycle",
+    "substantive_unresolved_findings": 0
+  },
+  "resource_observations": {
+    "real_pilot_gpu": 0,
+    "real_pilot_two_idle_snapshots": true,
+    "native_ar_gpu": 1,
+    "native_ar_idle_before_launch": true,
+    "existing_gpu_jobs_preserved": true,
+    "cuda_supplement_selection_deviation": "One final CUDA-test prelaunch sample saw GPU0 utilization6%/memory30737MiB. The14s check had already completed when interruption was attempted; no existing workload was stopped. Do not describe every supplement as idle-card execution."
+  },
+  "limitations": [
+    "real planar R labels not established; real2D R supervision disabled",
+    "current DICOM sample lacks position/orientation; native brain DICOM provenance unverified",
+    "no new independent evaluation cohort or actual Level R reader work",
+    "CPU exact future parameters; CUDA exact restored state but nondeterministic future backward updates",
+    "full-model joint initialization/G1 and formal recipe remain unfinished"
+  ]
+}

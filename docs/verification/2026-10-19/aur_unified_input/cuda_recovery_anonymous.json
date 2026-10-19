@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "claim_type": "computed",
+  "checkpoint_restoration_exact": true,
+  "cpu_future_updates_bitwise_verified": true,
+  "cuda_future_parameters_bitwise_guaranteed": false,
+  "same_seed_uninterrupted_cuda_also_drifts": true,
+  "cuda_uninterrupted_max_parameter_abs_difference": {
+    "I": 2.027e-06,
+    "II": 3.451e-05,
+    "III": 0.0001115
+  },
+  "all_rng_equal_in_uninterrupted_controls": true,
+  "strict_deterministic_failure_operator": "upsample_trilinear3d_backward_out_cuda",
+  "strict_mode_changes_no_production_defaults": true,
+  "cuda_restore_tests": {
+    "passed": 4,
+    "seconds": 14.04,
+    "contents": [
+      "three-stage exact checkpoint restoration and continued mode/RNG/exposure/counters",
+      "existing bf16 inference regression"
+    ],
+    "future_loss_rtol": 1e-05,
+    "future_loss_atol": 1e-06
+  },
+  "raw_probe_sha256": {
+    "default": "abc9235ab4ac949c09759410766ba6cc7d925a1294ed5ad7323029e635143e2e",
+    "strict": "7888044fbf3a79c89c970689026008d48a4589f3607fa11e51256bef2b49ff1a",
+    "cudnn": "f6c58eb27e5026ccc1df42d4116a05dc3f204bcab342f3de37355edc325994cb"
+  },
+  "probe_source_sha256": "94d7f0b921f27835b58c624d3d48fd549fe37a22b2236052873e884e71aadc97",
+  "raw_probe_seconds": {
+    "default": 12.91995903197676,
+    "strict": 1.5730675160884857,
+    "cudnn": 14.49693083902821
+  }
+}

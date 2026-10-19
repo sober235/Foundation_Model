@@ -1,4 +1,19 @@
-# STATUS：2026-10-19（双输入训练准备分析完成；正式2D尚未开训）
+# STATUS：2026-10-19（统一2D/3D技术闭环已实施；正式全模型训练仍NOT READY）
+
+本轮用户授权执行后续建议，已完成[统一输入实施计划](docs/superpowers/plans/2026-10-19-aur-unified-input-execution.md)中的代码、有限TRAIN pilot、A/R诊断与评价准备。完整结果、原失败与数值限制见[本轮报告](docs/verification/2026-10-19/aur_unified_input/RESULTS.md)和同目录RUN.json。
+
+- **实现：** opt-in `dual_input=True`，同模型/单checkpoint接真实depth1的2D与3D，主体共享、stem/up按维度适配；SSL也支持两维。旧3D默认调用、key和数值输出保持兼容。新增严格classic MR几何入口、源hash/帧映射与原网格推理；enhanced/缺几何/歧义时间或扩散维显式拒绝。
+- **真实TRAIN技术pilot：** 三源各1名患者，tiny随机模型，I/II/III各24步，每阶段2D/3D曝光12/12；共72次optimizer step，训练段16.397秒，CUDA allocated峰值约137.4MiB。两维训练loss下降，但不是全模型/泛化/过门结果。二维R无可靠标签时资格关闭，三维合格R与合成二维R分别验证。
+- **恢复：** CPU连续/断点完整state逐位相同；CUDA恢复瞬间完整state精确，后续mode/RNG/counters一致。相同CUDA连续训练也会漂移；strict模式受trilinear backward无确定性实现限制。新runner核对数值环境，不承诺未来CUDA参数逐位复现。
+- **新A/R测量：** 同旧完整C2、三名TRAIN各一个标准裁块，各一次float32前向。五个历史缺失A类在GT处仍几乎不给概率且胜出率0，不能由全局均值宣称A32正常。R固定192query，仅替换预测A/U几何，2个答案翻转，非准确率。原native replay因距离数值消减FAIL保留；独立版本的稳定距离CPU派生通过，原缓存与容差未改。
+- **评价准备：** 重核TRAIN3499行/894来源限定患者、val405/101、历史test1056/249，清单身份交集0；不是跨来源生物学去重证明。未建立新独立队列。默认Level R数据库不存在，未审计其它路径或联系读者。当前抽样DICOM缺IPP/IOP，原生脑DICOM路径/关联仍需核实。
+- **科学裁决不变：** 原完整模型的A/U/R测试门仍未过，默认legacy_max不变；无新val/test成绩、Level R人标或临床成功主张。正式训练前仍须全模型初始化/预算与双mode G1、可靠二维R资格及独立评价；网页/API/URL后置。
+
+验证命令、最终CPU/CUDA计数、审阅修复与恢复方式以本轮RUN.json为准。下面保留执行前的历史记录，不能把其中“尚未实现统一模型/没有新训练”的句子当成本轮状态。
+
+---
+
+## 执行前记录：2026-10-19（双输入训练准备分析）
 
 当前阶段：用户已明确构建出的同一个模型兼容2D/3D，输入来自其提供的DICOM且保留全部信息。[统一模型设计草案](docs/superpowers/specs/2026-10-19-aur-unified-2d-3d-dicom-design.md)建议共享主体、维度适配stem/up和单checkpoint，具体结构待审；正式训练仍为NOT READY，尚未启动新训练。下文此前独立2D建议须按此新方向细化。
 

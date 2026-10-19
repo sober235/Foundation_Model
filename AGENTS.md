@@ -9,8 +9,11 @@ Read `CLAUDE.md` and `STATUS.md` for the current project contract and state.
 - For the frozen TRAIN U diagnostic, use `scripts/aur_diagnose_u_supervision.py --out <private-run> --replay-only` for complete integrity/numeric checks; its output is deliberately fixed and anonymous. Follow the recorded contract instead of dumping archive contents or repeating GPU inference.
 - For the completed paired background-allocation tangent, use `scripts/aur_diagnose_u_background.py --out <private-run> --replay-only`. This preserves the complete numeric archive and needs no GPU, model construction or checkpoint deserialization; do not repeat its twelve image forwards to recover already-cached measurements.
 - Legacy tracked image filenames can also contain case identifiers. For history audits, use allowlisted Markdown documents and filtered scope quotations; do not dump broad repository filename inventories.
+- Historical source/hash contracts remain immutable. Synthetic replay tests must freeze their own temporary source tree and manifest; run actual historical replays from their frozen checkout instead of updating historical hashes to accept feature code.
+- Production medical-output CLIs must validate and write the same normalized path, outside Git and under the private home root. Argument errors must not echo raw private values.
 
 ## Scope and training records
 
 - The final input scope includes standalone 2D and 3D MRI with complete A/U/R. Report coverage separately for both modes and all three tasks. Deferred work remains an explicit unfinished requirement; a 3D subplan never replaces the full goal.
 - Distinguish user requirements, proposed architecture/recipes, and observed execution. Before a new formal run, record its initialization lineage, mode-specific data/splits/evaluation, budget and recovery; historical commands or passing code tests do not establish training readiness.
+- Distinguish exact checkpoint/RNG restoration from future CUDA parameter reproducibility. Record numerical backend settings; CUDA trilinear-backward nondeterminism is not removed by restoring RNG. Keep failed numerical controls and their declared tolerances.

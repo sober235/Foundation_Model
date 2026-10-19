@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "claim_type": "computed",
+  "evidence": "NOT_EVIDENCE",
+  "pilot_only": true,
+  "model_size": "tiny",
+  "formal_training_ready": false,
+  "native_dicom_validated": false,
+  "historical_test_used": false,
+  "source_inputs_unchanged": true,
+  "selected_train_rows": 3,
+  "source_counts": {
+    "bmsr": 1,
+    "isles": 1,
+    "pdgm": 1
+  },
+  "wall_seconds_inside_training_pipeline": 16.39668770181015,
+  "peak_cuda_allocated_bytes": 144058880,
+  "peak_cuda_reserved_bytes": 165675008,
+  "data_contract": {
+    "data_type": "derived_train_planes",
+    "rules_version": 1,
+    "samples_sha256": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+    "split_sha256": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34",
+    "selection_sha256": "9195f1a348ae088a1938078bf32aa1c43179ee7ef93c8904d5c766f089ccc8cb",
+    "fixed_crops": true,
+    "medical_inputs_sha256": "72d9c7df3e0ba4f912a111d073c7dfb3de923a48e27d80ca8206130b7fe038f1",
+    "runtime_sha256": "8ce63f2a887ca827201f370fcf49b2ae844256c133ce019fadc1e11d5bcf9cb9",
+    "crops": {
+      "2d": [
+        1,
+        32,
+        32
+      ],
+      "3d": [
+        8,
+        32,
+        32
+      ]
+    }
+  },
+  "launch_source_snapshot_sha256": "8ce63f2a887ca827201f370fcf49b2ae844256c133ce019fadc1e11d5bcf9cb9",
+  "stages": {
+    "I": {
+      "exposures": {
+        "2d": 12,
+        "3d": 12
+      },
+      "modes": {
+        "2d": {
+          "optimizer_steps": 12,
+          "early3_mean_training_loss": 0.12616458038489023,
+          "late3_mean_training_loss": 0.1082066943248113,
+          "u_matched_instances_over_draws": 0,
+          "r_supervised_instances_over_draws": 0
+        },
+        "3d": {
+          "optimizer_steps": 12,
+          "early3_mean_training_loss": 0.12265283241868019,
+          "late3_mean_training_loss": 0.11629811736444633,
+          "u_matched_instances_over_draws": 0,
+          "r_supervised_instances_over_draws": 0
+        }
+      },
+      "checkpoint_sha256": "a69ebff86515dcc5e0892c484be002e2be522514e12b3a420189ea49606d44b9"
+    },
+    "II": {
+      "exposures": {
+        "2d": 12,
+        "3d": 12
+      },
+      "modes": {
+        "2d": {
+          "optimizer_steps": 12,
+          "early3_mean_training_loss": 6.553505897521973,
+          "late3_mean_training_loss": 4.464570601781209,
+          "u_matched_instances_over_draws": 16,
+          "r_supervised_instances_over_draws": 0
+        },
+        "3d": {
+          "optimizer_steps": 12,
+          "early3_mean_training_loss": 6.079941749572754,
+          "late3_mean_training_loss": 4.6350752512613935,
+          "u_matched_instances_over_draws": 16,
+          "r_supervised_instances_over_draws": 0
+        }
+      },
+      "checkpoint_sha256": "31346b9bfcf1e82e9f2ad87614a9e0ec54d179338617d2c73ce712ac151b908f"
+    },
+    "III": {
+      "exposures": {
+        "2d": 12,
+        "3d": 12
+      },
+      "modes": {
+        "2d": {
+          "optimizer_steps": 12,
+          "early3_mean_training_loss": 5.492190758387248,
+          "late3_mean_training_loss": 3.6903742949167886,
+          "u_matched_instances_over_draws": 16,
+          "r_supervised_instances_over_draws": 0
+        },
+        "3d": {
+          "optimizer_steps": 12,
+          "early3_mean_training_loss": 8.249972025553385,
+          "late3_mean_training_loss": 6.489892323811849,
+          "u_matched_instances_over_draws": 16,
+          "r_supervised_instances_over_draws": 16
+        }
+      },
+      "checkpoint_sha256": "f5e4a2236b156569a10b4d1f58ffad0fd564a506c85eb0aa7dfa3cfcad7707dd"
+    }
+  },
+  "limitations": [
+    "derived 2D planes, not native DICOM validation",
+    "2D R eligibility disabled without reliable plane labels",
+    "training losses, not A/U/R test performance",
+    "tiny random initialization, not formal full-model SSL pretraining",
+    "CUDA future update reproducibility is limited by nondeterministic backward kernels"
+  ]
+}

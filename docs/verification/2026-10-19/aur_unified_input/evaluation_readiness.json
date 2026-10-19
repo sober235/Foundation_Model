@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "claim_type": "computed_metadata_only",
+  "image_arrays_loaded": false,
+  "source_qualified_not_biological_deduplication": true,
+  "split_summary": {
+    "train": {
+      "rows": 3499,
+      "patients": 894,
+      "u_supervised_rows": 1216
+    },
+    "validation": {
+      "rows": 405,
+      "patients": 101,
+      "u_supervised_rows": 143
+    },
+    "historical_test": {
+      "rows": 1056,
+      "patients": 249,
+      "u_supervised_rows": 354
+    }
+  },
+  "split_intersections": {
+    "train_validation": 0,
+    "train_historical_test": 0,
+    "validation_historical_test": 0
+  },
+  "new_independent_cohort_established": false,
+  "historical_test_already_exposed": true,
+  "native_dicom_frame_link_rows": 0,
+  "default_level_r_database_exists": false,
+  "level_r_other_locations_or_readers_not_audited": true,
+  "native_dicom_qualification": "bounded MR sample missing IPP/IOP; representative brain path still required",
+  "formal_unified_g1_implemented": false,
+  "evaluation_requirements": {
+    "2d": [
+      "native planar A32/host Dice",
+      "area-qualified supervised U and FP/image at frozen validation points",
+      "in-plane qualified R and same-observation B0; unknown relations excluded"
+    ],
+    "3d": [
+      "A32 and host Dice",
+      "source-specific U FROC/FP-scan using matching grids",
+      "controlled and end-to-end R with independent Level R labels"
+    ]
+  }
+}
