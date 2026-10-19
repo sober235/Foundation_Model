@@ -1,6 +1,6 @@
 # STATUS：2026-10-19（双输入训练准备分析完成；正式2D尚未开训）
 
-当前阶段：补齐2D/3D技术路线迭代与开训条件，正式2D仍为NOT READY；架构共享要求、初始化与数据/训练/评估闭环待冻结，尚未启动新训练。
+当前阶段：用户已明确构建出的同一个模型兼容2D/3D，输入来自其提供的DICOM且保留全部信息。[统一模型设计草案](docs/superpowers/specs/2026-10-19-aur-unified-2d-3d-dicom-design.md)建议共享主体、维度适配stem/up和单checkpoint，具体结构待审；正式训练仍为NOT READY，尚未启动新训练。下文此前独立2D建议须按此新方向细化。
 
 最近已执行的3D实验：按已批准方案完成原六名TRAIN患者/十二裁块的配对背景采点实验，执行代码73aa2c7。只在诊断U点集把boundary_share0.2改为0，保留16384点、focus_share0.5和原匹配，测量原生值锚定的float32共享掩膜头切线。ISLES主面板8/8裁块×draw的combined单位方向差global−control均为正（均值+1.438208），未采到FP背景的局部抑制更弱，四裁块跨draw均值也4/4同向。当前结果不支持把该改动推进为修复或据此加训；正式采样器/损失/权重未改，没有val/test前向。默认legacy_max、完整405val FAIL及A/R缺口保留。
 
@@ -19,7 +19,7 @@
 
 ## 技术路线迭代与正式训练入口（2026-10-19）
 
-[完整迭代记录与就绪性分析](docs/plans/2026-10-19-aur-dual-input-route-and-training-readiness.md)已补齐：原3D方案→SSL-first修订→Q27双输入要求→2D独立checkpoint技术提案→3D失败与诊断→当前2D训练缺口。双输入是用户既有要求；独立模型还是共享权重仍是技术选择，不能把旧提案当成已批准配方。
+[完整迭代记录与就绪性分析](docs/plans/2026-10-19-aur-dual-input-route-and-training-readiness.md)已补齐：原3D方案→SSL-first修订→Q27双输入要求→2D独立checkpoint技术提案→3D失败与诊断→当前2D训练缺口→同日用户明确统一模型与DICOM完整信息保留。旧独立模型提案不再优先推进；共享范围、初始化和联合训练配方仍须审阅冻结。
 
 - **只读数据核对：** TRAIN3499行/894来源限定患者，validation405/101，历史test1056/249；三对身份交集为0。4960行的image/anatomy及3887条lesion路径引用存在且在许可根内；未载入影像数组。旧清单缺失的A/R标志按实际loader默认True，2D新清单应显式化。来源限定身份不等于跨来源生物学去重。
 - **当前NOT READY：** `aur2d`完整代码、2D清单/splits、Dataset909、2D训练/恢复/评价均未落地。旧2D计划只有II/III而无兼容初始化；是否以及如何补齐2D Stage I须在新训练设计中冻结。现有3D G1和C2权重不是2D初始化证据。

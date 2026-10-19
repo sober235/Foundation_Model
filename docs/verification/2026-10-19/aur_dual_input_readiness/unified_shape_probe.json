@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "source_commit": "4be75f1e02c06ff7acb406392510cd9c0fe45a23",
+  "date": "2026-10-19",
+  "kind": "synthetic_shape_probe_existing_code",
+  "performed_by": "unified_model_feasibility subagent",
+  "independently_repeated": false,
+  "execution": {
+    "cwd": "repository root",
+    "executable": "/home/congcongliu/anaconda3/envs/nvgen/bin/python",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "PYTHONNOUSERSITE": "1",
+      "PYTHONPATH": "."
+    },
+    "torch_num_threads": 2,
+    "actual_nice_prefix_used": false,
+    "elapsed_seconds_reported": 5.8,
+    "exit_code_reported": 0,
+    "source_code_for_reproduction": "import torch\nfrom anatobind.aur.model import AnatoBindBrain\ntorch.set_num_threads(2)\ncfg = dict(embed=32, depths=(1,1,1,1), heads=(1,2,4,8), d_model=32, n_events=2, mask_dim=8, pixel_dim=16, dec_layers=1, dec_heads=1, rel_layers=1, rel_heads=1, use_checkpoint=False)\nmodel = AnatoBindBrain(**cfg).eval()\nfor depth in (1,2):\n    image = torch.zeros(1,1,depth,32,32)\n    valid = torch.ones(1,depth,32,32)\n    coords = torch.stack(torch.meshgrid(torch.arange(depth), torch.arange(32), torch.arange(32), indexing=\"ij\")).float()[None]\n    local = torch.zeros_like(coords)\n    try:\n        with torch.inference_mode():\n            out = model(image, valid, coords, local)\n            a = model.entity_masks(out)\n            u = model.event_masks(out)\n            r = model.bind(out, 0, torch.tensor([0]))\n            print({\"patch_depth\":2,\"input_depth\":depth,\"A_shape\":tuple(a.shape),\"U_shape\":tuple(u.shape),\"R_shape\":tuple(r.shape)})\n    except ValueError as exc:\n        print({\"patch_depth\":2,\"input_depth\":depth,\"error\":str(exc)})\nmodel1 = AnatoBindBrain(**cfg, patch=(1,4,4)).eval()\nwith torch.inference_mode():\n    image = torch.zeros(1,1,1,32,32)\n    valid = torch.ones(1,1,32,32)\n    coords = torch.stack(torch.meshgrid(torch.arange(1), torch.arange(32), torch.arange(32), indexing=\"ij\")).float()[None]\n    out = model1(image,valid,coords,torch.zeros_like(coords))\n    print({\"patch_depth\":1,\"input_depth\":1,\"A_shape\":tuple(model1.entity_masks(out).shape),\"U_shape\":tuple(model1.event_masks(out).shape),\"R_shape\":tuple(model1.bind(out,0,torch.tensor([0])).shape)})\nprint({\"shape_changes\":{k:(tuple(v.shape),tuple(model1.state_dict()[k].shape)) for k,v in model.state_dict().items() if v.shape != model1.state_dict()[k].shape}})\n",
+    "reproduction_note": "The source below is formatting-equivalent to the completed inline command. It has not been run again. Any future execution must use nice -n 19 and the repository thread limits. Shape results do not depend on randomly initialized values; numerical predictions do.",
+    "no_source_files_changed": true,
+    "no_medical_data_or_manifests_read": true,
+    "no_checkpoint_loaded": true,
+    "no_training": true,
+    "no_gpu_inference": true
+  },
+  "observations": [
+    {
+      "patch_depth": 2,
+      "input_depth": 1,
+      "result": "ValueError",
+      "message": "spatial shape (1, 32, 32) is not a multiple of the patch (2, 4, 4)"
+    },
+    {
+      "patch_depth": 2,
+      "input_depth": 2,
+      "A_shape": [
+        1,
+        32,
+        2,
+        32,
+        32
+      ],
+      "U_shape": [
+        1,
+        2,
+        2,
+        32,
+        32
+      ],
+      "R_shape": [
+        1,
+        14
+      ]
+    },
+    {
+      "patch_depth": 1,
+      "input_depth": 1,
+      "A_shape": [
+        1,
+        32,
+        1,
+        32,
+        32
+      ],
+      "U_shape": [
+        1,
+        2,
+        1,
+        32,
+        32
+      ],
+      "R_shape": [
+        1,
+        14
+      ]
+    }
+  ],
+  "state_dict_shape_differences": {
+    "backbone.patch_embed.weight": {
+      "patch_depth_two": [
+        32,
+        1,
+        2,
+        4,
+        4
+      ],
+      "patch_depth_one": [
+        32,
+        1,
+        1,
+        4,
+        4
+      ]
+    },
+    "masks.up.weight": {
+      "patch_depth_two": [
+        16,
+        8,
+        2,
+        4,
+        4
+      ],
+      "patch_depth_one": [
+        16,
+        8,
+        1,
+        4,
+        4
+      ]
+    }
+  },
+  "limitations": [
+    "Reduced randomly initialized model with synthetic zero tensors; U query count two only for probe.",
+    "No full-sized model or existing checkpoint equivalence proof.",
+    "No backward, optimizer, checkpoint-resume, DICOM decoding, or real 2D/3D quality validation.",
+    "Original command omitted nice -n 19; deviation disclosed and future probes must use it.",
+    "Changing patch config is not implementation of the proposed switchable-adapter model."
+  ]
+}

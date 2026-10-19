@@ -4,6 +4,8 @@
 
 **Goal（完整产品的后续目标）:** 从公开 HTTPS URL 接收一张 2D 或一个 3D brain MRI DICOM input，输出可交互的 A/U/R 结果并支持下载。当前优先完成模型与离线验收，执行顺序以下列 Q28 更新为准。
 
+**2026-10-19后续澄清：** 用户明确构建出的模型本身兼容2D/3D，输入来自原DICOM且保留全部信息。下文两个独立checkpoint和临时上传清理为旧提案；新的[统一模型设计草案](../specs/2026-10-19-aur-unified-2d-3d-dicom-design.md)待审，不得直接执行旧模型拆分任务或以清理删除唯一DICOM权威源。
+
 **Architecture:** 3D DICOM series 经 DICOM intake 转成带真实 geometry 的 volume，进入现有 3D AUR；孤立 2D DICOM 进入独立训练的 2D AUR checkpoint。FastAPI 提供临时 job API，vanilla JS 展示切片、A/U overlays 与 R host；Caddy 对公网提供 HTTPS。两种模型共享 A/U/R 标签和结果 schema，不共享未经验证的 checkpoint。
 
 **Tech Stack:** Python, PyTorch, SimpleITK, FastAPI, python-multipart, Uvicorn, vanilla HTML/CSS/JS, Caddy.

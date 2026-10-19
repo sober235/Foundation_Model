@@ -1,6 +1,7 @@
 # AnatoBind-Brain DICOM A/U/R 公共交互原型规格
 
 **状态：** 用户目标已并入；实现计划待用户审阅。
+**同日后续用户澄清：** 构建出的模型本身须同时兼容2D/3D，输入来自用户提供的DICOM且保留全部信息。[统一模型设计草案](2026-10-19-aur-unified-2d-3d-dicom-design.md)取代优先实施两个独立完整模型的旧建议；下文双checkpoint、metadata白名单和上传清理属于历史提案，不能解释为丢弃原始DICOM字段或删除唯一权威原件。新结构仍待审。
 **2026-10-19迭代说明：** 双输入目标保持；本文独立2D Swin/checkpoint及训练配方仍是技术提案，不是实施完成或已验证配方。2D初始化/Stage I、二维面积门、采样和R几何来源存在待冻结项，见[路线迭代与正式训练入口分析](../../plans/2026-10-19-aur-dual-input-route-and-training-readiness.md)。3D正式SSL-first要求不能靠直接套用3D权重或静默随机初始化来宣称已解决2D训练。
 **依赖：** 3D A/U/R 修复见 `docs/superpowers/plans/2026-10-13-anatobind-aur-three-goal-conformance.md`。
 **数据根：** `/data2/congcong/data/FM_data`。
