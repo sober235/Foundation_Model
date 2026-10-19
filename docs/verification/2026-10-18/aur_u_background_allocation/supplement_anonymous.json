@@ -1,0 +1,150 @@
+{
+  "native_control_max_abs_errors": {
+    "mask": 0.0,
+    "presence": 0.0
+  },
+  "resources": {
+    "crop_elapsed_sum": 42.56545954057947,
+    "max_crop_elapsed": 4.380392198916525,
+    "max_cuda_allocated_bytes": 2695571968,
+    "max_cuda_reserved_bytes": 4269801472,
+    "max_rss_kib": 2998864
+  },
+  "sources": {
+    "bmsr": {
+      "arms": [
+        {
+          "distant_background_points": 85190,
+          "duplicate_points": 37239,
+          "effective_points": 131072,
+          "fp_background_sample_occurrences": 0,
+          "fp_background_unique_voxel_query_draws": 0,
+          "fp_query_draws_with_zero_coverage": 0,
+          "ignored_points": 0,
+          "invalid_points": 0,
+          "positive_points": 32774,
+          "ring_points": 13108,
+          "sampled_points": 131072,
+          "unique_effective_points": 93833,
+          "unique_points": 93833
+        },
+        {
+          "distant_background_points": 98289,
+          "duplicate_points": 28460,
+          "effective_points": 131072,
+          "fp_background_sample_occurrences": 0,
+          "fp_background_unique_voxel_query_draws": 0,
+          "fp_query_draws_with_zero_coverage": 0,
+          "ignored_points": 0,
+          "invalid_points": 0,
+          "positive_points": 32777,
+          "ring_points": 6,
+          "sampled_points": 131072,
+          "unique_effective_points": 102612,
+          "unique_points": 102612
+        }
+      ],
+      "assignment_denominator": 8,
+      "crops": 4,
+      "different_query_assignments": 0,
+      "draws": 8,
+      "matched_fp_component_draws": 0,
+      "matched_fp_query_draws": 0,
+      "no_ring_draws": 4,
+      "zero_effective_positive_targets": [
+        0,
+        0
+      ]
+    },
+    "isles": {
+      "arms": [
+        {
+          "distant_background_points": 38536,
+          "duplicate_points": 44730,
+          "effective_points": 131072,
+          "fp_background_sample_occurrences": 3237,
+          "fp_background_unique_voxel_query_draws": 3085,
+          "fp_query_draws_with_zero_coverage": 4,
+          "ignored_points": 0,
+          "invalid_points": 0,
+          "positive_points": 66000,
+          "ring_points": 26536,
+          "sampled_points": 131072,
+          "unique_effective_points": 86342,
+          "unique_points": 86342
+        },
+        {
+          "distant_background_points": 64225,
+          "duplicate_points": 43240,
+          "effective_points": 131072,
+          "fp_background_sample_occurrences": 1730,
+          "fp_background_unique_voxel_query_draws": 1729,
+          "fp_query_draws_with_zero_coverage": 5,
+          "ignored_points": 0,
+          "invalid_points": 0,
+          "positive_points": 66312,
+          "ring_points": 535,
+          "sampled_points": 131072,
+          "unique_effective_points": 87832,
+          "unique_points": 87832
+        }
+      ],
+      "assignment_denominator": 86,
+      "crops": 4,
+      "different_query_assignments": 5,
+      "draws": 8,
+      "matched_fp_component_draws": 176,
+      "matched_fp_query_draws": 56,
+      "no_ring_draws": 0,
+      "zero_effective_positive_targets": [
+        0,
+        0
+      ]
+    },
+    "pdgm": {
+      "arms": [
+        {
+          "distant_background_points": 38324,
+          "duplicate_points": 20713,
+          "effective_points": 131072,
+          "fp_background_sample_occurrences": 33,
+          "fp_background_unique_voxel_query_draws": 33,
+          "fp_query_draws_with_zero_coverage": 0,
+          "ignored_points": 0,
+          "invalid_points": 0,
+          "positive_points": 66294,
+          "ring_points": 26454,
+          "sampled_points": 131072,
+          "unique_effective_points": 110359,
+          "unique_points": 110359
+        },
+        {
+          "distant_background_points": 63892,
+          "duplicate_points": 18594,
+          "effective_points": 131072,
+          "fp_background_sample_occurrences": 52,
+          "fp_background_unique_voxel_query_draws": 52,
+          "fp_query_draws_with_zero_coverage": 0,
+          "ignored_points": 0,
+          "invalid_points": 0,
+          "positive_points": 66775,
+          "ring_points": 405,
+          "sampled_points": 131072,
+          "unique_effective_points": 112478,
+          "unique_points": 112478
+        }
+      ],
+      "assignment_denominator": 12,
+      "crops": 4,
+      "different_query_assignments": 0,
+      "draws": 8,
+      "matched_fp_component_draws": 6,
+      "matched_fp_query_draws": 4,
+      "no_ring_draws": 0,
+      "zero_effective_positive_targets": [
+        0,
+        0
+      ]
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "code_sha": "73aa2c730075894216570b63c833d500b90c744b",
+  "frozen_inputs_verified": true,
+  "metadata_preflight": true,
+  "model_state_sha256": "5fbb0d6f9513fdebf66831033c6a8d32710a05ce2ec900656c062a61546e482f",
+  "n_crops": 12,
+  "reference_members": 29,
+  "selected_rows": 6,
+  "selected_source_counts": {
+    "bmsr": 2,
+    "isles": 2,
+    "pdgm": 2
+  },
+  "source_members": 133
+}

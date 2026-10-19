@@ -1,6 +1,6 @@
 # Paired U background allocation implementation plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Execute the approved twelve-crop, two-draw ring-to-global shared-head tangent experiment with reproducible CPU replay and anonymous results.
 
@@ -44,11 +44,11 @@ Each crop has a metadata dict with source/sequence, n_instances, a_supervised/u_
 
 **Interfaces:** `fixed_event_loss(presence, logits, target, weight, matches, *, u_supervised=True, profile='unmatched_empty_v1') -> dict` and `analyze_crop(meta,arrays) -> dict` as above. Match tuples are zero-based official query/target indices, target shape[N,P]. `analyze_crop` calls original matcher on control/native inputs, holds pairs for both primary arms, separately rematches global points. It returns JSON-safe summaries plus named numerical arrays; callers strip arrays before JSON serialization.
 
-- [ ] Write tests: official scalar/logit-gradient equivalence for N0/N1/N>M, U-disabled, ignored/zero weights, duplicates, unmatched profile; exact native anchor; independent central finite difference for head gradients/JVP and shared A response; zero directions and disabled A; real model parameters not mutated. Tiny MLP shapes allowed for tests.
-- [ ] Run focused tests RED, save observed failure evidence privately without inputs.
-- [ ] Implement functional float32 parameter copies/anchored logits, fixed original losses, combined/U-only directions, event/entity JVP and A-query directional contributions (which sum to the total A response). Reuse original entity_loss for total; verify decomposition. No network/backbone gradients.
-- [ ] Run focused tests GREEN, report command/count and commit only owned files.
-- [ ] Fresh review with source/synthetic inputs, resolve substantive findings.
+- [x] Write tests: official scalar/logit-gradient equivalence for N0/N1/N>M, U-disabled, ignored/zero weights, duplicates, unmatched profile; exact native anchor; independent central finite difference for head gradients/JVP and shared A response; zero directions and disabled A; real model parameters not mutated. Tiny MLP shapes allowed for tests.
+- [x] Run focused tests RED, save observed failure evidence privately without inputs.
+- [x] Implement functional float32 parameter copies/anchored logits, fixed original losses, combined/U-only directions, event/entity JVP and A-query directional contributions (which sum to the total A response). Reuse original entity_loss for total; verify decomposition. No network/backbone gradients.
+- [x] Run focused tests GREEN, report command/count and commit only owned files.
+- [x] Fresh review with source/synthetic inputs, resolve substantive findings.
 
 ### Task 2: Paired sampler, ROI sufficient statistics and aggregation
 
@@ -56,11 +56,11 @@ Each crop has a metadata dict with source/sequence, n_instances, a_supervised/u_
 
 **Interfaces:** `paired_points(valid,instance,weight,*,n,seed)->(points[2,P] int64,summary dict)`; `build_rois(detection_map,detection_rows,outcomes,instance,valid,weight,pixels,points,matches)->(rows,features,indices)` where pixels[C,V] is detached torch tensor, points[2,2,P], matches=list of two(qi,ti), outcomes=original component outcome list. `indices` remains private/transient. `response_report(meta,arrays,analysis)->dict` consumes tangent output; `aggregate_reports(reports)->dict` produces only fixed source-level whitelist. Tests may use small query counts.
 
-- [ ] Write tests for same focus/non-ring slots, initial uniform restoration, empty/no-ring, crowded quota0, ignored/duplicate counts and uniform extra positives.
-- [ ] Write tests for matched FP true-BG vs other GT, TP/FP distinction, per-query union vs component weights, paired-point exclusion, no-support rows, target panels, source/draw/crop aggregation and undefined denominators. Exact enum validation, no arbitrary metadata echoed.
-- [ ] Run RED; implement using original sample_points, explicit original slot rule, original component/query identities. Calculate ROI feature means with float64 accumulation, outputfloat32; return indices for independent streamed response check.
-- [ ] Compute mean-logit responses by feature/JVP dot product; validate against supplied streamed references at declared rtol1e-5/atol1e-5 for nonempty/defined rows. Public aggregate includes per-source distributions/sign/support counts and fixed metadata only.
-- [ ] Run GREEN and commit only owned files; fresh review/fix.
+- [x] Write tests for same focus/non-ring slots, initial uniform restoration, empty/no-ring, crowded quota0, ignored/duplicate counts and uniform extra positives.
+- [x] Write tests for matched FP true-BG vs other GT, TP/FP distinction, per-query union vs component weights, paired-point exclusion, no-support rows, target panels, source/draw/crop aggregation and undefined denominators. Exact enum validation, no arbitrary metadata echoed.
+- [x] Run RED; implement using original sample_points, explicit original slot rule, original component/query identities. Calculate ROI feature means with float64 accumulation, outputfloat32; return indices for independent streamed response check.
+- [x] Compute mean-logit responses by feature/JVP dot product; validate against supplied streamed references at declared rtol1e-5/atol1e-5 for nonempty/defined rows. Public aggregate includes per-source distributions/sign/support counts and fixed metadata only.
+- [x] Run GREEN and commit only owned files; fresh review/fix.
 
 ### Task 3: Private archive and bounded frozen-forward runner
 
@@ -68,21 +68,23 @@ Each crop has a metadata dict with source/sequence, n_instances, a_supervised/u_
 
 **Interfaces:** archive `create_archive(out,contract)`, `write_crop(out,index,meta,arrays)`, `reconstruct_crop(meta,arrays)->dict`, `complete_archive(out,contract,deadline)`, `replay_archive(out,expected_contract)->dict`. Runner CLI `--out`, `--reference`, original input overrides, `--gpu`, `--max-seconds<=1800`, `--replay-only`. Reuse prior runner prepare_contract/selection and numeric archive validation without changing original files.
 
-- [ ] Write failing synthetic tests for no-model replay, bad/missing/extra/changed members, nonfinite input, incomplete markers, post-hash deadline, overwrite/path escape, output permissions and fixed safe errors/progress.
-- [ ] Implement strict private numeric input schema/hash contract, source closure, baseline reference inventory, complete-only archive, CPU reconstruction and immutable replay. Exclude partial caches, no checkpoint/model load on replay. Freeze numerical comparison tolerances explicitly.
-- [ ] Implement one frozen forward/crop, validate crop hashes, native control rtol/atol1e-5, exact matches/component rows/map; gather both arm features/logits and original A targets. Check full model state and fixed-query R logits before/after observation. Sampled features are float32 copies of native features; no dense autograd graph.
-- [ ] Call tangent + ROI helpers, independently stream mean dense JVP projection over ROI indices, then reconstruct report from sufficient statistics and verify agreement. Save complete numeric evidence; clear per-crop GPU state serially. Enforce internal deadline through completion; progress only `Completed crops i/12` plus fixed completion line, errors class only.
-- [ ] Run focused integration, existing prior diagnostic tests and entire project CPU suite; report actual failures/skips, rerun affected checks after fixes. Source-closure assertions and old CPU replay remain compatible.
-- [ ] Fresh whole-branch code review, resolve findings <=3 rounds, commit runtime code before image-based execution.
+- [x] Write failing synthetic tests for no-model replay, bad/missing/extra/changed members, nonfinite input, incomplete markers, post-hash deadline, overwrite/path escape, output permissions and fixed safe errors/progress.
+- [x] Implement strict private numeric input schema/hash contract, source closure, baseline reference inventory, complete-only archive, CPU reconstruction and immutable replay. Exclude partial caches, no checkpoint/model load on replay. Freeze numerical comparison tolerances explicitly.
+- [x] Implement one frozen forward/crop, validate crop hashes, native control rtol/atol1e-5, exact matches/component rows/map; gather both arm features/logits and original A targets. Check full model state and fixed-query R logits before/after observation. Sampled features are float32 copies of native features; no dense autograd graph.
+- [x] Call tangent + ROI helpers, independently stream mean dense JVP projection over ROI indices, then reconstruct report from sufficient statistics and verify agreement. Save complete numeric evidence; clear per-crop GPU state serially. Enforce internal deadline through completion; progress only `Completed crops i/12` plus fixed completion line, errors class only.
+- [x] Run focused integration, existing prior diagnostic tests and entire project CPU suite; report actual failures/skips, rerun affected checks after fixes. Source-closure assertions and old CPU replay remain compatible.
+- [x] Fresh whole-branch code review, resolve findings <=3 rounds, commit runtime code before image-based execution.
 
 ### Task 4: Execute, audit, report and local handoff
 
 **Ownership:** controller executes private inputs; independent reviewer only specified numeric-cache schema via fixed-output script, no selections/manifests.
 
-- [ ] Preserve private verification logs (dirs0700/files0600), snapshot allocation/load/processes twice, select eligible GPU, launch exact frozen revision with external/internal1800s bounds. First crop is reused, not discarded.
-- [ ] Verify all12crops completed, model/source/input/reference hashes unchanged; run complete CPU replay and prove archive bytes unchanged.
-- [ ] Independent numeric audit and public-claim review, separate controller input-membership check; no unrestricted private introspection. Scan new public artifacts/actual stdout silently for selected identifiers.
-- [ ] Write observed RESULTS.md/RUN.json/aggregate under approved public directory; source-level counts/distributions only, include mixed/null/harm patterns and limits. Keep original A/U/R verdicts and independent open tasks visible in STATUS/CLAUDE.
-- [ ] Mark observed plan steps, commit, fast-forward local main and create unique handoff tag according to CLAUDE; preserve worktree/evidence and do not push.
+- [x] Preserve private verification logs (dirs0700/files0600), snapshot allocation/load/processes twice, select eligible GPU, launch exact frozen revision with external/internal1800s bounds. First crop is reused, not discarded.
+- [x] Verify all12crops completed, model/source/input/reference hashes unchanged; run complete CPU replay and prove archive bytes unchanged.
+- [x] Independent numeric audit and public-claim review, separate controller input-membership check; no unrestricted private introspection. Scan new public artifacts/actual stdout silently for selected identifiers.
+- [x] Write observed RESULTS.md/RUN.json/aggregate under approved public directory; source-level counts/distributions only, include mixed/null/harm patterns and limits. Keep original A/U/R verdicts and independent open tasks visible in STATUS/CLAUDE.
+- [x] Mark observed plan steps, commit, fast-forward local main and create unique handoff tag according to CLAUDE; preserve worktree/evidence and do not push.
 
 Self-review: all spec sections map to the four tasks; interfaces and axis orders are defined above. Full design approval already explicitly includes implementation/execution; use the authorized subagent workflow without another permission round for this plan.
+
+Execution evidence: runtime73aa2c7, full CPU1345passed2skipped180.61s, frozen measurement exit0/161.126s, immutable CPU replay exit0/15.095s, independent numeric69297checks. Report `docs/verification/2026-10-18/aur_u_background_allocation/RESULTS.md`. Final public-claims review and local handoff are recorded in RUN.json/ledger when completed.

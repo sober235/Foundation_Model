@@ -1,10 +1,20 @@
-# STATUS：2026-10-18（TRAIN U监督诊断完成；模型缺口仍保留）
+# STATUS：2026-10-19（TRAIN U背景配额切线完成；该候选不获支持）
 
-当前阶段：按批准设计完成固定6名TRAIN患者/12增强裁块的U匹配、存在性与掩膜监督诊断（执行代码1a7de61）。同一C2权重、原始loss/query_cc解码/固定source分数不变；每裁块1次冻结eval前向、64query、2次16384点CPU探针。53为裁块内GT计数，可能跨裁块重复。保留16TP/113FP；100个FP来自ISLES。226条FP组件×采样记录中182条来自已匹配query，163/182与该query分配目标无体素重叠。8445个采到的负目标FP体素×采样梯度均有抑制方向，48/226条FP记录无有效点覆盖；不能据此证明历史训练根因或直接改loss。完整CPU1244passed/2skipped，纯CPU缓存回放通过且29成员字节不变，独立代码及数值审计无未解决项。没有训练、val/test前向或新模型性能裁决；默认legacy_max与完整405val FAIL不变。
+当前阶段：按已批准方案完成原六名TRAIN患者/十二裁块的配对背景采点实验，执行代码73aa2c7。只在诊断U点集把boundary_share0.2改为0，保留16384点、focus_share0.5和原匹配，测量原生值锚定的float32共享掩膜头切线。ISLES主面板8/8裁块×draw的combined单位方向差global−control均为正（均值+1.438208），未采到FP背景的局部抑制更弱，四裁块跨draw均值也4/4同向。当前结果不支持把该改动推进为修复或据此加训；正式采样器/损失/权重未改，没有val/test前向。默认legacy_max、完整405val FAIL及A/R缺口保留。
 
-最新报告 `docs/verification/2026-10-18/aur_u_train_supervision/RESULTS.md`；命令/哈希/资源/审核/两次工具输出隐私偏差见同目录 `RUN.json`，匿名汇总 `aggregate_anonymous.json`。新旧结论分开：前轮六例7528子实例/17350分数保留集合上界仍限制既有最终标量的单调校准拟合，未排除新特征、改变排序或更好掩膜。
+最新报告 `docs/verification/2026-10-18/aur_u_background_allocation/RESULTS.md`；同目录RUN.json、aggregate_anonymous.json、supplement_anonymous.json、numeric_audit.json。目录日期来自2026-10-18冻结方案，实际执行于2026-10-19。上一轮U监督报告仍为 `docs/verification/2026-10-18/aur_u_train_supervision/RESULTS.md`。更早分数排序上界继续限制既有最终标量的单调校准拟合，不排除新特征、改变排序或更好掩膜。
 
-## 0. 本轮诊断的读法与复用
+## 0. 最新背景配额对照与复用
+
+- 主面板排除两臂采样点并集，只测原匹配query的官方FP有效真背景；先query内合并组件，再按crop/draw求均值。ISLES56条query×draw、8/8crop×draw有支持，control−0.859799→global+0.578410；原始combined及U-only单位方向差也8/8不利。仅局部切线，不是FP数量变化或完整网络/历史训练梯度。
+- ISLES远处背景采点38536→64225，但已匹配FP真背景唯一覆盖体素×draw3085→1729；PDGM覆盖33→52而方向仍不利（4/8crop×draw有支持）。BMSR已匹配FP面板无支持，未匹配query路径仍独立保留，不能当成零效果。
+- ISLES分配目标logit方向差均值+1.224134；A损失方向差均值−0.004193但5/8较好、3/8较差。PDGM/BMSR的A差均值为正，即较少下降；两臂combined单位方向下的全部A总损失方向仍为负，不是实测A Dice损害或修复。原固定query R logits、十二裁块完整模型状态完全相同，这是受限路径控制而非R性能提升。
+- 重新按干预点官方匹配后5/106目标×draw换query（均ISLES，5/86）；不是前轮两个原draw之间的5/53，主分析保持原匹配。106条两臂均无有效正点缺失，无容量溢出。
+- 完整CPU1345passed/2skipped180.61s；独立任务/整分支代码审阅0项问题。实际A800物理7两次空闲快照/兼容性通过后运行161.126s、退出码0，最大allocated2.510GiB/reserved3.977GiB、RSS2.860GiB。先前候选物理5在启动前已忙，保护检查在模型/影像加载前停止；既有任务保留。
+- 纯CPU完整回放15.095s、退出码0，27成员字节不变，显式阻止模型/影像/checkpoint加载。独立脚本核对12crop/24draw/680ROI，69297项检查通过；未独立重新生成密集特征均值，其来源另由runner密集流式约简和输入/状态控制核验。TRAIN资格/完整源承诺由controller固定脚本核验，不混称独立溯源。
+- 私有完整缓存 `/home/congcongliu/outputs/aur_u_background_allocation_20261018/run_73aa2c7`，只用隐藏CUDA的 `scripts/aur_diagnose_u_background.py --out <该目录> --replay-only` 复算，不重复GPU测量。128项原依赖、checkpoint和旧29成员参考存档不变；新医学派生数组/逐例记录留在0700/0600目录，不入Git。当前新增公开文件和实际固定stdout另行扫描，不能扩展为历史会话匿名保证。
+
+## 0.1 上一轮TRAIN U监督诊断的读法与复用
 
 - 来源异质：BMSR的6个FP在两次采点均来自未匹配query；ISLES100个FP对应176匹配/24未匹配query的FP组件×采样记录；PDGM7个FP对应6/8。不能把ISLES主导的全局模式直接概括到BMSR。
 - 106个目标×采样均有有效正点，未遇query容量溢出；5/53裁块目标换了query（都在ISLES）。这些是新固定TRAIN裁块/CPU点draw，非历史分布式训练流或参数梯度重放。
@@ -37,7 +47,7 @@
 - 405/405保存A分数严格相等；716/716controlled R共享字段严格相等。旧缓存未保存A体素图、controlled query/window来源，不能声称这些未保存对象也已逐项验证。
 - 旧端到端缓存先匹配再过滤分数的问题已在本对照中统一为先固定阈值过滤、后一对一bbox IoU>=0.1匹配；2个保留检测恢复GT关联，旧匹配池38→40，预测未改变。原始缓存保留。
 - 716个controlled合格GT的正确端到端宿主27→128；共同匹配的40个GT正确数27→26（0rescue、1harm）。新增成功主要来自检测覆盖，不能说R头质量提高。U共718个非忽略GT，有2个没有controlled记录；分母分开报告。
-- 本轮完整CPU测试1244 passed、2 skipped，171.70秒；新四模块集成86项通过，独立代码/数值审计0项未解决。隐藏GPU、nice19、线程2，沙箱外解决DataLoader多进程环境限制。前轮排序分析的1170/2（163.48秒、19项针对性）、更早1151与1111项及A/R审计保留为对应版本历史，不能混写为本轮新性能结果。
+- 上一轮TRAIN U监督诊断完整CPU测试1244 passed、2 skipped，171.70秒；新四模块集成86项通过，独立代码/数值审计0项未解决。隐藏GPU、nice19、线程2，沙箱外解决DataLoader多进程环境限制。前轮排序分析的1170/2（163.48秒、19项针对性）、更早1151与1111项及A/R审计保留为对应版本历史，不能混写为本轮新性能结果。
 - bf2a924历史CPU跳过项曾另行补测：nndet环境坐标模块2 passed（2.39秒），nvgen CUDA混合精度单测1 passed（19.06秒），均0失败/0跳过。历史CPU原计数不改；这是一个模块加一个单测，共3条用例，不是本轮新补测。nnDet6条第三方依赖警告保留；合成数据测试不构成新的A/U/R性能结果。证据 `docs/verification/2026-10-18/aur_score_order/supplemental_tests.json`。
 
 ## 3. 误报与 A/R 机制线索
@@ -49,7 +59,7 @@
 
 ## 4. 下一项模型工作
 
-1. **TRAIN U监督诊断也已完成，暂缓同一最终标量的单调校准拟合**：下一项候选转为ISLES已匹配query的目标外组件与背景监督覆盖，先冻结能判别机制的单变量实验和A/U/R回退检查；BMSR未匹配query路径独立保留。不凭本轮6人/12裁块直接改loss、采点配方或追加训练，也不把局部logit梯度说成历史参数梯度。清单U-supervised TRAIN761来源限定患者/1216行，val86/143，历史test212/354；基模型已见TRAIN，未建立新独立评价队列。A/R继续保留独立任务，当前实验不证明U优先级全局最优。默认legacy_max和完整405行FAIL不变。
+1. **背景配额对照也已完成，保留原采样，不据此加训**：当前ring0.2→global0候选在固定ISLES主面板的局部方向不获支持；不要在这些裁块上挑选中间配额或直接追加训练。下一项U干预须重新冻结要区分的空间权重/表示/优化机制及A/U/R回退检查；BMSR未匹配query路径与A/R独立任务仍保留。清单U-supervised TRAIN761来源限定患者/1216行，val86/143，历史test212/354；基模型已见TRAIN，未建立新独立评价队列。当前实验不证明U优先级全局最优。默认legacy_max和完整405行FAIL不变。
 2. **R单独做固定token/query/crop/权重的几何来源对照**：仅将预测coarse A/U几何换为同一F1网格上的预测dense A/U几何，预先固定池化、valid、gate和坐标规则，记录逐特征和宿主logit变化。联合A/U替换不能区分二者贡献；冻结R头的分布变化也限制阴性结果解释。该实验尚未执行。
 3. **A用同一冻结TRAIN裁块审计全部32query的dense概率和胜出类别margin**，分开检查正点遗漏、身份/优化塌缩及类别竞争，再设计单一采样或损失变量。不要仅据18/54相同的正点均值及零点频次直接跳到改loss。
 

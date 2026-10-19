@@ -1,0 +1,218 @@
+{
+  "actual_execution_date_utc": "2026-10-19",
+  "approved_design_date": "2026-10-18",
+  "artifacts": {
+    "aggregate_sha256": "296b1f93cd50cea875edddc24039e083a1fa01b393e62c8b027462ac34a73ec4",
+    "complete_sha256": "32952093e9cd9e472efc7da642cb7fa2ff873bdc45ade335b76ad44b9a9bd1fc",
+    "contract_sha256": "09233f9799406f18696e3a3fc1765b49a4f4eef4564667eefbc9dd4ecc0a6348",
+    "private_archive": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/run_73aa2c7",
+    "private_verification_directory": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/verification",
+    "reference_archive": "/home/congcongliu/outputs/aur_u_train_supervision_20261018/run_1a7de61",
+    "runtime_log_sha256": "ff808681de66c891b084b1fa20d24d70f209508f11917119506e29c00de2165c"
+  },
+  "baseline_review_commit": "1156995",
+  "command": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=30s",
+    "1800",
+    "/home/congcongliu/anaconda3/envs/nvgen/bin/python",
+    "scripts/aur_diagnose_u_background.py",
+    "--out",
+    "/home/congcongliu/outputs/aur_u_background_allocation_20261018/run_73aa2c7",
+    "--max-seconds",
+    "1800",
+    "--gpu",
+    "0"
+  ],
+  "controller_provenance": {
+    "aggregate_sha256": "296b1f93cd50cea875edddc24039e083a1fa01b393e62c8b027462ac34a73ec4",
+    "archive_members": 27,
+    "checkpoint_head_crop_checks": 12,
+    "checkpoint_sha256": "38f6376333041a75be1cce83e927bc221468761f80ae952e2a3020805f7dcbde",
+    "complete_sha256": "32952093e9cd9e472efc7da642cb7fa2ff873bdc45ade335b76ad44b9a9bd1fc",
+    "contract_sha256": "09233f9799406f18696e3a3fc1765b49a4f4eef4564667eefbc9dd4ecc0a6348",
+    "controller_provenance_verified": true,
+    "fixed_query_R_checks": 12,
+    "full_cpu_log_sha256": "77af504e6154ee273c3f360d484105112ba9fe746ad7f28eefe3d0e7a9f2f3b4",
+    "full_cpu_passed": 1345,
+    "full_cpu_skipped": 2,
+    "log_sha256": "ff808681de66c891b084b1fa20d24d70f209508f11917119506e29c00de2165c",
+    "model_state_crop_checks": 12,
+    "model_state_sha256": "5fbb0d6f9513fdebf66831033c6a8d32710a05ce2ec900656c062a61546e482f",
+    "original_source_members": 128,
+    "reference_members": 29,
+    "safe_stdout_lines": 13,
+    "scanned_changed_public_and_log_files": 20,
+    "selected_identifier_marker_hits": 0,
+    "selected_marker_count": 26,
+    "selected_train_patients": 6,
+    "short_identifier_forms_excluded": 0,
+    "source_closure_unchanged": true,
+    "test_patient_intersections": 0,
+    "val_patient_intersections": 0
+  },
+  "cuda_logical_device": 0,
+  "design": "docs/superpowers/specs/2026-10-18-aur-u-background-allocation-design.md",
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": 1,
+    "PYTHONNOUSERSITE": 1,
+    "decoder_workers": 2,
+    "internal_external_time_limit_seconds": 1800,
+    "nice": 19,
+    "numerical_threads": 2,
+    "python_environment": "/home/congcongliu/anaconda3/envs/nvgen",
+    "torch": "2.5.1+cu121"
+  },
+  "execution": {
+    "elapsed_seconds": 161.1259774491191,
+    "ended_utc": "2026-10-19T03:41:49.859770+00:00",
+    "exit_code": 0,
+    "log_sha256": "ff808681de66c891b084b1fa20d24d70f209508f11917119506e29c00de2165c",
+    "selected_gpu_index": 7,
+    "started_utc": "2026-10-19T03:39:08.733811+00:00"
+  },
+  "gpu": {
+    "compatibility": {
+      "bf16_cuda_check": true,
+      "device": "NVIDIA A800 80GB PCIe",
+      "torch": "2.5.1+cu121"
+    },
+    "first_launch_stopped_before_model_image_load": true,
+    "name": "NVIDIA A800 80GB PCIe",
+    "original_candidate_gpu5_became_busy": true,
+    "other_workloads_preserved": true,
+    "physical_index": 7,
+    "two_fresh_idle_snapshots": true
+  },
+  "interpretation": "This specific ring-to-global allocation weakens the primary ISLES local suppressive direction; no learned performance claim",
+  "kind": "bounded_train_background_allocation_tangent",
+  "local_handoff": {
+    "base_branch": "main",
+    "method": "fast-forward",
+    "receipt": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/verification/local_handoff.json",
+    "remote_push": false,
+    "tag": "handoff/2026-10-19-aur-u-background-allocation"
+  },
+  "numeric_audit": {
+    "allowed_reads": "numeric crop JSON/NPZ and aggregate only; no selections/manifests",
+    "coverage_limit": "Dense ROI feature means not independently regenerated; runner streaming/control provenance checked separately",
+    "elapsed_note": "Not separately captured; not inferred from polling",
+    "elapsed_seconds": null,
+    "exit_code": 0,
+    "report": "numeric_audit.json",
+    "script_sha256": "ba86422f263cf0dffe3a4d840f4ada8afcdb22ce040564fcde968fb88e89be8b",
+    "source_independent_script_controller_executed": true
+  },
+  "plan": "docs/superpowers/plans/2026-10-18-aur-u-background-allocation.md",
+  "public_file_sha256": {
+    "aggregate_anonymous.json": "296b1f93cd50cea875edddc24039e083a1fa01b393e62c8b027462ac34a73ec4",
+    "numeric_audit.json": "0c345d24ed191a5cb02dd39ddd0b7a1f729b420b3b7f09fce06ed77907a83b0b",
+    "preflight.json": "afb8e8137cd4ba0d77d162ff6e9ef0c08eda38de377c78c6f36144fc1b5ec500",
+    "supplement_anonymous.json": "4f0f2ff1abba9276b643342d52bd10ca160c8a15718800fd5043fa7441b6334b"
+  },
+  "recovery": "No production configuration, model or input data was changed. Diagnostic commits can be reverted without altering frozen private evidence.",
+  "replay": {
+    "archive_bytes_unchanged": true,
+    "archive_members": 27,
+    "cuda_hidden": true,
+    "elapsed_seconds": 15.09452532697469,
+    "exit_code": 0,
+    "member_inventory_sha256": "ee8f007ad117aa241245b32b0945cd18a4964c89c9ec736224c6718b5895b017",
+    "no_model_image_or_checkpoint_load": true,
+    "rss_max_kib": 1015216
+  },
+  "result": "candidate_not_supported",
+  "reviews": {
+    "independent_synthetic_checks": [
+      "74016-parameter 16384-point tangent fixture",
+      "two-crop real tiny-model complete immutable CPU replay",
+      "16-fixture ROI/source oracle"
+    ],
+    "public_claims": "0 actionable findings; numerical claims, supports, rounding and scope PASS",
+    "task_1": "0 actionable findings; spec and quality PASS",
+    "task_2": "0 actionable findings; spec and quality PASS",
+    "task_3": "0 actionable findings; spec and quality PASS",
+    "whole_branch": "0 actionable findings; PASS"
+  },
+  "runtime_code_sha": "73aa2c730075894216570b63c833d500b90c744b",
+  "schema": 1,
+  "scope": {
+    "classification": "NOT_EVIDENCE",
+    "clinical_evidence": false,
+    "optimizer": false,
+    "parameter_update": false,
+    "population_inference": false,
+    "threshold_search": false,
+    "training": false,
+    "val_test_image_inference": false
+  },
+  "supplement_reproduction": {
+    "exact_anonymous_json_reproduced": true,
+    "exit_code": 0
+  },
+  "tests": {
+    "command": "CUDA_VISIBLE_DEVICES='' PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider --tb=short",
+    "focused": {
+      "archive": {
+        "passed": 50,
+        "seconds": 4.95
+      },
+      "measurements": {
+        "passed": 18,
+        "seconds": 2.04
+      },
+      "runner": {
+        "passed": 10,
+        "seconds": 5.8
+      },
+      "tangent": {
+        "passed": 23,
+        "seconds": 2.61
+      }
+    },
+    "log_sha256": "77af504e6154ee273c3f360d484105112ba9fe746ad7f28eefe3d0e7a9f2f3b4",
+    "passed": 1345,
+    "pytest_seconds": 180.61,
+    "returncode": 0,
+    "sandbox_external": true,
+    "skipped": 2,
+    "skips": [
+      "nndet dedicated-environment module unavailable in nvgen",
+      "original CUDA-only bf16 test with CUDA hidden"
+    ],
+    "tdd_red_observed": true
+  },
+  "unchanged": {
+    "a_missing_class_and_historical_test_gap": true,
+    "checkpoint": true,
+    "complete_405val_query_cc": "FAIL",
+    "default_decoder": "legacy_max",
+    "original_production_python_paths_and_bytes": true,
+    "parameters": true,
+    "r_controlled": "FAIL",
+    "reference_archive": true
+  },
+  "verification_scripts": {
+    "audit_numeric.py": {
+      "private_path": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/verification/audit_numeric.py",
+      "sha256": "ba86422f263cf0dffe3a4d840f4ada8afcdb22ce040564fcde968fb88e89be8b"
+    },
+    "launch_frozen.py": {
+      "private_path": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/verification/launch_frozen.py",
+      "sha256": "d5a25fd55c041433e196a54e32eafd5f167b58f23d31de4cd91af4bfc4c1d7a7"
+    },
+    "replay_numeric.py": {
+      "private_path": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/verification/replay_numeric.py",
+      "sha256": "d05b492075ebde8f28045f5a8750841d6d62c6ead705eed25555ff68d2e853a1"
+    },
+    "summarize_anonymous.py": {
+      "private_path": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/verification/summarize_anonymous.py",
+      "sha256": "79d462847e10e5ac8d8ecfc4a1127cebb8909d550132d89ab2a00e152103d27d"
+    },
+    "verify_provenance.py": {
+      "private_path": "/home/congcongliu/outputs/aur_u_background_allocation_20261018/verification/verify_provenance.py",
+      "sha256": "9b026735758c26685a438389a4068d89f860fb8b49c9b5bfee74913bde871e81"
+    }
+  }
+}
