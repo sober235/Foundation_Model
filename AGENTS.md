@@ -8,3 +8,9 @@ Read `CLAUDE.md` and `STATUS.md` for the current project contract and state.
 - Keep medical arrays and per-patient/query/component records in protected private directories, outside Git and tool output. A schema inspection is not an exception to this rule.
 - For the frozen TRAIN U diagnostic, use `scripts/aur_diagnose_u_supervision.py --out <private-run> --replay-only` for complete integrity/numeric checks; its output is deliberately fixed and anonymous. Follow the recorded contract instead of dumping archive contents or repeating GPU inference.
 - For the completed paired background-allocation tangent, use `scripts/aur_diagnose_u_background.py --out <private-run> --replay-only`. This preserves the complete numeric archive and needs no GPU, model construction or checkpoint deserialization; do not repeat its twelve image forwards to recover already-cached measurements.
+- Legacy tracked image filenames can also contain case identifiers. For history audits, use allowlisted Markdown documents and filtered scope quotations; do not dump broad repository filename inventories.
+
+## Scope and training records
+
+- The final input scope includes standalone 2D and 3D MRI with complete A/U/R. Report coverage separately for both modes and all three tasks. Deferred work remains an explicit unfinished requirement; a 3D subplan never replaces the full goal.
+- Distinguish user requirements, proposed architecture/recipes, and observed execution. Before a new formal run, record its initialization lineage, mode-specific data/splits/evaluation, budget and recovery; historical commands or passing code tests do not establish training readiness.

@@ -1,0 +1,125 @@
+{
+  "architecture_decision": "pending_user_same_weights_requirement",
+  "claims": [
+    {
+      "claim_type": "parsed",
+      "evidence": "docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md:6",
+      "id": "dual_input_goal",
+      "status": "existing_requirement"
+    },
+    {
+      "claim_type": "parsed",
+      "evidence": "source_checks plus original product Tasks2\u20136",
+      "id": "2d_path_missing",
+      "status": "not_implemented"
+    },
+    {
+      "claim_type": "parsed",
+      "evidence": "metadata_preflight.json",
+      "id": "metadata_split_availability",
+      "status": "metadata_only"
+    },
+    {
+      "claim_type": "parsed",
+      "evidence": [
+        "docs/superpowers/specs/2026-10-09-anatobind-brain-ssl-first-addendum.md:17",
+        "docs/superpowers/plans/2026-10-14-anatobind-brain-dicom-web-execution.md:160"
+      ],
+      "id": "2d_ssl_init_gap",
+      "status": "requires_explicit_design"
+    },
+    {
+      "claim_type": "hypothesis",
+      "evidence": "existing product proposal and source reuse analysis",
+      "id": "separate_checkpoint_route",
+      "status": "recommendation_not_benchmarked_or_user_approved"
+    },
+    {
+      "claim_type": "hypothesis",
+      "evidence": "route/readiness analysis section5",
+      "id": "2d_stage1_and_supervision_choices",
+      "status": "proposal_not_performance_fix"
+    }
+  ],
+  "external_primary_sources": [
+    {
+      "supports": "custom split support; not patient independence by itself",
+      "url": "https://github.com/MIC-DKFZ/nnUNet/blob/master/documentation/manual_data_splits.md"
+    },
+    {
+      "supports": "physical geometry and label nearest-neighbor interpolation; not validation of new project code",
+      "url": "https://simpleitk.readthedocs.io/en/master/fundamentalConcepts.html"
+    }
+  ],
+  "formal_training_ready": false,
+  "hardware_snapshot_evidence": "hardware_snapshot.json",
+  "independent_document_review": {
+    "actionable_findings": 0,
+    "incremental_recheck_findings": 0,
+    "report_path": ".superpowers/dual-input-readiness-review-20261019.md",
+    "scope": "source/docs/public aggregate consistency; private counts not independently recomputed"
+  },
+  "limitations": [
+    "Source and metadata audit only; no medical arrays loaded",
+    "No compatible 2D initializer verified",
+    "No 2D planes, label QC, native DICOM evaluation, pilot or formal run executed",
+    "No claim of biological deduplication or new unseen historical test cohort",
+    "Previous full CPU tests are historical execution, not this audit"
+  ],
+  "new_training_started": false,
+  "observed_utc": "2026-10-19T06:45:05.262305+00:00",
+  "package_check": {
+    "claim_type": "computed_import_check",
+    "cuda_training_smoke_executed": false,
+    "interpreter": "/home/congcongliu/anaconda3/envs/nvgen/bin/python",
+    "new_full_cpu_regression_executed": false,
+    "nnunet_trainer_import_passed": true,
+    "nnunetv2_distribution": "2.8.0",
+    "runtime_versions": {
+      "SimpleITK": "2.5.5",
+      "monai": "1.5.2",
+      "numpy": "2.4.4",
+      "torch": "2.5.1+cu121"
+    },
+    "user_site_disabled": true
+  },
+  "privacy_observation": {
+    "private_medical_arrays_loaded": false,
+    "session_wide_anonymity_claim": false,
+    "source_audit_agent_reported_legacy_case_markers_in_initial_filename_listing": true,
+    "subsequent_audit": "allowlisted Markdown and filtered scope quotes"
+  },
+  "schema": 1,
+  "science_recording": {
+    "artifact_science_tool_available": false,
+    "local_versioned_evidence": true
+  },
+  "scope": "record_correction_and_training_readiness_analysis",
+  "source_checks": {
+    "aur2d_package_exists": false,
+    "codegraph_present": false,
+    "planned_create_path_checks_by_product_task": {
+      "2": {
+        "planned_new_paths": 3,
+        "present": 0
+      },
+      "3": {
+        "planned_new_paths": 3,
+        "present": 0
+      },
+      "4": {
+        "planned_new_paths": 7,
+        "present": 0
+      },
+      "5": {
+        "planned_new_paths": 13,
+        "present": 0
+      },
+      "6": {
+        "planned_new_paths": 3,
+        "present": 0
+      }
+    }
+  },
+  "source_commit": "d017fa7368450a97c18a89bd2006b9b1b24136ac"
+}

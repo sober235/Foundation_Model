@@ -1,0 +1,66 @@
+{
+  "claim_type": "observed_read_only",
+  "observed_utc": "2026-10-19 06:44:28 UTC",
+  "gpus": [
+    {
+      "index": 0,
+      "name": "NVIDIA A800 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 2,
+      "utilization_percent": 0
+    },
+    {
+      "index": 1,
+      "name": "NVIDIA A800 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 2,
+      "utilization_percent": 0
+    },
+    {
+      "index": 2,
+      "name": "NVIDIA A800 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 2,
+      "utilization_percent": 0
+    },
+    {
+      "index": 3,
+      "name": "NVIDIA A100 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 2,
+      "utilization_percent": 0
+    },
+    {
+      "index": 4,
+      "name": "NVIDIA A800 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 44817,
+      "utilization_percent": 100
+    },
+    {
+      "index": 5,
+      "name": "NVIDIA A100 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 19855,
+      "utilization_percent": 97
+    },
+    {
+      "index": 6,
+      "name": "NVIDIA A800 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 44815,
+      "utilization_percent": 100
+    },
+    {
+      "index": 7,
+      "name": "NVIDIA A800 80GB PCIe",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 2,
+      "utilization_percent": 0
+    }
+  ],
+  "device_reserved": false,
+  "training_throughput_measured": false,
+  "python_sandbox_nvml_subprocess_exit_code": 9,
+  "host_readonly_query_exit_code": 0
+}

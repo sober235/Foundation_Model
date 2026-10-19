@@ -1,0 +1,84 @@
+{
+  "claim_type": "parsed_metadata_with_aggregate_computation",
+  "configured_file_path_checks": {
+    "anatomy": {
+      "existing_in_allowed_root": 4960,
+      "missing": 0,
+      "outside_allowed_root": 0,
+      "specified": 4960
+    },
+    "image": {
+      "existing_in_allowed_root": 4960,
+      "missing": 0,
+      "outside_allowed_root": 0,
+      "specified": 4960
+    },
+    "lesion": {
+      "existing_in_allowed_root": 3887,
+      "missing": 0,
+      "outside_allowed_root": 0,
+      "specified": 3887
+    }
+  },
+  "correction": "Supersedes provisional literal-is-True counts; absent legacy fields are not zero supervision.",
+  "coverage_limits": [
+    "No 2D planes generated or labels QCed",
+    "No 2D model or training smoke executed",
+    "Historical test is already exposed; not a new independent cohort",
+    "Artifact existence does not validate its schema or contents"
+  ],
+  "image_or_label_arrays_loaded": false,
+  "input_sha256": {
+    "samples": "fb96acd741aa6c0ee689eb772a4332304501c8d63ebd7ccddcd657f41eb86d5d",
+    "val_patients": "475f91d97d8b03f312df560f98f39ab81c068c39d0a24c632d8efa5fd52d9d34"
+  },
+  "loader_semantics_source": "anatobind/aur/dataset.py:83-85",
+  "metadata_only": true,
+  "observed_utc": "2026-10-19T06:38:00.820411+00:00",
+  "planned_2d_artifacts_exist": {
+    "aur2d_samples": false,
+    "aur2d_splits": false,
+    "dataset909_preprocessed": false,
+    "dataset909_raw": false
+  },
+  "schema": 2,
+  "source_qualified_not_biological_deduplication": true,
+  "split_intersections": {
+    "train_historical_test": 0,
+    "train_validation": 0,
+    "validation_historical_test": 0
+  },
+  "split_summary": {
+    "historical_test": {
+      "a_flag_missing_uses_legacy_true_default": 1032,
+      "loader_a_flag_enabled_rows": 1032,
+      "loader_r_flag_enabled_rows": 1032,
+      "r_and_u_flags_enabled_rows": 342,
+      "r_flag_missing_uses_legacy_true_default": 1032,
+      "rows": 1056,
+      "source_qualified_patients": 249,
+      "u_supervised_rows": 354
+    },
+    "train": {
+      "a_flag_missing_uses_legacy_true_default": 3420,
+      "loader_a_flag_enabled_rows": 3420,
+      "loader_r_flag_enabled_rows": 3420,
+      "r_and_u_flags_enabled_rows": 1177,
+      "r_flag_missing_uses_legacy_true_default": 3420,
+      "rows": 3499,
+      "source_qualified_patients": 894,
+      "u_supervised_rows": 1216
+    },
+    "validation": {
+      "a_flag_missing_uses_legacy_true_default": 394,
+      "loader_a_flag_enabled_rows": 394,
+      "loader_r_flag_enabled_rows": 394,
+      "r_and_u_flags_enabled_rows": 138,
+      "r_flag_missing_uses_legacy_true_default": 394,
+      "rows": 405,
+      "source_qualified_patients": 101,
+      "u_supervised_rows": 143
+    }
+  },
+  "supervision_semantics": "Explicit false disables A/R; absent legacy A/R flags default True exactly as dataset.load_volume. Flag-enabled row counts do not count valid per-plane targets or realized R instances."
+}

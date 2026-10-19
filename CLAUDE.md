@@ -6,14 +6,20 @@
 
 面向 **2D MRI 图像与 3D MRI 体数据** 的解剖实体 A、病灶实体 U 与显式病灶–解剖绑定 R 的结构化感知(`X → (A, U) → R`)。不称 foundation model。权威执行计划是 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`(v2.6,冲突以它为准;v2.5/v2.4 文件只作审计记录);Gate 链 = Gate 0(fastMRI+ 框坐标、患者 ID 折)→ Gate 0.5(全集 1297 病灶几何盘点,冻结困难组阈值 t)→ A/U(膝侧)→ Level R 人标(Gate R0,两层一致率门)→ 公平关系基线(Gate R1)→ 鲁棒性/E。关系主战场是 fastMRI+ 脑 FLAIR 小病灶,SKM-TEA 只作几何容易的对照。主投 MedIA。
 
-**完整目标与当前工作线：** 2D/3D 双输入要求至少已在2026-10-13提交`20fdec4`中记录，见[原输入规格](docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md)与[执行计划](docs/superpowers/plans/2026-10-14-anatobind-brain-dicom-web-execution.md)。单张2D与3D体数据都须完整输出A/U/R，并使用各自的数据、checkpoint、参照和验收；当前C2训练/验证及后续诊断属于3D工作线。**独立2D完整A/U/R仍未完成**，不能以3D实验或已有2D检测组件代替。Q28后移显示/API/公开URL；这不撤销DICOM读入、独立2D模型或离线验收。最近报告的1345项CPU检查与3D机制诊断不构成2D能力达标证据。
+**完整目标与当前工作线：** 2D/3D 双输入要求至少已在2026-10-13提交`20fdec4`中记录，见[原输入规格](docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md)与[执行计划](docs/superpowers/plans/2026-10-14-anatobind-brain-dicom-web-execution.md)。单张2D与3D体数据都须完整输出A/U/R并分别验收；原方案提议独立2D/3D checkpoint，共享标签与结果契约，不能将这个技术提案写成用户已单独批准的架构决定。当前C2训练/验证及后续诊断属于3D工作线。**完整2D A/U/R仍未完成**，不能以3D实验或已有2D检测组件代替。Q28后移显示/API/公开URL；这不撤销DICOM读入、2D模型或离线验收。最近报告的1345项CPU检查与3D机制诊断不构成2D能力达标证据。
+
+**范围与证据优先级：** v2.6的方法学/数据规范继续有效；后续用户明确的双输入范围与SSL-first修订按各自来源核对，不能被旧3D工作线摘要覆盖。
+
+**路线迭代与开训入口：** [2026-10-19技术路线记录/就绪性分析](docs/plans/2026-10-19-aur-dual-input-route-and-training-readiness.md)区分既有要求、技术提案与执行结果。3D正式路线为SSL-first I→II→III；旧2D计划只写II/III，兼容初始化及2D表征探针尚未定义。旧batch24/240k、80k曝光等仅为PROPOSED。先冻结2D数据/几何/目标、架构与初始化、训练/恢复/评价闭环，完成有限工程pilot后再锁正式run；2D Stage I是建议的细化，不冒充既有3D权重已兼容2D。DICOM产品验收和3D最终质量门不应未经新决定成为独立2D首次训练的技术前提。当前记录仍为NOT READY，没有启动新训练。
+
+**本轮接手上下文：** [2026-10-19双输入训练准备摘要](notes/session-logs/2026-10-19-aur-dual-input-training-readiness.md)，含已执行结果、未落地代码、待确认的同权重要求和下一步边界。
 
 ## 硬规矩
 
 - 数据只从 `/data2/congcong/data/FM_data` 读。`/data0/congcong/data/FM_Data` 是冷备份,不读不写。当前导出是 `derived/skmtea/m1r/`(校正版分割),缓存 `m1r_cache/`,预测 `m1r_pred/`,nnU-Net 在 `derived/nnunet/`;`m1/` 只作历史,只读。
 - Python:`~/anaconda3/envs/nvgen/bin/python`(torch 2.5.1+cu121、MONAI 1.5.2),命令前缀 `PYTHONNOUSERSITE=1 PYTHONPATH=.`(`~/.local` 里的 torch 2.11/cu130 会覆盖 env)。SynthSeg 用 env `synthseg`(py3.8/TF2.2,`~/src/SynthSeg`,权重 robust_2.0),全 CPU 跑。nnDetection 用 env `nndet`(py3.8/torch 1.11.0+cu113,源码 `~/src/nnDetection` 固定 97a58f3),只经 `bash -c 'source scripts/nndet_env.sh && …'` 调用,不与 `scripts/nnunet_env.sh` 同 shell;本机 `conda activate` 不把环境放到 PATH 最前,装包与运行一律写环境绝对路径(安装经过见 `docs/nndet_install.md`)。
 - 测试：`CUDA_VISIBLE_DEVICES="" PYTHONNOUSERSITE=1 PYTHONPATH=. ~/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider`（2026-10-19 TRAIN U背景配额切线后，执行代码73aa2c7：1345 passed、2 skipped，180.61 s；nice19、数值线程2，DataLoader多进程检查需沙箱外环境）。跳过项为nndet专用环境模块与原CUDA-only单测；bf2a924记录过的专用环境补测2+1通过保留为历史，本轮未重跑未改动的原路径。`tests/test_nndet_runner.py`只在nndet环境运行：`bash -c 'source scripts/nndet_env.sh && python -m pytest tests/test_nndet_runner.py -q -p no:cacheprovider --noconftest'`；完整命令和日志哈希见最新报告RUN.json。训练运行中用nice19。`.github/workflows/tests.yml`在GitHub上跑同一CPU套件（CPU torch2.5.1 + requirements-ci.txt）。
-- **当前状态（2026-10-19）：TRAIN U背景配额对照完成，该候选不获支持，模型未修复。** 最新报告 `docs/verification/2026-10-18/aur_u_background_allocation/RESULTS.md`（目录沿用方案日期），同目录RUN/匿名汇总/采点补充/独立数值检查，先读STATUS。执行代码73aa2c7；原六人/十二裁块、同C2权重，诊断U点集boundary_share0.2→0，其余点数/配额/主匹配不变；74016参数共享掩膜头的原生值锚定float32切线，主方向A+U。ISLES未采到FP背景方向差global−control8/8为正（+1.438208，四裁块跨draw也4/4），局部抑制更弱；远处背景点增加但这批FP覆盖3085→1729。PDGM小支持亦不利；BMSR主面板无已匹配FP支持，未匹配路径保留。没有实际参数更新或新性能裁决；正式采样/loss/原生产Python未改。完整CPU1345passed2skipped180.61s；独立代码审阅0问题、数值脚本69297检查通过，密集特征均值来源由runner流式约简验证而非独立重跑。实际空闲A800物理7运行161.126s退出0；CPU回放15.095s/27成员不变且阻止模型/影像/checkpoint加载，旧参考29成员不变。私有缓存 `/home/congcongliu/outputs/aur_u_background_allocation_20261018/run_73aa2c7`，只用新runner --replay-only验证，不重跑GPU补已有测量。上一轮监督诊断报告/缓存及两次工具输出隐私偏差仍见STATUS0.1，不声称历史会话匿名。A32全query与R固定token/query几何来源对照仍独立待做；旧A五类缺失/历史test0.7988、R0.568436<B00.698324、完整405valquery_ccFAIL与默认legacy_max不变。没有新val/test、Level R或临床主张；下一模型干预另冻结方案，不直接改loss/加训。
+- **当前状态（2026-10-19）：双输入训练准备分析完成，正式2D尚未开训，3D性能缺口保留。** 最新路线与开训条件见前述2026-10-19记录，同权重要求仍待用户确认。最近3D实验报告 `docs/verification/2026-10-18/aur_u_background_allocation/RESULTS.md`（目录沿用方案日期），同目录RUN/匿名汇总/采点补充/独立数值检查，先读STATUS。执行代码73aa2c7；原六人/十二裁块、同C2权重，诊断U点集boundary_share0.2→0，其余点数/配额/主匹配不变；74016参数共享掩膜头的原生值锚定float32切线，主方向A+U。ISLES未采到FP背景方向差global−control8/8为正（+1.438208，四裁块跨draw也4/4），局部抑制更弱；远处背景点增加但这批FP覆盖3085→1729。PDGM小支持亦不利；BMSR主面板无已匹配FP支持，未匹配路径保留。没有实际参数更新或新性能裁决；正式采样/loss/原生产Python未改。完整CPU1345passed2skipped180.61s；独立代码审阅0问题、数值脚本69297检查通过，密集特征均值来源由runner流式约简验证而非独立重跑。实际空闲A800物理7运行161.126s退出0；CPU回放15.095s/27成员不变且阻止模型/影像/checkpoint加载，旧参考29成员不变。私有缓存 `/home/congcongliu/outputs/aur_u_background_allocation_20261018/run_73aa2c7`，只用新runner --replay-only验证，不重跑GPU补已有测量。上一轮监督诊断报告/缓存及两次工具输出隐私偏差仍见STATUS0.1，不声称历史会话匿名。A32全query与R固定token/query几何来源对照仍独立待做；旧A五类缺失/历史test0.7988、R0.568436<B00.698324、完整405valquery_ccFAIL与默认legacy_max不变。没有新val/test、Level R或临床主张；下一模型干预另冻结方案，不直接改loss/加训。
 - 提交:作者用仓库本地配置(Congcong Liu);消息英文、句首大写、像现有历史一样描述做了什么;**不写 Co-Authored-By、Generated with 等任何 AI 痕迹**。push 偶发 TLS 失败时加 `https_proxy=http://127.0.0.1:7897`;凭据走 gh(sober235)。
 - 分支:`main` 是权威版本,协作者只读 main。会话边界 = 提交 + 合回 main + tag `handoff/YYYY-MM-DD`。不每个会话开新分支;分支只给真正并行的工作线,合完就删。
 - 根目录两个未跟踪的原始文件(`AnatoBind-MRI_cui.md`、`粘贴的 markdown …`)保持 untracked,别 stage。`runs/` 在 .gitignore 里。
@@ -24,7 +30,7 @@
 ## 方法学红线(方案 §5.1、§9.1)
 
 - 关系真值只来自标注者的 `tissue_id`(导出列 `host_label`),永远不从重叠率推导;`IoA` 只允许作输入特征。测试 `test_host_ce_target_uses_host_label_not_max_ioa` 守着这条。
-- `UNKNOWN_HOST = 0` 表示侧别未解,是"未知"不是"无宿主",从主宿主 CE 与关系 BCE 里整体剔除。
+- 旧`host_label`接口的`UNKNOWN_HOST = 0`表示侧别未解,是"未知"不是"无宿主",从该接口的主宿主 CE 与关系 BCE 里整体剔除。AUR使用另一套零基`host_index`：0是有效宿主，`NO_HOST=13`；不能照搬旧接口过滤0的规则，未知/不可靠关系由监督资格另行表达。
 - 最小通路 `ArmBMinimal` 用真值 mask、真值 presence、匹配后的真值框做几何,它的准确率**不是 M1 证据**;日志键名 `val_host_acc_NOT_EVIDENCE` 是故意的。正式跑分前这三处 teacher forcing 必须换成预测量。
 - 公平对照臂(seg-then-lookup)必须是类别感知的查表:按病灶类别限定候选结构 + IoA argmax + 零重叠取最近结构。不看类别的 argmax IoA 是稻草人(见 `REVIEW_expert_comments_audit_2026-09-09.md` §2)。
 - 与 SENSE 重建图配对的分割一律用官方校正版 `segmentation_masks/raw-data-track`(论文附录 A.3/A.6);dicom-track 只用于量化旧导出的错位。

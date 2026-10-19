@@ -1,12 +1,14 @@
-# STATUS：2026-10-19（TRAIN U背景配额切线完成；该候选不获支持）
+# STATUS：2026-10-19（双输入训练准备分析完成；正式2D尚未开训）
 
-当前阶段：按已批准方案完成原六名TRAIN患者/十二裁块的配对背景采点实验，执行代码73aa2c7。只在诊断U点集把boundary_share0.2改为0，保留16384点、focus_share0.5和原匹配，测量原生值锚定的float32共享掩膜头切线。ISLES主面板8/8裁块×draw的combined单位方向差global−control均为正（均值+1.438208），未采到FP背景的局部抑制更弱，四裁块跨draw均值也4/4同向。当前结果不支持把该改动推进为修复或据此加训；正式采样器/损失/权重未改，没有val/test前向。默认legacy_max、完整405val FAIL及A/R缺口保留。
+当前阶段：补齐2D/3D技术路线迭代与开训条件，正式2D仍为NOT READY；架构共享要求、初始化与数据/训练/评估闭环待冻结，尚未启动新训练。
 
-最新报告 `docs/verification/2026-10-18/aur_u_background_allocation/RESULTS.md`；同目录RUN.json、aggregate_anonymous.json、supplement_anonymous.json、numeric_audit.json。目录日期来自2026-10-18冻结方案，实际执行于2026-10-19。上一轮U监督报告仍为 `docs/verification/2026-10-18/aur_u_train_supervision/RESULTS.md`。更早分数排序上界继续限制既有最终标量的单调校准拟合，不排除新特征、改变排序或更好掩膜。
+最近已执行的3D实验：按已批准方案完成原六名TRAIN患者/十二裁块的配对背景采点实验，执行代码73aa2c7。只在诊断U点集把boundary_share0.2改为0，保留16384点、focus_share0.5和原匹配，测量原生值锚定的float32共享掩膜头切线。ISLES主面板8/8裁块×draw的combined单位方向差global−control均为正（均值+1.438208），未采到FP背景的局部抑制更弱，四裁块跨draw均值也4/4同向。当前结果不支持把该改动推进为修复或据此加训；正式采样器/损失/权重未改，没有val/test前向。默认legacy_max、完整405val FAIL及A/R缺口保留。
+
+最新路线记录 `docs/plans/2026-10-19-aur-dual-input-route-and-training-readiness.md`；最近3D实验报告 `docs/verification/2026-10-18/aur_u_background_allocation/RESULTS.md`；同目录RUN.json、aggregate_anonymous.json、supplement_anonymous.json、numeric_audit.json。目录日期来自2026-10-18冻结方案，实际执行于2026-10-19。上一轮U监督报告仍为 `docs/verification/2026-10-18/aur_u_train_supervision/RESULTS.md`。更早分数排序上界继续限制既有最终标量的单调校准拟合，不排除新特征、改变排序或更好掩膜。
 
 ## 输入范围与覆盖状态
 
-**已记录的最终目标包括2D MRI图像和3D MRI体数据的完整A/U/R输出。** 双输入要求至少已在2026-10-13提交`20fdec4`入库；[原规格](docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md)明确区分独立单张2D与3D series，并要求各自训练与验收。这是既有要求，不是2026-10-19新增范围。此前入口摘要只写3D，现已纠正。
+**已记录的最终目标包括2D MRI图像和3D MRI体数据的完整A/U/R输出。** 双输入要求至少已在2026-10-13提交`20fdec4`入库；[原规格](docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md)明确区分独立单张2D与3D series，提议独立checkpoint并分别验收。双输入是既有要求，不是2026-10-19新增范围；checkpoint策略属于技术提案。此前入口摘要只写3D，现已纠正。
 
 | 输入模式 | 当前覆盖 | 未完成内容 |
 |---|---|---|
@@ -14,6 +16,15 @@
 | 独立2D | 既有规格和实施任务已记录；已有独立2D检测组件不等同于完整2D AUR | 专用数据/参照、完整模型/checkpoint、训练与A/U/R验收仍未完成 |
 
 当前C2和本页最新实验结果均属于3D工作线，不代表双模式目标完成。Q28优先模型成功、后做显示；[计划中的范围保留说明](docs/superpowers/plans/2026-10-14-anatobind-brain-dicom-web-execution.md)保留DICOM、离线验收和独立2D任务，网页/API/公开URL后置。
+
+## 技术路线迭代与正式训练入口（2026-10-19）
+
+[完整迭代记录与就绪性分析](docs/plans/2026-10-19-aur-dual-input-route-and-training-readiness.md)已补齐：原3D方案→SSL-first修订→Q27双输入要求→2D独立checkpoint技术提案→3D失败与诊断→当前2D训练缺口。双输入是用户既有要求；独立模型还是共享权重仍是技术选择，不能把旧提案当成已批准配方。
+
+- **只读数据核对：** TRAIN3499行/894来源限定患者，validation405/101，历史test1056/249；三对身份交集为0。4960行的image/anatomy及3887条lesion路径引用存在且在许可根内；未载入影像数组。旧清单缺失的A/R标志按实际loader默认True，2D新清单应显式化。来源限定身份不等于跨来源生物学去重。
+- **当前NOT READY：** `aur2d`完整代码、2D清单/splits、Dataset909、2D训练/恢复/评价均未落地。旧2D计划只有II/III而无兼容初始化；是否以及如何补齐2D Stage I须在新训练设计中冻结。现有3D G1和C2权重不是2D初始化证据。
+- **建议的下一执行块：** 冻结架构/初始化/二维目标与评估规则，建立真实2D纵向训练闭环，通过有限smoke/小集过拟合/短pilot后冻结正式配置，开始Stage I，满足2D阶段门再进入II/III。原batch/LR/预算尚未实测；不要求最终A/U/R已达标才允许首次训练，也不继续无截止地重复同类3D探针。
+- **状态边界：** 本轮完成记录与就绪性分析，没有新训练、2D平面生成、权重转换或新模型性能结论。历史test已经暴露；新的二维切片不能包装成新的独立测试患者。DICOM、原生2D泛化与最终产品验收仍保留，网页/API继续后置。
 
 ## 0. 最新背景配额对照与复用
 
@@ -70,9 +81,10 @@
 
 ## 4. 下一项模型工作
 
-1. **背景配额对照也已完成，保留原采样，不据此加训**：当前ring0.2→global0候选在固定ISLES主面板的局部方向不获支持；不要在这些裁块上挑选中间配额或直接追加训练。下一项U干预须重新冻结要区分的空间权重/表示/优化机制及A/U/R回退检查；BMSR未匹配query路径与A/R独立任务仍保留。清单U-supervised TRAIN761来源限定患者/1216行，val86/143，历史test212/354；基模型已见TRAIN，未建立新独立评价队列。当前实验不证明U优先级全局最优。默认legacy_max和完整405行FAIL不变。
-2. **R单独做固定token/query/crop/权重的几何来源对照**：仅将预测coarse A/U几何换为同一F1网格上的预测dense A/U几何，预先固定池化、valid、gate和坐标规则，记录逐特征和宿主logit变化。联合A/U替换不能区分二者贡献；冻结R头的分布变化也限制阴性结果解释。该实验尚未执行。
-3. **A用同一冻结TRAIN裁块审计全部32query的dense概率和胜出类别margin**，分开检查正点遗漏、身份/优化塌缩及类别竞争，再设计单一采样或损失变量。不要仅据18/54相同的正点均值及零点频次直接跳到改loss。
+1. **先收敛2D训练准备方案（建议，尚未实施）**：明确是否同权重、兼容初始化/Stage I、平面与目标、模型/loss/恢复/评价闭环；按上面的有限readiness流程准备正式run。不要把旧提案当用户已定配方，也不要以3D已最终达标作为未经决策的2D开训前提。
+2. **背景配额对照也已完成，保留原采样，不据此加训**：当前ring0.2→global0候选在固定ISLES主面板的局部方向不获支持；不要在这些裁块上挑选中间配额或直接追加训练。下一项U干预须重新冻结要区分的空间权重/表示/优化机制及A/U/R回退检查；BMSR未匹配query路径与A/R独立任务仍保留。清单U-supervised TRAIN761来源限定患者/1216行，val86/143，历史test212/354；基模型已见TRAIN，未建立新独立评价队列。当前实验不证明U优先级全局最优。默认legacy_max和完整405行FAIL不变。
+3. **R单独做固定token/query/crop/权重的几何来源对照**：仅将预测coarse A/U几何换为同一F1网格上的预测dense A/U几何，预先固定池化、valid、gate和坐标规则，记录逐特征和宿主logit变化。联合A/U替换不能区分二者贡献；冻结R头的分布变化也限制阴性结果解释。该实验尚未执行。
+4. **A用同一冻结TRAIN裁块审计全部32query的dense概率和胜出类别margin**，分开检查正点遗漏、身份/优化塌缩及类别竞争，再设计单一采样或损失变量。不要仅据18/54相同的正点均值及零点频次直接跳到改loss。
 
 这些是下一步诊断/实验，不是已完成的修复。三个模型目标始终优先；N7、DICOM/独立2D、网页/API/URL及Level R实际读者工作仍按既有顺序处理。
 
