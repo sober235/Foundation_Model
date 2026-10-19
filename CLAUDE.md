@@ -4,7 +4,9 @@
 
 ## 项目一句话
 
-面向 3D MRI 的解剖实体 A、病灶实体 U 与显式病灶–解剖绑定 R 的结构化感知(`X → (A, U) → R`)。不称 foundation model。权威执行计划是 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`(v2.6,冲突以它为准;v2.5/v2.4 文件只作审计记录);Gate 链 = Gate 0(fastMRI+ 框坐标、患者 ID 折)→ Gate 0.5(全集 1297 病灶几何盘点,冻结困难组阈值 t)→ A/U(膝侧)→ Level R 人标(Gate R0,两层一致率门)→ 公平关系基线(Gate R1)→ 鲁棒性/E。关系主战场是 fastMRI+ 脑 FLAIR 小病灶,SKM-TEA 只作几何容易的对照。主投 MedIA。
+面向 **2D MRI 图像与 3D MRI 体数据** 的解剖实体 A、病灶实体 U 与显式病灶–解剖绑定 R 的结构化感知(`X → (A, U) → R`)。不称 foundation model。权威执行计划是 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`(v2.6,冲突以它为准;v2.5/v2.4 文件只作审计记录);Gate 链 = Gate 0(fastMRI+ 框坐标、患者 ID 折)→ Gate 0.5(全集 1297 病灶几何盘点,冻结困难组阈值 t)→ A/U(膝侧)→ Level R 人标(Gate R0,两层一致率门)→ 公平关系基线(Gate R1)→ 鲁棒性/E。关系主战场是 fastMRI+ 脑 FLAIR 小病灶,SKM-TEA 只作几何容易的对照。主投 MedIA。
+
+**完整目标与当前工作线：** 2D/3D 双输入要求至少已在2026-10-13提交`20fdec4`中记录，见[原输入规格](docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md)与[执行计划](docs/superpowers/plans/2026-10-14-anatobind-brain-dicom-web-execution.md)。单张2D与3D体数据都须完整输出A/U/R，并使用各自的数据、checkpoint、参照和验收；当前C2训练/验证及后续诊断属于3D工作线。**独立2D完整A/U/R仍未完成**，不能以3D实验或已有2D检测组件代替。Q28后移显示/API/公开URL；这不撤销DICOM读入、独立2D模型或离线验收。最近报告的1345项CPU检查与3D机制诊断不构成2D能力达标证据。
 
 ## 硬规矩
 

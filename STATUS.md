@@ -4,6 +4,17 @@
 
 最新报告 `docs/verification/2026-10-18/aur_u_background_allocation/RESULTS.md`；同目录RUN.json、aggregate_anonymous.json、supplement_anonymous.json、numeric_audit.json。目录日期来自2026-10-18冻结方案，实际执行于2026-10-19。上一轮U监督报告仍为 `docs/verification/2026-10-18/aur_u_train_supervision/RESULTS.md`。更早分数排序上界继续限制既有最终标量的单调校准拟合，不排除新特征、改变排序或更好掩膜。
 
+## 输入范围与覆盖状态
+
+**已记录的最终目标包括2D MRI图像和3D MRI体数据的完整A/U/R输出。** 双输入要求至少已在2026-10-13提交`20fdec4`入库；[原规格](docs/superpowers/specs/2026-10-14-anatobind-brain-dicom-web-design.md)明确区分独立单张2D与3D series，并要求各自训练与验收。这是既有要求，不是2026-10-19新增范围。此前入口摘要只写3D，现已纠正。
+
+| 输入模式 | 当前覆盖 | 未完成内容 |
+|---|---|---|
+| 3D | C2模型训练、既有val/test和最近机制诊断已执行 | A/U/R性能关卡尚未全部通过；AUR DICOM几何读入及离线端到端验收仍待完成 |
+| 独立2D | 既有规格和实施任务已记录；已有独立2D检测组件不等同于完整2D AUR | 专用数据/参照、完整模型/checkpoint、训练与A/U/R验收仍未完成 |
+
+当前C2和本页最新实验结果均属于3D工作线，不代表双模式目标完成。Q28优先模型成功、后做显示；[计划中的范围保留说明](docs/superpowers/plans/2026-10-14-anatobind-brain-dicom-web-execution.md)保留DICOM、离线验收和独立2D任务，网页/API/公开URL后置。
+
 ## 0. 最新背景配额对照与复用
 
 - 主面板排除两臂采样点并集，只测原匹配query的官方FP有效真背景；先query内合并组件，再按crop/draw求均值。ISLES56条query×draw、8/8crop×draw有支持，control−0.859799→global+0.578410；原始combined及U-only单位方向差也8/8不利。仅局部切线，不是FP数量变化或完整网络/历史训练梯度。
