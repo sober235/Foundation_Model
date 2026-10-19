@@ -17,6 +17,8 @@ import nibabel as nib
 import numpy as np
 from nibabel.processing import resample_from_to, resample_to_output
 
+from anatobind.aur.labels import discrete_labels
+
 TARGET_MM = 1.0
 THICK_MM = 3.0
 SPACING_TOL = 1e-3
@@ -43,6 +45,12 @@ def _target_grid(img, target=TARGET_MM):
 
 def _resample(path, grid, order, dtype, out_path):
     img = nib.load(str(path))
+    if np.dtype(dtype).kind in "iu":
+        if order != 0:
+            raise ValueError("discrete label maps require nearest-neighbour resampling")
+        # Decode before interpolation: NIfTI slope/intercept may store label 1
+        # just below one, which an integer cast would silently turn into zero.
+        img = nib.Nifti1Image(discrete_labels(np.asarray(img.dataobj), dtype), img.affine)
     out = resample_from_to(img, grid, order=order, mode="constant", cval=0.0)
     data = np.asarray(out.dataobj).astype(dtype)
     res = nib.Nifti1Image(data, out.affine)

@@ -23,6 +23,28 @@ TISSUES = tuple(dict.fromkeys(HOST_TISSUE))                    # the 7 tissue fa
 SEQ_TYPES = ("T1", "T1c", "T2", "FLAIR", "DWI", "ADC")
 SEQ_INDEX = {s: i for i, s in enumerate(SEQ_TYPES)}
 NEAR_MM = 10.0                                        # a lesion that overlaps no host takes the nearest one within this
+LABEL_ROUND_ATOL = 1e-5
+
+
+def discrete_labels(values, dtype=np.int16):
+    """Decode categorical maps, including NIfTI proxy scaling, without truncating labels.
+
+    Rounding only repairs floating-point representation within LABEL_ROUND_ATOL;
+    probability maps, nonfinite values and integer overflow are invalid inputs.
+    Errors deliberately contain no private filenames or voxel values.
+    """
+    data = np.asarray(values)
+    dtype = np.dtype(dtype)
+    if data.dtype.kind not in "biuf" or dtype.kind not in "iu" or not np.isfinite(data).all():
+        raise ValueError("discrete label map requires finite real categorical values")
+    # Keep integer inputs exact, including int64/uint64 values beyond float64's
+    # consecutive-integer range. Floating categorical maps still need rounding.
+    rounded = data if data.dtype.kind in "biu" else np.rint(data)
+    limits = np.iinfo(dtype)
+    if ((data.dtype.kind == "f" and np.any(np.abs(data - rounded) > LABEL_ROUND_ATOL))
+            or (rounded.size and (int(rounded.min()) < limits.min or int(rounded.max()) > limits.max))):
+        raise ValueError("discrete label map requires near-integer values within the output range")
+    return rounded.astype(dtype)
 
 _ENTITY_LUT = np.zeros(256, np.uint8)
 for _i, _l in enumerate(ENTITY_LABELS):

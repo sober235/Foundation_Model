@@ -11,6 +11,7 @@ Read `CLAUDE.md` and `STATUS.md` for the current project contract and state.
 - Legacy tracked image filenames can also contain case identifiers. For history audits, use allowlisted Markdown documents and filtered scope quotations; do not dump broad repository filename inventories.
 - Historical source/hash contracts remain immutable. Synthetic replay tests must freeze their own temporary source tree and manifest; run actual historical replays from their frozen checkout instead of updating historical hashes to accept feature code.
 - Production medical-output CLIs must validate and write the same normalized path, outside Git and under the private home root. Argument errors must not echo raw private values.
+- Decode categorical NIfTI arrays with `anatobind.aur.labels.discrete_labels`, including proxy scaling, before resampling or target construction. Direct integer casts can erase near-one lesion labels. Repair already-truncated derivatives into a new private data version; rounding an existing all-zero derivative or resuming its old export cannot recover lost labels. Disease-cohort empty masks need explicit negative provenance before they become supervised negatives.
 
 ## Scope and training records
 

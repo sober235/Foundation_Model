@@ -24,7 +24,7 @@ from torch.utils.data import Dataset
 
 from anatobind.aur.crops import (CROP, PATCH, augment, coordinates_mm, crop_window, extract, local_coordinates, normalise,
                                  rotate_inplane, spacing_zyx, to_zyx)
-from anatobind.aur.labels import N_ENTITIES, SEQ_INDEX, entity_map, entity_to_synthseg
+from anatobind.aur.labels import N_ENTITIES, SEQ_INDEX, discrete_labels, entity_map, entity_to_synthseg
 from anatobind.aur.targets import host_targets, lesion_instances
 from anatobind.eval.lesion_components import min_voxels_for
 
@@ -66,12 +66,12 @@ def load_volume(row):
     if not np.isfinite(voxel_mm3) or voxel_mm3 <= 0:
         raise ValueError(f"{row['case']} {row['sequence']}: the affine has no spatial volume")
     image = normalise(to_zyx(np.asarray(img_i.dataobj).astype(np.float32)))
-    seg = to_zyx(np.asarray(seg_i.dataobj).astype(np.int16))
+    seg = to_zyx(discrete_labels(np.asarray(seg_i.dataobj)))
     entity = entity_map(seg)
     if row["lesion"]:
         les_i = canonical(nib.load(row["lesion"]))
         verify_grid(img_i, les_i, f"{row['case']} {row['sequence']} lesion")
-        les = to_zyx(np.asarray(les_i.dataobj).astype(np.int16))
+        les = to_zyx(discrete_labels(np.asarray(les_i.dataobj)))
         inst, small = lesion_instances(les, row["u_values"], voxel_mm3)
         a_ignore = np.isin(les, list(row["a_ignore_values"]))
     else:

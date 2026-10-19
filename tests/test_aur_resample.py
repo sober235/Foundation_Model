@@ -82,3 +82,25 @@ def test_the_table_is_written_once_with_counts(tmp_path):
     assert json.loads(out.read_text()) == rows and counts["isles"]["rows"] == 2
     with pytest.raises(FileExistsError):
         R.write_table(out, rows)
+
+
+def test_resampling_preserves_near_integer_categorical_foreground(tmp_path):
+    rows = _las_case(tmp_path)
+    original = nib.load(rows[0]["lesion"])
+    labels = np.asarray(original.dataobj).astype(np.float32)
+    labels[labels == 1] = np.nextafter(np.float32(1), np.float32(0))
+    nib.save(nib.Nifti1Image(labels, original.affine), rows[0]["lesion"])
+    repaired = R.resample_case(rows, tmp_path / "new")
+    foreground = np.asarray(nib.load(repaired[0]["lesion"]).dataobj)
+    assert 0.8 * 64 * 8 <= (foreground == 1).sum() <= 1.2 * 64 * 8
+
+
+@pytest.mark.parametrize("bad", [0.75, float("nan"), float("inf"), 32768.0])
+def test_resampling_rejects_invalid_discrete_labels(tmp_path, bad):
+    rows = _las_case(tmp_path)
+    original = nib.load(rows[0]["lesion"])
+    labels = np.asarray(original.dataobj).astype(np.float32)
+    labels[4:8, 4:8, 4:8] = bad
+    nib.save(nib.Nifti1Image(labels, original.affine), rows[0]["lesion"])
+    with pytest.raises(ValueError, match="discrete label"):
+        R.resample_case(rows, tmp_path / "new")

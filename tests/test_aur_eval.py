@@ -189,7 +189,8 @@ def test_write_report_exports_the_level_r_sheet_and_key(tmp_path):
     assert key[0]["r_host"] == "white_matter_left" and key[0]["pseudo_truth_host"] == "white_matter_left"
 
 
-def test_external_u_reads_an_image_and_a_lesion_label_on_one_grid(tmp_path):
+@pytest.mark.parametrize("scaled", [False, True])
+def test_external_u_reads_an_image_and_a_lesion_label_on_one_grid(tmp_path, scaled):
     """The SibBMS 10-subject check (spec §7, report only): U on a volume whose lesion label shares its grid."""
     shape = (40, 36, 24)
     affine = np.diag([-1.0, 1.0, 1.0, 1.0])                  # LAS, as the SibBMS annotation folders
@@ -201,7 +202,10 @@ def test_external_u_reads_an_image_and_a_lesion_label_on_one_grid(tmp_path):
     img[lab > 0] = 400.0
     ip, lp = tmp_path / "flair.nii.gz", tmp_path / "label.nii.gz"
     nib.save(nib.Nifti1Image(img, affine), str(ip))
-    nib.save(nib.Nifti1Image(lab, affine), str(lp))
+    label_image = nib.Nifti1Image(lab, affine)
+    if scaled:
+        label_image.header.set_slope_inter(float(np.nextafter(np.float32(1), np.float32(0))), 0.0)
+    nib.save(label_image, str(lp))
     torch.manual_seed(0)
     model = AnatoBindBrain(**TINY).eval()
     res = E.evaluate_u_external(model, ip, lp, crop=(8, 16, 16), device=torch.device("cpu"))

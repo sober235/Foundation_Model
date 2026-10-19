@@ -289,13 +289,14 @@ def evaluate_u_external(model, image_path, label_path, crop, device, values=None
     import nibabel as nib
     from anatobind.aur.crops import normalise, to_zyx
     from anatobind.aur.targets import lesion_instances
+    from anatobind.aur.labels import discrete_labels
     img, lab = nib.as_closest_canonical(nib.load(str(image_path))), nib.as_closest_canonical(nib.load(str(label_path)))
     if img.shape != lab.shape or not np.allclose(img.affine, lab.affine, atol=1e-3):
         raise ValueError(f"{image_path} and {label_path} are not on one grid ({img.shape} vs {lab.shape})")
     affine = np.asarray(img.affine, dtype=np.float64)
     voxel_mm3 = abs(float(np.linalg.det(affine[:3, :3])))
     image = normalise(to_zyx(np.asarray(img.dataobj).astype(np.float32)))
-    label = to_zyx(np.asarray(lab.dataobj).astype(np.int16))
+    label = to_zyx(discrete_labels(np.asarray(lab.dataobj)))
     vals = tuple(int(v) for v in np.unique(label) if v > 0) if values is None else tuple(values)
     inst, small = lesion_instances(label, vals, voxel_mm3)
     if decoder_profile != "legacy_max" and instance_threshold != INSTANCE_THRESHOLD:

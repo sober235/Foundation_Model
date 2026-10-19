@@ -42,6 +42,36 @@ def test_load_volume_builds_the_targets_in_zyx(tmp_path):
     assert bare["instance"].max() == 0 and not bare["u_supervised"] and bare["hosts"]["host"].shape == (0,)
 
 
+@pytest.mark.parametrize("encoding", ["float", "header_scaling"])
+def test_load_volume_preserves_near_integer_labels(tmp_path, encoding):
+    row = _case(tmp_path)
+    expected = D.load_volume(row)
+    for name in ("anatomy", "lesion"):
+        image = nib.load(row[name])
+        data = np.asarray(image.dataobj)
+        if encoding == "float":
+            data = data.astype(np.float32)
+            data[data > 0] = np.nextafter(data[data > 0], np.float32(0))
+        replacement = nib.Nifti1Image(data, image.affine)
+        if encoding == "header_scaling":
+            replacement.header.set_slope_inter(float(np.nextafter(np.float32(1), np.float32(0))), 0.0)
+        nib.save(replacement, row[name])
+    actual = D.load_volume(row)
+    for name in ("entity", "instance", "small", "a_ignore"):
+        assert np.array_equal(actual[name], expected[name]), name
+    assert np.array_equal(actual["hosts"]["host"], expected["hosts"]["host"])
+
+
+def test_load_volume_rejects_soft_probability_masks(tmp_path):
+    row = _case(tmp_path)
+    image = nib.load(row["lesion"])
+    data = np.asarray(image.dataobj).astype(np.float32)
+    data[data == 1] = 0.75
+    nib.save(nib.Nifti1Image(data, image.affine), row["lesion"])
+    with pytest.raises(ValueError, match="discrete label"):
+        D.load_volume(row)
+
+
 def test_load_volume_reorients_every_source_to_ras(tmp_path):
     row = _case(tmp_path)
     ras = D.load_volume(row)

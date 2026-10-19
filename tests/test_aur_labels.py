@@ -5,6 +5,26 @@ import pytest
 import anatobind.aur.labels as L
 
 
+@pytest.mark.parametrize("values,dtype", [
+    (np.array([32768], np.float16), np.int16),
+    (np.array([2**31], np.float32), np.int32),
+    (np.array([2**63], np.uint64), np.int64),
+    (np.array([2**63], np.float64), np.int64),
+])
+def test_discrete_labels_rejects_overflow_without_float_bound_rounding(values, dtype):
+    with pytest.raises(ValueError, match="discrete label"):
+        L.discrete_labels(values, dtype)
+
+
+@pytest.mark.parametrize("dtype,values", [
+    (np.int64, [-(2**63), 2**53 + 1, 2**63 - 1]),
+    (np.uint64, [0, 2**53 + 1, 2**64 - 1]),
+])
+def test_discrete_labels_preserves_exact_integer_values(dtype, values):
+    array = np.array(values, dtype)
+    assert np.array_equal(L.discrete_labels(array, dtype), array)
+
+
 def test_entity_map_round_trips_the_32_structures_and_drops_everything_else():
     assert L.N_ENTITIES == 32 and len(set(L.ENTITY_LABELS)) == 32
     seg = np.array(L.ENTITY_LABELS + (0, 77, 255), np.int16).reshape(5, 7)

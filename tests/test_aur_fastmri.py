@@ -34,13 +34,19 @@ def _stack(tmp_path, stem="file_brain_AXFLAIR_test"):
     return ip, sp, seg
 
 
-def test_the_geometry_round_trip_keeps_a_perfect_prediction_perfect(tmp_path, monkeypatch):
+@pytest.mark.parametrize("scaled", [False, True])
+def test_the_geometry_round_trip_keeps_a_perfect_prediction_perfect(tmp_path, monkeypatch, scaled):
     """Feed SynthSeg's own map (resampled to the 1 mm grid) as the model's prediction: back on the stack's grid the
     reliable-slice host Dice must be ~1 (this guards the resampling and the axis order of the whole chain)."""
     ip, sp, seg = _stack(tmp_path)
+    reference = nib.load(str(sp))
+    if scaled:
+        scaled_reference = nib.Nifti1Image(seg, reference.affine)
+        scaled_reference.header.set_slope_inter(float(np.nextafter(np.float32(1), np.float32(0))), 0.0)
+        nib.save(scaled_reference, str(sp))
 
     def oracle(model, image, affine, crop, device, batch_size=1):
-        ref = nib.load(str(sp))
+        ref = nib.Nifti1Image(seg, reference.affine)
         grid = FX.grid_1mm(nib.load(str(ip)))
         on_grid = np.asarray(nib.processing.resample_from_to(ref, grid, order=0).dataobj).astype(np.int16)
         return {"entity": entity_map(on_grid.transpose(2, 1, 0))}                    # (z, y, x), entity values

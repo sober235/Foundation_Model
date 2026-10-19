@@ -16,7 +16,7 @@ import numpy as np
 from anatobind.anatomy.labels import HOST_IDS, to_student
 from anatobind.aur.crops import normalise, to_zyx
 from anatobind.aur.infer import predict_volume
-from anatobind.aur.labels import entity_to_synthseg
+from anatobind.aur.labels import discrete_labels, entity_to_synthseg
 from anatobind.eval.brain_anatomy import class_dice, host_agreement, pool_agreement, reliable_slices, summarize_dice
 
 TARGET_MM = 1.0
@@ -34,7 +34,7 @@ def evaluate_stack(model, image_path, seg_path, rows, crop, device, batch_size=1
     img, seg_img = nib.load(str(image_path)), nib.load(str(seg_path))
     if img.shape != seg_img.shape or not np.allclose(img.affine, seg_img.affine, atol=1e-3):
         raise ValueError(f"{image_path}: the stack {img.shape} and SynthSeg's map {seg_img.shape} differ in grid")
-    synthseg = np.asarray(seg_img.dataobj).astype(np.int16)
+    synthseg = discrete_labels(np.asarray(seg_img.dataobj))
     spacing = tuple(float(z) for z in seg_img.header.get_zooms()[:3])
     one_mm = nib.as_closest_canonical(nibabel.processing.resample_from_to(img, grid_1mm(img), order=1, mode="constant", cval=0.0))
     image = normalise(to_zyx(np.asarray(one_mm.dataobj).astype(np.float32)))
