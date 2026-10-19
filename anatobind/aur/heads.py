@@ -13,6 +13,7 @@ import torch.nn.functional as F
 from einops import rearrange
 
 from anatobind.aur.labels import N_ENTITIES, SEQ_TYPES
+from anatobind.aur.unified import input_patch
 
 
 class DecoderLayer(nn.Module):
@@ -90,8 +91,9 @@ class EventDecoder(nn.Module):
 class MaskHead(nn.Module):
     """Pixel features from the pyramid: coarse (F1 grid, `dim` channels) and full resolution (`mask_dim` channels)."""
 
-    def __init__(self, channels, d_model, patch, dim=64, mask_dim=32):
+    def __init__(self, channels, d_model, patch, dim=64, mask_dim=32, dual_input=False):
         super().__init__()
+        self.patch, self.dual_input = tuple(patch), bool(dual_input)
         self.lateral = nn.ModuleList(nn.Conv3d(c, dim, 1) for c in channels)
         self.smooth = nn.ModuleList(nn.Sequential(nn.Conv3d(dim, dim, 3, padding=1), nn.GELU()) for _ in channels)
         self.up = nn.ConvTranspose3d(dim, mask_dim, kernel_size=tuple(patch), stride=tuple(patch))
@@ -100,14 +102,20 @@ class MaskHead(nn.Module):
         self.embed_full = nn.Sequential(nn.Linear(d_model, d_model), nn.GELU(), nn.Linear(d_model, mask_dim))
         self.embed_coarse = nn.Sequential(nn.Linear(d_model, d_model), nn.GELU(), nn.Linear(d_model, dim))
 
-    def pixels(self, levels, image):
+        if self.dual_input:
+            patch_2d = input_patch(self.patch, True, "2d")
+            self.up_2d = nn.ConvTranspose3d(dim, mask_dim, kernel_size=patch_2d, stride=patch_2d)
+
+    def pixels(self, levels, image, *, input_mode="3d"):
         """{"coarse": (B, dim, D1, H1, W1), "full": (B, mask_dim, D, H, W)}."""
+        input_patch(self.patch, self.dual_input, input_mode)
         feats = [lv["feat"] for lv in levels]
         p = self.smooth[3](self.lateral[3](feats[3]))
         for i in (2, 1, 0):
             lat = self.lateral[i](feats[i])
             p = self.smooth[i](lat + F.interpolate(p, size=lat.shape[2:], mode="trilinear", align_corners=False))
-        full = self.fuse(torch.cat([self.up(p), self.img(image)], 1))
+        up = self.up_2d if input_mode == "2d" else self.up
+        full = self.fuse(torch.cat([up(p), self.img(image)], 1))
         return {"coarse": p, "full": full}
 
     def coarse_masks(self, embed, pix):

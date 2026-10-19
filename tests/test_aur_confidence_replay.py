@@ -39,6 +39,19 @@ def record_digest(records):
 
 def setup_source(tmp_path, monkeypatch):
     m = module();root = tmp_path / 'data';root.mkdir();source = tmp_path / 'reference';source.mkdir()
+    # These toy records freeze this checkout's source snapshot, not the historical
+    # medical run. Keep the real dependency checks active against an isolated root.
+    source_root = tmp_path / 'source'
+    dependencies = json.loads(m.SOURCE_HASHES.read_text())['files']
+    for name in {*dependencies, 'scripts/aur_diagnose_confidence.py',
+                 'anatobind/aur/confidence_diagnostics.py'}:
+        path = source_root / name;path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes((m.ROOT / name).read_bytes())
+    source_hashes = source_root / 'synthetic_source_hashes.json'
+    source_hashes.write_text(json.dumps({'code_sha':m.REFERENCE_CODE_SHA,
+        'files':{name:sha(source_root / name) for name in dependencies}}))
+    monkeypatch.setattr(m, 'ROOT', source_root)
+    monkeypatch.setattr(m, 'SOURCE_HASHES', source_hashes)
     (source / 'row_records').mkdir();saved = tmp_path / 'saved';saved.mkdir()
     checkpoint = root / 'model.pt';checkpoint.write_bytes(b'fixture export, no model loading')
     p = np.full((1, 1, 1, 3), .8, np.float32);inst = np.ones((1, 1, 3), np.int32)
@@ -171,6 +184,33 @@ def test_complete_synthetic_replay_is_anonymous_and_resumes_without_inference(tm
     def unexpected(*args):raise AssertionError('Completed resume must not load a model')
     monkeypatch.setattr(m.I,'model_from_export',unexpected);a.resume=True
     assert m.run(a)==0 and (a.out/'COMPLETE.json').read_bytes()==before
+
+
+@pytest.mark.parametrize('fault', ['dependency', 'manifest_revision'])
+def test_synthetic_source_snapshot_still_rejects_dependency_drift(tmp_path,monkeypatch,fault):
+    m,a,_,_,_=setup_source(tmp_path,monkeypatch)
+    m.prepare_reference(a)
+    if fault=='dependency':
+        path=m.ROOT/'anatobind/aur/model.py';path.write_bytes(path.read_bytes()+b'\n# changed\n')
+        message='A frozen inference/model dependency changed'
+    else:
+        manifest=json.loads(m.SOURCE_HASHES.read_text());manifest['code_sha']='different'
+        m.SOURCE_HASHES.write_text(json.dumps(manifest))
+        message='Frozen dependency manifest refers to a different source revision'
+    with pytest.raises(ValueError,match=message):m.prepare_reference(a)
+    assert not a.out.exists()
+
+
+def test_default_historical_source_manifest_rejects_changed_dependency(tmp_path,monkeypatch):
+    default=module();manifest_before=default.SOURCE_HASHES.read_bytes()
+    m,a,_,_,_=setup_source(tmp_path,monkeypatch)
+    monkeypatch.setattr(m,'SOURCE_HASHES',default.SOURCE_HASHES)
+    # Mutate the temporary source copy only, retaining the real default manifest.
+    name=next(iter(json.loads(manifest_before)['files']))
+    (m.ROOT/name).write_bytes(b'changed historical inference/model dependency\n')
+    with pytest.raises(ValueError,match='A frozen inference/model dependency changed'):
+        m.prepare_reference(a)
+    assert default.SOURCE_HASHES.read_bytes()==manifest_before and not a.out.exists()
 
 
 def test_resume_rejects_changed_code_and_corrupt_cached_measurements(tmp_path,monkeypatch):

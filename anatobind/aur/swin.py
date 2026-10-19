@@ -21,6 +21,7 @@ from monai.networks.nets.swin_unetr import compute_mask, get_window_size, window
 from torch.utils.checkpoint import checkpoint
 
 from anatobind.aur.rope import apply_rope
+from anatobind.aur.unified import input_patch
 
 CHANNELS = (64, 128, 256, 512)
 DEPTHS = (2, 2, 6, 2)
@@ -159,9 +160,10 @@ class Stage(nn.Module):
 
 class SwinBackbone(nn.Module):
     def __init__(self, embed=CHANNELS[0], depths=DEPTHS, heads=HEADS, window=WINDOW, patch=PATCH, in_channels=1,
-                 use_checkpoint=False):
+                 use_checkpoint=False, dual_input=False):
         super().__init__()
         self.patch = tuple(patch)
+        self.dual_input = bool(dual_input)
         self.channels = tuple(embed * 2 ** i for i in range(len(depths)))
         self.patch_embed = nn.Conv3d(in_channels, embed, kernel_size=self.patch, stride=self.patch)
         self.local_embed = nn.Sequential(nn.Linear(3, embed), nn.GELU(), nn.Linear(embed, embed))
@@ -169,7 +171,13 @@ class SwinBackbone(nn.Module):
         self.stages = nn.ModuleList(Stage(self.channels[i], depths[i], heads[i], window, merge=i < len(depths) - 1,
                                           use_checkpoint=use_checkpoint) for i in range(len(depths)))
 
-    def forward(self, image, valid, coords, local, visible=None):
+        if self.dual_input:
+            self.patch_embed_2d = nn.Conv3d(in_channels, embed, kernel_size=self.patch_for("2d"), stride=self.patch_for("2d"))
+
+    def patch_for(self, input_mode="3d"):
+        return input_patch(self.patch, self.dual_input, input_mode)
+
+    def forward(self, image, valid, coords, local, visible=None, *, input_mode="3d"):
         """image (B, 1, D, H, W) with D, H, W multiples of the patch; valid (B, D, H, W) float 0/1; coords and local
         (B, 3, D, H, W); visible (B, D/p0, H/p1, W/p2) bool or None (every patch visible). Contract: the invalid voxels
         of `image` hold the constant -1 (the normalised background value, crops.normalise / dataset.make_crop), so a
@@ -178,20 +186,23 @@ class SwinBackbone(nn.Module):
         before the stem and their tokens get the mask token added (see the module docstring). Returns a list of levels,
         each {"feat": (B, C, D', H', W'), "valid": (B, D', H', W') float, "coords": (B, 3, D', H', W') mm,
         "local": (B, 3, D', H', W')}."""
-        if any(s % p for s, p in zip(image.shape[2:], self.patch)):
-            raise ValueError(f"spatial shape {tuple(image.shape[2:])} is not a multiple of the patch {self.patch}")
+        patch = self.patch_for(input_mode)
+        if image.ndim != 5 or (input_mode == "2d" and image.shape[2] != 1):
+            raise ValueError("image must be (B, C, D, H, W), with D=1 for 2d input")
+        if any(s % p for s, p in zip(image.shape[2:], patch)):
+            raise ValueError(f"spatial shape {tuple(image.shape[2:])} is not a multiple of the patch {patch}")
         if visible is not None:
-            grid = tuple(s // p for s, p in zip(image.shape[2:], self.patch))
+            grid = tuple(s // p for s, p in zip(image.shape[2:], patch))
             if tuple(visible.shape) != (image.shape[0],) + grid:
                 raise ValueError(f"visible {tuple(visible.shape)} is not the patch grid {(image.shape[0],) + grid}")
             visible = visible.bool()
-            image = torch.where(upsample_patches(visible, self.patch)[:, None], image, torch.full_like(image, MASK_FILL))
-        x = self.patch_embed(image)
+            image = torch.where(upsample_patches(visible, patch)[:, None], image, torch.full_like(image, MASK_FILL))
+        x = (self.patch_embed_2d if input_mode == "2d" else self.patch_embed)(image)
         if visible is not None:
             x = x + (~visible)[:, None].to(x.dtype) * self.mask_token.view(1, -1, 1, 1, 1).to(x.dtype)
-        c = F.avg_pool3d(coords, self.patch, self.patch)
-        l = F.avg_pool3d(local, self.patch, self.patch)
-        v = F.max_pool3d(valid[:, None], self.patch, self.patch)[:, 0]
+        c = F.avg_pool3d(coords, patch, patch)
+        l = F.avg_pool3d(local, patch, patch)
+        v = F.max_pool3d(valid[:, None], patch, patch)[:, 0]
         x = x + self.local_embed(l.permute(0, 2, 3, 4, 1)).permute(0, 4, 1, 2, 3)
         x, c = x.permute(0, 2, 3, 4, 1), c.permute(0, 2, 3, 4, 1)
         levels = []

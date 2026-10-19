@@ -16,23 +16,28 @@ import torch.nn.functional as F
 
 from anatobind.aur.ssl.masking import BACKGROUND
 from anatobind.aur.swin import CHANNELS, PATCH
+from anatobind.aur.unified import input_patch
 
 HUBER_DELTA = 1.0
 
 
 class MaskedPatchDecoder(nn.Module):
-    def __init__(self, channels=CHANNELS, patch=PATCH, width=64, hidden=None):
+    def __init__(self, channels=CHANNELS, patch=PATCH, width=64, hidden=None, dual_input=False):
         super().__init__()
         self.patch = tuple(patch)
+        self.dual_input = bool(dual_input)
         self.channels = tuple(channels)
         hidden = hidden or width
         self.lateral = nn.ModuleList(nn.Conv3d(c, width, 1) for c in self.channels)
         self.net = nn.Sequential(nn.GELU(), nn.Conv3d(width, hidden, 1), nn.GELU(), nn.Conv3d(hidden, math.prod(self.patch), 1))
+        if self.dual_input:
+            self.output_2d = nn.Conv3d(hidden, math.prod(input_patch(self.patch, True, "2d")), 1)
 
-    def forward(self, levels, use=None):
+    def forward(self, levels, use=None, *, input_mode="3d"):
         """levels: the backbone's list of {"feat": (B, C_k, D_k, H_k, W_k)}, finest first -> (B, 1, D1 p0, H1 p1, W1 p2)
         predicted intensities on the F1 grid. `use` (one bool per level, default all) drops levels from the sum: the
         attribution diagnostic (how much the reconstruction leans on F1 vs the deeper levels), never used in training."""
+        patch = input_patch(self.patch, self.dual_input, input_mode)
         if len(levels) != len(self.lateral):
             raise ValueError(f"the decoder reads {len(self.lateral)} levels, got {len(levels)}")
         use = tuple(use) if use is not None else (True,) * len(levels)
@@ -40,7 +45,9 @@ class MaskedPatchDecoder(nn.Module):
         x = lats[-1]
         for k in range(len(levels) - 2, -1, -1):
             x = lats[k] + F.interpolate(x.float(), size=lats[k].shape[2:], mode="trilinear", align_corners=False).to(lats[k].dtype)
-        return patches_to_voxels(self.net(x), self.patch)
+        if input_mode == "2d":
+            return patches_to_voxels(self.output_2d(self.net[:3](x)), patch)
+        return patches_to_voxels(self.net(x), patch)
 
 
 def patches_to_voxels(x, patch=PATCH):

@@ -8,7 +8,7 @@ from anatobind.aur.swin import CHANNELS, DEPTHS, HEADS, PATCH, WINDOW, SwinBackb
 
 DEFAULTS = {"embed": CHANNELS[0], "depths": DEPTHS, "heads": HEADS, "window": WINDOW, "patch": PATCH, "d_model": 256,
             "n_events": 64, "mask_dim": 32, "pixel_dim": 64, "dec_layers": 3, "dec_heads": 8, "rel_layers": 2, "rel_heads": 4,
-            "use_checkpoint": True}
+            "use_checkpoint": True, "dual_input": False}
 
 
 class AnatoBindBrain(nn.Module):
@@ -20,21 +20,21 @@ class AnatoBindBrain(nn.Module):
             raise KeyError(f"unknown model options {sorted(unknown)}")
         self.cfg = cfg
         self.backbone = SwinBackbone(cfg["embed"], cfg["depths"], cfg["heads"], cfg["window"], cfg["patch"],
-                                     use_checkpoint=cfg["use_checkpoint"])
+                                     use_checkpoint=cfg["use_checkpoint"], dual_input=cfg["dual_input"])
         ch = self.backbone.channels
         d = cfg["d_model"]
         self.entities = EntityDecoder(ch, d, N_ENTITIES, cfg["dec_layers"], cfg["dec_heads"])
         self.events = EventDecoder(ch, d, cfg["n_events"], cfg["dec_layers"], cfg["dec_heads"])
         self.sequence = SequenceHead(ch[3], d)
-        self.masks = MaskHead(ch, d, cfg["patch"], cfg["pixel_dim"], cfg["mask_dim"])
+        self.masks = MaskHead(ch, d, cfg["patch"], cfg["pixel_dim"], cfg["mask_dim"], dual_input=cfg["dual_input"])
         self.relation = CandidateCompetition(d, layers=cfg["rel_layers"], heads=cfg["rel_heads"])
 
-    def forward(self, image, valid, coords, local):
+    def forward(self, image, valid, coords, local, *, input_mode="3d"):
         """See SwinBackbone.forward for the inputs. Returns the heads' outputs and the pixel features; masks are made
         on demand with entity_masks / event_masks (points or full) so that training never materialises them densely."""
-        levels = self.backbone(image, valid, coords, local)
+        levels = self.backbone(image, valid, coords, local, input_mode=input_mode)
         a, u, s = self.entities(levels), self.events(levels), self.sequence(levels[3])
-        pix = self.masks.pixels(levels, image)
+        pix = self.masks.pixels(levels, image, input_mode=input_mode)
         return {"levels": levels, "entity_embed": a["embed"], "entity_presence": a["presence"], "event_embed": u["embed"],
                 "event_presence": u["presence"], "seq_embed": s["embed"], "seq_logits": s["logits"], "pix": pix}
 
