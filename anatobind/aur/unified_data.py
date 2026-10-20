@@ -3,8 +3,8 @@
 The 3D path delegates numerical work to the existing dataset. A 2D view uses
 the raw, complete source plane's intensity scale before cropping. Source 3D
 lesion qualification precedes planar components/area qualification. Relation
-targets retain their source identity; planar eligibility is opt-in, per source
-instance, and means the caller verified that target for this observation.
+targets retain their source identity. The explicit geometry weak policy
+qualifies each final transformed observation independently, NOT_EVIDENCE.
 """
 from collections.abc import Mapping
 from copy import deepcopy
@@ -17,7 +17,8 @@ from scipy import ndimage
 from anatobind.aur import dataset as legacy
 from anatobind.aur.crops import (augment, coordinates_mm, crop_window, extract,
                                  local_coordinates, normalise, rotate_inplane, to_zyx)
-from anatobind.aur.labels import N_ENTITIES, N_HOST_CLASSES
+from anatobind.aur.labels import N_ENTITIES, N_HOST_CLASSES, entity_to_synthseg, host_map
+from anatobind.aur.planar_relations import POLICY, qualify_planar_weak_relations
 
 
 def load_unified_volume(row):
@@ -36,6 +37,9 @@ def load_unified_volume(row):
     if not np.isfinite(raw).all():
         raise ValueError("unified raw image contains nonfinite intensities")
     vol["raw_image"] = raw
+    # Entity labels still include the pseudo-anatomy under U: A-ignore is a
+    # loss mask, not permission to erase the overlap evidence.
+    vol["source_host_map"] = host_map(entity_to_synthseg(vol["entity"]))
     for key in ("source", "patient", "split", "source_r_eligible", "source_r_targets"):
         if key in row:
             vol[key] = row[key]
@@ -120,12 +124,16 @@ def _three_dimensional(vol, rng, crop, do_augment, lesion_centred):
 
 
 def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centred=False,
-                      min_area_mm2=1.0, n_events=64, plane_index=None):
+                      min_area_mm2=1.0, n_events=64, plane_index=None,
+                      planar_relation_policy=None):
     """Return legacy batch fields plus mode, physical units and per-instance R eligibility.
 
     ``source_r_eligible`` is either a mapping keyed by one-based source instance
     ID or a sequence in source-target order. It is false by default in 2D. The
     caller may supply ``source_r_targets`` in the same array schema as ``hosts``.
+    ``planar_relation_policy='geometry_weak2d_v1'`` recomputes weak positives on
+    final transformed components, with true source-map overlap required. An
+    explicit source eligibility remains an additional gate, never an override.
     No plane-specific overlap heuristic can turn an unobserved host into no-host.
     Source fields and case identifiers remain private training metadata.
     """
@@ -134,8 +142,10 @@ def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centre
     crop = tuple(crop)
     if len(crop) != 3 or any(not isinstance(v, (int, np.integer)) or v <= 0 for v in crop):
         raise ValueError("crop must contain three positive integer dimensions")
-    if not isinstance(n_events, (int, np.integer)) or n_events <= 0:
-        raise ValueError("query capacity must be a positive integer")
+    if not isinstance(n_events, (int, np.integer)) or not 1 <= n_events <= 64:
+        raise ValueError("query capacity must be a positive integer at most 64")
+    if planar_relation_policy not in (None, POLICY):
+        raise ValueError("unrecognised planar relation policy")
     if input_mode == "3d":
         out = _three_dimensional(vol, rng, crop, do_augment, lesion_centred)
         if out["n_instances"] > n_events:
@@ -177,6 +187,11 @@ def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centre
     instance, _ = extract(inst[plane_slice], plane_window, fill=0)
     small, _ = extract(vol["small"][plane_slice], plane_window, fill=False)
     a_ignore, _ = extract(vol["a_ignore"][plane_slice], plane_window, fill=False)
+    plane_hosts = None
+    if planar_relation_policy is not None:
+        if "source_host_map" not in vol or np.shape(vol["source_host_map"]) != inst.shape:
+            raise ValueError("weak planar relations require the source host map on the source grid")
+        plane_hosts, _ = extract(vol["source_host_map"][plane_slice], plane_window, fill=0)
     coords = coordinates_mm(source_window, affine=affine)
     # Independent 2D observations have no observed through-plane extent.
     local = local_coordinates(plane_window, (1, *inst.shape[1:]))
@@ -186,9 +201,12 @@ def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centre
             [image, valid.astype(np.uint8), entity, instance, small.astype(np.uint8), a_ignore.astype(np.uint8)],
             angle, [1, 0, 0, 0, 0, 0])
         valid, small, a_ignore = valid.astype(bool), small.astype(bool), a_ignore.astype(bool)
+        if plane_hosts is not None:
+            plane_hosts = rotate_inplane([plane_hosts], angle, [0])[0]
         image = augment(np.where(valid, image, -1.0).astype(np.float32), rng)
     image = np.where(valid, image, -1.0).astype(np.float32)
     a_ignore = a_ignore | ~valid
+    instance = np.where(valid, instance, 0)
     renumbered = np.zeros(instance.shape, np.int64)
     ids = []
     for source_id in np.unique(instance):
@@ -205,6 +223,23 @@ def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centre
             ids.append(int(source_id))
             renumbered[0, mask] = len(ids)
     eligible = _eligibility(vol, ids, default=False)
+    targets = _source_targets(vol, ids, eligible if planar_relation_policy is None else torch.zeros(len(ids), dtype=torch.bool))
+    provenance, reasons = [""] * len(ids), ["not_configured"] * len(ids)
+    weight = torch.zeros(len(ids), dtype=torch.float32)
+    if planar_relation_policy is not None:
+        qualified = qualify_planar_weak_relations(
+            inst, vol["source_host_map"], {"instance": renumbered, "host_map": plane_hosts},
+            valid, a_ignore, ids, pixel_area, voxel_volume_mm3=vol["voxel_mm3"],
+            split=vol.get("split"), a_supervised=bool(vol.get("a_supervised", True)),
+            u_supervised=bool(vol["u_supervised"]), r_supervised=bool(vol.get("r_supervised", True)),
+            min_area_mm2=min_area_mm2)
+        eligible = torch.from_numpy(qualified["r_eligible"]) & _eligibility(vol, ids, default=True)
+        for key, target_key in (("host", "host"), ("probs", "host_probs"), ("negatives", "negatives")):
+            targets[target_key][eligible] = torch.from_numpy(qualified[key])[eligible]
+        provenance = [p if bool(e) else "" for p, e in zip(qualified["provenance"], eligible)]
+        reasons = [r if r or bool(e) else "source_eligibility_disabled"
+                   for r, e in zip(qualified["reasons"], eligible)]
+        weight[eligible] = 1.0
     out = {"image": torch.from_numpy(np.ascontiguousarray(image))[None],
            "valid": torch.from_numpy(valid.astype(np.float32)),
            "coords": torch.from_numpy(coords), "local": torch.from_numpy(local),
@@ -217,7 +252,12 @@ def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centre
            "r_supervised": torch.tensor(bool(vol.get("r_supervised", True))),
            "u_supervised": torch.tensor(bool(vol["u_supervised"])),
            "n_instances": len(ids), "case": vol["case"],
-           "r_eligible": eligible, **_source_targets(vol, ids, eligible)}
+           "r_eligible": eligible, "r_provenance": provenance, "r_weight": weight,
+           "r_reasons": reasons,
+           "r_geometry": {"policy": planar_relation_policy, "plane_index": plane_index,
+                          "rotation_degrees": angle if do_augment else 0.0,
+                          "pixel_area_mm2": pixel_area, "evidence": "NOT_EVIDENCE"},
+           **targets}
     return _metadata(out, vol, "2d", ids, source_window)
 
 
@@ -232,5 +272,8 @@ def collate_unified(items):
     for key in ("r_eligible", "source_instance_ids", "source_window", "source_affine",
                 "pixel_area_mm2", "voxel_volume_mm3"):
         out[key] = [c[key] for c in crops]
+    for key in ("r_provenance", "r_weight", "r_reasons", "r_geometry"):
+        if all(key in c for c in crops):
+            out[key] = [c[key] for c in crops]
     out["measurement_unit"] = crops[0]["measurement_unit"]
     return out

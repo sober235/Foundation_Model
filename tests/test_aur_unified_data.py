@@ -224,3 +224,86 @@ def test_eligible_relations_require_valid_source_targets(target_key, replacement
     vol["hosts"][target_key] = replacement
     with pytest.raises(ValueError, match="source relation targets"):
         plane(vol)
+
+
+def weak_volume():
+    vol = volume()
+    vol["source_host_map"] = np.ones(vol["instance"].shape, np.uint8)
+    vol["split"] = "train"
+    return vol
+
+
+def test_opt_in_weak_policy_recomputes_final_components_and_overrides_source_distribution():
+    c = plane(weak_volume(), min_area_mm2=2.0, planar_relation_policy="geometry_weak2d_v1")
+    assert c["source_instance_ids"].tolist() == [1, 1]
+    assert c["r_eligible"].tolist() == [True, True]
+    assert c["host"].tolist() == [0, 0]
+    assert c["host_probs"].tolist() == [[1.0] + [0.0] * 13] * 2
+    assert c["r_provenance"] == ["geometry_weak2d_v1"] * 2
+    assert c["r_weight"].tolist() == [1.0, 1.0]
+    batch = adapter().collate_unified([[c]])
+    assert batch["r_provenance"] == [["geometry_weak2d_v1"] * 2]
+    assert batch["source_instance_ids"][0].tolist() == [1, 1]
+    assert batch["r_geometry"][0]["policy"] == "geometry_weak2d_v1"
+
+
+@pytest.mark.parametrize("change", ["nearest", "unknown_u", "no_a", "val", "invisible"])
+def test_weak_policy_cannot_be_bypassed_with_legacy_source_true(change):
+    vol = weak_volume()
+    vol["source_r_eligible"] = [True, True]
+    if change == "nearest":
+        vol["source_host_map"][vol["instance"] > 0] = 0
+    elif change == "unknown_u":
+        vol["u_supervised"] = False
+    elif change == "no_a":
+        vol["a_supervised"] = False
+    elif change == "val":
+        vol["split"] = "val"
+    else:
+        vol["a_ignore"][:] = True
+    c = plane(vol, planar_relation_policy="geometry_weak2d_v1")
+    assert not c["r_eligible"].any()
+    assert c["host"].tolist() == [4, 4, 7]  # Ineligible does not become NO_HOST.
+
+
+def test_explicit_source_false_remains_a_gate_under_weak_policy():
+    vol = weak_volume()
+    vol["source_r_eligible"] = {1: False, 2: True}
+    assert not plane(vol, planar_relation_policy="geometry_weak2d_v1")["r_eligible"].any()
+
+
+def test_query_capacity_cannot_exceed_model_capacity():
+    with pytest.raises(ValueError, match="query capacity"):
+        plane(n_events=65)
+
+
+def test_weak_policy_requires_source_host_map_and_recognised_policy():
+    with pytest.raises(ValueError, match="source host map"):
+        plane(planar_relation_policy="geometry_weak2d_v1")
+    with pytest.raises(ValueError, match="relation policy"):
+        plane(planar_relation_policy="other")
+
+
+def test_weak_policy_rechecks_rotated_final_geometry():
+    vol = weak_volume()
+    vol["source_host_map"][:] = 0
+    vol["source_host_map"][vol["instance"] > 0] = 1
+    # All host voxels are lesion/A-ignore: rotation must not invent visible A.
+    c = adapter().make_unified_crop(vol, np.random.default_rng(8), "2d", (1, 8, 8),
+                                   do_augment=True, plane_index=0,
+                                   planar_relation_policy="geometry_weak2d_v1")
+    assert not c["r_eligible"].any()
+
+
+def test_crop_removing_only_visible_host_disables_previously_qualified_source():
+    vol = weak_volume()
+    vol["source_host_map"][:] = 0
+    vol["source_host_map"][vol["instance"] > 0] = 1
+    vol["source_host_map"][0, 0, 0] = 1  # Visible A outside U, lost in the smaller crop.
+    full = plane(vol, min_area_mm2=2.0, planar_relation_policy="geometry_weak2d_v1")
+    assert full["r_eligible"].tolist() == [True, True]
+    cut = adapter().make_unified_crop(vol, np.random.default_rng(0), "2d", (1, 4, 4),
+                                     do_augment=False, plane_index=0,
+                                     planar_relation_policy="geometry_weak2d_v1")
+    assert cut["n_instances"] == 1 and not cut["r_eligible"].any()
+    assert cut["r_reasons"] == ["host_not_visible"]
