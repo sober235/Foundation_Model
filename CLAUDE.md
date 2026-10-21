@@ -18,6 +18,8 @@
 
 ## 最新执行入口（2026-10-21，优先于历史准备措辞）
 
+**用户认可核心路线后已继续实现：** 优先读STATUS最上节、[批准设计](docs/superpowers/specs/2026-10-21-anatobind-core-goal-and-evidence-route-design.md)与[当前实施计划](docs/superpowers/plans/2026-10-21-aur-evaluation-and-g1-diagnostic-execution.md)。统一loader已接format2监督完成证书；新增双模式开发评价入口，保持默认训练、解码与TRAIN弱R合同。二维保存证据[诊断及精确回放](docs/verification/2026-10-21/aur_g1_diagnosis/RESULTS.md)证明适配器/骨干确实更新，缓存有限非恒定、13宿主有支持，未建立弱读出的因果解释。首批局部测试/独立复核已完成，最终全量验证与有限step0对照状态见STATUS；不要重复旧审计。原G1失败、II/III未启动及所有临床/几何限制继续有效。历史合同使用显式evaluation源码归档验证，不能改原哈希来接受新代码。
+
 **正式Stage I完成，双mode G1未全部通过：** 先读[最新报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)、同目录RUN.json/g1_anonymous.json和STATUS。执行代码`65eb7df`实现数据资格、真实plane弱R、image-only双维SSL、严格warm-start/恢复、正式runner及双mode G1；完整CPU1699 passed/5 skipped/243.92秒。新`data_contract/final_v3`覆盖监督TRAIN3499/894患者、SSL5501/1895、val405/101、SSLval629/213，补充数组QC及开发ISLES3个截断mask修复完成。全尺寸24步资源probe已完成（449.868秒、最大allocated约5.25GiB、CUDA恢复通过），不要重跑。私有`~/outputs/aur_qualified_training_20261019/formal_pass_v2/`实际Stage I完成2048步，两mode各1024次曝光；best为step1792，完整证书和G1权重绑定已复核。G1为2D FAIL / 3D PASS：2D宿主增益0.043545<0.05，另两条件通过；3D三条件均通过。流程于2026-10-21 03:12:50 UTC停止，PID2348457退出，II/III未启动。保留冻结门和失败，不能直接续跑加训或改选best。最终format2导出/新角色/双mode A/U/R evaluator仍需接入，周期loss不是质量验收，held-out二维R尚无资格规则。数据合同、登记、源码闭包、分母和外部限制详见RUN；Level R仍0标签，原生DICOM可核几何和独立评价仍缺，历史质量FAIL保留。
 
 ### 历史入口（2026-10-19）

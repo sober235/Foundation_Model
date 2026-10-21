@@ -1,0 +1,1082 @@
+{
+  "claim_types": {
+    "cache_numerics": "computed",
+    "parameters": "computed",
+    "per_host_dice": "parsed and aggregated"
+  },
+  "conclusions": {
+    "causal_claim": "No root cause established. More epochs, a balanced loss or adapter/SSL changes are not justified as fixes by this audit.",
+    "confirmed": [
+      "2D adapters and shared weights changed with finite nonzero optimizer moments",
+      "Both2D feature caches are finite and have nonzero variation in all896 channels",
+      "All13 hosts have nonzero calibration and validation support",
+      "Two thalamus readouts have zero SSL Dice across all3 seeds despite positive support"
+    ],
+    "ruled_out_within_audited_scope": [
+      "2D adapters completely unchanged",
+      "Gross nonfinite feature corruption",
+      "Exactly constant channel-wise feature cache",
+      "Globally absent host class support",
+      "Static mismatch in raw-plane normalization/depth/coordinate construction"
+    ],
+    "unresolved": [
+      "Added-stage benefit over savedstep0",
+      "Representation separability versus finite unweighted readout limitations",
+      "Class imbalance and sampling/augmentation effects",
+      "3D cache numerical health",
+      "Full2D/3D A/U/R clinical/task quality"
+    ]
+  },
+  "coverage": {
+    "2d": {
+      "A": "G1 host-feature readout FAIL; complete A32 task quality not measured here",
+      "R": "No binding prediction or binding quality measurement in this audit",
+      "U": "Existing lesion-feature discrimination condition passes; instance segmentation/detection quality not measured here"
+    },
+    "3d": {
+      "A": "G1 host-feature readout PASS; complete A32 task quality not measured here",
+      "R": "No binding prediction or binding quality measurement in this audit",
+      "U": "Existing lesion-feature discrimination condition passes; instance segmentation/detection quality not measured here"
+    }
+  },
+  "evidence": "NOT_EVIDENCE",
+  "features": {
+    "3d_cache_numerics_audited": false,
+    "arms": {
+      "random": {
+        "cal": {
+          "all_feature_elements": 34406400,
+          "channels": 896,
+          "crops": 96,
+          "crops_with_nonconstant_valid_features": 96,
+          "dtype": "float16",
+          "feature_max": 3.611328125,
+          "feature_min": -5.1484375,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 38190,
+          "valid_cells_channel_std_max": 1.6311368615951973,
+          "valid_cells_channel_std_median": 0.39772923998078336,
+          "valid_cells_channel_std_min": 0.16176546122798652,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            27623,
+            1864,
+            1986,
+            2261,
+            2391,
+            64,
+            74,
+            82,
+            95,
+            276,
+            637,
+            595,
+            121,
+            121
+          ],
+          "zero_variance_channels": 0
+        },
+        "lcal": {
+          "all_feature_elements": 17203200,
+          "channels": 896,
+          "crops": 48,
+          "crops_with_nonconstant_valid_features": 48,
+          "dtype": "float16",
+          "feature_max": 3.650390625,
+          "feature_min": -4.72265625,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 18731,
+          "valid_cells_channel_std_max": 1.301965792436993,
+          "valid_cells_channel_std_median": 0.3622576933452215,
+          "valid_cells_channel_std_min": 0.15334751953909168,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            11598,
+            1462,
+            1350,
+            1604,
+            1489,
+            55,
+            57,
+            70,
+            73,
+            135,
+            355,
+            340,
+            60,
+            83
+          ],
+          "zero_variance_channels": 0
+        },
+        "lval": {
+          "all_feature_elements": 17203200,
+          "channels": 896,
+          "crops": 48,
+          "crops_with_nonconstant_valid_features": 48,
+          "dtype": "float16",
+          "feature_max": 3.63671875,
+          "feature_min": -4.73828125,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 18399,
+          "valid_cells_channel_std_max": 1.111286331891985,
+          "valid_cells_channel_std_median": 0.3297892873600636,
+          "valid_cells_channel_std_min": 0.1308011289969126,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            11519,
+            1415,
+            1397,
+            1495,
+            1480,
+            49,
+            50,
+            76,
+            81,
+            143,
+            257,
+            252,
+            88,
+            97
+          ],
+          "zero_variance_channels": 0
+        },
+        "val": {
+          "all_feature_elements": 17203200,
+          "channels": 896,
+          "crops": 48,
+          "crops_with_nonconstant_valid_features": 48,
+          "dtype": "float16",
+          "feature_max": 3.62109375,
+          "feature_min": -4.94921875,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 19078,
+          "valid_cells_channel_std_max": 1.6863909115164641,
+          "valid_cells_channel_std_median": 0.39886934693443743,
+          "valid_cells_channel_std_min": 0.16006739270848955,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            13885,
+            1102,
+            1054,
+            1162,
+            1239,
+            34,
+            26,
+            30,
+            30,
+            79,
+            181,
+            178,
+            36,
+            42
+          ],
+          "zero_variance_channels": 0
+        }
+      },
+      "ssl": {
+        "cal": {
+          "all_feature_elements": 34406400,
+          "channels": 896,
+          "crops": 96,
+          "crops_with_nonconstant_valid_features": 96,
+          "dtype": "float16",
+          "feature_max": 8.8984375,
+          "feature_min": -8.7265625,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 38190,
+          "valid_cells_channel_std_max": 4.110948923329718,
+          "valid_cells_channel_std_median": 0.7088419007181286,
+          "valid_cells_channel_std_min": 0.23173767079856403,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            27623,
+            1864,
+            1986,
+            2261,
+            2391,
+            64,
+            74,
+            82,
+            95,
+            276,
+            637,
+            595,
+            121,
+            121
+          ],
+          "zero_variance_channels": 0
+        },
+        "lcal": {
+          "all_feature_elements": 17203200,
+          "channels": 896,
+          "crops": 48,
+          "crops_with_nonconstant_valid_features": 48,
+          "dtype": "float16",
+          "feature_max": 8.6640625,
+          "feature_min": -8.796875,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 18731,
+          "valid_cells_channel_std_max": 4.324745364038856,
+          "valid_cells_channel_std_median": 0.6868284770757247,
+          "valid_cells_channel_std_min": 0.23257453135909434,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            11598,
+            1462,
+            1350,
+            1604,
+            1489,
+            55,
+            57,
+            70,
+            73,
+            135,
+            355,
+            340,
+            60,
+            83
+          ],
+          "zero_variance_channels": 0
+        },
+        "lval": {
+          "all_feature_elements": 17203200,
+          "channels": 896,
+          "crops": 48,
+          "crops_with_nonconstant_valid_features": 48,
+          "dtype": "float16",
+          "feature_max": 8.578125,
+          "feature_min": -8.921875,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 18399,
+          "valid_cells_channel_std_max": 4.375955262370766,
+          "valid_cells_channel_std_median": 0.6727849243108538,
+          "valid_cells_channel_std_min": 0.21651461578959885,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            11519,
+            1415,
+            1397,
+            1495,
+            1480,
+            49,
+            50,
+            76,
+            81,
+            143,
+            257,
+            252,
+            88,
+            97
+          ],
+          "zero_variance_channels": 0
+        },
+        "val": {
+          "all_feature_elements": 17203200,
+          "channels": 896,
+          "crops": 48,
+          "crops_with_nonconstant_valid_features": 48,
+          "dtype": "float16",
+          "feature_max": 9.1953125,
+          "feature_min": -8.6796875,
+          "grid": [
+            1,
+            20,
+            20
+          ],
+          "nonfinite_feature_elements": 0,
+          "positive_host_support_count": 13,
+          "std_below_1e_3_channels": 0,
+          "valid_cells": 19078,
+          "valid_cells_channel_std_max": 4.098119906476112,
+          "valid_cells_channel_std_median": 0.7117656160584551,
+          "valid_cells_channel_std_min": 0.22393195166489407,
+          "valid_feature_nonfinite_elements": 0,
+          "valid_target_cells_map_classes_0_to_13": [
+            13885,
+            1102,
+            1054,
+            1162,
+            1239,
+            34,
+            26,
+            30,
+            30,
+            79,
+            181,
+            178,
+            36,
+            42
+          ],
+          "zero_variance_channels": 0
+        }
+      }
+    },
+    "ssl_minus_random": {
+      "cal": {
+        "delta_l2": 9122.898611287485,
+        "different_elements": 34402775,
+        "elements": 34406400,
+        "relative_to_random_l2": 1.8203171707383325
+      },
+      "lcal": {
+        "delta_l2": 6385.509380489183,
+        "different_elements": 17201395,
+        "elements": 17203200,
+        "relative_to_random_l2": 1.8166236596703118
+      },
+      "lval": {
+        "delta_l2": 6347.64777364211,
+        "different_elements": 17201348,
+        "elements": 17203200,
+        "relative_to_random_l2": 1.8079563343017988
+      },
+      "val": {
+        "delta_l2": 6462.098692408363,
+        "different_elements": 17201414,
+        "elements": 17203200,
+        "relative_to_random_l2": 1.832530945288584
+      }
+    },
+    "targets_and_valids_identical_across_arms": true
+  },
+  "next_control": {
+    "design": {
+      "arms": [
+        "savedstep0",
+        "selectedstep1792"
+      ],
+      "comparisons": "Paired48-validation-group macro/per-host Dice differences and paired1000-bootstrap intervals with bootstrap seeds0,1,2; fixed class supports and confusion counts",
+      "control": "Refit selected3 heads from saved selected feature cache to obtain paired counts and verify original public means under predeclared backend tolerances. Freeze backend/tolerances before execution; stop on mismatch rather than relax.",
+      "epochs": 300,
+      "feature_recipe": "Frozen original F2+trilinear F3+F4; float16 CPU cache; same validity/targets; no source-image/label reads",
+      "head_fits": 6,
+      "head_seeds": [
+        0,
+        1,
+        2
+      ],
+      "loss": "unweighted14-class cross-entropy",
+      "optimizer": "Adam lr0.01 weight_decay0.0001",
+      "selected_backbone_forwards": 0,
+      "standardization": "per-arm calibration mean and sample std clamped at0.001; exactly original readout semantics",
+      "step0_backbone_forward_observations": 144,
+      "stopping": "Exactly144 savedcrop forwards and6x300 head optimization epochs; one descriptive report; no hyperparameter sweep, checkpoint reselection, training continuation or gate revision"
+    },
+    "inputs_available": {
+      "frozen_host_calibration_crop_files": 96,
+      "frozen_host_validation_crop_files": 48,
+      "saved_step0": true,
+      "selected_checkpoint": true,
+      "selected_feature_cache_2d": true
+    },
+    "limit": "Measures added1792 steps at selected checkpoint, not completed2048-step endpoint benefit. A final2048 feature/head arm would require separate extra registration.",
+    "question": "How much does selectedstep1792 improve2D host-readout performance over actual inherited/seeded savedstep0?",
+    "status": "proposed only; requires separate registration; no execution in Task3"
+  },
+  "parameters": {
+    "optimizer": {
+      "final": {
+        "groups": {
+          "input_2d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 1088,
+            "exp_avg_sq_sum": 0.003461075046615747,
+            "step_max": 1024,
+            "step_min": 1024
+          },
+          "input_3d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 2112,
+            "exp_avg_sq_sum": 0.0004711255031804029,
+            "step_max": 1024,
+            "step_min": 1024
+          },
+          "output_2d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 1040,
+            "exp_avg_sq_sum": 0.003599597069031013,
+            "step_max": 1024,
+            "step_min": 1024
+          },
+          "output_3d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 2080,
+            "exp_avg_sq_sum": 9.916822451674911e-06,
+            "step_max": 1024,
+            "step_min": 1024
+          },
+          "projector": {
+            "entries": 4,
+            "exp_avg_sq_nonzero": 0,
+            "exp_avg_sq_sum": 0.0,
+            "step_max": 2048,
+            "step_min": 2048
+          },
+          "shared_backbone": {
+            "entries": 158,
+            "exp_avg_sq_nonzero": 12927744,
+            "exp_avg_sq_sum": 0.026052107071415007,
+            "step_max": 2048,
+            "step_min": 2048
+          },
+          "shared_decoder": {
+            "entries": 10,
+            "exp_avg_sq_nonzero": 65856,
+            "exp_avg_sq_sum": 0.0077881483047479265,
+            "step_max": 2048,
+            "step_min": 2048
+          }
+        },
+        "parameter_slots": 180,
+        "state_entries": 180
+      },
+      "selected": {
+        "groups": {
+          "input_2d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 1088,
+            "exp_avg_sq_sum": 0.00731973362564986,
+            "step_max": 896,
+            "step_min": 896
+          },
+          "input_3d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 2112,
+            "exp_avg_sq_sum": 0.0006747153822814766,
+            "step_max": 896,
+            "step_min": 896
+          },
+          "output_2d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 1040,
+            "exp_avg_sq_sum": 0.012809050458559845,
+            "step_max": 896,
+            "step_min": 896
+          },
+          "output_3d_adapter": {
+            "entries": 2,
+            "exp_avg_sq_nonzero": 2080,
+            "exp_avg_sq_sum": 1.592421722648729e-05,
+            "step_max": 896,
+            "step_min": 896
+          },
+          "projector": {
+            "entries": 4,
+            "exp_avg_sq_nonzero": 0,
+            "exp_avg_sq_sum": 0.0,
+            "step_max": 1792,
+            "step_min": 1792
+          },
+          "shared_backbone": {
+            "entries": 158,
+            "exp_avg_sq_nonzero": 12927744,
+            "exp_avg_sq_sum": 0.04831519785796177,
+            "step_max": 1792,
+            "step_min": 1792
+          },
+          "shared_decoder": {
+            "entries": 10,
+            "exp_avg_sq_nonzero": 65856,
+            "exp_avg_sq_sum": 0.015574425510895728,
+            "step_max": 1792,
+            "step_min": 1792
+          }
+        },
+        "parameter_slots": 180,
+        "state_entries": 180
+      },
+      "step0": {
+        "parameter_slots": 180,
+        "state_entries": 0
+      }
+    },
+    "optimizer_mapping": "source-defined parameter traversal; complete integer IDs and per-parameter moment shapes verified; names were not serialized",
+    "saved_step0_present": true,
+    "selected_export_model_exact_match": true,
+    "step0_boundary_kind": "saved historical checkpoint; no reconstruction",
+    "step0_inherited_steps": 8500,
+    "step0_initialization_seed": 20261019,
+    "step0_lineage_tensor_hashes_verified": true,
+    "steps": [
+      0,
+      1792,
+      2048
+    ],
+    "updates": {
+      "selected_to_final": {
+        "input_2d_adapter": {
+          "baseline_l2": 4.785801017530645,
+          "changed_elements": 1088,
+          "changed_tensors": 2,
+          "delta_l2": 0.0005966918523495847,
+          "elements": 1088,
+          "max_abs_delta": 6.646662950515747e-05,
+          "relative_delta_l2": 0.0001246796200184401,
+          "tensor_count": 2
+        },
+        "input_3d_adapter": {
+          "baseline_l2": 4.18412705486328,
+          "changed_elements": 2112,
+          "changed_tensors": 2,
+          "delta_l2": 0.000840369321195148,
+          "elements": 2112,
+          "max_abs_delta": 4.774332046508789e-05,
+          "relative_delta_l2": 0.0002008469891511475,
+          "tensor_count": 2
+        },
+        "output_2d_adapter": {
+          "baseline_l2": 2.3335453421379455,
+          "changed_elements": 1040,
+          "changed_tensors": 2,
+          "delta_l2": 0.0007536512314635853,
+          "elements": 1040,
+          "max_abs_delta": 8.028000593185425e-05,
+          "relative_delta_l2": 0.0003229640401043615,
+          "tensor_count": 2
+        },
+        "output_3d_adapter": {
+          "baseline_l2": 3.52546291728008,
+          "changed_elements": 2080,
+          "changed_tensors": 2,
+          "delta_l2": 0.0009564095628532429,
+          "elements": 2080,
+          "max_abs_delta": 9.169429540634155e-05,
+          "relative_delta_l2": 0.00027128623539490233,
+          "tensor_count": 2
+        },
+        "projector": {
+          "baseline_l2": 13.143175375023876,
+          "changed_elements": 328320,
+          "changed_tensors": 4,
+          "delta_l2": 0.00027189912397355634,
+          "elements": 328320,
+          "max_abs_delta": 7.860362529754639e-07,
+          "relative_delta_l2": 2.0687475911662055e-05,
+          "tensor_count": 4
+        },
+        "shared_backbone": {
+          "baseline_l2": 140.965679799369,
+          "changed_elements": 12927359,
+          "changed_tensors": 158,
+          "delta_l2": 0.0979445981886602,
+          "elements": 12927744,
+          "max_abs_delta": 0.00013829348608851433,
+          "relative_delta_l2": 0.0006948116614488077,
+          "tensor_count": 158
+        },
+        "shared_decoder": {
+          "baseline_l2": 11.670844983674728,
+          "changed_elements": 65854,
+          "changed_tensors": 10,
+          "delta_l2": 0.006977556216954605,
+          "elements": 65856,
+          "max_abs_delta": 0.00014011934399604797,
+          "relative_delta_l2": 0.0005978621279534486,
+          "tensor_count": 10
+        }
+      },
+      "step0_to_final": {
+        "input_2d_adapter": {
+          "baseline_l2": 4.801436772498529,
+          "changed_elements": 1088,
+          "changed_tensors": 2,
+          "delta_l2": 0.08348542457484437,
+          "elements": 1088,
+          "max_abs_delta": 0.010102033615112305,
+          "relative_delta_l2": 0.01738759220011575,
+          "tensor_count": 2
+        },
+        "input_3d_adapter": {
+          "baseline_l2": 4.188835263545716,
+          "changed_elements": 2112,
+          "changed_tensors": 2,
+          "delta_l2": 0.03771415539111949,
+          "elements": 2112,
+          "max_abs_delta": 0.0036724135279655457,
+          "relative_delta_l2": 0.009003494532080419,
+          "tensor_count": 2
+        },
+        "output_2d_adapter": {
+          "baseline_l2": 2.34135072491987,
+          "changed_elements": 1040,
+          "changed_tensors": 2,
+          "delta_l2": 0.1970094425629983,
+          "elements": 1040,
+          "max_abs_delta": 0.018080756068229675,
+          "relative_delta_l2": 0.08414349907775594,
+          "tensor_count": 2
+        },
+        "output_3d_adapter": {
+          "baseline_l2": 3.5571150206303,
+          "changed_elements": 2080,
+          "changed_tensors": 2,
+          "delta_l2": 0.10971244190921631,
+          "elements": 2080,
+          "max_abs_delta": 0.011418364942073822,
+          "relative_delta_l2": 0.03084309651864333,
+          "tensor_count": 2
+        },
+        "projector": {
+          "baseline_l2": 13.210480812360938,
+          "changed_elements": 328320,
+          "changed_tensors": 4,
+          "delta_l2": 0.06757645409650624,
+          "elements": 328320,
+          "max_abs_delta": 0.000204525887966156,
+          "relative_delta_l2": 0.00511536673466688,
+          "tensor_count": 4
+        },
+        "shared_backbone": {
+          "baseline_l2": 141.44838055055692,
+          "changed_elements": 12927740,
+          "changed_tensors": 158,
+          "delta_l2": 6.9311193288352415,
+          "elements": 12927744,
+          "max_abs_delta": 0.02106834203004837,
+          "relative_delta_l2": 0.049001051138637106,
+          "tensor_count": 158
+        },
+        "shared_decoder": {
+          "baseline_l2": 11.74898592191276,
+          "changed_elements": 65856,
+          "changed_tensors": 10,
+          "delta_l2": 0.6980178574210422,
+          "elements": 65856,
+          "max_abs_delta": 0.03022419661283493,
+          "relative_delta_l2": 0.05941090252897361,
+          "tensor_count": 10
+        }
+      },
+      "step0_to_selected": {
+        "input_2d_adapter": {
+          "baseline_l2": 4.801436772498529,
+          "changed_elements": 1088,
+          "changed_tensors": 2,
+          "delta_l2": 0.08331958321340158,
+          "elements": 1088,
+          "max_abs_delta": 0.010072395205497742,
+          "relative_delta_l2": 0.017353052255240774,
+          "tensor_count": 2
+        },
+        "input_3d_adapter": {
+          "baseline_l2": 4.188835263545716,
+          "changed_elements": 2112,
+          "changed_tensors": 2,
+          "delta_l2": 0.03789275006565689,
+          "elements": 2112,
+          "max_abs_delta": 0.00367119163274765,
+          "relative_delta_l2": 0.009046130411340617,
+          "tensor_count": 2
+        },
+        "output_2d_adapter": {
+          "baseline_l2": 2.34135072491987,
+          "changed_elements": 1040,
+          "changed_tensors": 2,
+          "delta_l2": 0.19653516213314537,
+          "elements": 1040,
+          "max_abs_delta": 0.018071457743644714,
+          "relative_delta_l2": 0.08394093206171474,
+          "tensor_count": 2
+        },
+        "output_3d_adapter": {
+          "baseline_l2": 3.5571150206303,
+          "changed_elements": 2080,
+          "changed_tensors": 2,
+          "delta_l2": 0.10933694353035837,
+          "elements": 2080,
+          "max_abs_delta": 0.011353813111782074,
+          "relative_delta_l2": 0.030737533899307112,
+          "tensor_count": 2
+        },
+        "projector": {
+          "baseline_l2": 13.210480812360938,
+          "changed_elements": 328320,
+          "changed_tensors": 4,
+          "delta_l2": 0.06730547178420432,
+          "elements": 328320,
+          "max_abs_delta": 0.00020373985171318054,
+          "relative_delta_l2": 0.005094854058697632,
+          "tensor_count": 4
+        },
+        "shared_backbone": {
+          "baseline_l2": 141.44838055055692,
+          "changed_elements": 12927738,
+          "changed_tensors": 158,
+          "delta_l2": 6.927997284644863,
+          "elements": 12927744,
+          "max_abs_delta": 0.020953930914402008,
+          "relative_delta_l2": 0.04897897917020433,
+          "tensor_count": 158
+        },
+        "shared_decoder": {
+          "baseline_l2": 11.74898592191276,
+          "changed_elements": 65856,
+          "changed_tensors": 10,
+          "delta_l2": 0.696834181258552,
+          "elements": 65856,
+          "max_abs_delta": 0.030126437544822693,
+          "relative_delta_l2": 0.059310155437236736,
+          "tensor_count": 10
+        }
+      }
+    }
+  },
+  "public_g1_analysis": {
+    "2d": {
+      "evidence": "NOT_EVIDENCE",
+      "macro_dice_gain": 0.043545226256052644,
+      "nonzero_validation_support_classes": 13,
+      "per_host": [
+        {
+          "host_index": 0,
+          "host_name": "white_matter_left",
+          "macro_gain_contribution": 0.007158475044446114,
+          "mean_gain": 0.09306017557779948,
+          "random_mean_dice": 0.529721736907959,
+          "ssl_mean_dice": 0.6227819124857584,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1102
+        },
+        {
+          "host_index": 1,
+          "host_name": "white_matter_right",
+          "macro_gain_contribution": 0.003297717143327762,
+          "mean_gain": 0.0428703228632609,
+          "random_mean_dice": 0.5534589489301046,
+          "ssl_mean_dice": 0.5963292717933655,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1054
+        },
+        {
+          "host_index": 2,
+          "host_name": "cortex_left",
+          "macro_gain_contribution": 0.004984263426218277,
+          "mean_gain": 0.0647954245408376,
+          "random_mean_dice": 0.4916213850180308,
+          "ssl_mean_dice": 0.5564168095588684,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1162
+        },
+        {
+          "host_index": 3,
+          "host_name": "cortex_right",
+          "macro_gain_contribution": 0.0001505399361634866,
+          "mean_gain": 0.0019570191701253257,
+          "random_mean_dice": 0.5472443302472433,
+          "ssl_mean_dice": 0.5492013494173685,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1239
+        },
+        {
+          "host_index": 4,
+          "host_name": "thalamus_left",
+          "macro_gain_contribution": 0.0,
+          "mean_gain": 0.0,
+          "random_mean_dice": 0.0,
+          "ssl_mean_dice": 0.0,
+          "ssl_zero_dice_all_seeds": true,
+          "validation_cells": 34
+        },
+        {
+          "host_index": 5,
+          "host_name": "thalamus_right",
+          "macro_gain_contribution": -0.0035998485027215416,
+          "mean_gain": -0.04679803053538004,
+          "random_mean_dice": 0.04679803053538004,
+          "ssl_mean_dice": 0.0,
+          "ssl_zero_dice_all_seeds": true,
+          "validation_cells": 26
+        },
+        {
+          "host_index": 6,
+          "host_name": "basal_ganglia_left",
+          "macro_gain_contribution": 0.009777560830116272,
+          "mean_gain": 0.12710829079151154,
+          "random_mean_dice": 0.0,
+          "ssl_mean_dice": 0.12710829079151154,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 30
+        },
+        {
+          "host_index": 7,
+          "host_name": "basal_ganglia_right",
+          "macro_gain_contribution": 0.003255295447814159,
+          "mean_gain": 0.04231884082158407,
+          "random_mean_dice": 0.0,
+          "ssl_mean_dice": 0.04231884082158407,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 30
+        },
+        {
+          "host_index": 8,
+          "host_name": "brainstem",
+          "macro_gain_contribution": 0.0006954455987001078,
+          "mean_gain": 0.0090407927831014,
+          "random_mean_dice": 0.20226519306500754,
+          "ssl_mean_dice": 0.21130598584810892,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 79
+        },
+        {
+          "host_index": 9,
+          "host_name": "cerebellum_left",
+          "macro_gain_contribution": 0.020696597221570138,
+          "mean_gain": 0.2690557638804118,
+          "random_mean_dice": 0.23310330510139465,
+          "ssl_mean_dice": 0.5021590689818064,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 181
+        },
+        {
+          "host_index": 10,
+          "host_name": "cerebellum_right",
+          "macro_gain_contribution": -0.004625129394042186,
+          "mean_gain": -0.060126682122548424,
+          "random_mean_dice": 0.4146459996700287,
+          "ssl_mean_dice": 0.3545193175474803,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 178
+        },
+        {
+          "host_index": 11,
+          "host_name": "other_deep_grey_left",
+          "macro_gain_contribution": 0.0037938253237650944,
+          "mean_gain": 0.04931972920894623,
+          "random_mean_dice": 0.0,
+          "ssl_mean_dice": 0.04931972920894623,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 36
+        },
+        {
+          "host_index": 12,
+          "host_name": "other_deep_grey_right",
+          "macro_gain_contribution": -0.0020394976704548565,
+          "mean_gain": -0.026513469715913136,
+          "random_mean_dice": 0.050330587973197304,
+          "ssl_mean_dice": 0.023817118257284164,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 42
+        }
+      ],
+      "shortfall": 0.006454773743947359,
+      "status": "FAIL",
+      "threshold": 0.05
+    },
+    "3d": {
+      "evidence": "NOT_EVIDENCE",
+      "macro_dice_gain": 0.3495996693770091,
+      "nonzero_validation_support_classes": 13,
+      "per_host": [
+        {
+          "host_index": 0,
+          "host_name": "white_matter_left",
+          "macro_gain_contribution": 0.011127835664993677,
+          "mean_gain": 0.14466186364491782,
+          "random_mean_dice": 0.6292720238367716,
+          "ssl_mean_dice": 0.7739338874816895,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 37786
+        },
+        {
+          "host_index": 1,
+          "host_name": "white_matter_right",
+          "macro_gain_contribution": 0.01091166031666291,
+          "mean_gain": 0.14185158411661783,
+          "random_mean_dice": 0.6318372885386149,
+          "ssl_mean_dice": 0.7736888726552328,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 38005
+        },
+        {
+          "host_index": 2,
+          "host_name": "cortex_left",
+          "macro_gain_contribution": 0.011577561879769351,
+          "mean_gain": 0.15050830443700156,
+          "random_mean_dice": 0.5858065088589987,
+          "ssl_mean_dice": 0.7363148132960001,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 42150
+        },
+        {
+          "host_index": 3,
+          "host_name": "cortex_right",
+          "macro_gain_contribution": 0.011678246351388784,
+          "mean_gain": 0.1518172025680542,
+          "random_mean_dice": 0.5856865445772806,
+          "ssl_mean_dice": 0.7375037471453348,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 44337
+        },
+        {
+          "host_index": 4,
+          "host_name": "thalamus_left",
+          "macro_gain_contribution": 0.04577584669758112,
+          "mean_gain": 0.5950860070685545,
+          "random_mean_dice": 0.06623873238762219,
+          "ssl_mean_dice": 0.6613247394561768,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1360
+        },
+        {
+          "host_index": 5,
+          "host_name": "thalamus_right",
+          "macro_gain_contribution": 0.049405133590484276,
+          "mean_gain": 0.6422667366762956,
+          "random_mean_dice": 0.05795873577396075,
+          "ssl_mean_dice": 0.7002254724502563,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1370
+        },
+        {
+          "host_index": 6,
+          "host_name": "basal_ganglia_left",
+          "macro_gain_contribution": 0.03529421832316961,
+          "mean_gain": 0.45882483820120495,
+          "random_mean_dice": 0.07057652374108632,
+          "ssl_mean_dice": 0.5294013619422913,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1912
+        },
+        {
+          "host_index": 7,
+          "host_name": "basal_ganglia_right",
+          "macro_gain_contribution": 0.04029964961302586,
+          "mean_gain": 0.5238954449693362,
+          "random_mean_dice": 0.06897612164417903,
+          "ssl_mean_dice": 0.5928715666135153,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1972
+        },
+        {
+          "host_index": 8,
+          "host_name": "brainstem",
+          "macro_gain_contribution": 0.028053953097416803,
+          "mean_gain": 0.36470139026641846,
+          "random_mean_dice": 0.42698578039805096,
+          "ssl_mean_dice": 0.7916871706644694,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 3978
+        },
+        {
+          "host_index": 9,
+          "host_name": "cerebellum_left",
+          "macro_gain_contribution": 0.01122350111985818,
+          "mean_gain": 0.14590551455815634,
+          "random_mean_dice": 0.7246944109598795,
+          "ssl_mean_dice": 0.8705999255180359,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 9934
+        },
+        {
+          "host_index": 10,
+          "host_name": "cerebellum_right",
+          "macro_gain_contribution": 0.010937869548797607,
+          "mean_gain": 0.1421923041343689,
+          "random_mean_dice": 0.7246880133946737,
+          "ssl_mean_dice": 0.8668803175290426,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 9662
+        },
+        {
+          "host_index": 11,
+          "host_name": "other_deep_grey_left",
+          "macro_gain_contribution": 0.042452269830764874,
+          "mean_gain": 0.5518795077999433,
+          "random_mean_dice": 0.08414808660745621,
+          "ssl_mean_dice": 0.6360275944073995,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1819
+        },
+        {
+          "host_index": 12,
+          "host_name": "other_deep_grey_right",
+          "macro_gain_contribution": 0.04086198562230819,
+          "mean_gain": 0.5312058130900065,
+          "random_mean_dice": 0.0856446623802185,
+          "ssl_mean_dice": 0.616850475470225,
+          "ssl_zero_dice_all_seeds": false,
+          "validation_cells": 1810
+        }
+      ],
+      "shortfall": 0.0,
+      "status": "PASS",
+      "threshold": 0.05
+    }
+  },
+  "runtime": {
+    "gpu_used": false,
+    "new_model_constructions": 0,
+    "new_model_forwards": 0,
+    "new_readout_fits": 0,
+    "numpy": "2.4.4",
+    "source_medical_arrays_read": 0,
+    "threads": 2,
+    "torch": "2.5.1+cu121"
+  },
+  "schema_version": 1,
+  "transforms": {
+    "agree": [
+      "Complete raw plane normalized with identical nonzero0.5/99.5 percentiles before crop",
+      "2D depth1; mode-specific patch stem",
+      "invalid image fill=-1",
+      "patient-space coordinates from source-plane window and affine",
+      "local through-plane coordinate0"
+    ],
+    "claim_type": "source comparison of frozen145-file historical closure; no source-array replay",
+    "conclusion": "No static raw-plane normalization or dimension/coordinate semantic mismatch found. Observation distributions intentionally differ; their quantitative effect is unmeasured.",
+    "differ": [
+      "SSL image-only foreground-biased plane/crop sampling; host G1 uniform plane/window sampling",
+      "SSL rotated and independently intensity-augmented masked views; G1 unaugmented unmasked backbone features",
+      "Lesion G1 observations are lesion-centred; SSL never uses lesion supervision"
+    ]
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "audit_script_sha256": "ee6c7537a1f54a5d8a879e3c60f629571c80c77a988fae534df951f28218d535",
+  "commitment_time": "audit-time before numeric measurements; cache hashes are not historical freeze claims",
+  "evidence": "NOT_EVIDENCE",
+  "historical_source_closure_sha256": "359d442575cf7060c228c98c13a0a6caebbdb0999ad75bcdf7c059783d54912b",
+  "historical_source_file_count": 145,
+  "historical_source_matches_original_checkout": true,
+  "input_commitments": {
+    "feature_random_2d": {
+      "bytes": 501716282,
+      "sha256": "af4ab7468017b1aa50af0a6cf6202489742812e2dc202ea93f4d0ae6bf83b1a6"
+    },
+    "feature_ssl_2d": {
+      "bytes": 501716282,
+      "sha256": "95115ee9b4b6014a1db13af0fdf64b58b3e8fb585608cce6d8b7ce466bfea99d"
+    },
+    "final": {
+      "bytes": 211944966,
+      "sha256": "f02fb13b3473cfbb04a55975b6183b169644a154f9db3b2759b2edbfdb67fa77"
+    },
+    "original_g1_complete": {
+      "bytes": 168,
+      "sha256": "508376ae9b09e9231dbd193366a5091fa3ecd9939ffdf8dc4b5ab6abb6cbf711"
+    },
+    "original_g1_frozen": {
+      "bytes": 755,
+      "sha256": "1c33794d72511f6cee51c5b30b2b6888070f91da47440c7200a30089e03e56ed"
+    },
+    "public_g1": {
+      "bytes": 36628,
+      "sha256": "b8563b3b109a5f52ee1696a61bdf9cff87da6997934147bb7d07d1d1b6a854f5"
+    },
+    "questions": {
+      "bytes": 938,
+      "sha256": "947dab18c3a032ee246b2736556e039efaea1aa7cd058a0c6a5ae83bdd5eb85d"
+    },
+    "registration": {
+      "bytes": 22350,
+      "sha256": "fd21ff18abff1ca33599d97413ff513fb774394cad429f1aa2306d354b670cb8"
+    },
+    "run_config": {
+      "bytes": 2158,
+      "sha256": "e9a5ab2da4bd4544d9cf74e5bd8eab5b4cb6c066be4b769e286169a40cfa4ab1"
+    },
+    "saved_step0": {
+      "bytes": 105174142,
+      "sha256": "21237aa47111aadac0d96e3d1cdcd4a02578f91eac32851d9f6e04181a038712"
+    },
+    "selected": {
+      "bytes": 211944966,
+      "sha256": "a9db14e263fc5001828980a17e88cdd62edf88b3e56022c47d0dbf72cca89b25"
+    },
+    "selected_export": {
+      "bytes": 105154310,
+      "sha256": "f5a4d373818066518be4bad388df315fe97d0dbcf90b1c13a6f83cc5e94af72a"
+    },
+    "source_snapshot_manifest": {
+      "bytes": 14744,
+      "sha256": "4765965a33f41e7b3f4e7a2b554d2aac1452ebb186bf160c9430fabf224c2b60"
+    }
+  },
+  "next_control_crop_availability_sha256": "00b02add8edb1644a443cce38502673da425bcdea372f010ce7c5b665e8fb945",
+  "original_source_commit": "0c0f2f8b5efec2a25dfb65b95890d77827cad491",
+  "private_audit_root": "/home/congcongliu/outputs/aur_g1_diagnosis_20261021/v1",
+  "private_commitments_sha256": "580fca7d5224062b58de669a5dc2c6f27a00c6794c6862f445109d9b7f8e6711",
+  "private_numeric_result_sha256": "e2e565701364cd027d3078575194499ef191a4c87286e599db20913966e2d395",
+  "questions_sha256": "947dab18c3a032ee246b2736556e039efaea1aa7cd058a0c6a5ae83bdd5eb85d",
+  "replay_command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python /home/congcongliu/outputs/aur_g1_diagnosis_20261021/v1/audit.py replay",
+  "replay_cwd": "/home/congcongliu/src/Foundation_Model-conformance-work",
+  "review": "Task worker separate self-review: 0 actionable findings. Controller arranges fresh review; no independent review is claimed by the worker.",
+  "runtime": {
+    "gpu_used": false,
+    "new_model_constructions": 0,
+    "new_model_forwards": 0,
+    "new_readout_fits": 0,
+    "numpy": "2.4.4",
+    "source_medical_arrays_read": 0,
+    "threads": 2,
+    "torch": "2.5.1+cu121"
+  },
+  "schema_version": 1,
+  "scope": "preserved-artifact2D G1 diagnosis",
+  "verification": {
+    "3d_cache_numeric_audit": false,
+    "audit": {
+      "exit_code": 0,
+      "wall_seconds": 12.921
+    },
+    "historical_source_hashes_unchanged": true,
+    "input_hashes_unchanged_before_after": true,
+    "original_gate_unchanged": {
+      "2d": "FAIL",
+      "3d": "PASS"
+    },
+    "private_source_snapshot_saved": true,
+    "replay": {
+      "exit_code": 0,
+      "numeric_results_exactly_equal": true,
+      "wall_seconds": 13.161
+    }
+  }
+}

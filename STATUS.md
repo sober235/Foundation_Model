@@ -1,4 +1,16 @@
-# STATUS：2026-10-21（Stage I完成；G1为2D FAIL / 3D PASS，按登记规则停止）
+# STATUS：2026-10-21（双模式评价接口与二维证据诊断；原G1仍2D FAIL / 3D PASS）
+
+## 最新：已批准路线的首批实现与诊断
+
+用户已认可[核心目标与路线设计](docs/superpowers/specs/2026-10-21-anatobind-core-goal-and-evidence-route-design.md)，并要求继续执行。[当前实施计划](docs/superpowers/plans/2026-10-21-aur-evaluation-and-g1-diagnostic-execution.md)落实首步：评价入口与有边界的二维诊断。此前未提交的同日短草稿保留，当前实施计划优先。
+
+- 正式format2 II/III权重已接入统一loader，真实完成证书、精确数据身份、完整有限权重在设备转移前验证；format1仍为pilot。合成两模式A/U/R等价及拒绝路径验证通过，68项针对性测试；独立审阅0项。无真实统一监督checkpoint或新医学质量成绩。
+- 新`unified_evaluation.py`/`scripts/aur_unified_eval.py`支持固定development_validation观察，分别报告2D/3D的A32/host13、U敏感度和误报、受控及端到端R与同解剖B0。2D面积/FP-image与3D体积/FP-scan分开；未知R不变no-host，TRAIN资格保持。149项相关测试通过，审阅发现的历史父合同环境字段兼容问题已修复（b4244dd，修复检查56通过）；两轮后0剩余。
+- 数据校验新增显式evaluation来源路径：验证原合格源码及当前角色/源文件/环境，默认训练仍检查live代码。实际final_v3的5项源码均可由65eb7df精确还原；其中1项没有原本保存的精确副本，私有来源归档明确标为本次审计重建，原合同/哈希不改。
+- [二维诊断](docs/verification/2026-10-21/aur_g1_diagnosis/RESULTS.md)与精确回放通过：145份原源码、13项输入承诺不变。实际step0存在；2D输入/输出适配器到所选1792步分别变化1.735%/8.394%，共享骨干4.898%，优化器计数支持确实训练。两份二维缓存有限且非恒定、13宿主均有支持；丘脑读出仍0。没有发现静态归一化/维度/坐标不一致，采样/增广/读出类别不平衡的效应尚未分离。独立证据审阅0项。
+- 下一项有限测量正在单独准备：同96+48个已冻结二维观察比较实际step0与selected1792，先复现原selected读出，失败即停；原2048预算完成与1792选点不能混称。此项不改变G1、不释放II/III、不默认追加训练。
+
+本节记录已发生的局部验证；最终全CPU回归和实际合同字节复核的完成结果在本轮交接时补记。原`STOPPED_AT_G1`、旧完整模型A/U/R FAIL、医生标签0、原生DICOM几何和独立队列缺口均保持。
 
 ## 最新：统一2D/3D正式训练
 
