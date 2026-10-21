@@ -36,9 +36,13 @@ def validate_run_config(cfg):
     """Resolve a complete, finite, versioned recipe; never accept pilot presets."""
     from anatobind.aur import losses as L
     try:
-        if set(cfg) != _REQUIRED:
+        if not _REQUIRED <= set(cfg) or set(cfg) - _REQUIRED - {'ssl_2d_lr_scale'}:
             raise ValueError
         out = _builtin(cfg)
+        # Preserve omitted keys for historical format2 canonical certificates.
+        scale = out.get('ssl_2d_lr_scale',1)
+        if type(scale) not in (int,float) or scale <= 0:
+            raise ValueError
         if out['schema_version'] != 1 or out['purpose'] not in ('formal','resource_probe','synthetic_test'):
             raise ValueError
         if set(out['model']) - set(MODEL_DEFAULTS):
@@ -165,6 +169,8 @@ class UnifiedRun(UnifiedPilot):
         if stage not in ('I','II','III') or int(os.environ.get('WORLD_SIZE','1')) != 1 or (dist.is_initialized() and dist.get_world_size()!=1):
             raise ValueError('qualified training requires one process and a valid stage')
         self.stage,self.cfg,self.data_contract = stage,validate_run_config(cfg),_builtin(data_contract)
+        if stage != 'I' and self.cfg.get('ssl_2d_lr_scale',1) != 1:
+            raise ValueError('nonunit SSL adapter learning-rate scale requires Stage I')
         if (not isinstance(self.data_contract.get('contract_sha256'),str)
                 or len(self.data_contract['contract_sha256']) != 64):
             raise ValueError('invalid data contract hash')
@@ -200,6 +206,16 @@ class UnifiedRun(UnifiedPilot):
         rates=lr if isinstance(lr,dict) else dict.fromkeys(names,float(lr))
         groups=([{'name':'ssl','params':list(self.model.parameters()),'lr':rates['ssl']}] if self.stage=='I'
                 else T.param_groups(self.model,self.stage,rates))
+        if self.stage == 'I' and self.cfg.get('ssl_2d_lr_scale',1) != 1:
+            names_2d = ('backbone.patch_embed_2d.weight','backbone.patch_embed_2d.bias',
+                        'decoder.output_2d.weight','decoder.output_2d.bias')
+            named = dict(self.model.named_parameters())
+            groups = [
+                {'name':'ssl','params':[p for name,p in named.items() if name not in names_2d],
+                 'lr':rates['ssl']},
+                {'name':'ssl_2d','params':[named[name] for name in names_2d],
+                 'lr':rates['ssl']*self.cfg['ssl_2d_lr_scale']},
+            ]
         self.optimizer=torch.optim.AdamW(groups,weight_decay=self.cfg['weight_decay'],betas=(.9,.95))
         schedules = [T.group_lr_lambda(g['name'],self.stage,self.cfg['warmup_steps'],self.cfg['steps'],
                     self.cfg['backbone_warm_steps'],self.cfg['backbone_warm_scale']) for g in self.optimizer.param_groups]
