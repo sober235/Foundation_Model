@@ -410,7 +410,9 @@ def _verify_tree(out, *, check_paths, read_sources=True, frozen_execution=False,
         return cache[path]
 
     contract=read_json(out/'contract.json'); complete=read_json(out/'complete.json')
-    if evaluation_source and 'environment' not in contract: raise ValueError()
+    # Require an environment on the evaluated leaf. Older immutable parents
+    # may predate that field; check their environment below when recorded.
+    if evaluation_source and not frozen_execution and 'environment' not in contract: raise ValueError()
     if contract['version']!=VERSION or complete['version']!=VERSION or complete['contract_sha256']!=digest(out/'contract.json'):
         raise ValueError()
     if complete['outputs']!=contract['outputs']: raise ValueError()

@@ -398,3 +398,48 @@ def test_evaluation_accepts_exact_committed_or_external_qualified_source(tmp_pat
         (archive/'module.py').write_text('wrong archive revision')
         with pytest.raises(ValueError,match='integrity'):
             dc.verify_contract(out,check_paths=False,source_mode='evaluation',qualified_source_root=archive)
+
+
+@pytest.mark.parametrize('damage', [None,'leaf_environment_missing','leaf_environment_changed',
+                                  'parent_environment_changed','parent_role_link','parent_source'])
+def test_evaluation_requires_leaf_environment_but_preserves_legacy_parent(tmp_path, monkeypatch, damage):
+    dc = api()
+    repo = tmp_path/'repo'; repo.mkdir(); (repo/'module.py').write_text('current qualified source')
+    monkeypatch.setattr(dc,'REPO',repo)
+    parent = tmp_path/'parent'; parent.mkdir()
+    frozen = parent/'execution_source/module.py'; frozen.parent.mkdir(); frozen.write_text('original qualified source')
+    source = tmp_path/'source'; source.write_bytes(b'original source')
+    parent_outputs = committed_empty_roles(dc,parent,{'execution_source/module.py':dc.file_sha256(frozen)})
+    role = [{'image':str(source),'source_hashes':{'image':dc.file_sha256(source)}}]
+    if damage=='parent_role_link': role[0]['source_hashes']['image']='0'*64
+    (parent/'validation.json').write_text(json.dumps(role))
+    parent_outputs['validation.json']=dc.file_sha256(parent/'validation.json')
+    historical = dict(version=dc.VERSION,inputs={},source_files={str(source):dc.file_sha256(source)},
+        source_snapshot={'module.py':dc.file_sha256(frozen)},outputs=parent_outputs,summary={})
+    if damage=='parent_environment_changed': historical['environment']={'numpy':'incompatible'}
+    dc.write_private_json(parent/'contract.json',historical)
+    dc.write_private_json(parent/'complete.json',dict(version=dc.VERSION,
+        contract_sha256=dc.file_sha256(parent/'contract.json'),outputs=parent_outputs))
+    leaf = parent/'final'; leaf.mkdir()
+    leaf_source = leaf/'execution_source/module.py'; leaf_source.parent.mkdir()
+    leaf_source.write_text('current qualified source')
+    outputs = committed_empty_roles(dc,leaf,{'execution_source/module.py':dc.file_sha256(leaf_source)})
+    current = dict(version=dc.VERSION,inputs={},source_files={},source_snapshot={'module.py':dc.file_sha256(leaf_source)},
+        outputs=outputs,summary={},environment=dc.decoder_environment(),
+        inherited_contract=dict(path=str(parent/'contract.json'),sha256=dc.file_sha256(parent/'contract.json'),
+                                complete_sha256=dc.file_sha256(parent/'complete.json')))
+    if damage=='leaf_environment_missing': current.pop('environment')
+    if damage=='leaf_environment_changed': current['environment']={'numpy':'incompatible'}
+    dc.write_private_json(leaf/'contract.json',current)
+    dc.write_private_json(leaf/'complete.json',dict(version=dc.VERSION,
+        contract_sha256=dc.file_sha256(leaf/'contract.json'),outputs=outputs))
+    if damage=='parent_source': source.write_bytes(b'changed source')
+    before = [(path,path.read_bytes()) for path in (parent/'contract.json',leaf/'contract.json')]
+    if damage is None:
+        # Existing default/live verification already accepts the legacy parent.
+        assert dc.verify_contract(leaf,check_paths=False)==current
+        assert dc.verify_contract(leaf,check_paths=False,source_mode='evaluation')==current
+    else:
+        with pytest.raises(ValueError,match='integrity'):
+            dc.verify_contract(leaf,check_paths=False,source_mode='evaluation')
+    assert all(path.read_bytes()==content for path,content in before)
