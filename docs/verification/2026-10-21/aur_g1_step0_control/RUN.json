@@ -1,0 +1,96 @@
+{
+  "authoritative_completion_sha256": "b1ba5bba970ef97a6612284de14a5248feb99734cef14a907d03433c905927e4",
+  "backend_provenance_limit": "Runtime exactly matched selected training-checkpoint backend record; separate original G1 backend telemetry did not exist. Exact selected-score reproduction provides the direct numerical control.",
+  "completion_policy": "Require completion.json PASS with final input/source+backbone integrity and embedded verified metrics. metrics_anonymous.json remains PROVISIONAL by design.",
+  "cpu_replay_command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python postprocess.py",
+  "cpu_replay_cwd": "/home/congcongliu/outputs/aur_g1_diagnosis_20261021/step0_control_v2",
+  "evidence": "NOT_EVIDENCE",
+  "execution_cwd": "/home/congcongliu/outputs/aur_g1_diagnosis_20261021/step0_control_v2",
+  "next_candidate_requires_new_registration_and_code_review": true,
+  "original_execution_command": "env PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python control.py run",
+  "original_execution_is_not_a_replay": "Already consumed single registration/attempt; do not rerun fits/forwards.",
+  "original_source_commit": "0c0f2f8b5efec2a25dfb65b95890d77827cad491",
+  "paired_counts_sha256": "6ab2d9323b446599c7939c470618d6e12257e249259334eea2b72baefdd40209",
+  "postprocess_input_commitments_sha256": "6d6f5d102f846564bd9d217b123deb017e64936e8caccb6810ea7da9d6d03201",
+  "postprocess_script_sha256": "c1610f73f0bdb570812fad8df0c046d2955a8501afcc90e17606a7b698c4b1af",
+  "preparation": {
+    "predecessor": "v1 rejected before execution for2 preflight defects; not a measured science failure",
+    "synthetic_tests": 25,
+    "v1_unchanged": true
+  },
+  "private_run_root": "/home/congcongliu/outputs/aur_g1_diagnosis_20261021/step0_control_v2",
+  "registration_sha256": "6ffca50e8af93d57eb5ffabf06d1ded1aed8846800ef65c9c989eba3040f4cbc",
+  "reproduction": {
+    "absolute_tolerance": 1e-06,
+    "max_abs_host_error": 0.0,
+    "max_abs_macro_error": 0.0,
+    "pass": true,
+    "reason": "match"
+  },
+  "review_status": "Worker separate self-review; controller arranges independent evidence review",
+  "run": {
+    "automatic_retry": false,
+    "backbone_forward_limit": 144,
+    "exit_code": 0,
+    "hard_timeout": false,
+    "head_fit_limit": 6,
+    "worker_wall_seconds": 35.611484460067004
+  },
+  "schema_version": 1,
+  "verification": {
+    "all_bootstrap_ci95_cross_zero": true,
+    "arithmetic_comparison_tolerance": 1e-07,
+    "gpu_used": false,
+    "historical_source_hashes_reverified": 145,
+    "independent_mean_delta": 0.03074744732548801,
+    "max_abs_bootstrap_error": 2.0403020044301723e-08,
+    "max_abs_host_dice_error": 2.8975221222360403e-08,
+    "max_abs_macro_error": 3.880601723293964e-08,
+    "new_backbone_forwards": 0,
+    "new_medical_fits": 0,
+    "new_source_medical_array_reads": 0,
+    "per_seed": [
+      {
+        "bootstrap_ci95": [
+          -0.002451316593760592,
+          0.06293254050236254
+        ],
+        "bootstrap_mean": 0.029932995878432317,
+        "ci_crosses_zero": true,
+        "difference": 0.032388068240847445,
+        "seed": 0,
+        "selected_macro_dice": 0.2802385381137375,
+        "step0_macro_dice": 0.24785046987289006
+      },
+      {
+        "bootstrap_ci95": [
+          -0.00021682090681592994,
+          0.06941290425178724
+        ],
+        "bootstrap_mean": 0.03359252655554909,
+        "ci_crosses_zero": true,
+        "difference": 0.03467220034240309,
+        "seed": 1,
+        "selected_macro_dice": 0.28045881428145575,
+        "step0_macro_dice": 0.24578661393905266
+      },
+      {
+        "bootstrap_ci95": [
+          -0.00675243259227596,
+          0.062170673992879726
+        ],
+        "bootstrap_mean": 0.025843369338022774,
+        "ci_crosses_zero": true,
+        "difference": 0.02518207339321349,
+        "seed": 2,
+        "selected_macro_dice": 0.2782128841314872,
+        "step0_macro_dice": 0.2530308107382737
+      }
+    ],
+    "postprocess_input_hashes_unchanged": true,
+    "scientific_input_hashes_reverified": 150,
+    "status": "PASS",
+    "verification_kind": "independent NumPy float64 counts/bootstrap reimplementation; no new fits or forwards",
+    "wall_seconds": 3.0809897100552917
+  }
+}

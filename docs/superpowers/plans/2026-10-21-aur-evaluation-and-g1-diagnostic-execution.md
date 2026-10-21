@@ -83,11 +83,11 @@
 
 **Files:** Update `STATUS.md`, `CLAUDE.md` current entry, this plan checkboxes and public first-block report as needed. Keep medical details private.
 
-- [ ] Run full project CPU suite once after implementation: `... -m pytest tests/ -q -rs -p no:cacheprovider`. Keep log, return code, actual count and skip reasons. Sandbox multiprocessing failures require the specified escalated retry, not changes to tests.
-- [ ] Fresh whole-branch review against baseline `f3eb35f`, approved spec, plan and exact validation evidence; resolve substantive findings with regression checks. Cap automatic review/fix at three rounds per user instructions.
-- [ ] Report separately loader/evaluator readiness, actual preserved-artifact findings, unchanged original G1/quality FAIL, and unexecuted formal II/III. Record user-approved design and candidate experiment decisions without claiming candidate validation.
-- [ ] Commit only owned files. Publish to this feature branch under standing project authorization if remote access works; never push remote main. No stale historical replay updated to accept modified source hashes.
-- [ ] Continue into a separately frozen bounded experiment only when the diagnostic evidence determines an intervention and its initialization/data/metrics/budget; otherwise deliver the exact missing measurement and execute that finite measurement before proposing training.
+- [x] Run full project CPU suite once after implementation: `... -m pytest tests/ -q -rs -p no:cacheprovider`. Keep log, return code, actual count and skip reasons. Sandbox multiprocessing failures require the specified escalated retry, not changes to tests.
+- [x] Fresh whole-branch review against baseline `f3eb35f`, approved spec, plan and exact validation evidence; resolve substantive findings with regression checks. Cap automatic review/fix at three rounds per user instructions.
+- [x] Report separately loader/evaluator readiness, actual preserved-artifact findings, unchanged original G1/quality FAIL, and unexecuted formal II/III. Record user-approved design and candidate experiment decisions without claiming candidate validation.
+- [x] Commit only owned files. Publish to this feature branch under standing project authorization if remote access works; never push remote main. No stale historical replay updated to accept modified source hashes.
+- [x] Continue into a separately frozen bounded experiment only when the diagnostic evidence determines an intervention and its initialization/data/metrics/budget; otherwise deliver the exact missing measurement and execute that finite measurement before proposing training.
 
 ## Self-review / execution decisions
 

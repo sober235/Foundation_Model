@@ -8,11 +8,12 @@
 - 新`unified_evaluation.py`/`scripts/aur_unified_eval.py`支持固定development_validation观察，分别报告2D/3D的A32/host13、U敏感度和误报、受控及端到端R与同解剖B0。2D面积/FP-image与3D体积/FP-scan分开；未知R不变no-host，TRAIN资格保持。149项相关测试通过，审阅发现的历史父合同环境字段兼容问题已修复（b4244dd，修复检查56通过）；两轮后0剩余。
 - 数据校验新增显式evaluation来源路径：验证原合格源码及当前角色/源文件/环境，默认训练仍检查live代码。实际final_v3的5项源码均可由65eb7df精确还原；其中1项没有原本保存的精确副本，私有来源归档明确标为本次审计重建，原合同/哈希不改。
 - [二维诊断](docs/verification/2026-10-21/aur_g1_diagnosis/RESULTS.md)与精确回放通过：145份原源码、13项输入承诺不变。实际step0存在；2D输入/输出适配器到所选1792步分别变化1.735%/8.394%，共享骨干4.898%，优化器计数支持确实训练。两份二维缓存有限且非恒定、13宿主均有支持；丘脑读出仍0。没有发现静态归一化/维度/坐标不一致，采样/增广/读出类别不平衡的效应尚未分离。独立证据审阅0项。
-- 下一项有限测量正在单独准备：同96+48个已冻结二维观察比较实际step0与selected1792，先复现原selected读出，失败即停；原2048预算完成与1792选点不能混称。此项不改变G1、不释放II/III、不默认追加训练。
+- [单次二维起点对照已完成](docs/verification/2026-10-21/aur_g1_step0_control/RESULTS.md)：原selected三个读出逐项精确复现（误差0），实际step0平均Dice0.248889→selected1792的0.279637，差+0.030747；三个48患者组bootstrap95%区间均包含0，不能认定稳定增益或训练不足的根因。144次起点前向/6头拟合、35.611秒，输入/骨干完整性验证通过，独立CPU计数/区间回放差异小于3.89e-8。原G1仍失败、II/III未释放；不要重跑此对照。
+- 下一项仅为**PROPOSED**模型干预：四个新二维适配器的学习率倍率5，其余配方与2048预算不变；1792固定描述对比另列，官方G1保留原等权验证loss选点和门槛。尚需优化器分组/旧格式/恢复/源码资格检查和独立登记，未实现或启动。3:1曝光方案不是当前原样可跑的备选，正式runner只接受交替2d/3d。
 
 [首批交付报告](docs/verification/2026-10-21/aur_evaluation_interfaces/RESULTS.md)：最终沙箱外CPU回归1768 passed/5 skipped（282.65秒），实际合同字节/角色/源码复核PASS（198.829秒、合同不变、无模型前向），整分支终审0项剩余。5项跳过为nndet专用环境和4项CUDA检查，未记作本轮通过。沙箱内两次停滞的全套已由各自会话终止并保留日志。原`STOPPED_AT_G1`、旧完整模型A/U/R FAIL、医生标签0、原生DICOM几何和独立队列缺口均保持。
 
-## 最新：统一2D/3D正式训练
+## 此前：统一2D/3D正式训练
 
 [最新验证报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)、[RUN.json](docs/verification/2026-10-20/aur_qualified_training/RUN.json)与[实施计划](docs/superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md)为当前入口。下面2026-10-19的“尚未实现/NOT READY”是历史状态。
 
