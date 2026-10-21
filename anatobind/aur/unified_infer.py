@@ -14,22 +14,51 @@ from anatobind.aur.crops import normalise, to_zyx
 from anatobind.aur.infer import bind_instances, instances_from_probability, predict_volume, to_original
 
 
-def model_from_unified_export(path, device="cpu"):
-    """Strictly load one version-one technical-pilot export for either input mode.
+def model_from_unified_export(path, device="cpu", *, data_contract=None):
+    """Load a strict pilot or certificate-verified formal supervised export.
 
-    Only tensor/builtin checkpoint data are accepted. This entry does not mark a checkpoint as clinically validated
-    or bypass the still-unimplemented formal joint G1 evaluation.
+    Completion verifies artifact provenance and the executed phase budget. It
+    does not certify A/U/R quality or change any training gate decision.
     """
     from anatobind.aur.model import AnatoBindBrain
 
-    exported = torch.load(path, map_location="cpu", weights_only=True)
-    if (exported.get("format_version") != 1 or exported.get("stage") not in ("II", "III")
-            or exported.get("model_config", {}).get("dual_input") is not True
+    try:
+        exported = torch.load(path, map_location="cpu", weights_only=True)
+    except Exception:
+        raise ValueError("unable to read unified AUR export") from None
+    if (not isinstance(exported, dict) or type(exported.get("format_version")) is not int
+            or exported["format_version"] not in (1, 2) or exported.get("stage") not in ("II", "III")
+            or not isinstance(exported.get("model_config"), dict)
+            or exported["model_config"].get("dual_input") is not True
             or not isinstance(exported.get("data_contract"), dict)):
-        raise ValueError("expected a complete unified AUR technical-pilot export")
-    model = AnatoBindBrain(**exported["model_config"])
-    model.load_state_dict(exported["model_state_dict"], strict=True)
-    metadata = {"evidence": "NOT_EVIDENCE", "pilot_only": True, "stage": exported["stage"],
+        raise ValueError("expected a complete unified AUR supervised export")
+    identity = exported["data_contract"]
+    if data_contract is not None and data_contract != identity:
+        raise ValueError("unified export data contract mismatch")
+    formal = exported["format_version"] == 2
+    if formal:
+        from anatobind.aur.unified_artifacts import verify_completion_certificate
+        if not verify_completion_certificate(exported, data_contract=identity):
+            raise ValueError("unified export requires verified formal phase completion")
+    try:
+        model = AnatoBindBrain(**exported["model_config"])
+    except Exception:
+        raise ValueError("invalid unified export model configuration") from None
+    try:
+        state = exported["model_state_dict"]
+        if (not isinstance(state, dict)
+                or any(not isinstance(value, torch.Tensor) or not torch.isfinite(value).all()
+                       for value in state.values())):
+            raise ValueError
+        model.load_state_dict(state, strict=True)
+        # A finite higher-precision export can overflow when copied to the model.
+        if any(not torch.isfinite(value).all() for value in model.state_dict().values()):
+            raise ValueError
+    except Exception:
+        raise RuntimeError("invalid or incompatible unified export model state") from None
+    metadata = {"evidence": "NOT_EVIDENCE", "format_version": exported["format_version"],
+                "pilot_only": not formal, "phase_completed": formal, "quality_certified": False,
+                "stage": exported["stage"],
                 "lineage": exported.get("lineage"), "data_contract": exported["data_contract"]}
     return model.to(device).eval(), metadata
 
