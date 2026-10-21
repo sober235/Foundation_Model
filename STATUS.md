@@ -1,6 +1,19 @@
-# STATUS：2026-10-19（148数据审计完成，35例TRAIN标签丢失已修复；正式训练仍NOT READY）
+# STATUS：2026-10-21（数据资格、双维训练实现及全尺寸probe完成；首轮正式Stage I已启动）
 
-## 最新：实际训练数据与缺口修复
+## 最新：统一2D/3D正式训练
+
+[最新验证报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)、[RUN.json](docs/verification/2026-10-20/aur_qualified_training/RUN.json)与[实施计划](docs/superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md)为当前入口。下面2026-10-19的“尚未实现/NOT READY”是历史状态。
+
+- 执行代码`65eb7df`已完成正式数据合同、观察级2D弱R、纯图像双维SSL、严格warm-start、完整恢复/完成证书与双mode G1。数据/核心/启动器等独立审阅均无剩余实质发现，完整CPU1699 passed/5 skipped/243.92秒。
+- 新合同`final_v3`已完成全部源/输出/执行链校验。监督TRAIN3499行/894来源限定患者，SSL TRAIN5501/1895；开发validation405/101，SSL validation629/213。开发ISLES另3个近整数截断mask已在新版本恢复，原生20/20阳性均保留；TRAIN819份补充病灶数组QC完成。患者角色身份交集0，不等于跨来源生物学去重。
+- 2D弱R对最终plane/FOV/变换重验真实宿主重叠与可见性。有限TRAIN资格测量39组件中26合格，仍标NOT_EVIDENCE。Stage I严格只读图像；176旧张量复用、4新增二维张量固定seed初始化。
+- 全尺寸GPU probe共24步/449.868秒（含首尾全量校验），最大allocated约5.25GiB，CUDA实际状态恢复通过；两mode均实际参与Stage III弱R计算。这是资源与执行证据，heldout模型前向0。
+- 首轮正式预算I/II/III=2048/4096/2048步，单卡batch1、累积1，已独立审阅。`formal_pass_v2`于2026-10-21 01:53:39 UTC启动，PID2348457，GPU0 A800 80GB；先做完整校验再训练。仅双mode默认G1均PASS才允许II，任一FAIL/INSUFFICIENT保存并停止。预计纯训练约4.3小时，验证/校验时间另计；不能将启动写成完成。
+- 原生DICOM缺IPP/IOP及尺度歧义仍在。Level R工作副本已准备并核验，1297病灶但labels/adjudications/releases仍0，未联系读者。独立评价与最终两mode A/U/R质量验收仍未完成，历史模型质量FAIL保留。
+
+私有证据及运行根为`~/outputs/aur_qualified_training_20261019/`。已启动的进程通过`formal_pass_v2/pipeline_status.json`与阶段`status.json`/`steps.jsonl`查验；只输出匿名进度。恢复须使用同登记、源码、数据和最后checkpoint，不重新创建同名运行，不重复已完成probe。GitHub发布使用用户指定的新feature分支，远端main不直接推送。
+
+## 此前：实际训练数据与缺口修复（2026-10-19）
 
 用户要求深入理解148的FM_data并弥补缺口。[数据审计报告](docs/verification/2026-10-19/aur_data_audit/RESULTS.md)、[设计](docs/superpowers/specs/2026-10-19-aur-data-grounded-gap-closure.md)与[实施计划](docs/superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md)优先于下面的旧资产未知描述。
 

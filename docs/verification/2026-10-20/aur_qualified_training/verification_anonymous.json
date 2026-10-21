@@ -1,0 +1,14 @@
+{
+  "broken_links_count": 0,
+  "frozen_source_files_checked": 145,
+  "frozen_source_mismatches": 0,
+  "identity_token_hits": 0,
+  "identity_tokens_checked": 2106,
+  "json_files_parsed": 3,
+  "local_markdown_links_checked": 42,
+  "medical_binary_additions": 0,
+  "private_medical_path_hits": 0,
+  "private_medical_paths_checked": 8324,
+  "scope": "added lines since baseline and new text artifacts; not a retrospective whole-conversation anonymity guarantee",
+  "status": "PASS"
+}

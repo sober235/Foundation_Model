@@ -1,0 +1,251 @@
+{
+  "artifacts": [
+    {
+      "relative_private_artifact": "data_contract/final_v3/contract.json",
+      "sha256": "a839cfc9c9213b5b376eac4bc4a8219506175fdbe3620bc36cb2056f602b6060"
+    },
+    {
+      "relative_private_artifact": "data_contract/final_v3_verify_anonymous.json",
+      "sha256": "7a7fd9986fa4a7aba365b54fdff9533e3ad9c624f99fd9cc9cd23341e621013b"
+    },
+    {
+      "relative_private_artifact": "planar/summary.json",
+      "sha256": "47f2ca02a99796575b8e27cf81eaf9ad76a2ffd82b3838a7889f89c235fcd621"
+    },
+    {
+      "relative_private_artifact": "planar/complete.json",
+      "sha256": "fec8f1622e3d3c0c8d6eab7b1013c20056a69b2e27055db387a801af1a645558"
+    },
+    {
+      "relative_private_artifact": "ssl/final/validation.json",
+      "sha256": "e9e53e05fd881addabc153d112a4085d4b5ecdd3f12c01a38707f14e0aa4baf8"
+    },
+    {
+      "relative_private_artifact": "full_model_probe_v1/aborted_anonymous.json",
+      "sha256": "dadd33fc88045c79993b300e095ada6834b818f854d4296d76687080f732eec5"
+    },
+    {
+      "relative_private_artifact": "full_model_probe_v2/summary.json",
+      "sha256": "dad6f4dafa42d914f98752ef456586c43aabaa030f06ec8284252366aa717fa0"
+    },
+    {
+      "relative_private_artifact": "full_model_probe_v2/cuda_recovery.json",
+      "sha256": "1221ac7d8a2290c2f4a9133d341fffc7eb29c6b4521d7c6a625e01c374a707aa"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v1/registration.json",
+      "sha256": "a4c4b87ab5b5c462cbc207632740a4a87bc114470486109b56f912d6bb102d7d"
+    },
+    {
+      "relative_private_artifact": "formal_pipeline_v1.py",
+      "sha256": "8f2633ec4c2d78bc65cc40a15412ca1d07601ad5ba13f1b6c62d72071535f916"
+    },
+    {
+      "relative_private_artifact": "formal_pipeline_v2.py",
+      "sha256": "7cff120e8768c81eae85615f12fbaea16a9222825d9b5eddc2980e18e0774f4b"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/registration.json",
+      "sha256": "fd21ff18abff1ca33599d97413ff513fb774394cad429f1aa2306d354b670cb8"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/controller_checks_anonymous.json",
+      "sha256": "1c36b2e67f93f8dd14ea548cb852792954a260178adf11dc74968c29fd7d895c"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/launch_process.json",
+      "sha256": "523a3aea4530b8511fecc1fbcebe36a241ac040d97d76dbda6f8cc55985d4531"
+    },
+    {
+      "relative_private_artifact": "external_evidence_v1/anonymous_summary.json",
+      "sha256": "0b73fb933b2120fc9fc30279e6ddfb91fe9d143145b5684481993d06a9d2cc6a"
+    },
+    {
+      "relative_private_artifact": "reviews/budget_registration_round1.md",
+      "sha256": "27a85894fc1c7affc919aa8a971891a818157e0d74d2ab6eb30d4da123d747e8"
+    },
+    {
+      "relative_private_artifact": "reviews/core_round1.md",
+      "sha256": "f05abcebdb246d10b70ae8ea05652909783806daddddedc83e781048e26e0d20"
+    },
+    {
+      "relative_private_artifact": "reviews/core_round2.md",
+      "sha256": "ae25eb0a7386cd0664bc5308ed3ba7ff2504f66181856dd151f0950aa71c8a1a"
+    },
+    {
+      "relative_private_artifact": "reviews/data_round1.md",
+      "sha256": "1b4130108c28512ea8d7a992885beab1a511fd8de637d95146022d0467ba7924"
+    },
+    {
+      "relative_private_artifact": "reviews/data_round2.md",
+      "sha256": "86bc8bdebefdb7259732e80bd49cf59e1547959bbdfd3ca8d64d2f6c0e5f7ad1"
+    },
+    {
+      "relative_private_artifact": "reviews/data_round3.md",
+      "sha256": "5227a4adb3716fa0e7832a363fa170b96c912880a4c4d40d9702c1703bd31f18"
+    },
+    {
+      "relative_private_artifact": "reviews/g1_round1.md",
+      "sha256": "ad01f1c36d34f122e9580fe6c187c9334f5ca894535fb03b31f1b3a620b1a492"
+    },
+    {
+      "relative_private_artifact": "reviews/launcher_round1.md",
+      "sha256": "ab86c5632490981e65c703b1fd8fe962fdad24d8ac3bfa0daee0f0eebad750d8"
+    },
+    {
+      "relative_private_artifact": "reviews/launcher_round2.md",
+      "sha256": "0deaf383c15d61bbe6801844b09997616530e25160fbf7904ab22235acdfddb2"
+    },
+    {
+      "relative_private_artifact": "reviews/launcher_round3.md",
+      "sha256": "61d78697f4d6c053442e34b797d6f8bb43460dde433b530127360b86689b645e"
+    },
+    {
+      "relative_private_artifact": "reviews/task3_round1.md",
+      "sha256": "440666984033cf99fefda082969e462c63f7607835577685a525f105dcad03cd"
+    },
+    {
+      "relative_private_artifact": "reviews/task4_round1.md",
+      "sha256": "ce573a5cb9df13b8b6f92d614fe91e178721607e4c83db96510c7757af093f7f"
+    }
+  ],
+  "base_commit": "04638a9b45ceef82e2899e9a7cc575c914681661",
+  "branch": "feature/aur-qualified-unified-training-2026-10-19",
+  "budget_review": {
+    "actionable_findings": 0,
+    "artifact": "reviews/budget_registration_round1.md",
+    "scope": "static/configuration checks; no medical arrays or model tensors read"
+  },
+  "command_environment": {
+    "MKL_NUM_THREADS": "2",
+    "OMP_NUM_THREADS": "2",
+    "OPENBLAS_NUM_THREADS": "2",
+    "PYTHONNOUSERSITE": "1",
+    "PYTHONPATH": ".",
+    "cuda": "hidden for CPU; one freshly checked idle GPU UUID pinned for GPU runs"
+  },
+  "commands_observed": {
+    "final_cpu_suite": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+    "formal_pipeline": "nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -u /home/congcongliu/outputs/aur_qualified_training_20261019/formal_pipeline_v2.py --run",
+    "resource_probe": "nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -u /home/congcongliu/outputs/aur_qualified_training_20261019/full_model_probe_v2.py"
+  },
+  "coverage_limits": [
+    "No new final A/U/R quality verdict",
+    "No new independent evaluation cohort established",
+    "No qualified native brain DICOM patient geometry",
+    "Level R labels/adjudications/releases remain zero",
+    "CPU skipped dedicated CUDA/nndet checks were not rerun this phase"
+  ],
+  "formal_launch": {
+    "detached": true,
+    "gpu_name": "NVIDIA A800 80GB PCIe",
+    "gpu_utilization_percent": 0,
+    "launched_at_utc": "2026-10-21T01:53:39.892133+00:00",
+    "memory_total_mib": 81920,
+    "memory_used_mib": 2,
+    "pid": 2348457,
+    "scheduler_variables_present": {
+      "CUDA_VISIBLE_DEVICES": false,
+      "LSB_JOBID": false,
+      "NVIDIA_VISIBLE_DEVICES": false,
+      "PBS_JOBID": false,
+      "SLURM_JOB_GPUS": false,
+      "SLURM_JOB_ID": false,
+      "SLURM_STEP_GPUS": false
+    },
+    "selected_gpu_index": 0,
+    "selected_gpu_other_workloads": 0,
+    "selected_gpu_uuid": "GPU-64b093fe-3c70-3b73-51f9-083bf88c8970"
+  },
+  "formal_progress": {
+    "pipeline": {
+      "optimizer_budget": 2048,
+      "stage": "I",
+      "status": "TRAINING"
+    },
+    "registration_sha256": "fd21ff18abff1ca33599d97413ff513fb774394cad429f1aa2306d354b670cb8",
+    "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+    "stages": {
+      "I": {
+        "all_logged_losses_finite": true,
+        "exposures": {
+          "2d": 178,
+          "3d": 177
+        },
+        "last_committed_step": 256,
+        "last_loss": 0.07768429815769196,
+        "optimizer_steps_logged": 355,
+        "optimizer_wall_seconds": 409.9660821608268,
+        "peak_cuda_allocated_bytes": 2243369984,
+        "registered_steps": 2048,
+        "source_mode_exposures": {
+          "2d": {
+            "bmsr": 38,
+            "hcp": 31,
+            "isles": 37,
+            "pdgm": 32,
+            "sibbms": 40
+          },
+          "3d": {
+            "bmsr": 35,
+            "hcp": 32,
+            "isles": 37,
+            "pdgm": 39,
+            "sibbms": 34
+          }
+        },
+        "status": "RUNNING",
+        "validation": [
+          {
+            "criterion": 0.03962499892804772,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.05677905026823282,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02247094758786261,
+                "observations": 8
+              }
+            },
+            "step": 256
+          }
+        ]
+      },
+      "II": {
+        "optimizer_steps_logged": 0,
+        "registered_steps": 4096,
+        "status": "NOT_STARTED"
+      },
+      "III": {
+        "optimizer_steps_logged": 0,
+        "registered_steps": 2048,
+        "status": "NOT_STARTED"
+      }
+    }
+  },
+  "implementation_commit": "65eb7df8bd15d8155a6df389f525354020cd4dab",
+  "private_root": "/home/congcongliu/outputs/aur_qualified_training_20261019",
+  "public_aggregate_sha256": "794122dff844ea380fa2b00f8e023015a142cc2de8cfbc5e79c328f2df198557",
+  "recovery": "Use the frozen v2 controller with --run only after the old PID exits; retain registration, source and data hashes. Reuse last committed checkpoint; G1 failure or insufficiency remains a stop. Partial G1 evaluation requires inspection before retry.",
+  "repository": "https://github.com/sober235/Foundation_Model",
+  "schema_version": 1,
+  "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+  "source_closure_digest": "359d442575cf7060c228c98c13a0a6caebbdb0999ad75bcdf7c059783d54912b",
+  "source_closure_files": 145,
+  "verification": {
+    "evidence_source": "completed tool execution in this task; no separately preserved full-suite log claimed",
+    "exit_code": 0,
+    "failed": 0,
+    "passed": 1699,
+    "seconds": 243.92,
+    "skipped": 5,
+    "skipped_groups": [
+      "nndet dedicated environment module",
+      "CUDA mixed precision case",
+      "three CUDA recovery cases"
+    ]
+  }
+}

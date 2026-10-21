@@ -1,0 +1,300 @@
+{
+  "actual_cuda_restoration": {
+    "checks": {
+      "cursors": true,
+      "execution_id": true,
+      "exposures": true,
+      "mode_sources": true,
+      "model": true,
+      "optimizer": true,
+      "rng": true,
+      "scheduler": true
+    },
+    "future_CUDA_bitwise_updates_promised": false,
+    "passed": true,
+    "saved_step": 4
+  },
+  "cpu_suite": {
+    "evidence_source": "completed tool execution in this task; no separately preserved full-suite log claimed",
+    "exit_code": 0,
+    "failed": 0,
+    "passed": 1699,
+    "seconds": 243.92,
+    "skipped": 5,
+    "skipped_groups": [
+      "nndet dedicated environment module",
+      "CUDA mixed precision case",
+      "three CUDA recovery cases"
+    ]
+  },
+  "evidence": "NOT_EVIDENCE",
+  "external_evidence": {
+    "annotation_counts": {
+      "adjudications": 0,
+      "labels": 0,
+      "lesions": 1297,
+      "orders": 2594,
+      "readers": 3,
+      "releases": 0
+    },
+    "annotation_server_started": false,
+    "annotation_status": "EMPTY",
+    "existing_h5_dicom_candidate_mapping_volumes": 5640,
+    "existing_mapping_integrity_passed": true,
+    "external_geometry_and_human_work_still_required": true,
+    "messages_to_readers_sent": false,
+    "native_patient_geometry_verified": false,
+    "physician_labels_generated": false,
+    "snapshot_integrity_passed": true,
+    "source_database_unchanged": true
+  },
+  "final_dual_mode_aur_quality_established": false,
+  "formal_progress": {
+    "pipeline": {
+      "optimizer_budget": 2048,
+      "stage": "I",
+      "status": "TRAINING"
+    },
+    "registration_sha256": "fd21ff18abff1ca33599d97413ff513fb774394cad429f1aa2306d354b670cb8",
+    "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+    "stages": {
+      "I": {
+        "all_logged_losses_finite": true,
+        "exposures": {
+          "2d": 178,
+          "3d": 177
+        },
+        "last_committed_step": 256,
+        "last_loss": 0.07768429815769196,
+        "optimizer_steps_logged": 355,
+        "optimizer_wall_seconds": 409.9660821608268,
+        "peak_cuda_allocated_bytes": 2243369984,
+        "registered_steps": 2048,
+        "source_mode_exposures": {
+          "2d": {
+            "bmsr": 38,
+            "hcp": 31,
+            "isles": 37,
+            "pdgm": 32,
+            "sibbms": 40
+          },
+          "3d": {
+            "bmsr": 35,
+            "hcp": 32,
+            "isles": 37,
+            "pdgm": 39,
+            "sibbms": 34
+          }
+        },
+        "status": "RUNNING",
+        "validation": [
+          {
+            "criterion": 0.03962499892804772,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.05677905026823282,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02247094758786261,
+                "observations": 8
+              }
+            },
+            "step": 256
+          }
+        ]
+      },
+      "II": {
+        "optimizer_steps_logged": 0,
+        "registered_steps": 4096,
+        "status": "NOT_STARTED"
+      },
+      "III": {
+        "optimizer_steps_logged": 0,
+        "registered_steps": 2048,
+        "status": "NOT_STARTED"
+      }
+    }
+  },
+  "full_model_resource_probe": {
+    "complete": true,
+    "evidence": "NOT_EVIDENCE",
+    "heldout_model_forwards": 0,
+    "observed_optimizer_seconds": 43.28214952442795,
+    "optimizer_steps": 24,
+    "postcheck_seconds": 193.81655076984316,
+    "precheck_seconds": 194.6558786779642,
+    "stages": {
+      "I": {
+        "exposures": {
+          "2d": 4,
+          "3d": 4
+        },
+        "model_parameters": 13328240,
+        "modes": {
+          "2d": {
+            "mean_step_seconds": 0.7453030435135588,
+            "peak_cuda_allocated_bytes": 338793472,
+            "peak_cuda_reserved_bytes": 2598371328,
+            "steps": 4
+          },
+          "3d": {
+            "mean_step_seconds": 1.6672441008267924,
+            "peak_cuda_allocated_bytes": 2245073920,
+            "peak_cuda_reserved_bytes": 2598371328,
+            "steps": 4
+          }
+        }
+      },
+      "II": {
+        "exposures": {
+          "2d": 4,
+          "3d": 4
+        },
+        "model_parameters": 22753513,
+        "modes": {
+          "2d": {
+            "mean_step_seconds": 1.4031975955003873,
+            "peak_cuda_allocated_bytes": 466233344,
+            "peak_cuda_reserved_bytes": 8994684928,
+            "steps": 4
+          },
+          "3d": {
+            "mean_step_seconds": 2.7518884296296164,
+            "peak_cuda_allocated_bytes": 5585268224,
+            "peak_cuda_reserved_bytes": 8994684928,
+            "steps": 4
+          }
+        }
+      },
+      "III": {
+        "exposures": {
+          "2d": 4,
+          "3d": 4
+        },
+        "model_parameters": 22753513,
+        "modes": {
+          "2d": {
+            "mean_step_seconds": 1.4627777008572593,
+            "peak_cuda_allocated_bytes": 491793920,
+            "peak_cuda_reserved_bytes": 9019850752,
+            "steps": 4
+          },
+          "3d": {
+            "mean_step_seconds": 2.7901265107793733,
+            "peak_cuda_allocated_bytes": 5637044224,
+            "peak_cuda_reserved_bytes": 9019850752,
+            "steps": 4
+          }
+        }
+      }
+    },
+    "total_wall_seconds": 449.86785966996104
+  },
+  "historical_aur_failure_retained": true,
+  "implementation_commit": "65eb7df8bd15d8155a6df389f525354020cd4dab",
+  "planar_train_qualification": {
+    "by_source": {
+      "bmsr": {
+        "eligible": 4,
+        "visible": 10
+      },
+      "isles": {
+        "eligible": 16,
+        "visible": 23
+      },
+      "pdgm": {
+        "eligible": 6,
+        "visible": 6
+      }
+    },
+    "eligible_weak_r": 26,
+    "observations": 36,
+    "patients": 6,
+    "physician_truth": false,
+    "plane_source_disagreement": 11,
+    "planes": 18,
+    "source_tie": 2,
+    "visible_components": 39
+  },
+  "qualified_data": {
+    "contract_sha256": "a839cfc9c9213b5b376eac4bc4a8219506175fdbe3620bc36cb2056f602b6060",
+    "cross_source_biological_deduplication_proven": false,
+    "identity_intersections": 0,
+    "ssl_train": {
+      "rows": 5501,
+      "source_qualified_patients": 1895
+    },
+    "ssl_validation": {
+      "rows": 629,
+      "source_qualified_patients": 213
+    },
+    "supervised_train": {
+      "a_rows": 3420,
+      "r_3d_rows": 1174,
+      "rows": 3499,
+      "source_qualified_patients": 894,
+      "u_rows": 1213
+    },
+    "supplementary_train_lesion_arrays": 819,
+    "supplementary_train_rows": 2674,
+    "validation": {
+      "a_rows": 394,
+      "r_3d_rows": 138,
+      "rows": 405,
+      "source_qualified_patients": 101,
+      "u_rows": 143
+    },
+    "validation_isles_previous_positive": 17,
+    "validation_isles_source_positive": 20,
+    "validation_recovered_components": 35,
+    "validation_recovered_voxels": 70735,
+    "validation_repaired_arrays": 3
+  },
+  "registered_budget": {
+    "I": {
+      "estimate_limit": "eight measured steps; excludes validation, file verification and scheduling variation",
+      "estimated_optimizer_seconds": 2470.4482758045197,
+      "gradient_accumulation": 1,
+      "measured_mean_step_seconds": 1.2062735721701756,
+      "microbatch": 1,
+      "observations": 2048,
+      "observations_per_mode": 1024,
+      "optimizer_steps": 2048,
+      "training_segment_limit_seconds": 5400.0
+    },
+    "II": {
+      "estimate_limit": "eight measured steps; excludes validation, file verification and scheduling variation",
+      "estimated_optimizer_seconds": 8509.616179466248,
+      "gradient_accumulation": 1,
+      "measured_mean_step_seconds": 2.077543012565002,
+      "microbatch": 1,
+      "observations": 4096,
+      "observations_per_mode": 2048,
+      "optimizer_steps": 4096,
+      "training_segment_limit_seconds": 14400.0
+    },
+    "III": {
+      "estimate_limit": "eight measured steps; excludes validation, file verification and scheduling variation",
+      "estimated_optimizer_seconds": 4354.973912715912,
+      "gradient_accumulation": 1,
+      "measured_mean_step_seconds": 2.1264521058183163,
+      "microbatch": 1,
+      "observations": 2048,
+      "observations_per_mode": 1024,
+      "optimizer_steps": 2048,
+      "training_segment_limit_seconds": 7200.0
+    }
+  },
+  "schema_version": 1,
+  "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+  "warm_start": {
+    "legacy_rng_exact_resume": false,
+    "legacy_tensors_copied": 176,
+    "new_2d_tensors_seeded": 4,
+    "optimizer_reset": true,
+    "seed": 20261019
+  }
+}

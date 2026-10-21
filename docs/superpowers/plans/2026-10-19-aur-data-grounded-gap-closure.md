@@ -10,6 +10,22 @@
 
 **Validation prefix:** `env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python`。下文`<CPU>`指此前缀；不是可直接输入shell的变量。医学CLI错误只输出固定匿名类别，不回显参数值。
 
+## 执行账本（2026-10-21 UTC）
+
+执行代码`65eb7df`，完整证据、实际新增文件/接口及验证以[本轮报告](../../verification/2026-10-20/aur_qualified_training/RESULTS.md)和RUN.json为准。下方各任务保留原验收条目；该账本区分代码交付、实际有限验证与未完成的科学验收。
+
+| 任务 | 当前实际状态 |
+|---|---|
+| 1 标签修复 | 已完成，沿用原冻结证据 |
+| 2 数据资格 | 已完成当前主配方合同及全量源/输出校验；TRAIN819份补充数组QC、val20 ISLES全体与另3份修复已完成；候选FLAIR/OASIS扩充未纳入本轮 |
+| 3 2D弱R | 已完成代码/回归/独立审阅；真实TRAIN36观测、39组件中26合格 |
+| 4 纯图像SSL | 已完成loader、strict迁移、双mode梯度/恢复检查及176+4实际warm-start；新增迁移实现位于ssl/unified_init.py |
+| 5 编排/G1 | 已完成代码、完整恢复/完成证书、双mode判门测试及独立审阅；实际G1结果尚未产生，最终A/U/R质量验收未完成 |
+| 6 资源与正式run | 全尺寸I/II/III各8步probe完成，CUDA恢复通过；2048/4096/2048步预算已登记并审阅。formal_pass_v2已于01:53:39 UTC启动，G1失败即停；正式阶段尚未完成 |
+| 7 外部补证 | 5640卷候选映射hash复核，1297病灶Level R工作副本准备并核验；可核原生患者几何、医生实际标签及R0/R1验收仍未完成 |
+
+最终CPU1699 passed/5 skipped/243.92秒。原数据/历史缓存及失败记录不覆盖；医学数组、身份/观测清单与读者数据库留在私有目录。
+
 ## Task 1：离散标签修复及实际数据纵向闭环（已完成）
 
 **Files:** `anatobind/aur/{labels,resample,dataset,eval,fastmri}.py`、对应5测试模块、`AGENTS.md`。

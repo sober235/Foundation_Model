@@ -16,7 +16,11 @@
 
 **本轮接手上下文：** [2026-10-19双输入训练准备摘要](notes/session-logs/2026-10-19-aur-dual-input-training-readiness.md)，含已执行结果、未落地代码及后续统一模型/DICOM澄清。
 
-## 最新执行入口（2026-10-19，优先于上面的历史准备措辞）
+## 最新执行入口（2026-10-21，优先于历史准备措辞）
+
+**首轮正式统一训练已启动：** 先读[最新报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)、同目录RUN.json和STATUS。执行代码`65eb7df`已实现数据资格、真实plane弱R、image-only双维SSL、严格warm-start/恢复、正式runner及双mode G1，独立审阅无剩余实质发现；完整CPU1699 passed/5 skipped/243.92秒。新`data_contract/final_v3`覆盖监督TRAIN3499/894患者、SSL5501/1895、val405/101、SSLval629/213，完成全量哈希和补充数组QC；开发ISLES3个截断mask修复到新版本。实际全尺寸24步资源probe已完成（总449.868秒、最大allocated约5.25GiB、CUDA状态恢复通过），不要重跑补已有测量。私有`~/outputs/aur_qualified_training_20261019/formal_pass_v2/`于2026-10-21 01:53:39 UTC启动，PID2348457；正式I/II/III预算2048/4096/2048步，双mode G1不过则停止。读取匿名进度确认实时状态，不把此启动快照当完成。数据合同SHA、登记SHA、代码闭包、失败/恢复和实际验证详见RUN；训练中不改生产Python。Level R副本已准备但标签仍0，原生DICOM可核几何和独立评价仍缺；新弱R不是医生真值，历史质量FAIL保留。
+
+### 历史入口（2026-10-19）
 
 **同日后续数据审计已完成：** [148训练数据报告](docs/verification/2026-10-19/aur_data_audit/RESULTS.md)及[数据驱动实施计划](docs/superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md)为最新入口。发现并修复35个TRAIN ISLES近整数标签被截断的缺陷，代码`6265015`；新私有TRAIN清单3499行恢复459实例、修正70条lesion引用和对应A-ignore，3原生空DWI仅在新版本U/R关闭。当前旧/data2派生不覆盖，后续训练必须显式使用新manifest（位置/hash见RUN.json）；旧全零图不能自行round恢复。完整Stage I 176 keys可warm-start，4个新增二维tensor未训练，不能宣称旧RNG完整恢复。全TRAIN32个A类都有有效标签；真实2D R资格仍未实现。完整DICOM/H5审计确认现存raw fastMRI缺IPP/IOP及尺度歧义，未完成原生脑验收；真实Level R库存在但labels=0。新的CPU检查1528 passed/5 skipped/202.88秒、独立代码复核0剩余，本轮无GPU/正式训练或新val/test成绩。详细未审范围、输出隐私偏差及旧版本承诺见新报告。
 
