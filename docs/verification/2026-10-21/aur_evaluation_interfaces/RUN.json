@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "production_code_commit": "b4244dd",
+  "reviewed_head": "792e93a",
+  "full_cpu_suite": {
+    "passed": 1768,
+    "skipped": 5,
+    "pytest_seconds": 282.65,
+    "wrapper_seconds": 284.77006083587185,
+    "exit_code": 0,
+    "sandbox": false,
+    "skip_reasons": {
+      "optional_nndet_missing": 1,
+      "cuda_bf16_only": 1,
+      "cuda_optimizer_rng_only": 3
+    }
+  },
+  "real_contract_verification": {
+    "status": "PASS",
+    "wall_seconds": 198.82917611300945,
+    "contract_unchanged": true,
+    "validation_rows": 405,
+    "train_supervised_rows": 3499,
+    "source_archive": "hash-exact audit-time reconstruction from65eb7df",
+    "real_model_forwards": 0,
+    "code": "b4244dd"
+  },
+  "evaluator_source_sha256": "92e72d7380b469fcbfca1b288ec4ad5e61012df7a92f368cd42bd2a1286468df",
+  "review": {
+    "task1_actionable": 0,
+    "task2_remaining_actionable": 0,
+    "task3_actionable": 0,
+    "whole_branch_actionable": 0,
+    "resolved_task2_findings": 1
+  },
+  "historical_g1": {
+    "2d": "FAIL",
+    "3d": "PASS",
+    "stage_II_started": false,
+    "stage_III_started": false
+  },
+  "new_real_medical_model_forwards": 0,
+  "evidence": "NOT_EVIDENCE",
+  "private_log_sha256": {
+    "full_suite_v3.log": "e7e07fbfcaa9080d42bd92c2f58bcd57112e05a607bb6916664927bc2effdeb3",
+    "full_suite_v3.json": "37a636540863c0fa01b4d801b034a7bc963be7086e032521e736b81f228ebbb7",
+    "real_contract_verification_v2.json": "143c399bb1051561cab6631eb3732476512dec08fb3fa385d0cf1c0780ed858c"
+  },
+  "superseded_checks": "Sandbox v1/v2 stalled at multiprocessing crop test; superseded and terminated through owned sessions(exit130), no successful-suite claim."
+}
