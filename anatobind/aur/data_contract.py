@@ -395,7 +395,8 @@ def load_training_supplement(path, initial_contract_sha256):
     return read_json(path/'ledger_private.json'),read_json(path/'anonymous_summary.json')
 
 
-def _verify_tree(out, *, check_paths, read_sources=True, frozen_execution=False, cache=None, visited=None):
+def _verify_tree(out, *, check_paths, read_sources=True, frozen_execution=False,
+                 evaluation_source=False, qualified_source_root=None, cache=None, visited=None):
     cache={} if cache is None else cache
     visited=set() if visited is None else visited
     out=Path(out).resolve()
@@ -409,6 +410,7 @@ def _verify_tree(out, *, check_paths, read_sources=True, frozen_execution=False,
         return cache[path]
 
     contract=read_json(out/'contract.json'); complete=read_json(out/'complete.json')
+    if evaluation_source and 'environment' not in contract: raise ValueError()
     if contract['version']!=VERSION or complete['version']!=VERSION or complete['contract_sha256']!=digest(out/'contract.json'):
         raise ValueError()
     if complete['outputs']!=contract['outputs']: raise ValueError()
@@ -422,13 +424,14 @@ def _verify_tree(out, *, check_paths, read_sources=True, frozen_execution=False,
         if digest(parent_path)!=inherited['sha256'] or digest(parent_path.parent/'complete.json')!=inherited['complete_sha256']:
             raise ValueError()
         parent=_verify_tree(parent_path.parent,check_paths=check_paths,read_sources=read_sources,
-                            frozen_execution=True,cache=cache,visited=visited)
+                            frozen_execution=True,evaluation_source=evaluation_source,
+                            qualified_source_root=qualified_source_root,cache=cache,visited=visited)
         approved={str((parent_path.parent/name).resolve()) for name in parent['outputs']}
         approved.update((str(parent_path),str(parent_path.parent/'complete.json')))
     for name,expected in contract['outputs'].items():
         member=(out/name).resolve()
         if not member.is_relative_to(out) or digest(member)!=expected: raise ValueError()
-    if not frozen_execution:
+    if not frozen_execution or evaluation_source:
         # Check what the loaders will open, rather than only the earlier target
         # of a symlink at qualification time. Local repairs must have an output
         # commitment in this contract or its verified parent.
@@ -449,7 +452,19 @@ def _verify_tree(out, *, check_paths, read_sources=True, frozen_execution=False,
                 if check_paths and str(Path(name).resolve()) not in approved: source_path(name)
                 if digest(name)!=expected: raise ValueError()
     for name,expected in contract['source_snapshot'].items():
-        if frozen_execution:
+        if evaluation_source:
+            member=None
+            for prefix in ('execution_source','training_qc/execution_source'):
+                candidate=(out/prefix/name).resolve()
+                if (candidate.is_relative_to((out/prefix).resolve()) and
+                        contract['outputs'].get(prefix+'/'+name)==expected):
+                    member=candidate; break
+            if member is None and qualified_source_root is not None:
+                root=Path(qualified_source_root).expanduser().resolve()
+                member=(root/name).resolve()
+                if not member.is_relative_to(root): raise ValueError()
+            if member is None: raise ValueError()
+        elif frozen_execution:
             member=(out/'execution_source'/name).resolve()
             if not member.is_relative_to(out/'execution_source') or contract['outputs'].get('execution_source/'+name)!=expected:
                 raise ValueError()
@@ -457,16 +472,24 @@ def _verify_tree(out, *, check_paths, read_sources=True, frozen_execution=False,
             member=(REPO/name).resolve()
             if not member.is_relative_to(REPO): raise ValueError()
         if digest(member)!=expected: raise ValueError()
-    if not frozen_execution and 'environment' in contract and contract['environment']!=decoder_environment(): raise ValueError()
+    if (not frozen_execution or evaluation_source) and 'environment' in contract and contract['environment']!=decoder_environment(): raise ValueError()
     return contract
 
 
-def verify_contract(path, *, check_paths=True):
-    """Verify all bytes and an inherited QC chain; shared inputs are hashed once."""
+def verify_contract(path, *, check_paths=True, source_mode='live', qualified_source_root=None):
+    """Verify all bytes and role links, using live code by default.
+
+    Evaluation explicitly checks the immutable qualified execution source,
+    while retaining current role-reference, input-byte and environment checks.
+    It never updates a historical source commitment to accept feature code.
+    """
     try:
+        if source_mode not in ('live','evaluation') or (qualified_source_root is not None and source_mode!='evaluation'):
+            raise ValueError()
         out=Path(path).expanduser().resolve()
         if out.is_file(): out=out.parent
-        return _verify_tree(out,check_paths=check_paths)
+        return _verify_tree(out,check_paths=check_paths,evaluation_source=source_mode=='evaluation',
+                            qualified_source_root=qualified_source_root)
     except Exception:
         raise ValueError('Data contract integrity verification failed') from None
 
@@ -535,10 +558,10 @@ def finalize_qualification(out, initial):
     return summary
 
 
-def read_contract(path, verify=True):
+def read_contract(path, verify=True, *, source_mode='live', qualified_source_root=None):
     out=Path(path).expanduser().resolve()
     if out.is_file(): out=out.parent
-    contract=verify_contract(out) if verify else read_json(out/'contract.json')
+    contract=verify_contract(out,source_mode=source_mode,qualified_source_root=qualified_source_root) if verify else read_json(out/'contract.json')
     result={key:read_json(out/name) for key,name in ROLE_FILES.items()}
     return {**result,'version':contract['version'],'contract_sha256':file_sha256(out/'contract.json'),
             'summary':contract['summary']}

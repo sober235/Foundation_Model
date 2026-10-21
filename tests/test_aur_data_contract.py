@@ -330,3 +330,71 @@ def test_role_image_must_resolve_to_its_committed_source(tmp_path):
     alias.unlink();alias.symlink_to(other)
     with pytest.raises(ValueError,match='integrity'):
         dc.verify_contract(out,check_paths=False)
+
+
+@pytest.mark.parametrize('damage', [None, 'role_link', 'source', 'snapshot', 'environment','missing_environment'])
+def test_evaluation_verifies_historical_source_and_current_role_links(tmp_path, monkeypatch, damage):
+    dc = api()
+    repo = tmp_path/'repo'; repo.mkdir()
+    (repo/'module.py').write_text('new evaluator')
+    monkeypatch.setattr(dc, 'REPO', repo)
+    out = tmp_path/'qualified'; out.mkdir()
+    frozen = out/'execution_source/module.py'; frozen.parent.mkdir()
+    frozen.write_text('qualified source')
+    source = tmp_path/'source'; source.write_bytes(b'approved source')
+    outputs = committed_empty_roles(dc, out, {'execution_source/module.py': dc.file_sha256(frozen)})
+    role = [{'image': str(source), 'source_hashes': {'image': dc.file_sha256(source)}}]
+    if damage == 'role_link':
+        role[0]['source_hashes']['image'] = '0'*64
+    (out/'validation.json').write_text(json.dumps(role))
+    outputs['validation.json'] = dc.file_sha256(out/'validation.json')
+    contract = dict(version=dc.VERSION, inputs={}, source_files={str(source): dc.file_sha256(source)},
+                    source_snapshot={'module.py': dc.file_sha256(frozen)}, outputs=outputs, summary={},
+                    environment=dc.decoder_environment())
+    if damage == 'environment': contract['environment'] = {'numpy': 'changed'}
+    if damage == 'missing_environment': contract.pop('environment')
+    dc.write_private_json(out/'contract.json', contract)
+    dc.write_private_json(out/'complete.json', dict(version=dc.VERSION,
+        contract_sha256=dc.file_sha256(out/'contract.json'), outputs=outputs))
+    before = (out/'contract.json').read_bytes()
+    if damage == 'source': source.write_bytes(b'changed')
+    if damage == 'snapshot': frozen.write_text('changed')
+    if damage is None:
+        assert dc.verify_contract(out, check_paths=False, source_mode='evaluation') == contract
+        monkeypatch.setattr(dc, 'private_output', lambda path: Path(path).resolve())
+        monkeypatch.setattr(dc, 'source_path', lambda path: Path(path).resolve())
+        assert dc.read_contract(out, source_mode='evaluation')['validation'] == role
+    else:
+        with pytest.raises(ValueError, match='integrity'):
+            dc.verify_contract(out, check_paths=False, source_mode='evaluation')
+    with pytest.raises(ValueError, match='integrity'):
+        dc.verify_contract(out, check_paths=False)
+    assert (out/'contract.json').read_bytes() == before
+
+
+@pytest.mark.parametrize('prefix', ['training_qc/execution_source', None])
+def test_evaluation_accepts_exact_committed_or_external_qualified_source(tmp_path, monkeypatch, prefix):
+    dc = api(); out = tmp_path/'out'; out.mkdir()
+    live = tmp_path/'live'; live.mkdir(); (live/'module.py').write_text('changed live source')
+    monkeypatch.setattr(dc,'REPO',live)
+    archive = tmp_path/'archive'; archive.mkdir(); (archive/'module.py').write_text('historical source')
+    expected = dc.file_sha256(archive/'module.py')
+    outputs = committed_empty_roles(dc,out)
+    if prefix:
+        dest=out/prefix/'module.py'; dest.parent.mkdir(parents=True); dest.write_text('historical source')
+        outputs[prefix+'/module.py']=expected
+    c = dict(version=dc.VERSION,inputs={},source_files={},source_snapshot={'module.py':expected},
+             outputs=outputs,summary={},environment=dc.decoder_environment())
+    dc.write_private_json(out/'contract.json',c)
+    dc.write_private_json(out/'complete.json',dict(version=dc.VERSION,
+        contract_sha256=dc.file_sha256(out/'contract.json'),outputs=outputs))
+    if prefix:
+        assert dc.verify_contract(out,check_paths=False,source_mode='evaluation') == c
+    else:
+        with pytest.raises(ValueError,match='integrity'):
+            dc.verify_contract(out,check_paths=False,source_mode='evaluation')
+    assert dc.verify_contract(out,check_paths=False,source_mode='evaluation',qualified_source_root=archive) == c
+    if not prefix:
+        (archive/'module.py').write_text('wrong archive revision')
+        with pytest.raises(ValueError,match='integrity'):
+            dc.verify_contract(out,check_paths=False,source_mode='evaluation',qualified_source_root=archive)

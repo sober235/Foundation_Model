@@ -1,4 +1,4 @@
-"""Observation-local geometry weak positives for TRAIN only, NOT_EVIDENCE.
+"""Observation-local geometry, with separate TRAIN and held-out entries, NOT_EVIDENCE.
 
 The source host map is categorical (0 absent, 1..13 host), on the *complete*
 source instance grid. Legacy host probabilities cannot establish overlap:
@@ -41,10 +41,10 @@ def _unique_primary(counts):
     return int(counts.argmax()), ""
 
 
-def qualify_planar_weak_relations(source_instances, source_host_map, transformed_plane,
+def _qualify_geometry(source_instances, source_host_map, transformed_plane,
                                   valid, a_ignore, source_instance_ids, pixel_area_mm2, *,
-                                  voxel_volume_mm3, split="train", a_supervised=True,
-                                  u_supervised=True, r_supervised=True, min_area_mm2=1.0):
+                                  voxel_volume_mm3, gate="", a_supervised=True,
+                                  u_supervised=True, r_supervised=True, min_area_mm2=1.0, max_instances=64):
     """Return aligned weak targets for the final transformed observation components.
 
     ``transformed_plane`` has categorical ``instance`` (renumbered 1..N) and
@@ -74,7 +74,7 @@ def qualify_planar_weak_relations(source_instances, source_host_map, transformed
         raise ValueError("planar valid and anatomy-ignore masks must be binary")
     valid, ignore = valid.astype(bool), ignore.astype(bool)
     ids = _categorical(source_instance_ids)
-    if ids.ndim != 1 or (ids <= 0).any() or len(ids) > 64:
+    if ids.ndim != 1 or (ids <= 0).any() or (max_instances is not None and len(ids) > max_instances):
         raise ValueError("planar source identities must align within query capacity")
     n = len(ids)
     if not np.array_equal(np.unique(instance[instance > 0]), np.arange(1, n + 1)):
@@ -87,10 +87,9 @@ def qualify_planar_weak_relations(source_instances, source_host_map, transformed
               "negatives": np.full((n, 2), -1, np.int64),
               "weight": np.zeros(n, np.float32), "provenance": [""] * n,
               "reasons": [""] * n, "evidence": "NOT_EVIDENCE"}
-    gate = ("not_train" if split != "train" else
-            "anatomy_unqualified" if not a_supervised else
+    gate = (gate or ("anatomy_unqualified" if not a_supervised else
             "lesion_unqualified" if not u_supervised else
-            "relation_unqualified" if not r_supervised else "")
+            "relation_unqualified" if not r_supervised else ""))
     evidence = {}
     for source_id in np.unique(ids):
         box = source_boxes[source_id - 1]
@@ -127,4 +126,42 @@ def qualify_planar_weak_relations(source_instances, source_host_map, transformed
             result["negatives"][i, 1] = int(counts.argmax())
         result["weight"][i] = 1.0
         result["provenance"][i] = POLICY
+    return result
+
+
+def qualify_planar_weak_relations(source_instances, source_host_map, transformed_plane,
+                                 valid, a_ignore, source_instance_ids, pixel_area_mm2, *,
+                                 voxel_volume_mm3, split="train", a_supervised=True,
+                                 u_supervised=True, r_supervised=True, min_area_mm2=1.0):
+    """TRAIN-only weak supervision; held-out rows remain unavailable."""
+    return _qualify_geometry(source_instances,source_host_map,transformed_plane,valid,a_ignore,
+        source_instance_ids,pixel_area_mm2,voxel_volume_mm3=voxel_volume_mm3,
+        gate="not_train" if split != "train" else "",a_supervised=a_supervised,
+        u_supervised=u_supervised,r_supervised=r_supervised,min_area_mm2=min_area_mm2)
+
+
+def planar_evaluation_reference(source_instances, source_host_map, transformed_plane,
+                                valid, a_ignore, source_instance_ids, pixel_area_mm2, *,
+                                plane_index, split, role, **kwargs):
+    """Held-out observation geometry only; never establishes a passing gate.
+
+    Uses the same pure overlap qualification as TRAIN without relabeling the
+    row's role. The caller supplies the actual unaugmented canonical plane and
+    its source identities, rather than inherited nearest-host probabilities.
+    """
+    if split != "val" or role != "development_validation":
+        raise ValueError("geometry reference requires development validation")
+    source, hosts = np.asarray(source_instances), np.asarray(source_host_map)
+    instance = _plane(transformed_plane['instance'])
+    if (source.ndim!=3 or hosts.shape!=source.shape or type(plane_index) is not int or
+            not 0<=plane_index<source.shape[0] or instance.shape!=source.shape[1:] or
+            not np.array_equal(_plane(transformed_plane['host_map']),hosts[plane_index])):
+        raise ValueError('evaluation source plane geometry differs')
+    for i,k in enumerate(source_instance_ids,1):
+        if np.any(source[plane_index][instance==i]!=k):
+            raise ValueError('evaluation source plane identity differs')
+    result = _qualify_geometry(source_instances,source_host_map,transformed_plane,valid,a_ignore,
+        source_instance_ids,pixel_area_mm2,max_instances=None,**kwargs)
+    result["provenance"] = ["geometry_evaluation2d_v1" if ok else ""
+                            for ok in result["r_eligible"]]
     return result

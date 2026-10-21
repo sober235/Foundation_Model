@@ -39,6 +39,48 @@ def test_host_zero_is_positive_and_overlap_is_independent_of_a_ignore():
     assert out["evidence"] == "NOT_EVIDENCE"
 
 
+def test_held_out_geometry_reference_is_explicit_and_does_not_relax_train_gate():
+    from anatobind.aur import planar_relations as planar
+    assert hasattr(planar, 'planar_evaluation_reference'), 'held-out evaluation geometry entry is missing'
+    out = planar.planar_evaluation_reference(*inputs(), voxel_volume_mm3=1.,
+                                            split='val', role='development_validation', plane_index=1)
+    assert out['r_eligible'].tolist() == [True] and out['host'].tolist() == [0]
+    assert out['evidence'] == 'NOT_EVIDENCE'
+    assert qualify(split='val')['reasons'] == ['not_train']
+    args = list(inputs()); args[1] = np.zeros_like(args[1]); args[2]['host_map'][:] = 0
+    assert not planar.planar_evaluation_reference(*args, voxel_volume_mm3=1.,
+        split='val', role='development_validation', plane_index=1)['r_eligible'].any()
+    with pytest.raises(ValueError):
+        planar.planar_evaluation_reference(*inputs(), voxel_volume_mm3=1., split='test', role='test', plane_index=1)
+
+
+def test_evaluation_geometry_rejects_same_host_but_false_plane_source_identity():
+    from anatobind.aur.planar_relations import planar_evaluation_reference
+    args = list(inputs())
+    # A second lesion with the same host is a different source identity.
+    args[0][:, 0:2, 0:2] = 2
+    args[1][:] = 1
+    args[2]['host_map'][:] = 1
+    args[5] = [2]
+    with pytest.raises(ValueError, match='source'):
+        planar_evaluation_reference(*args,voxel_volume_mm3=1.,split='val',
+                                    role='development_validation',plane_index=1)
+
+
+def test_whole_plane_geometry_has_no_training_query_capacity_limit():
+    from anatobind.aur.planar_relations import planar_evaluation_reference
+    source = np.zeros((3,4,210),np.int32)
+    for i in range(70): source[:,0:2,3*i:3*i+2] = i+1
+    hosts = np.ones_like(source)
+    args = (source,hosts,dict(instance=source[1:2],host_map=hosts[1:2]),
+            np.ones((1,4,210),bool),np.zeros((1,4,210),bool),list(range(1,71)),1.)
+    result = planar_evaluation_reference(*args,voxel_volume_mm3=1.,split='val',
+                                        role='development_validation',plane_index=1)
+    assert result['r_eligible'].sum()==70
+    with pytest.raises(ValueError,match='capacity'):
+        qualifier()(*args,voxel_volume_mm3=1.)
+
+
 def test_same_legacy_one_hot_does_not_prove_source_overlap():
     args = list(inputs())
     positive = args[1].copy()
