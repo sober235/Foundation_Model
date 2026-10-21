@@ -1,6 +1,12 @@
-# STATUS：2026-10-21（双模式评价接口与二维证据诊断；原G1仍2D FAIL / 3D PASS）
+# STATUS：2026-10-21（两个独立二维候选已实现；真实实验准备中）
 
-## 最新：已批准路线的首批实现与诊断
+## 最新：二维优化与结构候选
+
+用户要求按建议继续后，已实现[两个独立候选](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)：LR5只提高四个二维输入/重建tensor的学习率；PLANAR增加三层真正二维合并并保持原学习率。设计和边界见[候选设计](docs/superpowers/specs/2026-10-21-aur-lr-and-planar-merge-design.md)及[执行计划](docs/superpowers/plans/2026-10-21-aur-lr-and-planar-merge-execution.md)。两因素不混合，不改变原G1门槛或评价网格。
+
+生产提交`9bb5503`/`1cfdcd5`分别通过独立审查，0项待处理问题；局部111项及254项测试通过，补充26项通过。真实历史format2完成证书兼容检查通过，旧文件未改、0次模型前向。完整CPU回归1820 passed/5 skipped（297.54秒），五项为专用nndet/CUDA环境缺口，未计作通过。私有控制器仍在实现/审查准备；尚未冻结或启动候选真实运行。后续须核对真实初始化和原数据资格，再做每臂16步TRAIN恢复probe，完成登记后才运行有界Stage I/G1。每臂训练段5400秒、完整G1 7200秒，不自动续跑或进入II/III。原二维G1 FAIL、三维PASS与所有质量/临床证据限制保持。
+
+## 此前：已批准路线的首批实现与诊断
 
 用户已认可[核心目标与路线设计](docs/superpowers/specs/2026-10-21-anatobind-core-goal-and-evidence-route-design.md)，并要求继续执行。[当前实施计划](docs/superpowers/plans/2026-10-21-aur-evaluation-and-g1-diagnostic-execution.md)落实首步：评价入口与有边界的二维诊断。此前未提交的同日短草稿保留，当前实施计划优先。
 

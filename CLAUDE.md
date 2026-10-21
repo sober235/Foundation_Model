@@ -18,6 +18,8 @@
 
 ## 最新执行入口（2026-10-21，优先于历史准备措辞）
 
+**两个独立二维候选已实现，真实实验准备中：** 用户继续授权后，`9bb5503`实现四个二维IO tensor的可选5倍LR；`1cfdcd5`实现可选真正二维中间合并，保持原3D路径。两个任务独立审查均0项；完整CPU1820 passed/5 skipped（297.54秒），真实历史format2完成证书兼容检查通过。五项nndet/CUDA环境缺口不计通过，尚无候选真实训练/G1结果。先读[当前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)、[设计](docs/superpowers/specs/2026-10-21-aur-lr-and-planar-merge-design.md)与[计划](docs/superpowers/plans/2026-10-21-aur-lr-and-planar-merge-execution.md)。接着核验新运行树/原资格源码、真实初始化和每臂16步TRAIN恢复probe，再释放独立有界I/G1；不组合因素、不改旧合同、不自动II/III。旧对照已完成，勿重跑。下面“下一候选未实现”是此前状态。
+
 **用户认可核心路线后已继续实现：** 优先读STATUS最上节、[批准设计](docs/superpowers/specs/2026-10-21-anatobind-core-goal-and-evidence-route-design.md)与[当前实施计划](docs/superpowers/plans/2026-10-21-aur-evaluation-and-g1-diagnostic-execution.md)。统一loader已接format2监督完成证书；新增双模式开发评价入口，保持默认训练、解码与TRAIN弱R合同。二维保存证据[诊断及精确回放](docs/verification/2026-10-21/aur_g1_diagnosis/RESULTS.md)证明适配器/骨干确实更新，缓存有限非恒定、13宿主有支持，未建立弱读出的因果解释。首批局部测试/独立复核已完成，最终全量验证与有限step0对照状态见STATUS；不要重复旧审计。原G1失败、II/III未启动及所有临床/几何限制继续有效。历史合同使用显式evaluation源码归档验证，不能改原哈希来接受新代码。
 
 **step0有限对照也已完成，不要重做：** [报告](docs/verification/2026-10-21/aur_g1_step0_control/RESULTS.md)。私有`~/outputs/aur_g1_diagnosis_20261021/step0_control_v2/completion.json`是唯一权威结果，内嵌verified指标；单独`metrics_anonymous.json`保持PROVISIONAL。原selected分数精确复现，step0→1792均值+0.030747但三个患者区间跨0；没有稳定改善或根因结论。只能回放已保存计数/完整性，不能再次拟合/前向。下一适配器5×LR仅候选，尚未实现或启动，须先检查优化器/旧checkpoint兼容和新源码资格。

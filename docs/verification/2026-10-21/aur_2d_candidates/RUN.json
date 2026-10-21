@@ -1,0 +1,58 @@
+{
+  "candidates": {
+    "LR5": {
+      "planar_merge": false,
+      "ssl_2d_lr_scale": 5
+    },
+    "PLANAR": {
+      "planar_merge": true,
+      "ssl_2d_lr_scale": "omitted"
+    }
+  },
+  "formal_candidate_training_launched": false,
+  "full_cpu": {
+    "command": "/home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "MKL_NUM_THREADS": 2,
+      "OMP_NUM_THREADS": 2,
+      "OPENBLAS_NUM_THREADS": 2,
+      "PYTHONNOUSERSITE": "1",
+      "PYTHONPATH": ".",
+      "multiprocessing": "outside_sandbox",
+      "nice": 19
+    },
+    "exit_code": 0,
+    "log_sha256": "62dbb56b04e8d4c48836d838a2473c89c23f70b3c346726672636ba64b715a11",
+    "model_quality_result": false,
+    "passed": 1820,
+    "production_revision": "1cfdcd5afa6ffe38e590de66e5f915a059612675",
+    "pytest_seconds": 297.54,
+    "skipped": 5,
+    "skips": {
+      "cuda_bf16_inference": 1,
+      "cuda_optimizer_rng_recovery": 3,
+      "nndet_optional_environment_module": 1
+    },
+    "status": "PASS"
+  },
+  "historical_certificate": {
+    "actual_historical_format2_certificate": true,
+    "checkpoint_sha256": "f5a4d373818066518be4bad388df315fe97d0dbcf90b1c13a6f83cc5e94af72a",
+    "data_array_reads": 0,
+    "model_forwards": 0,
+    "old_optional_architecture_flag_absent": true,
+    "status": "PASS",
+    "wall_seconds": 2.571787690743804
+  },
+  "medical_evidence": "NOT_EVIDENCE",
+  "new_g1_result": false,
+  "production_revision": "1cfdcd5afa6ffe38e590de66e5f915a059612675",
+  "schema_version": 1,
+  "stage_II_or_III_launched": false,
+  "status": "IMPLEMENTATION_VERIFIED_EXPERIMENT_PREPARATION",
+  "task_reviews": {
+    "LR5_actionable_findings": 0,
+    "PLANAR_actionable_findings": 0
+  }
+}
