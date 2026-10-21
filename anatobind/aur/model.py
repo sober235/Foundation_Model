@@ -8,19 +8,21 @@ from anatobind.aur.swin import CHANNELS, DEPTHS, HEADS, PATCH, WINDOW, SwinBackb
 
 DEFAULTS = {"embed": CHANNELS[0], "depths": DEPTHS, "heads": HEADS, "window": WINDOW, "patch": PATCH, "d_model": 256,
             "n_events": 64, "mask_dim": 32, "pixel_dim": 64, "dec_layers": 3, "dec_heads": 8, "rel_layers": 2, "rel_heads": 4,
-            "use_checkpoint": True, "dual_input": False}
+            "use_checkpoint": True, "dual_input": False, "planar_merge": False}
 
 
 class AnatoBindBrain(nn.Module):
     def __init__(self, **kwargs):
         super().__init__()
         cfg = {**DEFAULTS, **kwargs}
+        if "planar_merge" not in kwargs:
+            cfg.pop("planar_merge")
         unknown = set(cfg) - set(DEFAULTS)
         if unknown:
             raise KeyError(f"unknown model options {sorted(unknown)}")
         self.cfg = cfg
         self.backbone = SwinBackbone(cfg["embed"], cfg["depths"], cfg["heads"], cfg["window"], cfg["patch"],
-                                     use_checkpoint=cfg["use_checkpoint"], dual_input=cfg["dual_input"])
+                                     use_checkpoint=cfg["use_checkpoint"], dual_input=cfg["dual_input"], planar_merge=cfg.get("planar_merge", False))
         ch = self.backbone.channels
         d = cfg["d_model"]
         self.entities = EntityDecoder(ch, d, N_ENTITIES, cfg["dec_layers"], cfg["dec_heads"])

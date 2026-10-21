@@ -119,6 +119,25 @@ class PatchMerging(nn.Module):
         return x, pool_coords(coords.permute(0, 4, 1, 2, 3)).permute(0, 2, 3, 4, 1), pool_valid(valid)
 
 
+class PatchMerging2D(nn.Module):
+    """Four observed planar neighbors -> twice the channels; never synthesize depth neighbors."""
+
+    def __init__(self, dim):
+        super().__init__()
+        self.norm = nn.LayerNorm(4 * dim)
+        self.reduction = nn.Linear(4 * dim, 2 * dim, bias=False)
+
+    def forward(self, x, coords, valid):
+        if x.shape[1] != 1:
+            raise ValueError("planar merging requires D=1")
+        _, _, h, w, _ = x.shape
+        x = F.pad(x, (0, 0, 0, w % 2, 0, h % 2))
+        x = torch.cat([x[:, :, j::2, k::2, :] for j in range(2) for k in range(2)], -1)
+        x = self.reduction(self.norm(x))
+        # At D=1, replicated coordinate pooling and valid-any equal their planar versions.
+        return x, pool_coords(coords.permute(0, 4, 1, 2, 3)).permute(0, 2, 3, 4, 1), pool_valid(valid)
+
+
 def pool_coords(c):
     """(B, 3, D, H, W) coordinates -> (B, 3, ceil(D/2), ceil(H/2), ceil(W/2)): the mean of each 2-block, odd edges
     replicated so that a lone edge token keeps its own coordinate."""
@@ -135,15 +154,19 @@ def pool_valid(v):
 
 
 class Stage(nn.Module):
-    def __init__(self, dim, depth, heads, window, merge, use_checkpoint=False):
+    def __init__(self, dim, depth, heads, window, merge, use_checkpoint=False, planar_merge=False):
         super().__init__()
         self.window = tuple(window)
         shift = tuple(s // 2 for s in window)
         self.blocks = nn.ModuleList(SwinBlock(dim, heads, window, (0, 0, 0) if i % 2 == 0 else shift, use_checkpoint)
                                     for i in range(depth))
         self.merge = PatchMerging(dim) if merge else None
+        if merge and planar_merge:
+            # New branches cannot change subsequent legacy module initialization draws.
+            with torch.random.fork_rng(devices=[]):
+                self.merge_2d = PatchMerging2D(dim)
 
-    def forward(self, x, coords, valid):
+    def forward(self, x, coords, valid, *, input_mode="3d"):
         """Returns (features of this stage (B, D, H, W, C), (x, coords, valid) for the next stage)."""
         b, d, h, w, _ = x.shape
         x = x * valid[..., None]
@@ -155,13 +178,17 @@ class Stage(nn.Module):
         x = x * valid[..., None]
         if self.merge is None:
             return x, (x, coords, valid)
-        return x, self.merge(x, coords, valid)
+        merge = self.merge_2d if input_mode == "2d" and hasattr(self, "merge_2d") else self.merge
+        return x, merge(x, coords, valid)
 
 
 class SwinBackbone(nn.Module):
     def __init__(self, embed=CHANNELS[0], depths=DEPTHS, heads=HEADS, window=WINDOW, patch=PATCH, in_channels=1,
-                 use_checkpoint=False, dual_input=False):
+                 use_checkpoint=False, dual_input=False, planar_merge=False):
         super().__init__()
+        if type(planar_merge) is not bool or (planar_merge and dual_input is not True):
+            raise ValueError("planar_merge must be boolean and requires dual_input=True when enabled")
+        self.planar_merge = planar_merge
         self.patch = tuple(patch)
         self.dual_input = bool(dual_input)
         self.channels = tuple(embed * 2 ** i for i in range(len(depths)))
@@ -169,7 +196,7 @@ class SwinBackbone(nn.Module):
         self.local_embed = nn.Sequential(nn.Linear(3, embed), nn.GELU(), nn.Linear(embed, embed))
         self.mask_token = nn.Parameter(torch.zeros(embed))
         self.stages = nn.ModuleList(Stage(self.channels[i], depths[i], heads[i], window, merge=i < len(depths) - 1,
-                                          use_checkpoint=use_checkpoint) for i in range(len(depths)))
+                                          use_checkpoint=use_checkpoint, planar_merge=planar_merge) for i in range(len(depths)))
 
         if self.dual_input:
             self.patch_embed_2d = nn.Conv3d(in_channels, embed, kernel_size=self.patch_for("2d"), stride=self.patch_for("2d"))
@@ -207,7 +234,7 @@ class SwinBackbone(nn.Module):
         x, c = x.permute(0, 2, 3, 4, 1), c.permute(0, 2, 3, 4, 1)
         levels = []
         for stage in self.stages:
-            feat, (x_next, c_next, v_next) = stage(x, c, v)
+            feat, (x_next, c_next, v_next) = stage(x, c, v, input_mode=input_mode)
             levels.append({"feat": feat.permute(0, 4, 1, 2, 3).contiguous(), "valid": v,
                            "coords": c.permute(0, 4, 1, 2, 3).contiguous(), "local": l})
             l = pool_coords(l) if stage.merge is not None else l

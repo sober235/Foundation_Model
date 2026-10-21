@@ -27,7 +27,7 @@ from anatobind.aur.unified import inactive_adapter_parameters, migrate_legacy_st
 
 
 FORMAT_VERSION = 1
-_BACKBONE_KEYS = ("embed", "depths", "heads", "window", "patch", "use_checkpoint", "dual_input")
+_BACKBONE_KEYS = ("embed", "depths", "heads", "window", "patch", "use_checkpoint", "dual_input", "planar_merge")
 _DEFAULTS = dict(model={}, seed=0, steps=8, lr=1e-3, weight_decay=.05, points=256,
                  u_mask_profile="unmatched_empty_v1", mode_cycle=["2d", "3d"], pilot=True,
                  ssl=dict(mask_ratio=.6, block_mm=[16., 32.], contrast_weight=0.),
@@ -45,7 +45,10 @@ def _config(cfg):
     out = _builtin({**deepcopy(_DEFAULTS), **cfg})
     if set(out["model"]) - set(MODEL_DEFAULTS):
         raise ValueError("unknown model configuration keys")
-    out["model"] = _builtin({**MODEL_DEFAULTS, **out["model"]})
+    if "planar_merge" in out["model"] and type(out["model"]["planar_merge"]) is not bool:
+        raise ValueError("planar_merge must be boolean")
+    defaults = {k: v for k, v in MODEL_DEFAULTS.items() if k != "planar_merge"}
+    out["model"] = _builtin({**defaults, **out["model"]})
     if out["pilot"] is not True or out["model"]["dual_input"] is not True:
         raise ValueError("only an explicit dual_input technical pilot is supported")
     for key in ("steps", "points"):
@@ -155,7 +158,7 @@ class UnifiedPilot:
         np.random.seed(seed % (2 ** 32))
         torch.manual_seed(seed)
         if self.stage == "I":
-            self.model = StageOne(**{key: self.cfg["model"][key] for key in _BACKBONE_KEYS}, **self.cfg["ssl"])
+            self.model = StageOne(**{key: self.cfg["model"][key] for key in _BACKBONE_KEYS if key != "planar_merge" or key in self.cfg["model"]}, **self.cfg["ssl"])
         else:
             self.model = AnatoBindBrain(**self.cfg["model"])
         self.model.to(self.device).train()

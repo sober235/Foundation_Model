@@ -36,7 +36,13 @@ _ADAPTER_PAIRS = (("patch_embed", "patch_embed_2d"), ("backbone.patch_embed", "b
 
 def _adapter_pairs(module):
     modules = dict(module.named_modules())
-    return [(legacy, new) for legacy, new in _ADAPTER_PAIRS if legacy in modules and new in modules]
+    pairs = [(legacy, new) for legacy, new in _ADAPTER_PAIRS if legacy in modules and new in modules]
+    for name in modules:
+        if name == "merge_2d" or name.endswith(".merge_2d"):
+            legacy = name[:-len("merge_2d")] + "merge"
+            if legacy in modules:
+                pairs.append((legacy, name))
+    return pairs
 
 
 def inactive_adapter_parameters(module, input_mode):
@@ -60,7 +66,7 @@ def migrate_legacy_state(module, legacy_state):
     if not pairs:
         raise ValueError("legacy migration requires a dual_input target with explicit 2D adapters")
     own = module.state_dict()
-    expected = {f"{new}.{suffix}" for _, new in pairs for suffix in ("weight", "bias")}
+    expected = {f"{new}.{suffix}" for _, new in pairs for suffix in module.get_submodule(new).state_dict()}
     missing = set(own) - set(legacy_state)
     extra = set(legacy_state) - set(own)
     wrong = [key for key in set(own) & set(legacy_state)

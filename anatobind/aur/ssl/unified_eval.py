@@ -368,7 +368,7 @@ def run(contract, checkpoint, out_dir, device='cpu', crops=None, model_config=No
     cfg = payload['cfg']['model']
     if model_config is not None and any(model_config.get(k) != cfg.get(k) for k in _BACKBONE_KEYS):
         raise ValueError('G1 model configuration differs from checkpoint')
-    kwargs = {key: cfg[key] for key in _BACKBONE_KEYS}
+    kwargs = {key: cfg[key] for key in _BACKBONE_KEYS if key != "planar_merge" or key in cfg}
     if kwargs['dual_input'] is not True:
         raise ValueError('G1 requires a dual-input backbone')
     state = payload['backbone_state_dict']

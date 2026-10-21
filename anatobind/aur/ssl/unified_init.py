@@ -30,7 +30,7 @@ def _validate_config(model, metadata):
     if not {"embed", "depths", "heads"} <= set(config):
         raise ValueError("warm-start checkpoint config lacks architecture options")
     for key in MODEL_DEFAULTS:
-        if key in ("dual_input", "use_checkpoint"):
+        if key in ("dual_input", "use_checkpoint", "planar_merge"):
             continue
         source = config.get(key, MODEL_DEFAULTS[key])
         target = model.cfg[key]
@@ -39,6 +39,8 @@ def _validate_config(model, metadata):
             target = tuple(target)
         if source != target:
             raise ValueError(f"warm-start checkpoint config mismatch for {key}")
+    if type(config.get("planar_merge", False)) is not bool or config.get("planar_merge", False):
+        raise ValueError("warm-start requires a legacy source without planar_merge")
     if config.get("dual_input", False):
         raise ValueError("warm-start accepts a legacy 3d checkpoint, not a unified resume")
     for key in ("step", "seen_crops"):
@@ -53,8 +55,10 @@ def warm_start_stage_one(model, checkpoint, policy="full_stage_one", seed=202610
     The trusted project TorchVersion scalar is the only added pickle allowlist
     entry. No checkpoint optimizer, scheduler or RNG is applied. Validation of
     the complete state/config finishes before any target parameter changes.
-    Every missing 2D adapter is reset with the explicit seed independently of
-    target construction and without advancing the caller's CPU RNG stream.
+    Missing IO adapters (and backbone-only heads) retain their original seeded
+    reset order, independently of construction and without advancing the caller's
+    CPU RNG stream. Planar merges instead derive validated depth-zero slices;
+    they are not mathematically equivalent to the legacy 2D path.
     """
     if policy not in ("full_stage_one", "backbone_only"):
         raise ValueError("unknown Stage I warm-start policy")
@@ -78,12 +82,31 @@ def warm_start_stage_one(model, checkpoint, policy="full_stage_one", seed=202610
         source = {"backbone." + key: value for key, value in source.items()}
     own = model.state_dict()
     expected = _NEW if policy == "full_stage_one" else {key for key in own if not key.startswith("backbone.")} | {key for key in _NEW if key.startswith("backbone.")}
+    merge_keys = {key for key in own if ".merge_2d." in key}
+    expected = expected | merge_keys
     missing, extra = set(own) - set(source), set(source) - set(own)
     wrong = [key for key in set(own) & set(source) if not isinstance(source[key], torch.Tensor)
              or own[key].shape != source[key].shape or own[key].dtype != source[key].dtype
              or source[key].layout != torch.strided or not torch.isfinite(source[key]).all()]
     if missing != expected or extra or wrong:
         raise RuntimeError("warm-start state has unexpected missing/extra keys or invalid tensor shape/dtype/values")
+    # All source tensors are valid before deriving anything; all derived tensors
+    # must also validate before resetting even one target module.
+    derived, derivation = {}, {}
+    for key in sorted(merge_keys):
+        source_key = key.replace(".merge_2d.", ".merge.")
+        tensor = source[source_key]
+        width = tensor.shape[-1] // 2  # legacy i-major depth-zero neighbors: first 4C
+        value = tensor[..., :width].clone()
+        if (value.shape != own[key].shape or value.dtype != own[key].dtype
+                or not torch.isfinite(value).all()):
+            raise RuntimeError("warm-start derived planar tensor has invalid shape/dtype/values")
+        derived[key] = value
+        derivation[key] = {"source_key": source_key, "policy": "legacy_depth0_first4c",
+                           "slice": {"axis": tensor.ndim - 1, "start": 0, "stop": width},
+                           "source_sha256": _state_hash({source_key: tensor}),
+                           "derived_sha256": _state_hash({key: value})}
+    reset_keys = expected - merge_keys
     checkpoint_hash = file_sha256(checkpoint)
     source_hash = _state_hash(source)
     # Reset only complete leaf modules whose tensors were explicitly absent.
@@ -91,18 +114,24 @@ def warm_start_stage_one(model, checkpoint, policy="full_stage_one", seed=202610
         torch.random.default_generator.manual_seed(seed)
         for name, module in sorted(model.named_modules()):
             keys = {f"{name}.{key}" for key in module.state_dict()}
-            if keys and keys <= expected and hasattr(module, "reset_parameters"):
+            if keys and keys <= reset_keys and hasattr(module, "reset_parameters"):
                 module.reset_parameters()
-    model.load_state_dict({**model.state_dict(), **source}, strict=True)
+    model.load_state_dict({**model.state_dict(), **source, **derived}, strict=True)
     copied = model.state_dict()
     if not all(torch.equal(copied[key], value) for key, value in source.items()):
         raise RuntimeError("warm-start copied tensors failed exact value verification")
     metadata = saved["meta"]
-    return {"kind": "legacy_stage_one_warm_start", "policy": policy, "format_version": 1,
+    lineage = {"kind": "legacy_stage_one_warm_start", "policy": policy, "format_version": 1,
             "checkpoint_sha256": checkpoint_hash, "source_state_sha256": source_hash,
-            "copied_keys": sorted(source), "initialized_keys": sorted(expected), "initialization_seed": seed,
+            "copied_keys": sorted(source), "initialized_keys": sorted(reset_keys), "initialization_seed": seed,
             "initialization": "seeded_reset_parameters_for_absent_modules",
-            "initialized_state_sha256": _state_hash({key: model.state_dict()[key] for key in expected}),
+            "initialized_state_sha256": _state_hash({key: model.state_dict()[key] for key in reset_keys}),
             "historical_step": metadata.get("step", 0), "historical_seen_crops": metadata.get("seen_crops", 0),
             "step": 0, "seen_crops": {"2d": 0, "3d": 0}, "optimizer_reset": True, "scheduler_reset": True,
             "exact_resume": False, "legacy_complete_rng_restored": False}
+    if derived:
+        lineage["derived_tensors"] = derivation
+        lineage["planar_merge_initialization"] = {
+            "policy": "legacy_depth0_first4c", "exact_legacy_2d_equivalence": False,
+            "decoder_policy": "legacy_copied" if policy == "full_stage_one" else "seeded_reset"}
+    return lineage

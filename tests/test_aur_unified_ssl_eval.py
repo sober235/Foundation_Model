@@ -238,7 +238,8 @@ def test_missing_anatomy_qualification_is_not_selected_for_any_g1_probe():
                              seed=0, lesion_only=lesion_only) == ([], [])
 
 
-def test_tiny_cli_reads_real_frozen_observations_and_reports_both_modes(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize("planar", [False, True])
+def test_tiny_cli_reads_real_frozen_observations_and_reports_both_modes(tmp_path, monkeypatch, capsys, planar):
     import nibabel as nib
     import runpy
     from anatobind.aur import data_contract as dc
@@ -277,18 +278,29 @@ def test_tiny_cli_reads_real_frozen_observations_and_reports_both_modes(tmp_path
     monkeypatch.setattr(e, 'validate_private_output', lambda p: dc.private_output(p, private_root=tmp_path))
     cfg = dict(embed=32, depths=[1] * 4, heads=[1, 2, 4, 8], window=[2] * 3,
                patch=[2, 4, 4], dual_input=True, use_checkpoint=False)
+    if planar:
+        cfg["planar_merge"] = True
     bb = SwinBackbone(**cfg); state = bb.state_dict()
     checkpoint = tmp_path / 'stage_i.pt'
     torch.save({'format_version': 2, 'stage': 'I', 'cfg': {'model': cfg, 'ssl': {}}, 'step': 1,
         'backbone_state_dict': state, 'model_state_dict': {'backbone.' + k: v for k, v in state.items()}}, checkpoint)
     cli = runpy.run_path(str(Path(__file__).resolve().parents[1] / 'scripts/aur_unified_ssl_eval.py'))
     out = tmp_path / 'g1'
+    built = []
+    def observed_backbone(**kwargs):
+        backbone = SwinBackbone(**kwargs)
+        built.append(backbone)
+        return backbone
+    monkeypatch.setattr(e, 'SwinBackbone', observed_backbone)
     rng_before = torch.get_rng_state().clone()
     assert cli['main'](['--contract', str(contract_dir), '--checkpoint', str(checkpoint), '--out', str(out),
                         '--crop-2d', '1', '32', '32', '--crop-3d', '8', '32', '32',
                         '--calibration', '2', '--validation', '2', '--lesion', '2', '--seeds', '0',
                         '--readout-epochs', '2', '--bootstrap', '10']) == 0
     assert torch.equal(torch.get_rng_state(), rng_before)
+    assert len(built) == 2
+    assert set(built[0].state_dict()) == set(built[1].state_dict()) == set(state)
+    assert sum('merge_2d' in k for k in built[1].state_dict()) == (9 if planar else 0)
     emitted = json.loads(capsys.readouterr().out)
     assert emitted['default_recipe_match'] is False
     assert set(emitted['modes']) == {'2d', '3d'}

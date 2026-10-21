@@ -10,18 +10,19 @@ import torch
 from anatobind.aur.model import AnatoBindBrain
 
 
-def tiny_model():
+def tiny_model(**options):
     torch.manual_seed(19)
     return AnatoBindBrain(embed=32, depths=(1, 1, 1, 1), heads=(1, 1, 1, 1),
                          window=(2, 4, 4), d_model=16, n_events=2, mask_dim=4,
                          pixel_dim=8, dec_layers=1, dec_heads=2,
-                         rel_layers=1, rel_heads=2, use_checkpoint=False, dual_input=True)
+                         rel_layers=1, rel_heads=2, use_checkpoint=False, dual_input=True, **options)
 
 
-def test_one_model_preserves_input_grid_and_uses_area_only_for_a_real_plane():
+@pytest.mark.parametrize("planar", [False, True])
+def test_one_model_preserves_input_grid_and_uses_area_only_for_a_real_plane(planar):
     from anatobind.aur.unified_infer import infer_input
 
-    model = tiny_model()
+    model = tiny_model(**({"planar_merge":True} if planar else {}))
     affine = np.diag([2., 3., 5., 1.])
     for mode, shape in (("2d", (1, 12, 16)), ("3d", (4, 12, 16))):
         source = SimpleNamespace(image_dhw=np.arange(np.prod(shape), dtype=np.float32).reshape(shape),

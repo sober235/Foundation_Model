@@ -18,19 +18,21 @@ from anatobind.aur.unified import sample_block_masks
 
 DEFAULTS = {"embed": CHANNELS[0], "depths": DEPTHS, "heads": HEADS, "window": WINDOW, "patch": PATCH, "use_checkpoint": False,
             "mask_ratio": MASK_RATIO, "block_mm": BLOCK_MM, "contrast_dim": 128, "contrast_weight": CONTRAST_WEIGHT,
-            "temperature": TEMPERATURE, "dual_input": False}
+            "temperature": TEMPERATURE, "dual_input": False, "planar_merge": False}
 
 
 class StageOne(nn.Module):
     def __init__(self, **kwargs):
         super().__init__()
         cfg = {**DEFAULTS, **kwargs}
+        if "planar_merge" not in kwargs:
+            cfg.pop("planar_merge")
         unknown = set(cfg) - set(DEFAULTS)
         if unknown:
             raise KeyError(f"unknown Stage I options {sorted(unknown)}")
         self.cfg = cfg
         self.backbone = SwinBackbone(cfg["embed"], cfg["depths"], cfg["heads"], cfg["window"], cfg["patch"], use_checkpoint=cfg["use_checkpoint"],
-                                     dual_input=cfg["dual_input"])
+                                     dual_input=cfg["dual_input"], planar_merge=cfg.get("planar_merge", False))
         self.decoder = MaskedPatchDecoder(self.backbone.channels, cfg["patch"], width=self.backbone.channels[0], dual_input=cfg["dual_input"])
         self.projector = Projector(self.backbone.channels[3], self.backbone.channels[3], cfg["contrast_dim"])
 

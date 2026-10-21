@@ -47,7 +47,10 @@ def validate_run_config(cfg):
             raise ValueError
         if set(out['model']) - set(MODEL_DEFAULTS):
             raise ValueError
-        out['model'] = _builtin({**MODEL_DEFAULTS, **out['model']})
+        if 'planar_merge' in out['model'] and type(out['model']['planar_merge']) is not bool:
+            raise ValueError
+        defaults = {k:v for k,v in MODEL_DEFAULTS.items() if k != 'planar_merge'}
+        out['model'] = _builtin({**defaults, **out['model']})
         if out['model']['dual_input'] is not True or out['mode_cycle'] != ['2d','3d']:
             raise ValueError
         for key in ('steps','points','batch_size','accumulation_steps','validation_every','checkpoint_every'):
@@ -188,8 +191,8 @@ class UnifiedRun(UnifiedPilot):
         np.random.seed(seed % (2**32))
         torch.manual_seed(seed)
         if self.stage == 'I':
-            keys=('embed','depths','heads','window','patch','use_checkpoint','dual_input')
-            self.model=StageOne(**{k:self.cfg['model'][k] for k in keys},**self.cfg['ssl'])
+            keys=('embed','depths','heads','window','patch','use_checkpoint','dual_input','planar_merge')
+            self.model=StageOne(**{k:self.cfg['model'][k] for k in keys if k != 'planar_merge' or k in self.cfg['model']},**self.cfg['ssl'])
             if getattr(self,'_warm_start',None) is not None:
                 from anatobind.aur.ssl.unified_init import warm_start_stage_one
                 self._warm_start_lineage=warm_start_stage_one(self.model,self._warm_start['checkpoint'],
