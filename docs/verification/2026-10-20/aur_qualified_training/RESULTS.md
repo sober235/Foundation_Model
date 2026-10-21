@@ -2,6 +2,8 @@
 
 基线：`04638a9b45ceef82e2899e9a7cc575c914681661`。执行分支：`feature/aur-qualified-unified-training-2026-10-19`。任务来自[已审实施计划](../../../superpowers/plans/2026-10-19-aur-data-grounded-gap-closure.md)，原数据审计和35例TRAIN标签恢复见[此前报告](../../2026-10-19/aur_data_audit/RESULTS.md)。
 
+**2026-10-21最终状态：Stage I完成2048步；双mode G1为2D FAIL / 3D PASS，正式流程按预登记规则停止，II/III未启动。** 这轮已取得完整工程结果，但未补齐最终双维A/U/R质量要求。下面保留数据、实现与启动来源，实际判门见“正式Stage I与G1结果”。
+
 ## 已完成的数据资格
 
 新合同使用私有`~/outputs/aur_qualified_training_20261019/data_contract/final_v3/contract.json`，SHA256 `a839cfc9c9213b5b376eac4bc4a8219506175fdbe3620bc36cb2056f602b6060`。完整输入、输出和冻结执行链已重验。原始数据、历史清单、修复版本与旧缓存保持原文件；新医学清单、掩膜、逐患者记录均保存在私有目录。
@@ -67,12 +69,40 @@ probe只使用TRAIN观测与TRAIN控制验证，heldout模型前向为0。首个
 
 正式流程于2026-10-21 01:53:39 UTC脱离会话启动，PID2348457，先执行Stage I输入完整性检查和2048步训练。它从已核旧Stage I step8500重新warm-start，不使用probe的8步权重。双mode G1按默认完整配方运行，wall上限7200秒；任一模式FAIL/INSUFFICIENT即保存结果并停止，不调整门槛或自动追加训练。运行进度是带时间戳的快照，见[RUN.json](RUN.json)和[匿名汇总](aggregate_anonymous.json)；启动事实不代表阶段或质量完成。
 
+## 正式Stage I与G1结果（2026-10-21）
+
+Stage I实际完成2048步，2D/3D各1024次新曝光，全部loss有限。训练/周期验证段2474.271秒，启动与结束完整性验证397.913秒。8个验证边界均已保存；按两mode等权平均验证loss选择step1792，criterion为0.0323402800。实际最后步为2048，所选权重仍如实标step1792；独立完成证书证明完整预算执行。选中checkpoint SHA256 `a9db14e263fc5001828980a17e88cdd62edf88b3e56022c47d0dbf72cca89b25`，骨干状态SHA256 `541f5f218d3dbcc72fde5c72a94b8401f114a44fe78379d3a6fe82e0fb8225cd`。
+
+默认完整G1使用这个best骨干，未事后改选checkpoint。每mode宿主校准96/验证48、病灶校准48/验证48观测，seeds0/1/2、300读出epoch、1000次患者bootstrap。13类宿主验证支持全部非零，患者bootstrap每seed48组；判定不是INSUFFICIENT。详见[匿名G1结果与复核](g1_anonymous.json)。
+
+| 工程指标（伪参照，NOT_EVIDENCE） | 2D | 3D | 冻结条件 |
+|---|---:|---:|---|
+| 宿主macro Dice，SSL / random | 0.279637 / 0.236092 | 0.714408 / 0.364809 | 比较同mode两臂 |
+| 宿主Dice增益 | **0.043545** | 0.349600 | ≥0.05 |
+| 各seed增益95%CI下界的最小值 | 0.009362 | 0.324584 | >0 |
+| 病灶AUC，SSL / random | 0.784362 / 0.789782 | 0.742439 / 0.661013 | SSL≥random−0.02 |
+| G1判定 | **FAIL** | **PASS** | 两mode均PASS才转II |
+
+2D唯一未满足的工程条件是宿主Dice增益不足0.05，差额0.00645477。这个结果不能通过降低阈值、改选验证患者/plane或换checkpoint变成已通过。2D病灶读出每seed校准65正/65负、验证67正/67负；3D分别184/184和218/218。这是冻结ROI的读出AUC，不能当作最终U检测灵敏度或FP/scan。3D工程PASS也不等于最终A32分割或医学R已达标。
+
+Stage I完成记录的文件时间为02:41:39 UTC，G1完成和流程停止记录为03:12:50 UTC；这些是文件时间，不作为精确性能计时。PID2348457已退出，Stage II/III目录均未创建。没有后续训练、自动调参或重跑G1。CPU只读复核完成证书、模型/骨干绑定、G1报告hash、默认配方、每mode判门重算及145个源码hash全部通过，无新增模型前向或GPU计算。
+
+## 最终A/U/R评价仍缺少的接口
+
+代码复查还确认了最终质量评价的独立实现缺口，不能把当前周期loss验证称为完成了Task5全部验收：
+
+- `unified_infer.model_from_unified_export`目前只接收format1的监督导出；正式runner产物为format2，需有验证完成证书的明确加载接口，不能直接降版本或丢弃证书。
+- 旧`aur_eval.py`沿用3D导出和旧患者split逻辑，不能直接消费新合同的`split=val`；需要按新role和mode明确接入。`UnifiedRun.validate`当前只输出loss及观测数，不提供A32/U/R终点评分。
+- 当前plane weak-R资格只对TRAIN开放。held-out二维R必须单独冻结观察与参照资格；不能把validation改标TRAIN或把unknown变成no-host来复用训练路径。
+
+这些缺口不改变本次G1判定，也未用于绕过阶段门。后续应先固定二维表征失败诊断，再独立补齐format2/新角色/双mode最终评价接入；本轮保留当前源码和所有失败证据，没有启动新训练配方。
+
 ## 最终检查及外部补证
 
 完整CPU套件实际结果为**1699 passed、5 skipped，243.92秒，退出0**。命令为`env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider`，在沙箱外运行以支持DataLoader多进程。跳过项为nndet专用环境模块、1条CUDA混合精度检查及3条CUDA恢复检查；本轮未把历史补测记为新执行。上述实际float32 CUDA恢复probe另行记录。此前最终套件尝试曾因G1合成fixture缺少新强制合同字段出现1 failed/1698 passed/5 skipped；补齐fixture后取得这里的最终结果，没有隐藏该失败。
 
 Level R原SQLite只读，使用SQLite backup创建新私有工作副本并通过integrity_check，原文件hash不变。现有1297病灶、2594条orders、3个账户（其中2读者）；labels/adjudications/releases仍全部0。未启动标注服务、未发送读者消息、未生成医生答案。已有5640卷H5–DICOM候选关联及其hash已冻结复核；它不提供缺失的患者IPP/IOP，原生脑DICOM验收仍未完成。
 
-尚未完成的是正式阶段及双mode质量判门、独立评价患者资格、原生DICOM可核几何和真实医生R标注。历史完整模型的A/U/R失败裁决保留；新2D weak-R、训练loss或工程G1都不能替代这些证据。
+尚未完成的是二维G1过门、正式Stage II/III、双mode最终A/U/R评价接口与质量达标、独立评价患者资格、原生DICOM可核几何和真实医生R标注。历史完整模型的A/U/R失败裁决保留；新2D weak-R、训练loss或工程G1都不能替代这些证据。
 
 公开新增内容经过身份/path交叉扫描、JSON解析、Markdown本地链接及冻结源码检查，结果见[匿名发布检查](verification_anonymous.json)。检查仅覆盖本次新增内容，不扩大为历史会话全匿名保证；源医学数组、逐患者/逐观察结果与工作数据库未入Git。

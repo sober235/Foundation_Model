@@ -107,6 +107,30 @@
     {
       "relative_private_artifact": "reviews/task4_round1.md",
       "sha256": "ce573a5cb9df13b8b6f92d614fe91e178721607e4c83db96510c7757af093f7f"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/stage_I/completion.json",
+      "sha256": "dbaa4916e9dc0d1541bcff7ff995961f57cbe5661b77d48a45a5885f2caf3c1c"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/stage_I/summary_1.json",
+      "sha256": "c02b8523ef6d7bda7618a50a0e2ddb67f844900b3f8d82636d047a81f8ac9a82"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/g1/g1_report.json",
+      "sha256": "d4347086e668b54e3a2832d77452b0349b8cd12f5e6b6c0998a2608efa301f43"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/g1/complete.json",
+      "sha256": "508376ae9b09e9231dbd193366a5091fa3ecd9939ffdf8dc4b5ab6abb6cbf711"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/g1_verdict_anonymous.json",
+      "sha256": "68469c32d18911a351e040bef84998e20f495c890f58010810d4bc7375b79d89"
+    },
+    {
+      "relative_private_artifact": "formal_pass_v2/completion_audit_anonymous_v1.json",
+      "sha256": "e709497c2f59be451ab2e526a121c3d9e8d88da18b6f159e81013fd69f245900"
     }
   ],
   "base_commit": "04638a9b45ceef82e2899e9a7cc575c914681661",
@@ -158,43 +182,69 @@
     "selected_gpu_uuid": "GPU-64b093fe-3c70-3b73-51f9-083bf88c8970"
   },
   "formal_progress": {
+    "g1": {
+      "checkpoint_step": 1792,
+      "combined_pass": false,
+      "modes": {
+        "2d": "FAIL",
+        "3d": "PASS"
+      },
+      "private_report_sha256": "d4347086e668b54e3a2832d77452b0349b8cd12f5e6b6c0998a2608efa301f43"
+    },
     "pipeline": {
-      "optimizer_budget": 2048,
-      "stage": "I",
-      "status": "TRAINING"
+      "modes": {
+        "2d": "FAIL",
+        "3d": "PASS"
+      },
+      "status": "STOPPED_AT_G1"
     },
     "registration_sha256": "fd21ff18abff1ca33599d97413ff513fb774394cad429f1aa2306d354b670cb8",
-    "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+    "snapshot_utc": "2026-10-21T08:26:25.391724+00:00",
     "stages": {
       "I": {
         "all_logged_losses_finite": true,
-        "exposures": {
-          "2d": 178,
-          "3d": 177
+        "best": {
+          "criterion": 0.03234028001315892,
+          "sha256": "a9db14e263fc5001828980a17e88cdd62edf88b3e56022c47d0dbf72cca89b25",
+          "step": 1792
         },
-        "last_committed_step": 256,
-        "last_loss": 0.07768429815769196,
-        "optimizer_steps_logged": 355,
-        "optimizer_wall_seconds": 409.9660821608268,
+        "exposures": {
+          "2d": 1024,
+          "3d": 1024
+        },
+        "last_committed_step": 2048,
+        "last_loss": 0.012954705394804478,
+        "optimizer_steps_logged": 2048,
+        "optimizer_wall_seconds": 2359.2013924191706,
         "peak_cuda_allocated_bytes": 2243369984,
+        "phase_summary": {
+          "exposures": {
+            "2d": 1024,
+            "3d": 1024
+          },
+          "status": "COMPLETE",
+          "steps": 2048,
+          "training_seconds": 2474.2707884712145,
+          "verification_seconds": 397.9125418760814
+        },
         "registered_steps": 2048,
         "source_mode_exposures": {
           "2d": {
-            "bmsr": 38,
-            "hcp": 31,
-            "isles": 37,
-            "pdgm": 32,
-            "sibbms": 40
+            "bmsr": 225,
+            "hcp": 205,
+            "isles": 203,
+            "pdgm": 211,
+            "sibbms": 180
           },
           "3d": {
-            "bmsr": 35,
-            "hcp": 32,
-            "isles": 37,
-            "pdgm": 39,
-            "sibbms": 34
+            "bmsr": 204,
+            "hcp": 210,
+            "isles": 199,
+            "pdgm": 199,
+            "sibbms": 212
           }
         },
-        "status": "RUNNING",
+        "status": "COMPLETE",
         "validation": [
           {
             "criterion": 0.03962499892804772,
@@ -211,6 +261,118 @@
               }
             },
             "step": 256
+          },
+          {
+            "criterion": 0.0353088797419332,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.04735146230086684,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02326629718299955,
+                "observations": 8
+              }
+            },
+            "step": 512
+          },
+          {
+            "criterion": 0.04162953648483381,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.06035749288275838,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.022901580086909235,
+                "observations": 8
+              }
+            },
+            "step": 768
+          },
+          {
+            "criterion": 0.03416610672138631,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.045775148551911116,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02255706489086151,
+                "observations": 8
+              }
+            },
+            "step": 1024
+          },
+          {
+            "criterion": 0.03377426404040307,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.045887896325439215,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02166063175536692,
+                "observations": 8
+              }
+            },
+            "step": 1280
+          },
+          {
+            "criterion": 0.034511325298808515,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.04745797533541918,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.021564675262197852,
+                "observations": 8
+              }
+            },
+            "step": 1536
+          },
+          {
+            "criterion": 0.03234028001315892,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.043311253655701876,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02136930637061596,
+                "observations": 8
+              }
+            },
+            "step": 1792
+          },
+          {
+            "criterion": 0.032537527731619775,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.04373876051977277,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.021336294943466783,
+                "observations": 8
+              }
+            },
+            "step": 2048
           }
         ]
       },
@@ -228,11 +390,11 @@
   },
   "implementation_commit": "65eb7df8bd15d8155a6df389f525354020cd4dab",
   "private_root": "/home/congcongliu/outputs/aur_qualified_training_20261019",
-  "public_aggregate_sha256": "794122dff844ea380fa2b00f8e023015a142cc2de8cfbc5e79c328f2df198557",
-  "recovery": "Use the frozen v2 controller with --run only after the old PID exits; retain registration, source and data hashes. Reuse last committed checkpoint; G1 failure or insufficiency remains a stop. Partial G1 evaluation requires inspection before retry.",
+  "public_aggregate_sha256": "b582fbee345611e0c94e652889f9640d4058e37beac1169b01aec763cfaffd71",
+  "recovery": "The completed Stage I and G1 are stopped at a failed gate. Preserve all artifacts; do not resume training, rerun G1, change the threshold or select another checkpoint. Any subsequent experiment needs a separate frozen registration. The reusable loader/evaluator interfaces still require explicit work before final dual-mode A/U/R evaluation.",
   "repository": "https://github.com/sober235/Foundation_Model",
   "schema_version": 1,
-  "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+  "snapshot_utc": "2026-10-21T08:26:25.391724+00:00",
   "source_closure_digest": "359d442575cf7060c228c98c13a0a6caebbdb0999ad75bcdf7c059783d54912b",
   "source_closure_files": 145,
   "verification": {

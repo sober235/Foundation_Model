@@ -50,43 +50,69 @@
   },
   "final_dual_mode_aur_quality_established": false,
   "formal_progress": {
+    "g1": {
+      "checkpoint_step": 1792,
+      "combined_pass": false,
+      "modes": {
+        "2d": "FAIL",
+        "3d": "PASS"
+      },
+      "private_report_sha256": "d4347086e668b54e3a2832d77452b0349b8cd12f5e6b6c0998a2608efa301f43"
+    },
     "pipeline": {
-      "optimizer_budget": 2048,
-      "stage": "I",
-      "status": "TRAINING"
+      "modes": {
+        "2d": "FAIL",
+        "3d": "PASS"
+      },
+      "status": "STOPPED_AT_G1"
     },
     "registration_sha256": "fd21ff18abff1ca33599d97413ff513fb774394cad429f1aa2306d354b670cb8",
-    "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+    "snapshot_utc": "2026-10-21T08:26:25.391724+00:00",
     "stages": {
       "I": {
         "all_logged_losses_finite": true,
-        "exposures": {
-          "2d": 178,
-          "3d": 177
+        "best": {
+          "criterion": 0.03234028001315892,
+          "sha256": "a9db14e263fc5001828980a17e88cdd62edf88b3e56022c47d0dbf72cca89b25",
+          "step": 1792
         },
-        "last_committed_step": 256,
-        "last_loss": 0.07768429815769196,
-        "optimizer_steps_logged": 355,
-        "optimizer_wall_seconds": 409.9660821608268,
+        "exposures": {
+          "2d": 1024,
+          "3d": 1024
+        },
+        "last_committed_step": 2048,
+        "last_loss": 0.012954705394804478,
+        "optimizer_steps_logged": 2048,
+        "optimizer_wall_seconds": 2359.2013924191706,
         "peak_cuda_allocated_bytes": 2243369984,
+        "phase_summary": {
+          "exposures": {
+            "2d": 1024,
+            "3d": 1024
+          },
+          "status": "COMPLETE",
+          "steps": 2048,
+          "training_seconds": 2474.2707884712145,
+          "verification_seconds": 397.9125418760814
+        },
         "registered_steps": 2048,
         "source_mode_exposures": {
           "2d": {
-            "bmsr": 38,
-            "hcp": 31,
-            "isles": 37,
-            "pdgm": 32,
-            "sibbms": 40
+            "bmsr": 225,
+            "hcp": 205,
+            "isles": 203,
+            "pdgm": 211,
+            "sibbms": 180
           },
           "3d": {
-            "bmsr": 35,
-            "hcp": 32,
-            "isles": 37,
-            "pdgm": 39,
-            "sibbms": 34
+            "bmsr": 204,
+            "hcp": 210,
+            "isles": 199,
+            "pdgm": 199,
+            "sibbms": 212
           }
         },
-        "status": "RUNNING",
+        "status": "COMPLETE",
         "validation": [
           {
             "criterion": 0.03962499892804772,
@@ -103,6 +129,118 @@
               }
             },
             "step": 256
+          },
+          {
+            "criterion": 0.0353088797419332,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.04735146230086684,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02326629718299955,
+                "observations": 8
+              }
+            },
+            "step": 512
+          },
+          {
+            "criterion": 0.04162953648483381,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.06035749288275838,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.022901580086909235,
+                "observations": 8
+              }
+            },
+            "step": 768
+          },
+          {
+            "criterion": 0.03416610672138631,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.045775148551911116,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02255706489086151,
+                "observations": 8
+              }
+            },
+            "step": 1024
+          },
+          {
+            "criterion": 0.03377426404040307,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.045887896325439215,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02166063175536692,
+                "observations": 8
+              }
+            },
+            "step": 1280
+          },
+          {
+            "criterion": 0.034511325298808515,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.04745797533541918,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.021564675262197852,
+                "observations": 8
+              }
+            },
+            "step": 1536
+          },
+          {
+            "criterion": 0.03234028001315892,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.043311253655701876,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.02136930637061596,
+                "observations": 8
+              }
+            },
+            "step": 1792
+          },
+          {
+            "criterion": 0.032537527731619775,
+            "modes": {
+              "2d": {
+                "batches": 8,
+                "loss": 0.04373876051977277,
+                "observations": 8
+              },
+              "3d": {
+                "batches": 8,
+                "loss": 0.021336294943466783,
+                "observations": 8
+              }
+            },
+            "step": 2048
           }
         ]
       },
@@ -289,7 +427,7 @@
     }
   },
   "schema_version": 1,
-  "snapshot_utc": "2026-10-21T02:04:09.302020+00:00",
+  "snapshot_utc": "2026-10-21T08:26:25.391724+00:00",
   "warm_start": {
     "legacy_rng_exact_resume": false,
     "legacy_tensors_copied": 176,

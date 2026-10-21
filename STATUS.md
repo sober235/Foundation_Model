@@ -1,4 +1,4 @@
-# STATUS：2026-10-21（数据资格、双维训练实现及全尺寸probe完成；首轮正式Stage I已启动）
+# STATUS：2026-10-21（Stage I完成；G1为2D FAIL / 3D PASS，按登记规则停止）
 
 ## 最新：统一2D/3D正式训练
 
@@ -8,10 +8,13 @@
 - 新合同`final_v3`已完成全部源/输出/执行链校验。监督TRAIN3499行/894来源限定患者，SSL TRAIN5501/1895；开发validation405/101，SSL validation629/213。开发ISLES另3个近整数截断mask已在新版本恢复，原生20/20阳性均保留；TRAIN819份补充病灶数组QC完成。患者角色身份交集0，不等于跨来源生物学去重。
 - 2D弱R对最终plane/FOV/变换重验真实宿主重叠与可见性。有限TRAIN资格测量39组件中26合格，仍标NOT_EVIDENCE。Stage I严格只读图像；176旧张量复用、4新增二维张量固定seed初始化。
 - 全尺寸GPU probe共24步/449.868秒（含首尾全量校验），最大allocated约5.25GiB，CUDA实际状态恢复通过；两mode均实际参与Stage III弱R计算。这是资源与执行证据，heldout模型前向0。
-- 首轮正式预算I/II/III=2048/4096/2048步，单卡batch1、累积1，已独立审阅。`formal_pass_v2`于2026-10-21 01:53:39 UTC启动，PID2348457，GPU0 A800 80GB；先做完整校验再训练。仅双mode默认G1均PASS才允许II，任一FAIL/INSUFFICIENT保存并停止。预计纯训练约4.3小时，验证/校验时间另计；不能将启动写成完成。
+- 首轮正式Stage I已完成2048步，两mode各1024次曝光，loss全部有限；训练/周期验证2474.271秒、输入完整性验证397.913秒。best来自step1792，完整预算由单独证书证明。CPU只读证书、所选骨干、默认G1配方/报告hash及源码闭包复核全部通过。
+- **双mode G1实际2D FAIL / 3D PASS。** 2D宿主Dice增益0.043545未达到0.05；CI下界0.009362>0、病灶AUC0.784362对random0.789782满足−0.02容差。3D增益0.349600、CI下界0.324584、AUC0.742439对0.661013，三条件均通过。两mode均有全部13宿主与完整样本支持；这些是伪参照工程读出，非最终A32/U/R精度。见[完整匿名G1](docs/verification/2026-10-20/aur_qualified_training/g1_anonymous.json)。
+- `formal_pass_v2`已于03:12:50 UTC按登记规则停止，PID2348457退出，II/III未启动。原预算与全部失败结果保留，不自动降低阈值、换best或追加训练。GitHub新分支已发布实现与证据，远端main保持原版本。
+- 最终评价仍有接口工作：正式format2导出尚未接入旧format1统一推理loader；旧3D evaluator不直接兼容新validation角色；周期验证只有loss，held-out二维R资格尚未定义。Task5的训练/G1实现完成，不等于双mode最终A/U/R评价完成。
 - 原生DICOM缺IPP/IOP及尺度歧义仍在。Level R工作副本已准备并核验，1297病灶但labels/adjudications/releases仍0，未联系读者。独立评价与最终两mode A/U/R质量验收仍未完成，历史模型质量FAIL保留。
 
-私有证据及运行根为`~/outputs/aur_qualified_training_20261019/`。已启动的进程通过`formal_pass_v2/pipeline_status.json`与阶段`status.json`/`steps.jsonl`查验；只输出匿名进度。恢复须使用同登记、源码、数据和最后checkpoint，不重新创建同名运行，不重复已完成probe。GitHub发布使用用户指定的新feature分支，远端main不直接推送。
+私有证据及运行根为`~/outputs/aur_qualified_training_20261019/`。`formal_pass_v2/pipeline_status.json`为STOPPED_AT_G1；不重新启动已完成Stage I或重跑G1。后续先固定二维表征失败诊断及最终评价接口方案，另立新版本；原数据、角色、预算、门槛与权重证据不覆盖。GitHub发布使用用户指定的新feature分支，远端main不直接推送。
 
 ## 此前：实际训练数据与缺口修复（2026-10-19）
 

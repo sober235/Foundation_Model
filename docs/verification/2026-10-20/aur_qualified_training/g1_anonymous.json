@@ -1,0 +1,1320 @@
+{
+  "backbone_state_sha256": "541f5f218d3dbcc72fde5c72a94b8401f114a44fe78379d3a6fe82e0fb8225cd",
+  "checkpoint_sha256": "a9db14e263fc5001828980a17e88cdd62edf88b3e56022c47d0dbf72cca89b25",
+  "checkpoint_step": 1792,
+  "combined_pass": false,
+  "completion_audit": {
+    "checks": {
+      "combined_gate_rejects": true,
+      "data_contract_file_sha_matches": true,
+      "frozen_backbones_unchanged_at_execution": true,
+      "g1_default_recipe": true,
+      "g1_exact_selected_backbone": true,
+      "g1_report_commitment": true,
+      "gate_recomputed_2d": true,
+      "gate_recomputed_3d": true,
+      "source_closure_unchanged": true,
+      "stage_III_not_started": true,
+      "stage_II_not_started": true,
+      "stage_I_completion_certificate": true
+    },
+    "completed_steps": 2048,
+    "data_bytes_reread": false,
+    "evidence": "verification of preserved artifacts; original full source-byte pre/post verification remains in run evidence",
+    "g1_modes": {
+      "2d": "FAIL",
+      "3d": "PASS"
+    },
+    "gpu_used": false,
+    "new_model_forwards": 0,
+    "selected_step": 1792,
+    "status": "PASS"
+  },
+  "data_contract_sha256": "a839cfc9c9213b5b376eac4bc4a8219506175fdbe3620bc36cb2056f602b6060",
+  "default_recipe_match": true,
+  "evidence": "NOT_EVIDENCE",
+  "modes": {
+    "2d": {
+      "arms": {
+        "random": {
+          "host": {
+            "macro_dice_mean": 0.23609150449434915,
+            "seeds": [
+              {
+                "macro_dice": 0.23581068217754364,
+                "per_host_dice": [
+                  0.5387337803840637,
+                  0.5587949752807617,
+                  0.48609864711761475,
+                  0.5475000143051147,
+                  0.0,
+                  0.06896551698446274,
+                  0.0,
+                  0.0,
+                  0.1938326060771942,
+                  0.22573363780975342,
+                  0.40506330132484436,
+                  0.0,
+                  0.040816325694322586
+                ],
+                "seed": 0
+              },
+              {
+                "macro_dice": 0.23543192446231842,
+                "per_host_dice": [
+                  0.5073078870773315,
+                  0.5603112578392029,
+                  0.5016672611236572,
+                  0.5468814373016357,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.0,
+                  0.20000000298023224,
+                  0.24460431933403015,
+                  0.42966753244400024,
+                  0.0,
+                  0.07017543911933899
+                ],
+                "seed": 1
+              },
+              {
+                "macro_dice": 0.23703190684318542,
+                "per_host_dice": [
+                  0.5431235432624817,
+                  0.5412706136703491,
+                  0.48709824681282043,
+                  0.5473515391349792,
+                  0.0,
+                  0.0714285746216774,
+                  0.0,
+                  0.0,
+                  0.21296297013759613,
+                  0.2289719581604004,
+                  0.40920716524124146,
+                  0.0,
+                  0.03999999910593033
+                ],
+                "seed": 2
+              }
+            ]
+          },
+          "lesion": {
+            "auc_mean": 0.7897824311279424,
+            "seeds": [
+              {
+                "auc": 0.7667631989307195,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.8344671201814059,
+                    "n_negative": 21,
+                    "n_pairs": 21,
+                    "n_positive": 21,
+                    "n_samples": 42
+                  },
+                  "<5": {
+                    "auc": 0.6465028355387523,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  },
+                  ">10": {
+                    "auc": 0.8204158790170132,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  }
+                },
+                "n_train_negative": 65,
+                "n_train_positive": 65,
+                "n_train_samples": 130,
+                "n_val_negative": 67,
+                "n_val_positive": 67,
+                "n_val_samples": 134,
+                "seed": 0
+              },
+              {
+                "auc": 0.7803519714858543,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.8163265306122449,
+                    "n_negative": 21,
+                    "n_pairs": 21,
+                    "n_positive": 21,
+                    "n_samples": 42
+                  },
+                  "<5": {
+                    "auc": 0.722117202268431,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  },
+                  ">10": {
+                    "auc": 0.8241965973534972,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  }
+                },
+                "n_train_negative": 65,
+                "n_train_positive": 65,
+                "n_train_samples": 130,
+                "n_val_negative": 67,
+                "n_val_positive": 67,
+                "n_val_samples": 134,
+                "seed": 1
+              },
+              {
+                "auc": 0.8222321229672532,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.854875283446712,
+                    "n_negative": 21,
+                    "n_pairs": 21,
+                    "n_positive": 21,
+                    "n_samples": 42
+                  },
+                  "<5": {
+                    "auc": 0.7731568998109641,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  },
+                  ">10": {
+                    "auc": 0.8752362948960303,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  }
+                },
+                "n_train_negative": 65,
+                "n_train_positive": 65,
+                "n_train_samples": 130,
+                "n_val_negative": 67,
+                "n_val_positive": 67,
+                "n_val_samples": 134,
+                "seed": 2
+              }
+            ]
+          }
+        },
+        "ssl": {
+          "host": {
+            "macro_dice_mean": 0.2796367307504018,
+            "seeds": [
+              {
+                "macro_dice": 0.280238538980484,
+                "per_host_dice": [
+                  0.5930967330932617,
+                  0.6191247701644897,
+                  0.5695817470550537,
+                  0.5331084132194519,
+                  0.0,
+                  0.0,
+                  0.11764705926179886,
+                  0.043478261679410934,
+                  0.2537313401699066,
+                  0.5117647051811218,
+                  0.3658536672592163,
+                  0.0357142873108387,
+                  0.0
+                ],
+                "seed": 0
+              },
+              {
+                "macro_dice": 0.28045880794525146,
+                "per_host_dice": [
+                  0.6503608822822571,
+                  0.5632911324501038,
+                  0.5378151535987854,
+                  0.5678595304489136,
+                  0.0,
+                  0.0,
+                  0.1785714328289032,
+                  0.03999999910593033,
+                  0.18840579688549042,
+                  0.4904632270336151,
+                  0.35329341888427734,
+                  0.040816325694322586,
+                  0.035087719559669495
+                ],
+                "seed": 1
+              },
+              {
+                "macro_dice": 0.27821284532546997,
+                "per_host_dice": [
+                  0.6248881220817566,
+                  0.6065719127655029,
+                  0.5618535280227661,
+                  0.5466361045837402,
+                  0.0,
+                  0.0,
+                  0.08510638028383255,
+                  0.043478261679410934,
+                  0.19178082048892975,
+                  0.5042492747306824,
+                  0.34441086649894714,
+                  0.0714285746216774,
+                  0.036363635212183
+                ],
+                "seed": 2
+              }
+            ]
+          },
+          "lesion": {
+            "auc_mean": 0.784361773223435,
+            "seeds": [
+              {
+                "auc": 0.7511695255067944,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.7165532879818595,
+                    "n_negative": 21,
+                    "n_pairs": 21,
+                    "n_positive": 21,
+                    "n_samples": 42
+                  },
+                  "<5": {
+                    "auc": 0.6313799621928167,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  },
+                  ">10": {
+                    "auc": 0.9168241965973535,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  }
+                },
+                "n_train_negative": 65,
+                "n_train_positive": 65,
+                "n_train_samples": 130,
+                "n_val_negative": 67,
+                "n_val_positive": 67,
+                "n_val_samples": 134,
+                "seed": 0
+              },
+              {
+                "auc": 0.7997326798841613,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.7959183673469388,
+                    "n_negative": 21,
+                    "n_pairs": 21,
+                    "n_positive": 21,
+                    "n_samples": 42
+                  },
+                  "<5": {
+                    "auc": 0.6805293005671077,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  },
+                  ">10": {
+                    "auc": 0.9281663516068053,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  }
+                },
+                "n_train_negative": 65,
+                "n_train_positive": 65,
+                "n_train_samples": 130,
+                "n_val_negative": 67,
+                "n_val_positive": 67,
+                "n_val_samples": 134,
+                "seed": 1
+              },
+              {
+                "auc": 0.8021831142793495,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.7596371882086168,
+                    "n_negative": 21,
+                    "n_pairs": 21,
+                    "n_positive": 21,
+                    "n_samples": 42
+                  },
+                  "<5": {
+                    "auc": 0.724007561436673,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  },
+                  ">10": {
+                    "auc": 0.9243856332703214,
+                    "n_negative": 23,
+                    "n_pairs": 23,
+                    "n_positive": 23,
+                    "n_samples": 46
+                  }
+                },
+                "n_train_negative": 65,
+                "n_train_positive": 65,
+                "n_train_samples": 130,
+                "n_val_negative": 67,
+                "n_val_positive": 67,
+                "n_val_samples": 134,
+                "seed": 2
+              }
+            ]
+          }
+        }
+      },
+      "counts": {
+        "host_calibration": 96,
+        "host_validation": 48,
+        "lesion_calibration": 48,
+        "lesion_validation": 48
+      },
+      "evidence": "NOT_EVIDENCE",
+      "gain_bootstrap_by_seed": [
+        {
+          "ci95": [
+            0.013566001132130624,
+            0.0737039130181074
+          ],
+          "mean": 0.04281043879687786,
+          "patient_groups": 48,
+          "seed": 0
+        },
+        {
+          "ci95": [
+            0.013194231688976288,
+            0.07802620716392994
+          ],
+          "mean": 0.043886280640959736,
+          "patient_groups": 48,
+          "seed": 1
+        },
+        {
+          "ci95": [
+            0.009361823275685311,
+            0.07491399385035039
+          ],
+          "mean": 0.0416962403357029,
+          "patient_groups": 48,
+          "seed": 2
+        }
+      ],
+      "gain_ci_low_min": 0.009361823275685311,
+      "host_pass": false,
+      "lesion_auc_random": 0.7897824311279424,
+      "lesion_auc_ssl": 0.784361773223435,
+      "lesion_pass": true,
+      "macro_dice_gain": 0.043545226256052644,
+      "status": "FAIL",
+      "support": {
+        "by_source": {
+          "bmsr": {
+            "host_cells": [
+              285,
+              248,
+              220,
+              245,
+              10,
+              7,
+              10,
+              13,
+              11,
+              17,
+              24,
+              9,
+              4
+            ],
+            "host_validation_crops": 11
+          },
+          "isles": {
+            "host_cells": [
+              118,
+              122,
+              114,
+              84,
+              0,
+              0,
+              0,
+              0,
+              1,
+              7,
+              3,
+              0,
+              0
+            ],
+            "host_validation_crops": 9
+          },
+          "pdgm": {
+            "host_cells": [
+              467,
+              466,
+              559,
+              611,
+              24,
+              19,
+              18,
+              14,
+              54,
+              114,
+              107,
+              16,
+              28
+            ],
+            "host_validation_crops": 21
+          },
+          "sibbms": {
+            "host_cells": [
+              232,
+              218,
+              269,
+              299,
+              0,
+              0,
+              2,
+              3,
+              13,
+              43,
+              44,
+              11,
+              10
+            ],
+            "host_validation_crops": 7
+          }
+        },
+        "host_validation_cells": [
+          1102,
+          1054,
+          1162,
+          1239,
+          34,
+          26,
+          30,
+          30,
+          79,
+          181,
+          178,
+          36,
+          42
+        ],
+        "lesion_pairs": {
+          "calibration_seed_0": {
+            "by_host_map_class": {
+              "0": 14,
+              "1": 18,
+              "10": 18,
+              "11": 10,
+              "2": 34,
+              "3": 26,
+              "4": 10
+            },
+            "by_size": {
+              "5-10": 38,
+              "<5": 50,
+              ">10": 42
+            },
+            "by_source": {
+              "bmsr": 46,
+              "isles": 36,
+              "pdgm": 48
+            }
+          },
+          "calibration_seed_1": {
+            "by_host_map_class": {
+              "0": 14,
+              "1": 18,
+              "10": 18,
+              "11": 10,
+              "2": 34,
+              "3": 26,
+              "4": 10
+            },
+            "by_size": {
+              "5-10": 38,
+              "<5": 50,
+              ">10": 42
+            },
+            "by_source": {
+              "bmsr": 46,
+              "isles": 36,
+              "pdgm": 48
+            }
+          },
+          "calibration_seed_2": {
+            "by_host_map_class": {
+              "0": 14,
+              "1": 18,
+              "10": 18,
+              "11": 10,
+              "2": 34,
+              "3": 26,
+              "4": 10
+            },
+            "by_size": {
+              "5-10": 38,
+              "<5": 50,
+              ">10": 42
+            },
+            "by_source": {
+              "bmsr": 46,
+              "isles": 36,
+              "pdgm": 48
+            }
+          },
+          "validation_seed_0": {
+            "by_host_map_class": {
+              "0": 10,
+              "1": 36,
+              "10": 4,
+              "11": 10,
+              "12": 2,
+              "2": 24,
+              "3": 20,
+              "4": 26,
+              "9": 2
+            },
+            "by_size": {
+              "5-10": 42,
+              "<5": 46,
+              ">10": 46
+            },
+            "by_source": {
+              "bmsr": 38,
+              "isles": 42,
+              "pdgm": 54
+            }
+          },
+          "validation_seed_1": {
+            "by_host_map_class": {
+              "0": 10,
+              "1": 36,
+              "10": 4,
+              "11": 10,
+              "12": 2,
+              "2": 24,
+              "3": 20,
+              "4": 26,
+              "9": 2
+            },
+            "by_size": {
+              "5-10": 42,
+              "<5": 46,
+              ">10": 46
+            },
+            "by_source": {
+              "bmsr": 38,
+              "isles": 42,
+              "pdgm": 54
+            }
+          },
+          "validation_seed_2": {
+            "by_host_map_class": {
+              "0": 10,
+              "1": 36,
+              "10": 4,
+              "11": 10,
+              "12": 2,
+              "2": 24,
+              "3": 20,
+              "4": 26,
+              "9": 2
+            },
+            "by_size": {
+              "5-10": 42,
+              "<5": 46,
+              ">10": 46
+            },
+            "by_source": {
+              "bmsr": 38,
+              "isles": 42,
+              "pdgm": 54
+            }
+          }
+        }
+      }
+    },
+    "3d": {
+      "arms": {
+        "random": {
+          "host": {
+            "macro_dice_mean": 0.3648087481657664,
+            "seeds": [
+              {
+                "macro_dice": 0.36456626653671265,
+                "per_host_dice": [
+                  0.6289209127426147,
+                  0.637397289276123,
+                  0.5855727195739746,
+                  0.5903744101524353,
+                  0.07194244861602783,
+                  0.05263157933950424,
+                  0.06445672363042831,
+                  0.08096828311681747,
+                  0.41434529423713684,
+                  0.7239713072776794,
+                  0.7245140075683594,
+                  0.08767881989479065,
+                  0.0765874907374382
+                ],
+                "seed": 0
+              },
+              {
+                "macro_dice": 0.3626222014427185,
+                "per_host_dice": [
+                  0.6277822256088257,
+                  0.6410335302352905,
+                  0.5884000658988953,
+                  0.5718838572502136,
+                  0.05980066582560539,
+                  0.061744965612888336,
+                  0.09259258955717087,
+                  0.049101270735263824,
+                  0.4333387613296509,
+                  0.7263695597648621,
+                  0.7259851694107056,
+                  0.05528613179922104,
+                  0.08076923340559006
+                ],
+                "seed": 1
+              },
+              {
+                "macro_dice": 0.36723777651786804,
+                "per_host_dice": [
+                  0.6311129331588745,
+                  0.6170810461044312,
+                  0.583446741104126,
+                  0.5948013663291931,
+                  0.06697308272123337,
+                  0.05949966236948967,
+                  0.05468025803565979,
+                  0.07685881108045578,
+                  0.4332732856273651,
+                  0.7237423658370972,
+                  0.723564863204956,
+                  0.10947930812835693,
+                  0.09957726299762726
+                ],
+                "seed": 2
+              }
+            ]
+          },
+          "lesion": {
+            "auc_mean": 0.661013382711893,
+            "seeds": [
+              {
+                "auc": 0.6516917767864658,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.618291761148904,
+                    "n_negative": 63,
+                    "n_pairs": 63,
+                    "n_positive": 63,
+                    "n_samples": 126
+                  },
+                  "<5": {
+                    "auc": 0.5829524922946115,
+                    "n_negative": 97,
+                    "n_pairs": 97,
+                    "n_positive": 97,
+                    "n_samples": 194
+                  },
+                  ">10": {
+                    "auc": 0.8240190249702735,
+                    "n_negative": 58,
+                    "n_pairs": 58,
+                    "n_positive": 58,
+                    "n_samples": 116
+                  }
+                },
+                "n_train_negative": 184,
+                "n_train_positive": 184,
+                "n_train_samples": 368,
+                "n_val_negative": 218,
+                "n_val_positive": 218,
+                "n_val_samples": 436,
+                "seed": 0
+              },
+              {
+                "auc": 0.6612869287097046,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.6019148400100781,
+                    "n_negative": 63,
+                    "n_pairs": 63,
+                    "n_positive": 63,
+                    "n_samples": 126
+                  },
+                  "<5": {
+                    "auc": 0.6003826123923902,
+                    "n_negative": 97,
+                    "n_pairs": 97,
+                    "n_positive": 97,
+                    "n_samples": 194
+                  },
+                  ">10": {
+                    "auc": 0.829667063020214,
+                    "n_negative": 58,
+                    "n_pairs": 58,
+                    "n_positive": 58,
+                    "n_samples": 116
+                  }
+                },
+                "n_train_negative": 184,
+                "n_train_positive": 184,
+                "n_train_samples": 368,
+                "n_val_negative": 218,
+                "n_val_positive": 218,
+                "n_val_samples": 436,
+                "seed": 1
+              },
+              {
+                "auc": 0.6700614426395085,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.6334089191232048,
+                    "n_negative": 63,
+                    "n_pairs": 63,
+                    "n_positive": 63,
+                    "n_samples": 126
+                  },
+                  "<5": {
+                    "auc": 0.5986821128706558,
+                    "n_negative": 97,
+                    "n_pairs": 97,
+                    "n_positive": 97,
+                    "n_samples": 194
+                  },
+                  ">10": {
+                    "auc": 0.834423305588585,
+                    "n_negative": 58,
+                    "n_pairs": 58,
+                    "n_positive": 58,
+                    "n_samples": 116
+                  }
+                },
+                "n_train_negative": 184,
+                "n_train_positive": 184,
+                "n_train_samples": 368,
+                "n_val_negative": 218,
+                "n_val_positive": 218,
+                "n_val_samples": 436,
+                "seed": 2
+              }
+            ]
+          }
+        },
+        "ssl": {
+          "host": {
+            "macro_dice_mean": 0.7144084175427755,
+            "seeds": [
+              {
+                "macro_dice": 0.7139572501182556,
+                "per_host_dice": [
+                  0.7744377255439758,
+                  0.7735359072685242,
+                  0.7367555499076843,
+                  0.7373006343841553,
+                  0.6729309558868408,
+                  0.7023767232894897,
+                  0.5156069397926331,
+                  0.5999491810798645,
+                  0.7916666865348816,
+                  0.8692576289176941,
+                  0.8666564226150513,
+                  0.6335470080375671,
+                  0.6074240803718567
+                ],
+                "seed": 0
+              },
+              {
+                "macro_dice": 0.7169915437698364,
+                "per_host_dice": [
+                  0.7742699980735779,
+                  0.7742611765861511,
+                  0.7362299561500549,
+                  0.7375695705413818,
+                  0.6628075242042542,
+                  0.7095627188682556,
+                  0.5372876524925232,
+                  0.6015763878822327,
+                  0.7945170998573303,
+                  0.8721118569374084,
+                  0.8668030500411987,
+                  0.6388520002365112,
+                  0.6150417923927307
+                ],
+                "seed": 1
+              },
+              {
+                "macro_dice": 0.7122764587402344,
+                "per_host_dice": [
+                  0.7730939388275146,
+                  0.773269534111023,
+                  0.7359589338302612,
+                  0.7376410365104675,
+                  0.6482357382774353,
+                  0.6887369751930237,
+                  0.5353094935417175,
+                  0.5770891308784485,
+                  0.7888777256011963,
+                  0.8704302906990051,
+                  0.8671814799308777,
+                  0.6356837749481201,
+                  0.6280855536460876
+                ],
+                "seed": 2
+              }
+            ]
+          },
+          "lesion": {
+            "auc_mean": 0.7424389080604886,
+            "seeds": [
+              {
+                "auc": 0.715301742277586,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.7331821617535903,
+                    "n_negative": 63,
+                    "n_pairs": 63,
+                    "n_positive": 63,
+                    "n_samples": 126
+                  },
+                  "<5": {
+                    "auc": 0.5836964608353704,
+                    "n_negative": 97,
+                    "n_pairs": 97,
+                    "n_positive": 97,
+                    "n_samples": 194
+                  },
+                  ">10": {
+                    "auc": 0.9096313912009513,
+                    "n_negative": 58,
+                    "n_pairs": 58,
+                    "n_positive": 58,
+                    "n_samples": 116
+                  }
+                },
+                "n_train_negative": 184,
+                "n_train_positive": 184,
+                "n_train_samples": 368,
+                "n_val_negative": 218,
+                "n_val_positive": 218,
+                "n_val_samples": 436,
+                "seed": 0
+              },
+              {
+                "auc": 0.752567123979463,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.7299067775258251,
+                    "n_negative": 63,
+                    "n_pairs": 63,
+                    "n_positive": 63,
+                    "n_samples": 126
+                  },
+                  "<5": {
+                    "auc": 0.676586247210118,
+                    "n_negative": 97,
+                    "n_pairs": 97,
+                    "n_positive": 97,
+                    "n_samples": 194
+                  },
+                  ">10": {
+                    "auc": 0.9227110582639715,
+                    "n_negative": 58,
+                    "n_pairs": 58,
+                    "n_positive": 58,
+                    "n_samples": 116
+                  }
+                },
+                "n_train_negative": 184,
+                "n_train_positive": 184,
+                "n_train_samples": 368,
+                "n_val_negative": 218,
+                "n_val_positive": 218,
+                "n_val_samples": 436,
+                "seed": 1
+              },
+              {
+                "auc": 0.7594478579244172,
+                "by_size": {
+                  "5-10": {
+                    "auc": 0.7939027462836986,
+                    "n_negative": 63,
+                    "n_pairs": 63,
+                    "n_positive": 63,
+                    "n_samples": 126
+                  },
+                  "<5": {
+                    "auc": 0.6451270060580295,
+                    "n_negative": 97,
+                    "n_pairs": 97,
+                    "n_positive": 97,
+                    "n_samples": 194
+                  },
+                  ">10": {
+                    "auc": 0.9230083234244947,
+                    "n_negative": 58,
+                    "n_pairs": 58,
+                    "n_positive": 58,
+                    "n_samples": 116
+                  }
+                },
+                "n_train_negative": 184,
+                "n_train_positive": 184,
+                "n_train_samples": 368,
+                "n_val_negative": 218,
+                "n_val_positive": 218,
+                "n_val_samples": 436,
+                "seed": 2
+              }
+            ]
+          }
+        }
+      },
+      "counts": {
+        "host_calibration": 96,
+        "host_validation": 48,
+        "lesion_calibration": 48,
+        "lesion_validation": 48
+      },
+      "evidence": "NOT_EVIDENCE",
+      "gain_bootstrap_by_seed": [
+        {
+          "ci95": [
+            0.32897508069872855,
+            0.3690698407590389
+          ],
+          "mean": 0.3499301321804523,
+          "patient_groups": 48,
+          "seed": 0
+        },
+        {
+          "ci95": [
+            0.33664449080824854,
+            0.3715507842600346
+          ],
+          "mean": 0.35483805614709857,
+          "patient_groups": 48,
+          "seed": 1
+        },
+        {
+          "ci95": [
+            0.32458420246839526,
+            0.3652892254292965
+          ],
+          "mean": 0.34497955310344697,
+          "patient_groups": 48,
+          "seed": 2
+        }
+      ],
+      "gain_ci_low_min": 0.32458420246839526,
+      "host_pass": true,
+      "lesion_auc_random": 0.661013382711893,
+      "lesion_auc_ssl": 0.7424389080604886,
+      "lesion_pass": true,
+      "macro_dice_gain": 0.3495996693770091,
+      "status": "PASS",
+      "support": {
+        "by_source": {
+          "bmsr": {
+            "host_cells": [
+              8068,
+              8089,
+              8818,
+              9195,
+              271,
+              286,
+              412,
+              430,
+              947,
+              2252,
+              2171,
+              386,
+              386
+            ],
+            "host_validation_crops": 11
+          },
+          "isles": {
+            "host_cells": [
+              5545,
+              5592,
+              6016,
+              5978,
+              218,
+              211,
+              263,
+              266,
+              460,
+              1200,
+              1155,
+              243,
+              245
+            ],
+            "host_validation_crops": 9
+          },
+          "pdgm": {
+            "host_cells": [
+              16265,
+              16454,
+              18927,
+              19773,
+              620,
+              601,
+              865,
+              835,
+              2096,
+              5263,
+              5169,
+              847,
+              850
+            ],
+            "host_validation_crops": 21
+          },
+          "sibbms": {
+            "host_cells": [
+              7908,
+              7870,
+              8389,
+              9391,
+              251,
+              272,
+              372,
+              441,
+              475,
+              1219,
+              1167,
+              343,
+              329
+            ],
+            "host_validation_crops": 7
+          }
+        },
+        "host_validation_cells": [
+          37786,
+          38005,
+          42150,
+          44337,
+          1360,
+          1370,
+          1912,
+          1972,
+          3978,
+          9934,
+          9662,
+          1819,
+          1810
+        ],
+        "lesion_pairs": {
+          "calibration_seed_0": {
+            "by_host_map_class": {
+              "0": 16,
+              "1": 52,
+              "10": 40,
+              "11": 38,
+              "2": 84,
+              "3": 72,
+              "4": 54,
+              "5": 2,
+              "6": 2,
+              "8": 2,
+              "9": 6
+            },
+            "by_size": {
+              "5-10": 152,
+              "<5": 112,
+              ">10": 104
+            },
+            "by_source": {
+              "bmsr": 172,
+              "isles": 138,
+              "pdgm": 58
+            }
+          },
+          "calibration_seed_1": {
+            "by_host_map_class": {
+              "0": 16,
+              "1": 52,
+              "10": 40,
+              "11": 38,
+              "2": 84,
+              "3": 72,
+              "4": 54,
+              "5": 2,
+              "6": 2,
+              "8": 2,
+              "9": 6
+            },
+            "by_size": {
+              "5-10": 152,
+              "<5": 112,
+              ">10": 104
+            },
+            "by_source": {
+              "bmsr": 172,
+              "isles": 138,
+              "pdgm": 58
+            }
+          },
+          "calibration_seed_2": {
+            "by_host_map_class": {
+              "0": 16,
+              "1": 52,
+              "10": 40,
+              "11": 38,
+              "2": 84,
+              "3": 72,
+              "4": 54,
+              "5": 2,
+              "6": 2,
+              "8": 2,
+              "9": 6
+            },
+            "by_size": {
+              "5-10": 152,
+              "<5": 112,
+              ">10": 104
+            },
+            "by_source": {
+              "bmsr": 172,
+              "isles": 138,
+              "pdgm": 58
+            }
+          },
+          "validation_seed_0": {
+            "by_host_map_class": {
+              "0": 26,
+              "1": 90,
+              "10": 20,
+              "11": 26,
+              "12": 4,
+              "13": 4,
+              "2": 88,
+              "3": 84,
+              "4": 78,
+              "5": 4,
+              "6": 6,
+              "7": 2,
+              "8": 2,
+              "9": 2
+            },
+            "by_size": {
+              "5-10": 126,
+              "<5": 194,
+              ">10": 116
+            },
+            "by_source": {
+              "bmsr": 226,
+              "isles": 136,
+              "pdgm": 74
+            }
+          },
+          "validation_seed_1": {
+            "by_host_map_class": {
+              "0": 26,
+              "1": 90,
+              "10": 20,
+              "11": 26,
+              "12": 4,
+              "13": 4,
+              "2": 88,
+              "3": 84,
+              "4": 78,
+              "5": 4,
+              "6": 6,
+              "7": 2,
+              "8": 2,
+              "9": 2
+            },
+            "by_size": {
+              "5-10": 126,
+              "<5": 194,
+              ">10": 116
+            },
+            "by_source": {
+              "bmsr": 226,
+              "isles": 136,
+              "pdgm": 74
+            }
+          },
+          "validation_seed_2": {
+            "by_host_map_class": {
+              "0": 26,
+              "1": 90,
+              "10": 20,
+              "11": 26,
+              "12": 4,
+              "13": 4,
+              "2": 88,
+              "3": 84,
+              "4": 78,
+              "5": 4,
+              "6": 6,
+              "7": 2,
+              "8": 2,
+              "9": 2
+            },
+            "by_size": {
+              "5-10": 126,
+              "<5": 194,
+              ">10": 116
+            },
+            "by_source": {
+              "bmsr": 226,
+              "isles": 136,
+              "pdgm": 74
+            }
+          }
+        }
+      }
+    }
+  },
+  "private_report_sha256": "d4347086e668b54e3a2832d77452b0349b8cd12f5e6b6c0998a2608efa301f43",
+  "recipe": {
+    "auc_tolerance": 0.02,
+    "crop_seeds": [
+      21,
+      22,
+      23,
+      24
+    ],
+    "crops": {
+      "2d": [
+        1,
+        160,
+        160
+      ],
+      "3d": [
+        128,
+        160,
+        160
+      ]
+    },
+    "dice_gain": 0.05,
+    "n_bootstrap": 1000,
+    "n_calibration": 96,
+    "n_lesion": 48,
+    "n_validation": 48,
+    "random_seed": 0,
+    "readout_epochs": 300,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "selection_seeds": [
+      11,
+      12
+    ]
+  },
+  "version": "dual_g1_v1"
+}

@@ -18,7 +18,7 @@
 
 ## 最新执行入口（2026-10-21，优先于历史准备措辞）
 
-**首轮正式统一训练已启动：** 先读[最新报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)、同目录RUN.json和STATUS。执行代码`65eb7df`已实现数据资格、真实plane弱R、image-only双维SSL、严格warm-start/恢复、正式runner及双mode G1，独立审阅无剩余实质发现；完整CPU1699 passed/5 skipped/243.92秒。新`data_contract/final_v3`覆盖监督TRAIN3499/894患者、SSL5501/1895、val405/101、SSLval629/213，完成全量哈希和补充数组QC；开发ISLES3个截断mask修复到新版本。实际全尺寸24步资源probe已完成（总449.868秒、最大allocated约5.25GiB、CUDA状态恢复通过），不要重跑补已有测量。私有`~/outputs/aur_qualified_training_20261019/formal_pass_v2/`于2026-10-21 01:53:39 UTC启动，PID2348457；正式I/II/III预算2048/4096/2048步，双mode G1不过则停止。读取匿名进度确认实时状态，不把此启动快照当完成。数据合同SHA、登记SHA、代码闭包、失败/恢复和实际验证详见RUN；训练中不改生产Python。Level R副本已准备但标签仍0，原生DICOM可核几何和独立评价仍缺；新弱R不是医生真值，历史质量FAIL保留。
+**正式Stage I完成，双mode G1未全部通过：** 先读[最新报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)、同目录RUN.json/g1_anonymous.json和STATUS。执行代码`65eb7df`实现数据资格、真实plane弱R、image-only双维SSL、严格warm-start/恢复、正式runner及双mode G1；完整CPU1699 passed/5 skipped/243.92秒。新`data_contract/final_v3`覆盖监督TRAIN3499/894患者、SSL5501/1895、val405/101、SSLval629/213，补充数组QC及开发ISLES3个截断mask修复完成。全尺寸24步资源probe已完成（449.868秒、最大allocated约5.25GiB、CUDA恢复通过），不要重跑。私有`~/outputs/aur_qualified_training_20261019/formal_pass_v2/`实际Stage I完成2048步，两mode各1024次曝光；best为step1792，完整证书和G1权重绑定已复核。G1为2D FAIL / 3D PASS：2D宿主增益0.043545<0.05，另两条件通过；3D三条件均通过。流程于2026-10-21 03:12:50 UTC停止，PID2348457退出，II/III未启动。保留冻结门和失败，不能直接续跑加训或改选best。最终format2导出/新角色/双mode A/U/R evaluator仍需接入，周期loss不是质量验收，held-out二维R尚无资格规则。数据合同、登记、源码闭包、分母和外部限制详见RUN；Level R仍0标签，原生DICOM可核几何和独立评价仍缺，历史质量FAIL保留。
 
 ### 历史入口（2026-10-19）
 
