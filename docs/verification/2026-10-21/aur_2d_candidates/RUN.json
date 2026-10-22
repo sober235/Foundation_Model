@@ -144,8 +144,8 @@
       "A_LR5": {
         "controller_started": true,
         "g1_started": false,
-        "observed_optimizer_steps": 0,
-        "phase": "STARTUP_VERIFICATION",
+        "observed_optimizer_steps": 256,
+        "phase": "TRAINING",
         "registered_optimizer_budget": 2048,
         "registration_sha256": "fcd20b4117eb11fe35ff0707000b9755c94ff8303682c676fd2b12a12cc0aeb5",
         "release_sha256": "55e31700a64781813443c5530add2e1083ea888015e00c24328e41f1e753a8b3",
@@ -157,8 +157,8 @@
       "B_PLANAR": {
         "controller_started": true,
         "g1_started": false,
-        "observed_optimizer_steps": 0,
-        "phase": "STARTUP_VERIFICATION",
+        "observed_optimizer_steps": 257,
+        "phase": "TRAINING",
         "registered_optimizer_budget": 2048,
         "registration_sha256": "22dbede5e58f678244ae54681dabb89a9b83fadae08d5e37d2c157ea41580f98",
         "release_sha256": "24551a791a158773bbab3de51a8f842814ee8afd1be51319eaa229c7d25f4d96",
@@ -171,7 +171,7 @@
     "new_g1_results": false,
     "outside_liveness_observation_kind": "parent observed read-only require_escalated query; both live sleeping processes, not independent signed attestation",
     "outside_process_liveness_observed": true,
-    "snapshot_utc": "2026-10-22T03:29:23.669178+00:00"
+    "snapshot_utc": "2026-10-22T03:39:06.068040+00:00"
   },
   "full_cpu": {
     "command": "/home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
