@@ -2,6 +2,12 @@
 
 从2026-10-22本次合并起，`main`是代码、已发布实验结果和项目进展的查询入口。新会话先读本页顶部，再读[当前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)及同目录`RUN.json`。以下历史章节中的“main不直接推送”是当时的分支约定，已由本次用户要求合并到`main`取代。Git中的运行状态是注明时点的快照；后续实验状态须核对报告记录的私有完成证据后再更新。
 
+## 正在推进：LR5 的 TRAIN 监督能力检查
+
+用户本次已明确要求继续执行。[检查设计](docs/superpowers/specs/2026-10-22-lr5-supervised-capability-design.md)和[实施计划](docs/superpowers/plans/2026-10-22-lr5-supervised-capability.md)已登记：复用严格冻结的 LR5 运行树与正式 Stage I/G1 父证据，在标签先行冻结的小型 TRAIN 面板上执行有界资源检查 II→III，分别测量两模式 A32/U/R 与一次拟合后冻结的 TRAIN 宿主读出保持性。每阶段512步；这不是正式监督训练，也不会产生正式监督完成证书或自动释放下一轮训练。
+
+外部度量工具与控制脚本已实现，起点CPU回归1820 passed/5 skipped（298.85秒）；控制器独立审查0项。度量审查发现的忽略区池化问题已修复，新增三项回归与增量独立审阅通过，两组合成检查共64项通过。最终CPU全套正在运行。当前仍为实现/验证准备，真实面板扫描与新监督更新尚未启动；不能把计划预算写成已执行步数。所有资格、支持、停止阈值及结果边界见新设计。
+
 ## 最新：二维优化与结构候选
 
 用户要求按建议继续后，已实现[两个独立候选](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)：LR5只提高四个二维输入/重建tensor的学习率；PLANAR增加三层真正二维合并并保持原学习率。设计和边界见[候选设计](docs/superpowers/specs/2026-10-21-aur-lr-and-planar-merge-design.md)及[执行计划](docs/superpowers/plans/2026-10-21-aur-lr-and-planar-merge-execution.md)。两因素不混合，不改变原G1门槛或评价网格。
