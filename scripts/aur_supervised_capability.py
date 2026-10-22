@@ -41,9 +41,15 @@ def _private_path(value):
     """Normalize once; permit only private home destinations outside any Git tree."""
     try:
         path = Path(value).expanduser().resolve()
-        if not path.is_relative_to(Path.home().resolve()):
+        private_home = Path.home().resolve()
+        if not path.is_relative_to(private_home) or path == private_home:
             raise ValueError
-        if any((parent / '.git').exists() for parent in (path, *path.parents)):
+        # Match data_contract.private_output's repository markers. An unrelated
+        # .git directory (for example a managed home mount) is not a repository.
+        if any((parent / '.git').is_file() or (parent / '.git' / 'HEAD').is_file()
+               or ((parent / 'HEAD').is_file() and (parent / 'objects').is_dir()
+                   and (parent / 'config').is_file())
+               for parent in (path, *path.parents)):
             raise ValueError
         return path
     except Exception:

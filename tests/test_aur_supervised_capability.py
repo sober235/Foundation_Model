@@ -317,3 +317,42 @@ def test_parent_protocol_refuses_incompatible_supervised_recipe(changes):
     mod._validate_parent_protocol(parent_cfg,parent)
     with pytest.raises(ValueError,match='LR5'):
         mod._validate_parent_protocol({**parent_cfg,**changes},parent)
+
+
+@pytest.mark.parametrize('directory_contents', [None, 'unrelated'])
+def test_private_output_accepts_nonrepository_git_directory_ancestor(tmp_path, monkeypatch, directory_contents):
+    private_home = tmp_path / 'private-home'
+    private_home.mkdir()
+    git_directory = private_home / '.git'
+    git_directory.mkdir()
+    if directory_contents is not None:
+        (git_directory / 'readme.txt').write_text(directory_contents)
+    monkeypatch.setattr(Path, 'home', lambda: private_home)
+    requested = private_home / 'outputs' / '..' / 'outputs' / 'run'
+    assert module()._private_path(requested) == private_home / 'outputs' / 'run'
+
+
+@pytest.mark.parametrize('git_kind', ['repository', 'worktree', 'bare'])
+def test_private_output_rejects_real_git_ancestors(tmp_path, monkeypatch, git_kind):
+    private_home = tmp_path / 'private-home'
+    private_home.mkdir()
+    repository = private_home / 'repository'
+    repository.mkdir()
+    if git_kind == 'repository':
+        (repository / '.git').mkdir()
+        (repository / '.git' / 'HEAD').write_text('ref: refs/heads/main\n')
+    elif git_kind == 'worktree':
+        (repository / '.git').write_text('gitdir: /synthetic/worktree\n')
+    else:
+        (repository / 'HEAD').write_text('ref: refs/heads/main\n')
+        (repository / 'config').write_text('[core]\n bare = true\n')
+        (repository / 'objects').mkdir()
+    monkeypatch.setattr(Path, 'home', lambda: private_home)
+    with pytest.raises(ValueError, match='invalid private destination'):
+        module()._private_path(repository / 'outputs' / 'run')
+
+
+def test_private_output_rejects_home_root_itself(tmp_path, monkeypatch):
+    monkeypatch.setattr(Path, 'home', lambda: tmp_path)
+    with pytest.raises(ValueError, match='invalid private destination'):
+        module()._private_path(tmp_path)
