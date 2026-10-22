@@ -18,6 +18,8 @@
 
 ## 最新执行入口（2026-10-21，优先于历史准备措辞）
 
+**2026-10-22续进：正式两臂已启动，等待新G1。** 优先读[候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)/RUN和STATUS顶部。execution_v5已完成真实CUDA初始化、CPU初始3D等价、每臂16步TRAIN/step8恢复和最终精确登记审阅；两独立正式I/G1控制器在沙箱外运行，尚无新G1结果。原失败和前四个工程准备版本均保留。不要重新做预检、CPU3D前向或另启重复训练；按私有formal_launch/阶段状态/最终terminal文件核实，同执行边界查进程。运行有明确截止，不自动II/III。下段“真实实验准备中”是此前状态。
+
 **两个独立二维候选已实现，真实实验准备中：** 用户继续授权后，`9bb5503`实现四个二维IO tensor的可选5倍LR；`1cfdcd5`实现可选真正二维中间合并，保持原3D路径。两个任务独立审查均0项；完整CPU1820 passed/5 skipped（297.54秒），真实历史format2完成证书兼容检查通过。五项nndet/CUDA环境缺口不计通过，尚无候选真实训练/G1结果。先读[当前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)、[设计](docs/superpowers/specs/2026-10-21-aur-lr-and-planar-merge-design.md)与[计划](docs/superpowers/plans/2026-10-21-aur-lr-and-planar-merge-execution.md)。接着核验新运行树/原资格源码、真实初始化和每臂16步TRAIN恢复probe，再释放独立有界I/G1；不组合因素、不改旧合同、不自动II/III。旧对照已完成，勿重跑。下面“下一候选未实现”是此前状态。
 
 **用户认可核心路线后已继续实现：** 优先读STATUS最上节、[批准设计](docs/superpowers/specs/2026-10-21-anatobind-core-goal-and-evidence-route-design.md)与[当前实施计划](docs/superpowers/plans/2026-10-21-aur-evaluation-and-g1-diagnostic-execution.md)。统一loader已接format2监督完成证书；新增双模式开发评价入口，保持默认训练、解码与TRAIN弱R合同。二维保存证据[诊断及精确回放](docs/verification/2026-10-21/aur_g1_diagnosis/RESULTS.md)证明适配器/骨干确实更新，缓存有限非恒定、13宿主有支持，未建立弱读出的因果解释。首批局部测试/独立复核已完成，最终全量验证与有限step0对照状态见STATUS；不要重复旧审计。原G1失败、II/III未启动及所有临床/几何限制继续有效。历史合同使用显式evaluation源码归档验证，不能改原哈希来接受新代码。

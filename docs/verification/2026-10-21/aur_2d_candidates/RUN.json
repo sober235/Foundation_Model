@@ -1,4 +1,122 @@
 {
+  "actual_cuda_environment": {
+    "capability": [
+      8,
+      0
+    ],
+    "cuda": "12.1",
+    "cudnn": 90701,
+    "model": "NVIDIA A800 80GB PCIe",
+    "model_forwards": 0,
+    "optimizer_steps": 0,
+    "outside_sandbox": true,
+    "selected_idle": true,
+    "status": "PASS",
+    "torch_version": "2.5.1+cu121"
+  },
+  "actual_cuda_initialization": {
+    "actual_cuda_environment_matched": true,
+    "arms": {
+      "A_LR5": {
+        "backbone_sha256": "df31d5ae6faa709e3c5943e2c4ff1084f250a8e530a84754e62f889da84f52b6",
+        "checkpoint_sha256": "3fbbf55ab877e2c189c09b3c03fa28875788af2ff2da471553464f785e8b3f21",
+        "derived_tensor_count": 0,
+        "model_sha256": "12179c98f92240545ac95fbea40f5d3759bac0861a8cdd4843a7cde014c191e6",
+        "old_io_tensor_count": 4,
+        "original_io_sha256": "fa896176c274533d604a3f743a6aa2865e1b15d2e7e1d09d3f3041791baafcc1",
+        "shared_tensor_count": 176,
+        "wall_seconds": 417.683307135012
+      },
+      "B_PLANAR": {
+        "backbone_sha256": "fe95674921d3d1fbad25fc5915639bed74919c50460650112b306db52fb550d1",
+        "checkpoint_sha256": "fd688d69393a83abf185e3e73a8960a1844653faaffaedfda3c70c823a3b3596",
+        "derived_tensor_count": 9,
+        "model_sha256": "5f0e83b5d8fed0a01124d262cff638d7081b1eaf5c7fe317fdd5aeec38cf81e0",
+        "old_io_tensor_count": 4,
+        "original_io_sha256": "fa896176c274533d604a3f743a6aa2865e1b15d2e7e1d09d3f3041791baafcc1",
+        "shared_tensor_count": 176,
+        "wall_seconds": 413.5809314707294
+      }
+    },
+    "cpu_initialization_model_hash_matched": true,
+    "status": "PASS",
+    "synthetic_3d_equivalence": {
+      "actual_initialized_full_model": true,
+      "copied_and_old_io_tensors_bitwise_equal": 180,
+      "derived_tensors_equal_source_slices": 9,
+      "device": "cpu",
+      "input_sha256": [
+        "3fbbf55ab877e2c189c09b3c03fa28875788af2ff2da471553464f785e8b3f21",
+        "fd688d69393a83abf185e3e73a8960a1844653faaffaedfda3c70c823a3b3596",
+        "21237aa47111aadac0d96e3d1cdcd4a02578f91eac32851d9f6e04181a038712"
+      ],
+      "medical_image_reads": 0,
+      "model_forwards": 2,
+      "script_sha256": "b17792117487438fb882db6003e0e03c59b9c0315448a651a26e6b84746071df",
+      "status": "PASS",
+      "synthetic_input_shape": [
+        1,
+        1,
+        4,
+        32,
+        32
+      ],
+      "tensor_comparisons": 18,
+      "threads": 2,
+      "three_dimensional_outputs_bitwise_equal": true,
+      "torch_version": "2.5.1+cu121",
+      "wall_seconds": 1.2876592078246176
+    }
+  },
+  "actual_train_probe": {
+    "arms": {
+      "A_LR5": {
+        "estimate_excludes_validation_and_checkpoint_overhead": true,
+        "exposures": {
+          "2d": 8,
+          "3d": 8
+        },
+        "inactive_update_checks": 16,
+        "measured_mean_step_seconds": 1.1881365413428284,
+        "nested_qualification_four_call_estimate_seconds": 830.8468932397664,
+        "optimizer_2048_step_estimate_seconds": 2433.3036366701126,
+        "optimizer_plus_four_qualification_estimate_seconds": 3264.150529909879,
+        "peak_allocated_bytes": 2245073920,
+        "peak_reserved_bytes": 2596274176,
+        "probe_total_seconds": 438.54467248590663,
+        "probe_verified_file_sha256": "a85dc78fec9d1dde59b5ad48fabbae06f651daf1ae6e883479140d98bb68bbf9",
+        "recovery_verified": true,
+        "registration_file_sha256": "82e26da3234d8369e552f2f37a3804f7ccec9e1b7739ee3cea00afb10ab23105",
+        "registration_sha256": "fcd20b4117eb11fe35ff0707000b9755c94ff8303682c676fd2b12a12cc0aeb5",
+        "status": "PASS",
+        "steps": 16
+      },
+      "B_PLANAR": {
+        "estimate_excludes_validation_and_checkpoint_overhead": true,
+        "exposures": {
+          "2d": 8,
+          "3d": 8
+        },
+        "inactive_update_checks": 16,
+        "measured_mean_step_seconds": 1.155792903562542,
+        "nested_qualification_four_call_estimate_seconds": 823.6740227015689,
+        "optimizer_2048_step_estimate_seconds": 2367.063866496086,
+        "optimizer_plus_four_qualification_estimate_seconds": 3190.737889197655,
+        "peak_allocated_bytes": 2252719104,
+        "peak_reserved_bytes": 2613051392,
+        "probe_total_seconds": 436.50504274573177,
+        "probe_verified_file_sha256": "7014d6ea1c3ba00ba59873fa2308d64fad5e48d44876d8cdfe65eda5af8795a7",
+        "recovery_verified": true,
+        "registration_file_sha256": "17b61675d8a98da2cbdc33f98bcc44b961ce77ae6c130797e511a8da291fb567",
+        "registration_sha256": "22dbede5e58f678244ae54681dabb89a9b83fadae08d5e37d2c157ea41580f98",
+        "status": "PASS",
+        "steps": 16
+      }
+    },
+    "capture_phase": "completed TRAIN-only preflight before formal launch",
+    "estimate_limit": "16 measured TRAIN steps; extrapolation is not a wall-time guarantee; fixed budgets unchanged",
+    "status": "PASS"
+  },
   "candidates": {
     "LR5": {
       "planar_merge": false,
@@ -9,7 +127,52 @@
       "ssl_2d_lr_scale": "omitted"
     }
   },
-  "formal_candidate_training_launched": false,
+  "current_execution_version": "execution_v5",
+  "final_registration_review": {
+    "actionable_findings": 0,
+    "approved_arms": [
+      "A_LR5",
+      "B_PLANAR"
+    ],
+    "report_sha256": "ba1b9d1b502568e55f5adb84401d4a50c94804695b1cd969b7251c172403654e",
+    "scope": "registered Stage I then complete default dual G1 only; no II/III"
+  },
+  "final_registration_review_pending": false,
+  "formal_candidate_training_launched": true,
+  "formal_execution": {
+    "arms": {
+      "A_LR5": {
+        "controller_started": true,
+        "g1_started": false,
+        "observed_optimizer_steps": 0,
+        "phase": "STARTUP_VERIFICATION",
+        "registered_optimizer_budget": 2048,
+        "registration_sha256": "fcd20b4117eb11fe35ff0707000b9755c94ff8303682c676fd2b12a12cc0aeb5",
+        "release_sha256": "55e31700a64781813443c5530add2e1083ea888015e00c24328e41f1e753a8b3",
+        "review_sha256": "fabe327ea936f723601b34f4951468dee261487ba0513382f97b131538ee9dbb",
+        "stage_worker_started": true,
+        "started_utc": "2026-10-22T03:23:17.280410+00:00",
+        "terminal_published": false
+      },
+      "B_PLANAR": {
+        "controller_started": true,
+        "g1_started": false,
+        "observed_optimizer_steps": 0,
+        "phase": "STARTUP_VERIFICATION",
+        "registered_optimizer_budget": 2048,
+        "registration_sha256": "22dbede5e58f678244ae54681dabb89a9b83fadae08d5e37d2c157ea41580f98",
+        "release_sha256": "24551a791a158773bbab3de51a8f842814ee8afd1be51319eaa229c7d25f4d96",
+        "review_sha256": "097f2e34e4387303e84402960b8b4f748822984b62a6486416d90e71d98c96b7",
+        "stage_worker_started": true,
+        "started_utc": "2026-10-22T03:23:17.296015+00:00",
+        "terminal_published": false
+      }
+    },
+    "new_g1_results": false,
+    "outside_liveness_observation_kind": "parent observed read-only require_escalated query; both live sleeping processes, not independent signed attestation",
+    "outside_process_liveness_observed": true,
+    "snapshot_utc": "2026-10-22T03:29:23.669178+00:00"
+  },
   "full_cpu": {
     "command": "/home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
     "environment": {
@@ -47,10 +210,99 @@
   },
   "medical_evidence": "NOT_EVIDENCE",
   "new_g1_result": false,
+  "outside_execution_provenance_kind": "parent observed tool-call report, not independent tool-server attestation",
+  "preflight_predecessors": {
+    "v1": "superseded before compute; parent-death fence",
+    "v2": "superseded before medical forward; numeric GPU namespace/privacy; qualification interrupted",
+    "v3": "data qualification passed; init stopped before worker due coordination lock and sandbox driver",
+    "v4": "data qualification and actual CUDA backend passed; mapping-container checker stopped before image forward or optimizer update"
+  },
+  "preflight_sequence": [
+    "qualification",
+    "initialization",
+    "TRAIN_only_16_steps_recovery",
+    "registration"
+  ],
+  "private_controller_checks": {
+    "additional_blocker_policy": "reconsider approach; no fourth automatic fix loop",
+    "automatic_fix_rounds_completed": 3,
+    "fix2_affected": {
+      "passed": 43,
+      "seconds": 1.54
+    },
+    "fix3_affected": {
+      "passed": 70,
+      "seconds": 8.56
+    },
+    "full_suite_before_fix2_and_fix3": {
+      "passed": 106,
+      "seconds": 18.38
+    },
+    "scoped_reviews_remaining_findings": 0
+  },
   "production_revision": "1cfdcd5afa6ffe38e590de66e5f915a059612675",
+  "real_weight_cpu_initialization": {
+    "arms": {
+      "A_LR5": {
+        "backbone_sha256": "df31d5ae6faa709e3c5943e2c4ff1084f250a8e530a84754e62f889da84f52b6",
+        "derived_tensor_count": 0,
+        "legacy_shared_sha256": "a98cc5fc8df05d86f45d8e3d492a7d5c47a9fe7f17092e168d697b3212596ee7",
+        "model_sha256": "12179c98f92240545ac95fbea40f5d3759bac0861a8cdd4843a7cde014c191e6",
+        "old_io_tensor_count": 4,
+        "original_io_sha256": "fa896176c274533d604a3f743a6aa2865e1b15d2e7e1d09d3f3041791baafcc1",
+        "shared_tensor_count": 176
+      },
+      "B_PLANAR": {
+        "backbone_sha256": "fe95674921d3d1fbad25fc5915639bed74919c50460650112b306db52fb550d1",
+        "derived_tensor_count": 9,
+        "legacy_shared_sha256": "a98cc5fc8df05d86f45d8e3d492a7d5c47a9fe7f17092e168d697b3212596ee7",
+        "model_sha256": "5f0e83b5d8fed0a01124d262cff638d7081b1eaf5c7fe317fdd5aeec38cf81e0",
+        "old_io_tensor_count": 4,
+        "original_io_sha256": "fa896176c274533d604a3f743a6aa2865e1b15d2e7e1d09d3f3041791baafcc1",
+        "shared_tensor_count": 176
+      }
+    },
+    "device": "cpu",
+    "historical_weight_container": "dict",
+    "legacy_weight_container": "OrderedDict",
+    "medical_image_reads": 0,
+    "model_forwards": 0,
+    "optimizer_steps": 0,
+    "runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a",
+    "script_sha256": "79d977a7fb2546e7ed843a108cad77e52dbf5d02637d27fd5e82f7c9961dea37",
+    "state_checks_sha256": "6a548c426186186dae9fae80213213b33aafe15f3a8760d20b3ce18f99dbbfac",
+    "status": "PASS",
+    "wall_seconds": 3.2874602493830025
+  },
+  "runtime_integrity": {
+    "controller_archive_manifest_sha256": "ab7298d6a159a6e449bd36b577ed893bf6bd5bd3b4299f7a500889d6be23e14d",
+    "controller_source_count": 25,
+    "identical_to_tested_v2_runtime": true,
+    "overlay_count": 10,
+    "plan_file_sha256": "288b7a6643df857bfca15320c8f0a2bda96d4abc3e156adc803a245c072c4053",
+    "qualification_source_count": 5,
+    "reused_cpu_seconds": 52.08,
+    "reused_cpu_tests": 75,
+    "reused_log_sha256": "33dc5c563f23753ef4dc238860a55ed119e0d01bbeca15e30f01d56ead4be5ef",
+    "reused_runner_save_to_g1_evidence_sha256": "94d5e945cb8d17502058ab849ca5952674957fffc67982cf2c16321b6bb30454",
+    "runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a",
+    "runtime_source_count": 145,
+    "status": "PASS"
+  },
   "schema_version": 1,
   "stage_II_or_III_launched": false,
-  "status": "IMPLEMENTATION_VERIFIED_EXPERIMENT_PREPARATION",
+  "status": "FORMAL_EXPERIMENTS_RUNNING",
+  "storage_capacity_estimate": {
+    "estimate_with_25_percent_headroom_bytes": 348596546002,
+    "historical_g1_bytes": 137530392866,
+    "historical_g1_files": 488,
+    "historical_stage_I_bytes": 1908225535,
+    "historical_stage_I_files": 164,
+    "medical_array_reads": 0,
+    "private_output_free_bytes": 1432620773376,
+    "status": "PASS",
+    "two_arm_same_grid_estimate_bytes": 278877236802
+  },
   "task_reviews": {
     "LR5_actionable_findings": 0,
     "PLANAR_actionable_findings": 0
