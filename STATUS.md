@@ -2,7 +2,11 @@
 
 从2026-10-22本次合并起，`main`是代码、已发布实验结果和项目进展的查询入口。新会话先读本页顶部，再读[当前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)及同目录`RUN.json`。以下历史章节中的“main不直接推送”是当时的分支约定，已由本次用户要求合并到`main`取代。Git中的运行状态是注明时点的快照；后续实验状态须核对报告记录的私有完成证据后再更新。
 
-## 最新：二维优化与结构候选
+## 最新（2026-10-22，Claude 会话）：三个子目标的做成口径与验收门已澄清
+
+用户逐条拍板 Q31 到 Q34，全文在 [澄清设计](docs/superpowers/specs/2026-10-22-aur-three-subgoal-acceptance-design.md)。要点：做成 = 2D、3D 都在伪参照上过门，并在 fastMRI 那 4469 个 DICOM 序列上端到端跑通，医生标签另走论文线；用户原话"前序定的指标不一定对，你需要有自己的判断。只需要保证三个子目标一致即可"，据此重定三个门：A 加 32 类逐类存在与最差宿主下限，U 参照重采样到同一 1 mm 网格并加匹配实例掩膜质量，R 从"受控 R ≥ B0"改为端到端宿主一致率（用户"认"）；2D 同一口径，U 参照为同模型 3D 模式在病灶质心层的灵敏度，不训 Dataset909；门在历史 test 上判，评价合同新开一版加 test 角色；后续计划两块：判门层 + fastMRI 批处理，再从 LR5 Stage I 起跑正式 II/III。该设计替代 10-08 N14、10-14 §3.3、10-21 §6 的门条款，旧文不改。本轮没有启动训练、评估或推理；LR5 分支尚未合入 main。
+
+## 此前：二维优化与结构候选
 
 用户要求按建议继续后，已实现[两个独立候选](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)：LR5只提高四个二维输入/重建tensor的学习率；PLANAR增加三层真正二维合并并保持原学习率。设计和边界见[候选设计](docs/superpowers/specs/2026-10-21-aur-lr-and-planar-merge-design.md)及[执行计划](docs/superpowers/plans/2026-10-21-aur-lr-and-planar-merge-execution.md)。两因素不混合，不改变原G1门槛或评价网格。
 
