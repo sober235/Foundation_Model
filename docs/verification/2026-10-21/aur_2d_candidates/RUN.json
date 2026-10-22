@@ -128,6 +128,18 @@
     }
   },
   "current_execution_version": "execution_v5",
+  "final_artifact_audit": {
+    "audit_file_sha256": "cd84036235106174458d0c036c4fc5ddb0a5d6108fd3c57ea784432d4b4b8024",
+    "audit_script_sha256": "e6e0068cfddcd48fb4110fbdfd67393ea353e3a2e12a415ff51073a7bf301534",
+    "basis": "existing stage and G1 completion records, saved controller verifications and terminal hashes; G1 gates recomputed without model/data loads",
+    "checkpoint_loads": 0,
+    "medical_array_reads": 0,
+    "model_forwards": 0,
+    "optimizer_updates": 0,
+    "readout_fits": 0,
+    "snapshot_utc": "2026-10-22T05:35:17.746880+00:00",
+    "status": "PASS"
+  },
   "final_registration_review": {
     "actionable_findings": 0,
     "approved_arms": [
@@ -143,35 +155,146 @@
     "arms": {
       "A_LR5": {
         "controller_started": true,
-        "g1_started": false,
-        "observed_optimizer_steps": 256,
-        "phase": "TRAINING",
+        "finite_training_losses": true,
+        "g1_complete": true,
+        "g1_complete_sha256": "8b14d00675965418fa5b4188f1922be06d93064bbc247e8d6c4e1fcec136f3a2",
+        "g1_completion_published": true,
+        "g1_report_published": true,
+        "g1_report_sha256": "0de562947221f869fbff78b0e7b33c2a444f0d948e43c3079d7bc0503ad012f4",
+        "g1_started": true,
+        "g1_verification_sha256": "487c480f61c569d1b49cad72fdac8baba9a76866abc6f42bb0275dee8a8515c1",
+        "g1_verified": true,
+        "gate_pass": true,
+        "mode_exposures": {
+          "2d": 1024,
+          "3d": 1024
+        },
+        "modes": {
+          "2d": {
+            "counts": {
+              "host_calibration": 96,
+              "host_validation": 48,
+              "lesion_calibration": 48,
+              "lesion_validation": 48
+            },
+            "gain_ci_low_min": 0.02291308082640171,
+            "host_pass": true,
+            "lesion_auc_random": 0.7897824311279424,
+            "lesion_auc_ssl": 0.7948318110937849,
+            "lesion_pass": true,
+            "macro_dice_gain": 0.07786608735720316,
+            "status": "PASS",
+            "supported_hosts": 13
+          },
+          "3d": {
+            "counts": {
+              "host_calibration": 96,
+              "host_validation": 48,
+              "lesion_calibration": 48,
+              "lesion_validation": 48
+            },
+            "gain_ci_low_min": 0.3272392459213734,
+            "host_pass": true,
+            "lesion_auc_random": 0.661013382711893,
+            "lesion_auc_ssl": 0.7360631821114945,
+            "lesion_pass": true,
+            "macro_dice_gain": 0.3510905802249908,
+            "status": "PASS",
+            "supported_hosts": 13
+          }
+        },
+        "observed_optimizer_steps": 2048,
+        "phase": "STAGE_I_AND_G1_COMPLETE_PENDING_REVIEW",
         "registered_optimizer_budget": 2048,
         "registration_sha256": "fcd20b4117eb11fe35ff0707000b9755c94ff8303682c676fd2b12a12cc0aeb5",
         "release_sha256": "55e31700a64781813443c5530add2e1083ea888015e00c24328e41f1e753a8b3",
         "review_sha256": "fabe327ea936f723601b34f4951468dee261487ba0513382f97b131538ee9dbb",
+        "selected_step": 1792,
+        "stage_complete": true,
+        "stage_completion_sha256": "f12a2671363e977fe61795fb541ad772c68b0284a55399a190265911f2da3f74",
+        "stage_verification_sha256": "4ce4e6d08569343dc4353e085d6bb25ad6ef4465fdeb72406a238dfc78acbca8",
+        "stage_verified": true,
         "stage_worker_started": true,
         "started_utc": "2026-10-22T03:23:17.280410+00:00",
-        "terminal_published": false
+        "terminal_published": true,
+        "terminal_sha256": "ad7b3797a61652583db220c4865bcc05eb6c8db2e689c4006c1c3f29c9cee4c2",
+        "validation_boundaries": 8
       },
       "B_PLANAR": {
         "controller_started": true,
-        "g1_started": false,
-        "observed_optimizer_steps": 257,
-        "phase": "TRAINING",
+        "finite_training_losses": true,
+        "g1_complete": true,
+        "g1_complete_sha256": "aeaa2a910ee74b07348939cad11348c9c099075982d4a09da69027f64a7b29d1",
+        "g1_completion_published": true,
+        "g1_report_published": true,
+        "g1_report_sha256": "230f1d5810f10f98a1136b182a903760a37518a2bf0833016cf75ce280e43cdc",
+        "g1_started": true,
+        "g1_verification_sha256": "8a18d4543abcb7454f8fad92dff960e5ea3c518b60f4d21eb694f15c55840616",
+        "g1_verified": true,
+        "gate_pass": false,
+        "mode_exposures": {
+          "2d": 1024,
+          "3d": 1024
+        },
+        "modes": {
+          "2d": {
+            "counts": {
+              "host_calibration": 96,
+              "host_validation": 48,
+              "lesion_calibration": 48,
+              "lesion_validation": 48
+            },
+            "gain_ci_low_min": 0.0061854485422372825,
+            "host_pass": false,
+            "lesion_auc_random": 0.787926041434618,
+            "lesion_auc_ssl": 0.7868864632063564,
+            "lesion_pass": true,
+            "macro_dice_gain": 0.04360721011956534,
+            "status": "FAIL",
+            "supported_hosts": 13
+          },
+          "3d": {
+            "counts": {
+              "host_calibration": 96,
+              "host_validation": 48,
+              "lesion_calibration": 48,
+              "lesion_validation": 48
+            },
+            "gain_ci_low_min": 0.3285356603562832,
+            "host_pass": true,
+            "lesion_auc_random": 0.661013382711893,
+            "lesion_auc_ssl": 0.7459529220323766,
+            "lesion_pass": true,
+            "macro_dice_gain": 0.3523469269275665,
+            "status": "PASS",
+            "supported_hosts": 13
+          }
+        },
+        "observed_optimizer_steps": 2048,
+        "phase": "STOPPED_AT_G1",
         "registered_optimizer_budget": 2048,
         "registration_sha256": "22dbede5e58f678244ae54681dabb89a9b83fadae08d5e37d2c157ea41580f98",
         "release_sha256": "24551a791a158773bbab3de51a8f842814ee8afd1be51319eaa229c7d25f4d96",
         "review_sha256": "097f2e34e4387303e84402960b8b4f748822984b62a6486416d90e71d98c96b7",
+        "selected_step": 1792,
+        "stage_complete": true,
+        "stage_completion_sha256": "614d78b72f9f4a0a1b7eb35129d40210edb3be64f0ce1d59c724a7e887e6880c",
+        "stage_verification_sha256": "d9d4a232a32ed41a7e95aec3e4c38fc8a70fb093835a38dcb0dd2849b03add6e",
+        "stage_verified": true,
         "stage_worker_started": true,
         "started_utc": "2026-10-22T03:23:17.296015+00:00",
-        "terminal_published": false
+        "terminal_published": true,
+        "terminal_sha256": "9f53e5cf4f231c11d076845c3f8636ccd7e0804d230739bd87dffb558a6e3740",
+        "validation_boundaries": 8
       }
     },
-    "new_g1_results": false,
-    "outside_liveness_observation_kind": "parent observed read-only require_escalated query; both live sleeping processes, not independent signed attestation",
-    "outside_process_liveness_observed": true,
-    "snapshot_utc": "2026-10-22T03:39:06.068040+00:00"
+    "historical_launch_liveness_observation": {
+      "outside_liveness_observation_kind": "parent observed read-only require_escalated query; both live sleeping processes, not independent signed attestation",
+      "outside_process_liveness_observed": true,
+      "snapshot_utc": "2026-10-22T03:39:06.068040+00:00"
+    },
+    "new_g1_results": true,
+    "snapshot_utc": "2026-10-22T05:35:17.746880+00:00"
   },
   "full_cpu": {
     "command": "/home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
@@ -208,8 +331,33 @@
     "status": "PASS",
     "wall_seconds": 2.571787690743804
   },
+  "main_integration": {
+    "full_cpu": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+      "cuda_hidden": true,
+      "exit_code": 0,
+      "log_sha256": "9d965a73315328a35b81fc039157a01079accb8f562e190ef9ee027cfc1640f4",
+      "model_quality_result": false,
+      "outside_sandbox": true,
+      "passed": 1820,
+      "pytest_seconds": 301.39,
+      "skipped": 5,
+      "skips": {
+        "cuda_bf16_inference": 1,
+        "cuda_optimizer_rng_recovery": 3,
+        "nndet_optional_environment_module": 1
+      },
+      "status": "PASS"
+    },
+    "integration_kind": "fast-forward plus progress documentation",
+    "merged_feature_tip": "d924e801756b31c9b86b9f5d7b110034b1c14d8e",
+    "previous_origin_main": "bf2a9246dd2471b13374d6d322f83556c043baab",
+    "python_changes_from_reviewed_feature": 0,
+    "snapshot_utc": "2026-10-22T05:37:27.631440+00:00",
+    "target_branch": "main"
+  },
   "medical_evidence": "NOT_EVIDENCE",
-  "new_g1_result": false,
+  "new_g1_result": true,
   "outside_execution_provenance_kind": "parent observed tool-call report, not independent tool-server attestation",
   "preflight_predecessors": {
     "v1": "superseded before compute; parent-death fence",
@@ -291,7 +439,7 @@
   },
   "schema_version": 1,
   "stage_II_or_III_launched": false,
-  "status": "FORMAL_EXPERIMENTS_RUNNING",
+  "status": "FORMAL_EXPERIMENTS_COMPLETE",
   "storage_capacity_estimate": {
     "estimate_with_25_percent_headroom_bytes": 348596546002,
     "historical_g1_bytes": 137530392866,

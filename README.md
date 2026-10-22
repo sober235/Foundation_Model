@@ -2,6 +2,8 @@
 
 面向 2D/3D MRI 的解剖实体、病灶实例与病灶–解剖关系学习项目。
 
+项目进展统一发布在`main`：先读[STATUS.md](STATUS.md)顶部，再查[当前候选实验报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)与同目录`RUN.json`。状态以记录的快照时点为准。
+
 ## 历史架构图与子模块说明 PDF（2026-09）
 
 **[打开历史 6 页 PDF](output/pdf/anatobind_architecture_explained.pdf)** · [直接下载 PDF](output/pdf/anatobind_architecture_explained.pdf?raw=true)
@@ -27,6 +29,6 @@ PDF 包含整体架构图和 loss function、16 个子模块的技术说明与�
 
 同日后续已接通[正式权重与双模式评价接口](docs/verification/2026-10-21/aur_evaluation_interfaces/RESULTS.md)，CPU全套1768 passed/5 skipped、真实合同字节验证及独立终审通过；没有真实统一监督checkpoint，接口测试不代表质量达标。[二维保存证据审计](docs/verification/2026-10-21/aur_g1_diagnosis/RESULTS.md)排除了未更新/整体缓存退化；[step0对照](docs/verification/2026-10-21/aur_g1_step0_control/RESULTS.md)显示宿主Dice0.248889→0.279637，但三组患者bootstrap区间均跨0。原G1判定保持，下一模型干预尚未开训。
 
-后续已实现[两个独立二维候选](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)：仅提高四个二维适配器的学习率，以及保持原学习率的真正二维中间合并。完整CPU1820 passed/5 skipped；实际初始化、初始3D等价和每臂16步TRAIN恢复均通过。2026-10-22两臂精确登记终审后正式I/G1已启动，尚无新G1结果；原G1判定保留，不自动II/III。
+后续已实现[两个独立二维候选](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)：仅提高四个二维适配器的学习率，以及保持原学习率的真正二维中间合并。原完整CPU1820 passed/5 skipped；实际初始化、初始3D等价和每臂16步TRAIN恢复均通过。2026-10-22两臂正式Stage I均完成2048步并选中1792：**LR5为2D PASS / 3D PASS，PLANAR为2D FAIL / 3D PASS**，最终完成证据和判定均已核验。LR5停在下一阶段计划审阅前，II/III未启动；G1通过尚不代表最终A/U/R质量达标，原失败记录保留。
 
 最新状态见 [STATUS.md](STATUS.md)及[训练资格与执行报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)，数据组成及最初修复见[数据审计报告](docs/verification/2026-10-19/aur_data_audit/RESULTS.md)，统一模型及数值限制见[此前报告](docs/verification/2026-10-19/aur_unified_input/RESULTS.md)。上述 PDF 描述早期方案，不代表当前实现或性能。

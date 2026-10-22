@@ -2,6 +2,8 @@
 
 先读这个文件,再读 `STATUS.md`,然后才动手。上一个会话的结论只当线索,不当事实;关键数字能重跑的先重跑,重跑与记录不符时以重跑为准并写明。
 
+**分支与进展入口（2026-10-22）：** 用户已明确要求把本轮实现、证据与进展合并到`main`，后续直接查询`main`。以`STATUS.md`顶部和当前候选`RESULTS.md`/`RUN.json`为准；下文历史的feature-only发布约定已被取代。进展记录是截至注明时点的快照；核对私有完成文件和哈希即可复核已完成实验，不要为恢复上下文重复训练、拟合或影像前向。
+
 ## 项目一句话
 
 面向 **2D MRI 图像与 3D MRI 体数据** 的解剖实体 A、病灶实体 U 与显式病灶–解剖绑定 R 的结构化感知(`X → (A, U) → R`)。不称 foundation model。权威执行计划是 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`(v2.6,冲突以它为准;v2.5/v2.4 文件只作审计记录);Gate 链 = Gate 0(fastMRI+ 框坐标、患者 ID 折)→ Gate 0.5(全集 1297 病灶几何盘点,冻结困难组阈值 t)→ A/U(膝侧)→ Level R 人标(Gate R0,两层一致率门)→ 公平关系基线(Gate R1)→ 鲁棒性/E。关系主战场是 fastMRI+ 脑 FLAIR 小病灶,SKM-TEA 只作几何容易的对照。主投 MedIA。
@@ -18,7 +20,7 @@
 
 ## 最新执行入口（2026-10-21，优先于历史准备措辞）
 
-**2026-10-22续进：正式两臂已启动，等待新G1。** 优先读[候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)/RUN和STATUS顶部。execution_v5已完成真实CUDA初始化、CPU初始3D等价、每臂16步TRAIN/step8恢复和最终精确登记审阅；两独立正式I/G1控制器在沙箱外运行，尚无新G1结果。原失败和前四个工程准备版本均保留。不要重新做预检、CPU3D前向或另启重复训练；按私有formal_launch/阶段状态/最终terminal文件核实，同执行边界查进程。运行有明确截止，不自动II/III。下段“真实实验准备中”是此前状态。
+**2026-10-22续进：LR5双模式G1通过，PLANAR二维未通过；已纳入main进展入口。** 优先读[候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)/RUN和STATUS顶部。execution_v5两臂Stage I均完成2048步、每mode1024次曝光，官方均选1792。LR5为2D PASS / 3D PASS（增益0.077866/0.351091），终态`STAGE_I_AND_G1_COMPLETE_PENDING_REVIEW`；PLANAR为2D FAIL / 3D PASS（增益0.043607/0.352347），终态`STOPPED_AT_G1`。两臂最终terminal、G1完成文件及判定已只读复核，Stage II/III未启动；后续先审阅LR5监督能力计划。原失败和工程准备证据保留。不要重做预检、训练、拟合或影像前向；私有`~/outputs/aur_2d_candidates_20261021/execution_v5/{A_LR5,B_PLANAR}/terminal.json`和报告/RUN的哈希是接手入口。G1通过不等于最终A32/U/R或临床能力达标。下段“真实实验准备中”是此前状态。
 
 **两个独立二维候选已实现，真实实验准备中：** 用户继续授权后，`9bb5503`实现四个二维IO tensor的可选5倍LR；`1cfdcd5`实现可选真正二维中间合并，保持原3D路径。两个任务独立审查均0项；完整CPU1820 passed/5 skipped（297.54秒），真实历史format2完成证书兼容检查通过。五项nndet/CUDA环境缺口不计通过，尚无候选真实训练/G1结果。先读[当前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)、[设计](docs/superpowers/specs/2026-10-21-aur-lr-and-planar-merge-design.md)与[计划](docs/superpowers/plans/2026-10-21-aur-lr-and-planar-merge-execution.md)。接着核验新运行树/原资格源码、真实初始化和每臂16步TRAIN恢复probe，再释放独立有界I/G1；不组合因素、不改旧合同、不自动II/III。旧对照已完成，勿重跑。下面“下一候选未实现”是此前状态。
 
