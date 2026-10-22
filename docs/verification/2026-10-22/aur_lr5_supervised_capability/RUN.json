@@ -233,6 +233,17 @@
       }
     }
   },
+  "followup_user_decision": {
+    "engineering_acceptance": "PASS",
+    "final_model_performance": "UNDETERMINED",
+    "historical_gate_fail_preserved": true,
+    "new_training_launched_by_this_decision": false,
+    "next_step": "Plan formal training on the full qualified TRAIN partition with explicit budget, initialization, recipe and periodic evaluation.",
+    "original_lr5_g1_and_formal_lineage_requirements_preserved": true,
+    "recorded_utc": "2026-10-22T09:13:23.194258+00:00",
+    "scope": "engineering execution acceptance",
+    "small_train_diagnostic_thresholds": "observational; not a standalone admission blocker for subsequent formal training"
+  },
   "frozen_runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a",
   "implementation_revision": "3bb7589",
   "invocation": {

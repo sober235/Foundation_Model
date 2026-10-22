@@ -4,6 +4,8 @@
 
 项目进展统一发布在`main`：先读[STATUS.md](STATUS.md)顶部，再查[当前监督能力检查](docs/verification/2026-10-22/aur_lr5_supervised_capability/RESULTS.md)与同目录`RUN.json`；LR5/G1父证据见[此前候选实验报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)。状态以记录的快照时点为准。
 
+最新用户澄清：本轮按“能跑通”验收，现已工程通过；小集质量与保持性指标作为观察项，不单独阻止后续完整数据训练。原诊断FAIL保留，最终性能仍待完整训练和独立评价。此次澄清未启动新训练。
+
 ## 历史架构图与子模块说明 PDF（2026-09）
 
 **[打开历史 6 页 PDF](output/pdf/anatobind_architecture_explained.pdf)** · [直接下载 PDF](output/pdf/anatobind_architecture_explained.pdf?raw=true)
