@@ -305,9 +305,11 @@ def test_host_majority_cells_with_less_than_half_valid_support_are_excluded(metr
             out = super().forward(*args, **kwargs)
             for level in out["levels"]:
                 level["feat"] = torch.ones(1, 2, 1, 1, 2)
+                level["valid"] = torch.ones(1, 1, 1, 2)
             return out
     b = batch((1, 2, 8))
     b["entity"].fill_(1)
+    b["a_ignore"].zero_()
     # First 2x4 cell has three valid voxels; second has four (exactly .5).
     b["valid"].zero_()
     b["valid"][0, 0, 0, :7] = 1
@@ -322,6 +324,28 @@ def test_host_majority_cells_with_less_than_half_valid_support_are_excluded(metr
     cells = metrics.measure_batch(PooledModel(), b)["cells"]
     assert cells["indices"].tolist() == [1]
     assert cells["targets"].tolist() == [0] and cells["parity"].tolist() == [True]
+
+
+@pytest.mark.parametrize("ignored,feature_valid,expected", [(5, 1., []), (4, 1., [1]), (0, .5, [])])
+def test_retention_pool_excludes_ignored_voxels_and_invalid_feature_cells(metrics, ignored, feature_valid, expected):
+    class OneCellModel(ControlledModel):
+        def forward(self, *args, **kwargs):
+            out = super().forward(*args, **kwargs)
+            for level in out["levels"]:
+                level["feat"] = torch.ones(1, 2, 1, 1, 1)
+                level["valid"] = torch.full((1, 1, 1, 1), feature_valid)
+            return out
+    b = batch()
+    b["valid"].fill_(1)
+    b["point_weight"].fill_(1)
+    b["entity"].fill_(2)  # Usable voxels belong to right white matter, host1.
+    b["entity"].flatten()[:ignored] = 1  # Ignored host0 must have no vote.
+    b["a_ignore"].zero_()
+    b["a_ignore"].flatten()[:ignored] = True
+    cells = metrics.measure_batch(OneCellModel(), b)["cells"]
+    # Five ignored voxels leave3/8 support; four leave exactly the accepted1/2.
+    assert cells["targets"].tolist() == expected
+    assert cells["indices"].tolist() == ([0] if expected else [])
 
 
 @pytest.mark.parametrize("damage", ["class", "parity_support", "positions", "labels", "nan"])

@@ -161,9 +161,13 @@ def _cells(out, batch):
     lut = torch.tensor([0] + [h + 1 for h in ENTITY_HOST], device=batch["entity"].device)
     host = lut[batch["entity"].long()]
     onehot = F.one_hot(host, 14).permute(0, 4, 1, 2, 3).float()
-    target = F.avg_pool3d(onehot, stride, stride)[0].argmax(0).flatten()
-    fraction = F.avg_pool3d((batch["valid"] > .5).float()[:, None], stride, stride)[0, 0].flatten()
-    valid = (fraction >= .5) & (target > 0) & batch["a_supervised"][0]
+    anatomy_valid = ((batch["valid"] > .5) & ~batch["a_ignore"].bool()).float()[:, None]
+    target = F.avg_pool3d(onehot * anatomy_valid, stride, stride)[0].argmax(0).flatten()
+    fraction = F.avg_pool3d(anatomy_valid, stride, stride)[0, 0].flatten()
+    feature_valid = out["levels"][1]["valid"]
+    _require(tuple(feature_valid.shape) == (1, *grid))
+    _finite(feature_valid)
+    valid = (feature_valid[0].flatten() > .5) & (fraction >= .5) & (target > 0) & batch["a_supervised"][0]
     per_host = [torch.where(valid & (target == k))[0] for k in range(1, 14)]
     allocations = [0] * 13
     for _ in range(min(512, int(valid.sum()))):
