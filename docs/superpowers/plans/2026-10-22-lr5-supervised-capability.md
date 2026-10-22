@@ -34,10 +34,10 @@
 
 **Interfaces:** `batch_support(batch)->dict`; `select_panel(supports,max_observations=16)->list[int]`; `panel_support(supports)->dict`; `measure_batch(model,batch)->dict` with aggregate counters plus private cell features/labels; `aggregate_measurements(records)->dict`; `fit_retention(records)->dict`; `score_retention(records,readout)->dict`; `capability_verdict(initial,stage_two,stage_three,retention_baseline,retention_final)->dict`.
 
-- [ ] Write/run failing tests for nonignored A32 support, mixed R eligibility/host0/no-host, U/background support, greedy tie ordering and coverage refusal.
-- [ ] Implement deterministic support/selection using existing target tensors; test hand-derived mask/presence/R metrics on a controlled model and both true input modes.
-- [ ] Test fit-once ridge retention with held parity, frozen normalization, absent-class refusal and a deliberately permuted/degraded feature representation; implement helpers.
-- [ ] Test per-mode verdict thresholds and INSUFFICIENT/nonfinite paths with literal counters; run focused suite and commit owned files.
+- [x] Write/run failing tests for nonignored A32 support, mixed R eligibility/host0/no-host, U/background support, greedy tie ordering and coverage refusal.
+- [x] Implement deterministic support/selection using existing target tensors; test hand-derived mask/presence/R metrics on a controlled model and both true input modes.
+- [x] Test fit-once ridge retention with held parity, frozen normalization, absent-class refusal and a deliberately permuted/degraded feature representation; implement helpers.
+- [x] Test per-mode verdict thresholds and INSUFFICIENT/nonfinite paths with literal counters; run focused suite and commit owned files.
 
 ### Task 2: Registered bounded controller and strict inherited runtime
 
@@ -45,11 +45,11 @@
 
 **Interfaces:** `run_capability(registration_path,out,device='cpu')->dict`; CLI `--registration --out --device`; registration binds runtime root/hash,qualified contract,parent Stage I/G1/completion hashes,controller source hashes and both complete recipes. Task1 helpers remain external to immutable runtime.
 
-- [ ] Write/run failing synthetic tests for TRAIN-only fixed factories, immutable output/privacy, prior-stage admission, source mismatch and bounded-stop behavior.
-- [ ] Implement source/parent/contract verification, private source and registration snapshots, deterministic pool freeze and support verdict before any model forward.
-- [ ] Use UnifiedRun purpose=resource_probe after explicitly verifying the formal parent certificate and G1; preserve the inherited exact runtime/data identity. III inherits II final state.
-- [ ] Evaluate fixed predictions/retention at the registered boundaries with RNG restoration; log real group rates/exposures/losses, save immutable64-step states and prove one64-step destroy/resume equality perstage.
-- [ ] Run focused integration tests including tiny actual II→III, private failures, recovery and zero formal certificate/export creation; commit ownedfiles.
+- [x] Write/run failing synthetic tests for TRAIN-only fixed factories, immutable output/privacy, prior-stage admission, source mismatch and bounded-stop behavior.
+- [x] Implement source/parent/contract verification, private source and registration snapshots, deterministic pool freeze and support verdict before any model forward.
+- [x] Use UnifiedRun purpose=resource_probe after explicitly verifying the formal parent certificate and G1; preserve the inherited exact runtime/data identity. III inherits II final state.
+- [x] Evaluate fixed predictions/retention at the registered boundaries with RNG restoration; log real group rates/exposures/losses, save immutable64-step states and prove one64-step destroy/resume equality perstage.
+- [x] Run focused integration tests including tiny actual II→III, private failures, recovery and zero formal certificate/export creation; commit ownedfiles.
 
 ### Task 3: Independent review, real bounded run and progress publication
 
@@ -57,11 +57,11 @@
 
 **Interfaces:** Reviewed Task1/2 scripts plus exact previous execution_v5/runtime; all public evidence is aggregated.
 
-- [ ] Self-review spec coverage and shared interfaces; independently review full exactdiff,registration/source/parent commitments and risk before compute. Resolve substantive findings within three rounds.
-- [ ] Run project full CPU acceptance once after code changes; baseline already running from starting clean4bd2159. Record skips as environmentgaps.
-- [ ] Freeze one new private version and exactregistration; check liveGPUutilization/processes/visibility,launch with harddeadline/parentdeath protection. Do not change inputs or rescue failed thresholds after observing results.
-- [ ] Verify actual termination,checkpoint/RNG restoration and final input/source hashes; derive finalverdict from cachedmetrics rather than rerun inference.
-- [ ] Write anonymous exactoutcomes/limits/resource and testrecords; update currentmain progress,review publicationdiff,commit and report completed/failed/insufficient tasks accurately.
+- [x] Self-review spec coverage and shared interfaces; independently review full exactdiff,registration/source/parent commitments and risk before compute. Resolve substantive findings within three rounds.
+- [x] Run project full CPU acceptance once after code changes; baseline already running from starting clean4bd2159. Record skips as environmentgaps.
+- [x] Freeze one new private version and exactregistration; check liveGPUutilization/processes/visibility,launch with harddeadline/parentdeath protection. Do not change inputs or rescue failed thresholds after observing results.
+- [x] Verify actual termination,checkpoint/RNG restoration and final input/source hashes; derive finalverdict from cachedmetrics rather than rerun inference.
+- [x] Write anonymous exactoutcomes/limits/resource and testrecords; update currentmain progress,review publicationdiff,commit and report completed/failed/insufficient tasks accurately.
 
 ## Execution decisions
 

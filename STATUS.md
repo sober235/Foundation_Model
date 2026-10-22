@@ -1,14 +1,21 @@
-# STATUS：2026-10-22（LR5双模式G1通过；PLANAR二维未通过）
+# STATUS：2026-10-22（LR5的TRAIN监督能力检查未通过）
 
-从2026-10-22本次合并起，`main`是代码、已发布实验结果和项目进展的查询入口。新会话先读本页顶部，再读[当前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)及同目录`RUN.json`。以下历史章节中的“main不直接推送”是当时的分支约定，已由本次用户要求合并到`main`取代。Git中的运行状态是注明时点的快照；后续实验状态须核对报告记录的私有完成证据后再更新。
+从2026-10-22本次合并起，`main`是代码、已发布实验结果和项目进展的查询入口。新会话先读本页顶部，再读[当前监督能力检查报告](docs/verification/2026-10-22/aur_lr5_supervised_capability/RESULTS.md)及同目录`RUN.json`；LR5/G1父证据见[此前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)。以下历史章节中的“main不直接推送”是当时的分支约定，已由本次用户要求合并到`main`取代。Git中的运行状态是注明时点的快照；后续实验状态须核对报告记录的私有完成证据后再更新。
 
-## 正在推进：LR5 的 TRAIN 监督能力检查
+## 最新：LR5 的 TRAIN 监督能力检查已完成，双模式未过门
 
-用户本次已明确要求继续执行。[检查设计](docs/superpowers/specs/2026-10-22-lr5-supervised-capability-design.md)和[实施计划](docs/superpowers/plans/2026-10-22-lr5-supervised-capability.md)已登记：复用严格冻结的 LR5 运行树与正式 Stage I/G1 父证据，在标签先行冻结的小型 TRAIN 面板上执行有界资源检查 II→III，分别测量两模式 A32/U/R 与一次拟合后冻结的 TRAIN 宿主读出保持性。每阶段512步；这不是正式监督训练，也不会产生正式监督完成证书或自动释放下一轮训练。
+用户本次已明确要求继续执行。[检查设计](docs/superpowers/specs/2026-10-22-lr5-supervised-capability-design.md)和[实施计划](docs/superpowers/plans/2026-10-22-lr5-supervised-capability.md)已落实，完整结果见[本轮报告](docs/verification/2026-10-22/aur_lr5_supervised_capability/RESULTS.md)/RUN。原LR5正式Stage I/G1、数据合同与145份运行源码保持；两模式各固定16个TRAIN观察，均有全部32个A类和四来源支持。资源检查II/III各实际512步、各mode256次曝光，两次64步完整CUDA状态恢复通过，loss全有限。终态为`COMPLETE / gate=FAIL`，同宿主机确认控制器及worker均退出；这不是正式监督训练，没有正式监督完成证书，**不释放新的正式II/III，也不补训练改判定**。
 
-外部度量工具与控制脚本已实现，起点CPU回归1820 passed/5 skipped（298.85秒）；控制器独立审查0项。度量审查发现的忽略区池化问题已修复，新增三项回归与增量独立审阅通过，两组合成检查共64项通过。最终CPU全套正在运行。当前仍为实现/验证准备，真实面板扫描与新监督更新尚未启动；不能把计划预算写成已执行步数。所有资格、支持、停止阈值及结果边界见新设计。
+|mode|A登记诊断Dice|U并集Dice|R受控宏准确率|冻结宿主读出：起点→终点|判定|
+|---|---:|---:|---:|---|---|
+|2D|0.036654|0.154875|1.000000|0.575331→0.284397|FAIL|
+|3D|0.007002|0.153317|0.323819|0.760964→0.416228|FAIL|
 
-## 最新：二维优化与结构候选
+U受控匹配mask Dice虽改善，但并集precision仅约0.085、预测区域约GT的9–10倍；不能由病灶聚焦采点的局部改善宣布完整U成功。2D R只在15个合格TRAIN目标/6宿主上达到登记条件，3D为82目标/10宿主，仍低于0.5。固定读出主要在II下降，未证明唯一因果。A是预先登记的presence×mask诊断，与生产纯mask阈值解码不同，不能称原网格A成绩；本轮不事后改口径。下一项先登记A解码/目标/采点覆盖检查与独立骨干保持性控制，不直接加预算或混合因素。
+
+实现`3bb7589`最终CPU1890 passed/5 skipped（301.28秒）、针对性70项通过；代码与新登记独立审查0项待处理。忽略区池化/F2有效性和首次启动的非仓库home/.git误判均已补回归；v1在数据/权重加载前停止，失败与原登记保留。v2仅更新控制器哈希，不变数值协议。接手核对`~/outputs/aur_lr5_supervised_capability_20261022/run_v2/terminal.json`、保存计数与哈希，不重复已完成训练/拟合/前向。收尾完整性已通过；医学数组和逐观察记录不入Git。原G1通过仍成立，但本轮不是临床/独立队列或生产最终A/U/R验收。
+
+## 此前：二维优化与结构候选
 
 用户要求按建议继续后，已实现[两个独立候选](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)：LR5只提高四个二维输入/重建tensor的学习率；PLANAR增加三层真正二维合并并保持原学习率。设计和边界见[候选设计](docs/superpowers/specs/2026-10-21-aur-lr-and-planar-merge-design.md)及[执行计划](docs/superpowers/plans/2026-10-21-aur-lr-and-planar-merge-execution.md)。两因素不混合，不改变原G1门槛或评价网格。
 

@@ -1,0 +1,527 @@
+{
+  "analysis": {
+    "model_forwards": 0,
+    "no_full_heldout_evaluation": true,
+    "optimizer_updates": 0,
+    "original_gate_preserved": true,
+    "production_a_decode_difference": "predict_volume uses mask-only max>=0.5 and reports entity presence separately; these A values are the preregistered diagnostic, not production/native-grid A scores",
+    "readout_fits": 0,
+    "registered_a_decode": "sigmoid(entity mask) × sigmoid(entity presence), argmax where product>0.5"
+  },
+  "cached_loss_means": {
+    "II": {
+      "2d": {
+        "first16": {
+          "a_mask": 1.153029453009367,
+          "a_presence": 0.692735655233264,
+          "loss": 5.041202992200851,
+          "r_host": 0.0,
+          "u_mask": 1.0866646394133568,
+          "u_presence": 0.3476122454740107
+        },
+        "last16": {
+          "a_mask": 0.8558556623756886,
+          "a_presence": 0.11570130175095983,
+          "loss": 1.4647600185126066,
+          "r_host": 0.0,
+          "u_mask": 0.4793852767907083,
+          "u_presence": 0.013808541916660033
+        }
+      },
+      "3d": {
+        "first16": {
+          "a_mask": 1.0822434350848198,
+          "a_presence": 0.056894506626122165,
+          "loss": 4.338032573461533,
+          "r_host": 0.0,
+          "u_mask": 1.228506825864315,
+          "u_presence": 0.5326165105216205
+        },
+        "last16": {
+          "a_mask": 0.7386041581630707,
+          "a_presence": 0.0006164597070892341,
+          "loss": 1.4728387370705605,
+          "r_host": 0.0,
+          "u_mask": 0.6539840716868639,
+          "u_presence": 0.07960910489782691
+        }
+      }
+    },
+    "III": {
+      "2d": {
+        "first16": {
+          "a_mask": 0.8566756807267666,
+          "a_presence": 0.11868874009815045,
+          "loss": 2.867660431191325,
+          "r_host": 1.2646498680114746,
+          "u_mask": 0.49975826940499246,
+          "u_presence": 0.01449190333369188
+        },
+        "last16": {
+          "a_mask": 0.8233615979552269,
+          "a_presence": 0.003984992432378931,
+          "loss": 1.1929810605943203,
+          "r_host": 0.030665310879351537,
+          "u_mask": 0.32221562549239025,
+          "u_presence": 0.011519043662701733
+        }
+      },
+      "3d": {
+        "first16": {
+          "a_mask": 0.7396429628133774,
+          "a_presence": 0.0016173609110410325,
+          "loss": 3.502587929368019,
+          "r_host": 1.8112572878599167,
+          "u_mask": 0.7086681872606277,
+          "u_presence": 0.07355513633228838
+        },
+        "last16": {
+          "a_mask": 0.738840389996767,
+          "a_presence": 0.0006246983157325303,
+          "loss": 2.1170286759734154,
+          "r_host": 0.7293469323774886,
+          "u_mask": 0.5449504116550088,
+          "u_presence": 0.04002735880203545
+        }
+      }
+    }
+  },
+  "cpu": {
+    "baseline": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+      "exit_code": 0,
+      "log_sha256": "18e223ffbb7e8b1aaa45e8bd3021de84b99655428835b55cc3d5e5d4b2c9a466",
+      "outside_sandbox": true,
+      "passed": 1820,
+      "seconds": 298.85,
+      "skipped": 5,
+      "starting_revision": "4bd2159a0fd6e2d2a3634aebf9f0dd785de0f60c"
+    },
+    "post_implementation": {
+      "command": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+      "exit_code": 0,
+      "log_sha256": "ad3e12d36d6136000d7b5cd472173ae48299ddbfba0cf5725b09e0ec0e7ea713",
+      "medical_quality_result": false,
+      "outside_sandbox": true,
+      "passed": 1884,
+      "revision": "ece0d47",
+      "seconds": 302.13,
+      "skipped": 5
+    },
+    "post_path_fix": {
+      "cuda_hidden": true,
+      "exit_code": 0,
+      "log_sha256": "54688315ae9a50aaf6a68155d7fa38e0076669325a35e26b3ca2c2c22371dd8f",
+      "model_quality_result": false,
+      "nice": 19,
+      "numerical_threads": 2,
+      "outside_sandbox": true,
+      "passed": 1890,
+      "revision": "3bb7589",
+      "seconds": 301.28,
+      "skipped": 5
+    }
+  },
+  "current_registration_sha256": "8c0935e9918763f18d437454dbdfdf7d926b7fd487ed30b94b18ac707b97c4a6",
+  "current_version": "run_v2",
+  "design": "docs/superpowers/specs/2026-10-22-lr5-supervised-capability-design.md",
+  "execution": {
+    "actual_mode_exposures": {
+      "II": {
+        "2d": 256,
+        "3d": 256
+      },
+      "III": {
+        "2d": 256,
+        "3d": 256
+      }
+    },
+    "actual_optimizer_updates_verified": {
+      "II": 512,
+      "III": 512
+    },
+    "actual_recovery": {
+      "II": {
+        "state_sha256": "d0e574a6cc5c325849640ee8cc63068c3504dd12fe288e0f151902e9f02207dd",
+        "step": 64,
+        "verified": true
+      },
+      "III": {
+        "state_sha256": "97c62d9ad92a78e9390049f4857e31eb42c4702bc464dbff36f41f2f5534f147",
+        "step": 64,
+        "verified": true
+      }
+    },
+    "artifact_hashes": {
+      "aggregates.json": "ffc496f316aba43ccac13ac08c79f36d31296d78360b45408be764be7f761f48",
+      "panel_commitments.json": "3bb08b4361452aa5d67a12c90cdc57d488923cf1139e532374806891b9306447",
+      "panel_support.json": "fb550a998cd132c91d78fca92525c2f5894f86f3e3f03a610d4bd77cb269bade",
+      "registration.json": "ac655cc83f53e047d27a531710fd60a91e6bd01293a1f278f0e9d2d404f20f67",
+      "result.json": "ce2b9a9e532b8f27bb4f05bfd34dcc9800d8fc7f6d29b5937ec59ebfa1fbd8ff",
+      "runtime_sources.json": "22617d7e5e3c67ff23e7524eb673013481658a6f1dcd3b49ff480902f5dfac10",
+      "terminal.json": "ce2b9a9e532b8f27bb4f05bfd34dcc9800d8fc7f6d29b5937ec59ebfa1fbd8ff"
+    },
+    "closing_integrity_verification_passed": true,
+    "entry_data_and_parent_verification_passed": true,
+    "formal_artifact_count": 0,
+    "formal_supervised_stages_launched": false,
+    "frozen_panel_support": {
+      "2d": {
+        "every_observation_has_background": true,
+        "observations": 16,
+        "source_count": 4,
+        "status": "PASS",
+        "supported_a_classes": 32,
+        "supported_r_hosts": 6,
+        "u_instances": 20
+      },
+      "3d": {
+        "every_observation_has_background": true,
+        "observations": 16,
+        "source_count": 4,
+        "status": "PASS",
+        "supported_a_classes": 32,
+        "supported_r_hosts": 10,
+        "u_instances": 128
+      }
+    },
+    "gate": "FAIL",
+    "native_host_exit_code": 0,
+    "native_host_session_observed_running": true,
+    "resources": {
+      "II": {
+        "elapsed_seconds": 268.70071581890807,
+        "exposures": {
+          "2d": 256,
+          "3d": 256
+        },
+        "peak_allocated_bytes": 5587628544
+      },
+      "III": {
+        "elapsed_seconds": 299.9024301520549,
+        "exposures": {
+          "2d": 256,
+          "3d": 256
+        },
+        "peak_allocated_bytes": 5639404544
+      }
+    },
+    "same_host_matching_processes_after_exit": 0,
+    "saved_retention_heads_sha256": "e9dc88869ad58e531191031ce33e40cb7a1edd77609897e59213e9f7508b3440",
+    "status": "COMPLETE",
+    "summary_source": "saved counters and frozen-head scores; no repeat inference or fitting",
+    "terminal_matches_result": true,
+    "terminal_published": true,
+    "verified_training": {
+      "II": {
+        "all_losses_finite": true,
+        "mode_exposures": {
+          "2d": 256,
+          "3d": 256
+        },
+        "observed_optimizer_steps": 512,
+        "strict_alternation_verified": true
+      },
+      "III": {
+        "all_losses_finite": true,
+        "mode_exposures": {
+          "2d": 256,
+          "3d": 256
+        },
+        "observed_optimizer_steps": 512,
+        "strict_alternation_verified": true
+      }
+    }
+  },
+  "frozen_runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a",
+  "implementation_revision": "3bb7589",
+  "invocation": {
+    "argv": [
+      "/home/congcongliu/anaconda3/envs/nvgen/bin/python",
+      "/home/congcongliu/src/Foundation_Model-main/scripts/aur_supervised_capability.py",
+      "--registration",
+      "/home/congcongliu/outputs/aur_lr5_supervised_capability_20261022/registration_v2.json",
+      "--out",
+      "/home/congcongliu/outputs/aur_lr5_supervised_capability_20261022/run_v2",
+      "--device",
+      "cuda:0"
+    ],
+    "cwd": "/home/congcongliu/outputs/aur_2d_candidates_20261021/execution_v5/runtime",
+    "environment": {
+      "CUDA_VISIBLE_DEVICES": "GPU-64b093fe-3c70-3b73-51f9-083bf88c8970",
+      "MKL_NUM_THREADS": "2",
+      "OMP_NUM_THREADS": "2",
+      "OPENBLAS_NUM_THREADS": "2",
+      "PYTHONNOUSERSITE": "1",
+      "PYTHONPATH": "/home/congcongliu/outputs/aur_2d_candidates_20261021/execution_v5/runtime",
+      "PYTHONUNBUFFERED": "1",
+      "nice": 19
+    },
+    "execution_boundary": "host native managed exec session",
+    "purpose": "reproducibility record; do not rerun the already completed private output"
+  },
+  "limits": [
+    "TRAIN engineering optimization check; not generalization or clinical evidence",
+    "Original G1 and historical full-model A/U/R failures preserved",
+    "No automatic formal II/III release",
+    "Native DICOM geometry, independent evaluation and physician Level R remain incomplete"
+  ],
+  "medical_evidence": "NOT_EVIDENCE",
+  "next": "Register A decoding/target-and-point-coverage checks plus an isolated backbone-retention control before any new formal II/III; do not rerun this completed pilot or silently extend its budget.",
+  "outcomes": {
+    "2d": {
+      "measurements": {
+        "III_0": {
+          "a_predicted_voxels": 53083,
+          "a_truth_voxels": 169589,
+          "a_zero_dice_classes": 29,
+          "feature_relative_change": 0.7356132914131469,
+          "frozen_retention_dice": 0.2826233109935733,
+          "r_cross_entropy": 2.6506291230519614,
+          "r_eligible": 15,
+          "r_macro_accuracy": 0.0,
+          "r_majority_macro_accuracy": 0.16666666666666666,
+          "r_supported_hosts": 6,
+          "registered_a_presence_gated_macro_dice": 0.006188951346509646,
+          "u_matched_mask_dice": 0.7166616407908031,
+          "u_present_recall": 1.0,
+          "u_union_dice": 0.08627047069729117,
+          "u_union_precision": 0.045463427343190255,
+          "u_union_prediction_to_truth_ratio": 18.527353177795657,
+          "u_union_recall": 0.8423169750603379,
+          "u_unmatched_active_queries_per_observation": 0.15384615384615385
+        },
+        "III_512": {
+          "a_predicted_voxels": 107499,
+          "a_truth_voxels": 169589,
+          "a_zero_dice_classes": 24,
+          "feature_relative_change": 0.7448936625804501,
+          "frozen_retention_dice": 0.2843974286330623,
+          "r_cross_entropy": 0.09700663892779365,
+          "r_eligible": 15,
+          "r_macro_accuracy": 1.0,
+          "r_majority_macro_accuracy": 0.16666666666666666,
+          "r_supported_hosts": 6,
+          "registered_a_presence_gated_macro_dice": 0.036654115665115894,
+          "u_matched_mask_dice": 0.8242426804586147,
+          "u_present_recall": 1.0,
+          "u_union_dice": 0.15487473367129528,
+          "u_union_precision": 0.08521992238033635,
+          "u_union_prediction_to_truth_ratio": 9.950120675784392,
+          "u_union_recall": 0.8479485116653258,
+          "u_unmatched_active_queries_per_observation": 0.23076923076923078
+        },
+        "II_0": {
+          "a_predicted_voxels": 0,
+          "a_truth_voxels": 169589,
+          "a_zero_dice_classes": 32,
+          "feature_relative_change": 0.0,
+          "frozen_retention_dice": 0.5753312191954212,
+          "r_cross_entropy": 2.6322889645894367,
+          "r_eligible": 15,
+          "r_macro_accuracy": 0.0,
+          "r_majority_macro_accuracy": 0.16666666666666666,
+          "r_supported_hosts": 6,
+          "registered_a_presence_gated_macro_dice": 0.0,
+          "u_matched_mask_dice": 0.473908399145669,
+          "u_present_recall": 0.75,
+          "u_union_dice": 0.014414693687759135,
+          "u_union_precision": 0.007265672302554053,
+          "u_union_prediction_to_truth_ratio": 123.57119871279163,
+          "u_union_recall": 0.8978278358809332,
+          "u_unmatched_active_queries_per_observation": 32.76923076923077
+        },
+        "II_512": {
+          "a_predicted_voxels": 53083,
+          "a_truth_voxels": 169589,
+          "a_zero_dice_classes": 29,
+          "feature_relative_change": 0.7356132914131469,
+          "frozen_retention_dice": 0.2826233109935733,
+          "r_cross_entropy": 2.6506291230519614,
+          "r_eligible": 15,
+          "r_macro_accuracy": 0.0,
+          "r_majority_macro_accuracy": 0.16666666666666666,
+          "r_supported_hosts": 6,
+          "registered_a_presence_gated_macro_dice": 0.006188951346509646,
+          "u_matched_mask_dice": 0.7166616407908031,
+          "u_present_recall": 1.0,
+          "u_union_dice": 0.08627047069729117,
+          "u_union_precision": 0.045463427343190255,
+          "u_union_prediction_to_truth_ratio": 18.527353177795657,
+          "u_union_recall": 0.8423169750603379,
+          "u_unmatched_active_queries_per_observation": 0.15384615384615385
+        }
+      },
+      "verdict": {
+        "checks": {
+          "r_accuracy": true,
+          "r_cross_entropy": true,
+          "retention": false,
+          "stage_three_a_gain": false,
+          "stage_three_presence": true,
+          "stage_three_u_gain": true,
+          "stage_three_union": false,
+          "stage_two_a_gain": false,
+          "stage_two_presence": true,
+          "stage_two_u_gain": true,
+          "stage_two_union": false
+        },
+        "evidence": "NOT_EVIDENCE",
+        "status": "FAIL"
+      }
+    },
+    "3d": {
+      "measurements": {
+        "III_0": {
+          "a_predicted_voxels": 19876,
+          "a_truth_voxels": 16204645,
+          "a_zero_dice_classes": 28,
+          "feature_relative_change": 0.8409408771009336,
+          "frozen_retention_dice": 0.3885430492157502,
+          "r_cross_entropy": 2.625218615299318,
+          "r_eligible": 82,
+          "r_macro_accuracy": 0.0,
+          "r_majority_macro_accuracy": 0.1,
+          "r_supported_hosts": 10,
+          "registered_a_presence_gated_macro_dice": 5.7609991460313924e-05,
+          "u_matched_mask_dice": 0.2611486052215628,
+          "u_present_recall": 1.0,
+          "u_union_dice": 0.1623617019770512,
+          "u_union_precision": 0.09080551143570652,
+          "u_union_prediction_to_truth_ratio": 8.434671688839023,
+          "u_union_recall": 0.7659146764973019,
+          "u_unmatched_active_queries_per_observation": 2.933333333333333
+        },
+        "III_512": {
+          "a_predicted_voxels": 2675977,
+          "a_truth_voxels": 16204645,
+          "a_zero_dice_classes": 28,
+          "feature_relative_change": 0.8126191035043553,
+          "frozen_retention_dice": 0.4162276275715375,
+          "r_cross_entropy": 1.2161445034463094,
+          "r_eligible": 82,
+          "r_macro_accuracy": 0.3238186813186813,
+          "r_majority_macro_accuracy": 0.1,
+          "r_supported_hosts": 10,
+          "registered_a_presence_gated_macro_dice": 0.007001788327710629,
+          "u_matched_mask_dice": 0.31186941781345384,
+          "u_present_recall": 1.0,
+          "u_union_dice": 0.1533172640746778,
+          "u_union_precision": 0.08486724932769193,
+          "u_union_prediction_to_truth_ratio": 9.338799620665705,
+          "u_union_recall": 0.7925582358283914,
+          "u_unmatched_active_queries_per_observation": 1.0
+        },
+        "II_0": {
+          "a_predicted_voxels": 0,
+          "a_truth_voxels": 16204645,
+          "a_zero_dice_classes": 32,
+          "feature_relative_change": 0.0,
+          "frozen_retention_dice": 0.760964277223526,
+          "r_cross_entropy": 2.633944034576416,
+          "r_eligible": 82,
+          "r_macro_accuracy": 0.060476190476190475,
+          "r_majority_macro_accuracy": 0.1,
+          "r_supported_hosts": 10,
+          "registered_a_presence_gated_macro_dice": 0.0,
+          "u_matched_mask_dice": 0.10337459798915279,
+          "u_present_recall": 1.0,
+          "u_union_dice": 0.012111762261773082,
+          "u_union_precision": 0.0060927782718577595,
+          "u_union_prediction_to_truth_ratio": 164.12873657637442,
+          "u_union_recall": 1.0,
+          "u_unmatched_active_queries_per_observation": 55.46666666666667
+        },
+        "II_512": {
+          "a_predicted_voxels": 19876,
+          "a_truth_voxels": 16204645,
+          "a_zero_dice_classes": 28,
+          "feature_relative_change": 0.8409408771009336,
+          "frozen_retention_dice": 0.3885430492157502,
+          "r_cross_entropy": 2.625218615299318,
+          "r_eligible": 82,
+          "r_macro_accuracy": 0.0,
+          "r_majority_macro_accuracy": 0.1,
+          "r_supported_hosts": 10,
+          "registered_a_presence_gated_macro_dice": 5.7609991460313924e-05,
+          "u_matched_mask_dice": 0.2611486052215628,
+          "u_present_recall": 1.0,
+          "u_union_dice": 0.1623617019770512,
+          "u_union_precision": 0.09080551143570652,
+          "u_union_prediction_to_truth_ratio": 8.434671688839023,
+          "u_union_recall": 0.7659146764973019,
+          "u_unmatched_active_queries_per_observation": 2.933333333333333
+        }
+      },
+      "verdict": {
+        "checks": {
+          "r_accuracy": false,
+          "r_cross_entropy": true,
+          "retention": false,
+          "stage_three_a_gain": false,
+          "stage_three_presence": true,
+          "stage_three_u_gain": true,
+          "stage_three_union": false,
+          "stage_two_a_gain": false,
+          "stage_two_presence": true,
+          "stage_two_u_gain": true,
+          "stage_two_union": false
+        },
+        "evidence": "NOT_EVIDENCE",
+        "status": "FAIL"
+      }
+    }
+  },
+  "plan": "docs/superpowers/plans/2026-10-22-lr5-supervised-capability.md",
+  "predecessor": {
+    "cause": "nonrepository home .git marker rejected as repository",
+    "checkpoint_loads": 0,
+    "failure_record_sha256": "043f102699d24bfba56e3d1bceb53c90561261a767f334cfeeaf2ba705438f22",
+    "medical_array_reads": 0,
+    "model_forwards": 0,
+    "optimizer_updates": 0,
+    "status": "FAILED_BEFORE_WORKER_START",
+    "version": "launch_v1"
+  },
+  "privacy": {
+    "medical_arrays_in_git": false,
+    "per_patient_or_observation_records_in_public_report": false
+  },
+  "private_run_root": "~/outputs/aur_lr5_supervised_capability_20261022/run_v2",
+  "publication_review": {
+    "cached_numeric_comparisons": 5233,
+    "minor_measurement_checkpoint_wording_fixed": true,
+    "remaining_actionable_findings": 0,
+    "report_sha256": "9728020135ac9aa7f9201a8debe5fc3ae159d17a5fcbc5f3ecb8cc99c96ccee1"
+  },
+  "registered_budgets": {
+    "label_scan_candidates_per_mode": 64,
+    "max_selected_per_mode": 16,
+    "scan_max_seconds": 1800,
+    "stage_max_seconds": 3600,
+    "stage_steps": {
+      "II": 512,
+      "III": 512
+    },
+    "total_max_seconds": 10800
+  },
+  "reviews": {
+    "actual_path_fix_remaining_actionable": 0,
+    "controller_initial_actionable": 0,
+    "registration_v2_actionable": 0,
+    "reports": {
+      "final-rereview1.md": "11fe28a989a95f2979e66d81023ceaf3d57ae03e97e518ef9c221ae05a807513",
+      "final-review.md": "fd315cd796db5c6bc18c849b2f446f75a7cf3a7663c8edfe600877c419d7b654",
+      "task1-rereview1.md": "1777e3678d1991916970fe74c9492690ba0ab8e7d8c3909f54c7cfe8697d5c57",
+      "task1-review.md": "1bb1f5ae1206e73717637082efb2b8110bc683679727b2b528dd9b5275bdf43e",
+      "task2-review.md": "be586cbf1497842a0e311d677cc2405f532018e995d3d6b87d27f62cd49fec85"
+    },
+    "task1_initial_actionable": 1,
+    "task1_remaining_actionable": 0,
+    "whole_change_initial_actionable": 0
+  },
+  "schema_version": 1,
+  "scope": "TRAIN-only full-size supervised capability resource probe",
+  "snapshot_utc": "2026-10-22T08:40:59.933255+00:00",
+  "status": "COMPLETE_GATE_FAIL"
+}

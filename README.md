@@ -2,7 +2,7 @@
 
 面向 2D/3D MRI 的解剖实体、病灶实例与病灶–解剖关系学习项目。
 
-项目进展统一发布在`main`：先读[STATUS.md](STATUS.md)顶部，再查[当前候选实验报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)与同目录`RUN.json`。状态以记录的快照时点为准。
+项目进展统一发布在`main`：先读[STATUS.md](STATUS.md)顶部，再查[当前监督能力检查](docs/verification/2026-10-22/aur_lr5_supervised_capability/RESULTS.md)与同目录`RUN.json`；LR5/G1父证据见[此前候选实验报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)。状态以记录的快照时点为准。
 
 ## 历史架构图与子模块说明 PDF（2026-09）
 
@@ -30,5 +30,7 @@ PDF 包含整体架构图和 loss function、16 个子模块的技术说明与�
 同日后续已接通[正式权重与双模式评价接口](docs/verification/2026-10-21/aur_evaluation_interfaces/RESULTS.md)，CPU全套1768 passed/5 skipped、真实合同字节验证及独立终审通过；没有真实统一监督checkpoint，接口测试不代表质量达标。[二维保存证据审计](docs/verification/2026-10-21/aur_g1_diagnosis/RESULTS.md)排除了未更新/整体缓存退化；[step0对照](docs/verification/2026-10-21/aur_g1_step0_control/RESULTS.md)显示宿主Dice0.248889→0.279637，但三组患者bootstrap区间均跨0。原G1判定保持，下一模型干预尚未开训。
 
 后续已实现[两个独立二维候选](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)：仅提高四个二维适配器的学习率，以及保持原学习率的真正二维中间合并。原完整CPU1820 passed/5 skipped；实际初始化、初始3D等价和每臂16步TRAIN恢复均通过。2026-10-22两臂正式Stage I均完成2048步并选中1792：**LR5为2D PASS / 3D PASS，PLANAR为2D FAIL / 3D PASS**，最终完成证据和判定均已核验。LR5停在下一阶段计划审阅前，II/III未启动；G1通过尚不代表最终A/U/R质量达标，原失败记录保留。
+
+本次用户要求继续后，已完成[LR5有界TRAIN监督能力检查](docs/verification/2026-10-22/aur_lr5_supervised_capability/RESULTS.md)：资源检查II/III各实际512步、两mode各256次曝光，两次完整CUDA恢复通过，**双模式继续门均FAIL**。冻结宿主读出明显下降，U并集Dice均约0.15，3D R宏准确率0.324；A登记诊断与生产解码不同，不冒充原网格成绩。最终CPU1890 passed/5 skipped（301.28秒）、针对性70项通过、独立审阅0项待处理。没有正式监督完成证书，不自动进入完整训练；原失败与父I/G1证据保留。
 
 最新状态见 [STATUS.md](STATUS.md)及[训练资格与执行报告](docs/verification/2026-10-20/aur_qualified_training/RESULTS.md)，数据组成及最初修复见[数据审计报告](docs/verification/2026-10-19/aur_data_audit/RESULTS.md)，统一模型及数值限制见[此前报告](docs/verification/2026-10-19/aur_unified_input/RESULTS.md)。上述 PDF 描述早期方案，不代表当前实现或性能。
