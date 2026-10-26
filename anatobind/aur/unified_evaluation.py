@@ -26,6 +26,8 @@ from anatobind.aur.unified_infer import _ModeView, infer_input, model_from_unifi
 from anatobind.eval.detection_metrics import scan_matches
 
 VERSION = 'aur_development_evaluation_v1'
+GATE_VERSION = 'aur_gate_evaluation_v1'
+ROLES = {'development_validation':'val', 'historical_test':'test'}
 DEFAULT_CROPS = {'2d': (1, 160, 160), '3d': (128, 160, 160)}
 
 
@@ -170,7 +172,7 @@ def _planar_targets(volume, row, instances, source_ids, plane, area):
     return truth, reasons
 
 
-def _binding_metrics(truth, controlled, b0, matches, predicted, predicted_b0, reasons):
+def _binding_metrics(truth, controlled, b0, matches, predicted, predicted_b0, reasons, shares=None):
     eligible = [i+1 for i,t in enumerate(truth) if t>=0]
     by_id = {int(r['instance']):r for r in controlled}
     detections = {int(r['instance']):r for r in predicted}
@@ -182,6 +184,8 @@ def _binding_metrics(truth, controlled, b0, matches, predicted, predicted_b0, re
         detected_b0 = int(predicted_b0[matched-1]) if matched is not None else None
         rows.append(dict(instance=k,truth=target,controlled=controlled_host,b0=int(b0[k-1]),
                          detected_instance=matched,end_to_end=detected_host,end_to_end_b0=detected_b0))
+        if shares is not None:
+            rows[-1]['top_share'] = float(np.max(shares[k-1]))
     return dict(eligible=len(eligible), unavailable_instances=len(truth)-len(eligible),
         controlled_hits=sum(r['controlled']==r['truth'] for r in rows),
         controlled_b0_hits=sum(r['b0']==r['truth'] for r in rows),
@@ -200,7 +204,9 @@ def evaluate_observation(model, row, observation, *, crop, device='cpu', score_t
 
 
 def _evaluate_observation(model,row,observation,*,crop,device,score_threshold):
-    if row.get('role')!='development_validation' or row.get('split')!='val':
+    gate = observation.get('gate_version') == GATE_VERSION
+    if (ROLES.get(row.get('role')) != row.get('split') or
+            (not gate and row.get('role')!='development_validation')):
         raise ValueError()
     if not np.isfinite(score_threshold) or not 0<=score_threshold<=1: raise ValueError()
     if json_digest(row) != observation['row_sha256']: raise ValueError()
@@ -218,18 +224,34 @@ def _evaluate_observation(model,row,observation,*,crop,device,score_threshold):
     record = dict(source=row['source'],patient=row['patient'],case=row['case'],sequence=row['sequence'],
                   input_mode=mode,measurement_unit='mm2' if mode=='2d' else 'mm3',
                   observation=observation,a=None,u=None,r=None,evidence='NOT_EVIDENCE')
+    if gate:
+        record.update({key:deepcopy(observation[key]) for key in
+                       ('row_sha256','plane_index','plane_kinds','target_instances','pixel_area_mm2')})
+        record['r_inplane'] = None
     if row.get('a_supervised',False):
         record['a'] = anatomy_metrics(prediction.anatomy,volume['entity'][sl],volume['a_ignore'][sl])
     if not row.get('u_supervised',False): return record
     area = float(np.linalg.norm(np.cross(affine[:3,0],affine[:3,1])))
     if mode=='2d':
         instances, gt, source_ids = _plane_truth(volume,plane,area)
-        truth, reasons = _planar_targets(volume,row,instances,source_ids,plane,area)
+        if gate and row['role']=='historical_test':
+            truth = np.full(len(source_ids),-1,np.int64)
+            reasons = ['development_only_strict_reference']*len(source_ids)
+        else:
+            truth, reasons = _planar_targets(volume,row,instances,source_ids,plane,area)
     else:
         instances = volume['instance']
         gt = instance_rows(instances,volume['voxel_mm3'])+ignored_rows(volume['small'],volume['voxel_mm3'])
         truth, reasons = volume['hosts']['host'].copy(), ['']*int(instances.max(initial=0))
     record['u'] = detection_metrics(gt,prediction.lesions,score_threshold=score_threshold)
+    if gate:
+        from anatobind.aur.gate_metrics import matched_instance_dice
+        record['u']['matched_dice'] = matched_instance_dice(prediction.instances,instances,record['u']['matches'])
+        record['u']['source_ids'] = source_ids if mode=='2d' else list(range(1,int(instances.max(initial=0))+1))
+        if mode=='2d' and row.get('a_supervised',False):
+            record['r_inplane'] = _inplane_relation(instances,entity_to_synthseg(volume['entity'][sl]),
+                volume['spacing'],record['u']['matches'],prediction.lesions,
+                host_targets(prediction.instances,entity_to_synthseg(prediction.anatomy),volume['spacing'])['host'])
     if not row.get('r_supervised',False) or not row.get('a_supervised',False): return record
     eligible = np.flatnonzero(truth>=0)+1
     bind_map = np.where(np.isin(instances,eligible),instances,0)
@@ -239,7 +261,8 @@ def _evaluate_observation(model,row,observation,*,crop,device,score_threshold):
     # as its corresponding learned binding track.
     b0 = host_targets(instances,pred_seg,volume['spacing'])['host']
     predicted_b0 = host_targets(prediction.instances,pred_seg,volume['spacing'])['host']
-    record['r'] = _binding_metrics(truth,controlled,b0,record['u']['matches'],prediction.lesions,predicted_b0,reasons)
+    shares = volume['hosts']['probs'] if gate and mode=='3d' else None
+    record['r'] = _binding_metrics(truth,controlled,b0,record['u']['matches'],prediction.lesions,predicted_b0,reasons,shares)
     return record
 
 
@@ -354,3 +377,175 @@ def run_evaluation(contract_path, export_path, out_dir, *, device='cpu', modes=(
         return summary
     except Exception:
         raise ValueError('Development evaluation failed; private evidence preserved') from None
+
+
+def _gate_rows(rows):
+    rows = deepcopy(list(rows))
+    if (not rows or len({r.get('role') for r in rows})!=1
+            or any(ROLES.get(r.get('role'))!=r.get('split') for r in rows)):
+        raise ValueError('Invalid gate evaluation membership')
+    identities=[(r['source'],str(r['patient']),r['case'],r['sequence']) for r in rows]
+    if len(identities)!=len(set(identities)):
+        raise ValueError('Duplicate gate evaluation member')
+    return rows
+
+
+def freeze_gate_observations(rows,modes=('2d','3d'),*,stride_mm=8.):
+    """Freeze a role-consistent library selection; the runner separately verifies its contract.
+
+    Header-stride observations are label independent. The extra lesion-centroid
+    observations are explicitly label-defined and never called independent data.
+    """
+    from anatobind.aur.gate_metrics import stride_planes,lesion_centroid_planes
+    try:
+        rows,modes=_gate_rows(rows),_modes(modes)
+        if not np.isfinite(stride_mm) or stride_mm<=0:raise ValueError()
+        observations=[]
+        for index,row in enumerate(rows):
+            shape,affine=_header_grid(row['image'])
+            spacing=float(np.linalg.norm(affine[:3,2]))
+            area=float(np.linalg.norm(np.cross(affine[:3,0],affine[:3,1])))
+            planes={p:{'stride'} for p in stride_planes(shape[0],spacing,stride_mm=stride_mm)}
+            targets={}
+            if '2d' in modes and row.get('u_supervised',False):
+                volume=load_unified_volume(row)
+                for instance,plane in lesion_centroid_planes(volume['instance']).items():
+                    planes.setdefault(plane,set()).add('lesion_centroid')
+                    targets.setdefault(plane,[]).append(int(instance))
+            for mode in modes:
+                for plane in (sorted(planes) if mode=='2d' else [None]):
+                    local=affine.copy()
+                    if plane is not None:local[:3,3]+=local[:3,2]*plane
+                    kinds=([k for k in ('stride','lesion_centroid') if k in planes[plane]]
+                           if mode=='2d' else ['volume'])
+                    observations.append(dict(row_index=index,row_sha256=json_digest(row),input_mode=mode,
+                        plane_index=plane,plane_kinds=kinds,target_instances=sorted(targets.get(plane,[])),
+                        shape=[1,*shape[1:]] if mode=='2d' else list(shape),source_shape=list(shape),
+                        affine_ras=local.tolist(),pixel_area_mm2=area,
+                        voxel_volume_mm3=None if mode=='2d' else abs(float(np.linalg.det(affine[:3,:3]))),
+                        gate_version=GATE_VERSION))
+        return dict(version=GATE_VERSION,evidence='NOT_EVIDENCE',selection='gate_v1_stride_and_lesion_centroid',
+                    modes=list(modes),rows=rows,observations=observations)
+    except Exception:
+        raise ValueError('Invalid gate observation selection') from None
+
+
+def _inplane_relation(instances,seg,spacing,matches,predicted,predicted_b0):
+    reference=host_targets(instances,seg,spacing)
+    by_id={int(p['instance']):p for p in predicted}
+    rows=[]
+    for i,truth in enumerate(reference['host']):
+        k=i+1
+        if not np.any(instances==k):continue
+        detected=matches.get(k)
+        rows.append(dict(instance=k,truth=int(truth),top_share=float(reference['probs'][i].max()),
+            detected_instance=detected,end_to_end=int(by_id[detected]['host']) if detected is not None else None,
+            end_to_end_b0=int(predicted_b0[detected-1]) if detected is not None else None))
+    return dict(eligible=len(rows),matched=sum(r['detected_instance'] is not None for r in rows),
+                hits=sum(r['end_to_end']==r['truth'] for r in rows),instances=rows,evidence='NOT_EVIDENCE')
+
+
+def _verify_gate_role(rows,parent_sha,role_contract,qualified_source_root):
+    if role_contract is None:raise ValueError('A verified role contract is required')
+    rows=_gate_rows(rows)
+    if rows[0]['role']=='development_validation':
+        contract=read_contract(role_contract,source_mode='evaluation',qualified_source_root=qualified_source_root)
+        expected,actual_parent=contract['validation'],contract['contract_sha256']
+    else:
+        from anatobind.aur.test_role import read_test_role
+        contract=read_test_role(role_contract,qualified_source_root=qualified_source_root)
+        expected,actual_parent=contract['rows'],contract['parent_contract_sha256']
+    if actual_parent!=parent_sha or rows!=expected:
+        raise ValueError('Gate rows or parent differ from qualified role contract')
+    return contract['contract_sha256']
+
+
+def run_gate_evaluation(rows,parent_contract_sha256,export_path,out_dir,*,device='cpu',
+                        modes=('2d','3d'),crops=None,score_thresholds,stride_mm=8.,
+                        role_contract=None,qualified_source_root=None,gate_registration=None,
+                        expected_registration_sha256=None):
+    """Evaluate exactly the qualified role under a previously frozen gate registration.
+
+    Supplying rows and an arbitrary parent digest alone is insufficient. A role
+    contract and frozen registration are mandatory; pure observation/metric
+    functions remain available for synthetic controls. This call never judges
+    quality or changes a validation-selected threshold.
+    """
+    try:
+        from anatobind.aur.gate import GATE_V1,validate_registration
+        out=validate_private_output(out_dir)
+        if out.exists():raise ValueError()
+        rows=_gate_rows(rows);modes=_modes(modes)
+        thresholds=dict(score_thresholds)
+        if (not {r['source'] for r in rows if r.get('u_supervised',False)}<=set(thresholds) or any(
+                type(v) not in (int,float) or not np.isfinite(v) or not 0<=v<=1 for v in thresholds.values())):
+            raise ValueError()
+        reg=deepcopy(gate_registration)
+        validate_registration(reg)
+        if (not isinstance(reg,dict) or json_digest(reg)!=expected_registration_sha256
+                or json_digest(reg.get('gate'))!=json_digest(GATE_V1)
+                or reg.get('relation_implementation') not in ('head','lookup')
+                or reg.get('frozen_before_evaluation') is not True
+                or not isinstance(reg.get('validation_selection_sha256'),str)
+                or len(reg['validation_selection_sha256'])!=64
+                or any(reg.get('score_thresholds',{}).get(k)!=v for k,v in thresholds.items())
+                or stride_mm!=GATE_V1['two_d']['stride_mm']):raise ValueError()
+        role_sha=_verify_gate_role(rows,parent_contract_sha256,role_contract,qualified_source_root)
+        inputs={str(Path(row[key]).resolve()):file_sha256(row[key]) for row in rows
+                for key in ('image','anatomy','lesion') if row.get(key)}
+        crops={mode:tuple((crops or DEFAULT_CROPS)[mode]) for mode in modes}
+        if any(len(c)!=3 or any(type(n) is not int or n<=0 for n in c)
+               or any(n%p for n,p in zip(c,(1,4,4) if mode=='2d' else (2,4,4)))
+               or (mode=='2d' and c[0]!=1) for mode,c in crops.items()):raise ValueError()
+        snapshot=_evaluator_source();export_sha=file_sha256(export_path)
+        payload=torch.load(export_path,map_location='cpu',weights_only=True)
+        if rows[0]['role']=='historical_test' and payload.get('stage')!='III':raise ValueError()
+        identity=deepcopy(payload.get('data_contract'));del payload
+        if not isinstance(identity,dict) or identity.get('contract_sha256')!=parent_contract_sha256:raise ValueError()
+        # Validate complete formal weights on CPU before opening any centroid
+        # labels. Literal stage/purpose fields alone cannot release test data.
+        model,metadata=model_from_unified_export(export_path,device='cpu',data_contract=identity)
+        if metadata['pilot_only'] or not metadata['phase_completed']:raise ValueError()
+        if rows[0]['role']=='historical_test':
+            from anatobind.aur.unified_train import _state_hash
+            role_root=validate_private_output(role_contract)
+            if role_root.is_file():role_root=role_root.parent
+            model_sha=_state_hash(model.state_dict())
+            # Claim before the first label-based selection, even if execution
+            # later fails. Recovery needs explicit audit, never a second score.
+            write_private_json(role_root/'final_evaluation_claims'/f'{model_sha}.json',
+                dict(model_sha256=model_sha,export_sha256=export_sha,role_contract_sha256=role_sha,
+                     registration_sha256=expected_registration_sha256,output=str(out)))
+        plan=freeze_gate_observations(rows,modes,stride_mm=stride_mm)
+        plan.update(parent_contract_sha256=parent_contract_sha256,role_contract_sha256=role_sha,
+            input_files=inputs,artifact_identity=identity,export_sha256=export_sha,
+            evaluator_source=snapshot,environment=decoder_environment(),registration=reg,
+            registration_sha256=expected_registration_sha256,
+            configuration=dict(crops=crops,score_thresholds=thresholds,stride_mm=stride_mm,device=str(device),
+                registration_sha256=expected_registration_sha256,relation_implementation=reg['relation_implementation'],
+                anatomy_only_detection_score_threshold=.5,
+                entity_threshold=.5,presence_threshold=.5,lesion_threshold=.3,overlap=.5,matching_bbox_iou=.1))
+        write_private_json(out/'plan_private.json',plan)
+        model=model.to(device).eval()
+        records=[]
+        for obs in plan['observations']:
+            row=rows[obs['row_index']]
+            record=evaluate_observation(model,row,obs,crop=crops[obs['input_mode']],device=device,
+                                        score_threshold=thresholds[row['source']] if row.get('u_supervised',False) else .5)
+            record['registration_sha256']=expected_registration_sha256
+            records.append(record)
+        if (_verify_gate_role(rows,parent_contract_sha256,role_contract,qualified_source_root)!=role_sha
+                or any(file_sha256(p)!=h for p,h in inputs.items()) or file_sha256(export_path)!=export_sha
+                or _evaluator_source()!=snapshot):raise ValueError()
+        summary=aggregate_observations(records)
+        summary.update(gate_version=GATE_VERSION,role=rows[0]['role'],parent_contract_sha256=parent_contract_sha256,
+            role_contract_sha256=role_sha,registration_sha256=expected_registration_sha256,
+            export_sha256=export_sha,evaluator_source_sha256=json_digest(snapshot))
+        write_private_json(out/'records_private.json',records)
+        write_private_json(out/'anonymous_summary.json',summary)
+        outputs={n:file_sha256(out/n) for n in ('plan_private.json','records_private.json','anonymous_summary.json')}
+        write_private_json(out/'complete.json',dict(version=GATE_VERSION,evidence='NOT_EVIDENCE',outputs=outputs,
+            registration_sha256=expected_registration_sha256,role_contract_sha256=role_sha,export_sha256=export_sha))
+        return summary
+    except Exception:
+        raise ValueError('Gate evaluation failed; private evidence preserved') from None
