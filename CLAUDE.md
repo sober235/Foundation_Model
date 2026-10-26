@@ -1,5 +1,7 @@
 # Foundation_Model / AnatoBind-MRI:新会话入口
 
+**2026-10-26正式监督已接续：** 先读PROJECT_CONTEXT、STATUS顶部及[新报告](docs/verification/2026-10-26/aur_formal_supervised/RESULTS.md)。当前run_v3于09:39:55 UTC启动，PID538100，空闲A100，Stage II训练中；代码8868a8d只补GPU拒绝匿名诊断。09:50:40 UTC宿主机快照：Stage II已运行108/4096步，2D/3D各54次曝光，108条已记录loss全部有限，PID身份核对通过；III尚未开始。v3登记/代码独立复核0项，完整CPU2080/5。原run_v2在Stage II初始化前GPU准入拒绝，step0，进程已退出；原原因未知，失败证据保留。不要重复启动。以下“未启动/先生成v2”是历史快照；预算II4096→III2048及8小时上限不变。
+
 **2026-10-26用户指定的回顾范围：仅`main`＋`work/aur-formal-supervised`。** 先读[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)和STATUS顶部；不要完整读取所有分支。该工作分支从本次归档main建立，作为唯一后续工作入口；旧分支保留档案。最新[判门/像素网格报告](docs/verification/2026-10-26/aur_gate_layer/RESULTS.md)及RUN记录：S7开发参考重评分、3序列双mode tiny CPU试跑、修复后标注报告均完成，真实test未读；CPU2069/5及最终控制器73项定向检查通过，正式II/III未启动。旧v1登记未运行且控制器hash过时，下一次先生成/审阅v2。启动必须cwd=冻结runtime且PYTHONPATH同指向，不能让子进程`python -c`从checkout加载anatobind。全部具体定位、失败保留与下一步见PROJECT_CONTEXT。
 
 先读这个文件,再读 `STATUS.md`,然后才动手。上一个会话的结论只当线索,不当事实;关键数字能重跑的先重跑,重跑与记录不符时以重跑为准并写明。

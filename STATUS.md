@@ -1,4 +1,12 @@
-# STATUS：2026-10-26（判门层与有限真实CPU验证完成；正式II/III未启动）
+# STATUS：2026-10-26（正式监督run_v3已启动，Stage II训练中）
+
+## 2026-10-26正式监督接续
+
+当前run_v3于09:39:55 UTC启动，PID538100，空闲A100物理3；cwd/PYTHONPATH均为原LR5冻结runtime。v3登记及代码独立审阅0项，执行代码8868a8d，修复后完整CPU2080 passed/5 skipped（348.95秒）。预算仍为II4096→III2048，总上限8小时。09:50:40 UTC宿主机快照：Stage II已运行108/4096步，2D/3D各54次曝光，108条已记录loss全部有限，PID身份核对通过；III尚未开始。当前尚无正式监督完成证书或最终质量成绩。
+
+原run_v2在Stage II初始化前GPU准入拒绝，step0、零checkpoint、III未启动，宿主机确认进程退出，closing完整输入校验通过。原通用错误不能定位拒绝原因；外部控制器现保存实际判定时匿名测量和固定原因码，GPU阈值和冻结训练配方不变。v1/v2及失败结果均保留；run_v3是新的有界启动，不是追加训练预算。
+
+最新证据见[正式监督接续报告](docs/verification/2026-10-26/aur_formal_supervised/RESULTS.md)和[RUN](docs/verification/2026-10-26/aur_formal_supervised/RUN.json)。私有`~/outputs/aur_lr5_formal_supervised_20261026/run_v3/`是唯一当前运行，不要重复启动。先核对宿主机进程与匿名状态，再报告实际步骤和终态；下文“未启动/v2待生成”均为此前交接快照。
 
 ## 当前回顾入口：main＋一个工作分支
 

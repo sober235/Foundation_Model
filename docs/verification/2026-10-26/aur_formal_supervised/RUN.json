@@ -1,0 +1,380 @@
+{
+  "active_attempt": 3,
+  "artifacts": [
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/registration_v1.json",
+      "sha256": "5c7dea26ab807acc5500a6ed1b8ded5bad83f092b0a4cc050262a09e4cfd0886"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/registration_v2.json",
+      "sha256": "cb0a781bc28391aac71ce912c84b1377557b2001e96ddc0b00f9d8ce050fc677"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/launch_recipe_v2.json",
+      "sha256": "e4caeb24e468eac666151c4c3ffc7980ad15fee65fc423146c56479afe76a097"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/launch_record_v2.json",
+      "sha256": "7fc7be3ace9e17a11948ae839412b437804c5699c1e44ddf3c4769cc551f1429"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/registration_v2_independent_review.json",
+      "sha256": "be49bdc890de361f39b48833ccc75f274a72b873264adbc60ae2f23be580ef56"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/continuation_cpu_v2.log",
+      "sha256": "712705e4a6e6b191f9ab92f065be72b9a8388cf854b9b70d11d6a17df4f72905"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v2/terminal.json",
+      "sha256": "101d07ad4a708d5a0329d1b7b30f9ca9f677363753523f9bcfc854ab4de74a6c"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v2/result.json",
+      "sha256": "101d07ad4a708d5a0329d1b7b30f9ca9f677363753523f9bcfc854ab4de74a6c"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v2/closing_commitments.json",
+      "sha256": "c73fddbb5c444416c73d2773a98f68200c490c93e5429b56d98afd3260595605"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v2/II_worker_result.json",
+      "sha256": "ad3061e53672db447a794be8f460c9132f01c1ed962674d803299d904532f7a8"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v2/II/status.json",
+      "sha256": "0a6e32142c9470814f0be6f25a9f86e2a21a51c5ac7527766a1a4e64ba59c43c"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v2/II/failure_1.txt",
+      "sha256": "3ab4f30d3910f65ecda87406c14920f3cc004185a65b9c8dfcb3e970612b03c3"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/registration_v3.json",
+      "sha256": "8c1c359ea2319403652b60927c711c12b4614c9df18bc97997fea702f6346bc2"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/launch_recipe_v3.json",
+      "sha256": "47fb64f726d4a5a8e53bd9bc42e478dc9757a6732d90ba1878ca75f64eea1164"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/launch_record_v3.json",
+      "sha256": "530b48645453e3a21c0836c383064d50d27add7eb9359214a248c04f5f0675d6"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/registration_v3_independent_review.json",
+      "sha256": "02c573ed4eee05d0cb5abe57474af77d5cc09ea70c626996c481b2345de0ec5d"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/gpu_rejection_incremental_review.json",
+      "sha256": "cb1ff12fda59d271d14ed1362a63b0b676f27ee82313543a384ae93576ffc754"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/continuation_cpu_v3.log",
+      "sha256": "b0eeb66c4a3f2031f42441be09d3e2a6ce238fb5e774f995047784248a3bd167"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/gpu_rejection_red.log",
+      "sha256": "3aea088eb8d46aeea5daa9c036dc2b9b0d45e5358d321154d1131b8c55fd1c3e"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/gpu_rejection_green.log",
+      "sha256": "66f8c4daad2bfc7db275af20bd1df6d9b27268e287eace509911a2b6c922de80"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/gpu_guard_import_diagnostic_v1.json",
+      "sha256": "adf41f004e8b239bac53558f6300772ed3d8d5a03b9ca67ba6132b1dda7b32d9"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/failed_v2_anonymous.json",
+      "sha256": "d1a80ff51c8d80ba99591d556dedcc5e46ae10ace98dc1d9528d128f4fd0b9b9"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/progress_snapshot_v3_started.json",
+      "sha256": "0215906275d00b249132392f568bc15369b23aebbf455f3a0984f631f1d647cc"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/input_commitments.json",
+      "sha256": "ba07d46595672303365fc4b559980aa12d784e973da300494a3d378e7267def2"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/gpu_admission_II.json",
+      "sha256": "070f7fff447abd6970e9380b53b59fee490656038cd3f7f2e07a9756ea950c89"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/II/gpu_initialization_admission.json",
+      "sha256": "070f7fff447abd6970e9380b53b59fee490656038cd3f7f2e07a9756ea950c89"
+    }
+  ],
+  "attempts": [
+    {
+      "cause": "unknown; generic GPU admission rejection",
+      "closing_live_identity_verified": true,
+      "executed_steps": 0,
+      "failed_stage": "II",
+      "host_processes_exited": true,
+      "pid": 447755,
+      "registration_sha256": "cb0a781bc28391aac71ce912c84b1377557b2001e96ddc0b00f9d8ce050fc677",
+      "stage_III_started": false,
+      "started_utc": "2026-10-26T08:59:00.174662+00:00",
+      "status": "FAILED_BEFORE_INITIALIZATION",
+      "version": 2
+    }
+  ],
+  "code_commit": "8868a8d3174b863d5edb627a005190ada5975a00",
+  "compatibility": {
+    "capability": [
+      8,
+      0
+    ],
+    "cuda": "12.1",
+    "frozen_import": true,
+    "memory_bytes": 85097971712,
+    "name": "NVIDIA A100 80GB PCIe",
+    "torch": "2.5.1+cu121",
+    "visible_devices": 1
+  },
+  "controllers": {
+    "aur_formal_supervised.py": "30efe6dfc74e6ae5dfd9d4bc7ccf980757b5f9ce41882857cd6d4797c7e4da7a",
+    "aur_supervised_capability.py": "12f53ce43f8cb84503ee9b74a7d98bdaf9d0b684b04c90e430934604ea92df54"
+  },
+  "evidence": "NOT_EVIDENCE",
+  "external_wall_cap_seconds": 28800,
+  "full_cpu": {
+    "exit_code": 0,
+    "log_sha256": "b0eeb66c4a3f2031f42441be09d3e2a6ce238fb5e774f995047784248a3bd167",
+    "passed": 2080,
+    "seconds": 348.95,
+    "skipped": 5
+  },
+  "gpu_admission": {
+    "active_compute_workloads": 0,
+    "device": "cuda:0",
+    "memory_total_mib": 81920,
+    "memory_used_mib": 2,
+    "physical_uuid": "GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb",
+    "utilization_percent": 0.0
+  },
+  "independent_incremental_code_review_actionable_findings": 0,
+  "independent_registration_review_actionable_findings": 0,
+  "limitations": [
+    "Stage II is running; neither formal II/III completion nor final A/U/R acceptance is claimed",
+    "Five dedicated-environment tests skipped, not counted as passed",
+    "Historical test and final full4469 inference remain unexecuted",
+    "Periodic 2D validation R is disabled; mean loss is not final quality",
+    "Full pool sampling does not guarantee every row exposure or convergence"
+  ],
+  "pid": 538100,
+  "process_start_ticks": "424091992",
+  "progress_snapshot": {
+    "all_observed_losses_finite": true,
+    "controller_pid": 538100,
+    "evidence": "NOT_EVIDENCE",
+    "host_process_identity_verified": true,
+    "initialization_gpu_admission": {
+      "active_compute_workloads": 0,
+      "device": "cuda:0",
+      "memory_total_mib": 81920,
+      "memory_used_mib": 2,
+      "physical_uuid": "GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb",
+      "utilization_percent": 0.0
+    },
+    "latest_loss": 1.3468562364578247,
+    "latest_mode": "3d",
+    "latest_step": 108,
+    "mode_exposures": {
+      "2d": 54,
+      "3d": 54
+    },
+    "observed_utc": "2026-10-26T09:50:40.382376+00:00",
+    "recorded_steps": 108,
+    "stage": "II",
+    "stage_III_started": false,
+    "status": "RUNNING",
+    "terminal_exists": false
+  },
+  "registration_sha256": "8c1c359ea2319403652b60927c711c12b4614c9df18bc97997fea702f6346bc2",
+  "runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a",
+  "runtime_source_count": 145,
+  "stage_configs": {
+    "II": {
+      "accumulation_steps": 1,
+      "backbone_warm_scale": 1,
+      "backbone_warm_steps": 0,
+      "batch_size": 1,
+      "checkpoint_every": 256,
+      "crops": {
+        "2d": [
+          1,
+          160,
+          160
+        ],
+        "3d": [
+          128,
+          160,
+          160
+        ]
+      },
+      "hcp_cap": 0.25,
+      "lambda_h": 0.2,
+      "lambda_r": 1.0,
+      "lr": {
+        "backbone": 5e-05,
+        "heads": 0.0005
+      },
+      "max_seconds": 14400,
+      "mode_cycle": [
+        "2d",
+        "3d"
+      ],
+      "model": {
+        "d_model": 256,
+        "dec_heads": 8,
+        "dec_layers": 3,
+        "depths": [
+          2,
+          2,
+          6,
+          2
+        ],
+        "dual_input": true,
+        "embed": 64,
+        "heads": [
+          2,
+          4,
+          8,
+          16
+        ],
+        "mask_dim": 32,
+        "n_events": 64,
+        "patch": [
+          2,
+          4,
+          4
+        ],
+        "pixel_dim": 64,
+        "rel_heads": 4,
+        "rel_layers": 2,
+        "use_checkpoint": true,
+        "window": [
+          4,
+          8,
+          8
+        ]
+      },
+      "planar_relation_policy": "geometry_weak2d_v1",
+      "points": 16384,
+      "purpose": "formal",
+      "schema_version": 1,
+      "seed": 20261019,
+      "ssl": {
+        "block_mm": [
+          16.0,
+          32.0
+        ],
+        "contrast_dim": 128,
+        "contrast_weight": 0.0,
+        "mask_ratio": 0.6,
+        "temperature": 0.2
+      },
+      "steps": 4096,
+      "u_mask_profile": "unmatched_empty_v1",
+      "validation_every": 512,
+      "warmup_steps": 128,
+      "weight_decay": 0.05
+    },
+    "III": {
+      "accumulation_steps": 1,
+      "backbone_warm_scale": 1,
+      "backbone_warm_steps": 0,
+      "batch_size": 1,
+      "checkpoint_every": 256,
+      "crops": {
+        "2d": [
+          1,
+          160,
+          160
+        ],
+        "3d": [
+          128,
+          160,
+          160
+        ]
+      },
+      "hcp_cap": 0.25,
+      "lambda_h": 0.2,
+      "lambda_r": 1.0,
+      "lr": {
+        "backbone": 1e-05,
+        "heads": 0.00025,
+        "relation": 0.0005
+      },
+      "max_seconds": 7200,
+      "mode_cycle": [
+        "2d",
+        "3d"
+      ],
+      "model": {
+        "d_model": 256,
+        "dec_heads": 8,
+        "dec_layers": 3,
+        "depths": [
+          2,
+          2,
+          6,
+          2
+        ],
+        "dual_input": true,
+        "embed": 64,
+        "heads": [
+          2,
+          4,
+          8,
+          16
+        ],
+        "mask_dim": 32,
+        "n_events": 64,
+        "patch": [
+          2,
+          4,
+          4
+        ],
+        "pixel_dim": 64,
+        "rel_heads": 4,
+        "rel_layers": 2,
+        "use_checkpoint": true,
+        "window": [
+          4,
+          8,
+          8
+        ]
+      },
+      "planar_relation_policy": "geometry_weak2d_v1",
+      "points": 16384,
+      "purpose": "formal",
+      "schema_version": 1,
+      "seed": 20261019,
+      "ssl": {
+        "block_mm": [
+          16.0,
+          32.0
+        ],
+        "contrast_dim": 128,
+        "contrast_weight": 0.0,
+        "mask_ratio": 0.6,
+        "temperature": 0.2
+      },
+      "steps": 2048,
+      "u_mask_profile": "unmatched_empty_v1",
+      "validation_every": 512,
+      "warmup_steps": 64,
+      "weight_decay": 0.05
+    }
+  },
+  "started_utc": "2026-10-26T09:39:55.344544+00:00",
+  "status": "RUNNING",
+  "updated_utc": "2026-10-26T09:50:40.382376+00:00",
+  "validation_batches": 8,
+  "version": 1,
+  "work_branch": "work/aur-formal-supervised"
+}
