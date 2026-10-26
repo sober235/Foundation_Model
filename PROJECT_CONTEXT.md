@@ -31,14 +31,16 @@
 
 ## 当前执行点与下一步
 
-**当前为run_v3，控制器已于2026-10-26 09:39:55 UTC启动，Stage II训练中。** PID538100，A100物理3；09:50:40 UTC宿主机快照：Stage II已运行108/4096步，2D/3D各54次曝光，108条已记录loss全部有限，PID身份核对通过；III尚未开始。完整GPU UUID和状态证据见新RUN。执行代码`8868a8d`只补充GPU拒绝诊断，空卡/显存要求、五项父输入、145份运行源码及训练配方不变。v3登记SHA256为`8c1c359ea2319403652b60927c711c12b4614c9df18bc97997fea702f6346bc2`，独立增量代码及精确登记审阅均0项。修复后完整CPU2080 passed/5 skipped、348.95秒。不要重复启动；先从宿主机执行边界核对run_v3状态和进程。
+**当前run_v3已停止，Stage II终态FAILED。** 完成1725步（2D863、3D862次曝光），第1726步前的3D裁块有65个实例，超过登记的64query；同一冻结源码/seed/draw862已在CPU复现。宿主机控制器退出，III未启动，closing完整校验通过。最近持久化checkpoint是1536，文件哈希核对通过；不能从1725精确恢复。详见[停止诊断](docs/verification/2026-10-26/aur_formal_supervised/STOPPED.md)。原样恢复会重复该观察；须先制定独立容量处理方案，不直接重启，不修改旧冻结runtime或截断病灶。
+
+执行代码仍为`8868a8d`，v3登记SHA256为`8c1c359ea2319403652b60927c711c12b4614c9df18bc97997fea702f6346bc2`；完整CPU2080 passed/5 skipped、独立代码/登记审阅0项均为此前证据。本次只有一次失败观察的CPU数据路径复现，没有新模型前向、优化或完整容量普查。
 
 **此前run_v2已失败并保留：** Stage II初始化前GPU准入拒绝，step0、零checkpoint，III未启动，宿主机进程已退出；收尾完整输入校验通过。原错误没有保存拒绝时测量，具体原因仍未知；后来的空卡快照和仅导入探针不能证明原因为抢占或自身CUDA。新的外部控制器记录实际判定时的匿名快照及固定原因码，未放宽准入；这是新的有界启动，不是追加训练预算或恢复已训练权重。
 
 在`work/aur-formal-supervised`按[正式监督计划](docs/superpowers/plans/2026-10-26-lr5-formal-supervised.md)接续：
 
-1. v3登记和精确复核已完成；v1保留未运行，v2及失败run_v2完整保留，不覆盖登记或原结果。
-2. 宿主机约束、兼容性、空卡和导入位置已检查，后台控制器继续在每阶段模型初始化前复查。**启动cwd和PYTHONPATH均为原LR5冻结runtime**；初始化来自通过G1的正式StageI，不使用小集resource-probe权重。
+1. 先审计登记训练观察的实例容量，制定保留监督的容量处理新方案。扩大query或更改采样均须新版本，旧run_v3不原样重启。v1/v2/v3及失败记录保留。
+2. 宿主机约束、兼容性、空卡和导入位置已检查，后续新运行仍须在每阶段模型初始化前复查。**启动cwd和PYTHONPATH均为原LR5冻结runtime**；初始化来自通过G1的正式StageI，不使用小集resource-probe权重。
 3. 首次有界正式预算II4096、III2048步，完整TRAIN池抽样；先II完整证书，再III。详细LR、warmup、验证/保存周期与8小时总上限在计划中。全池抽样不保证所有行都访问，也不代表充分收敛。
 4. 周期best仍按两mode等权loss，二维validation的弱R保持关闭；它不是最终R验收。正式III完成后在development validation选定工作点及head/lookup，冻结登记，再构建真实历史test角色并只做一次最终判门。历史test已暴露，不能称新独立队列。
 5. 按已登记实现和阈值执行全量fastMRI。G1通过、小集跑通、CPU测试通过都不能替代最终六项A/U/R门或全量执行。
@@ -55,6 +57,6 @@
 |LR5正式父权重/G1|`~/outputs/aur_2d_candidates_20261021/execution_v5/A_LR5/`|
 |小集工程检查|`~/outputs/aur_lr5_supervised_capability_20261022/run_v2/terminal.json`|
 |本轮已完成真实检查|`~/outputs/aur_gate_layer_20261026/`：`reference_val_v1`、`fastmri_smoke_v1`、`fastmri_plus_audit_v2`|
-|正式控制器/v3登记/当前运行|`~/outputs/aur_lr5_formal_supervised_20261026/`：`launch_record_v3.json`、`registration_v3.json`、`run_v3/`；v1未运行、失败run_v2保留|
+|正式控制器/v3登记/已停止运行|`~/outputs/aur_lr5_formal_supervised_20261026/`：`launch_record_v3.json`、`registration_v3.json`、`run_v3/`；v1未运行、失败run_v2保留|
 
 父合同SHA256：`a839cfc9c9213b5b376eac4bc4a8219506175fdbe3620bc36cb2056f602b6060`；LR5冻结runtime摘要：`5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a`。此前判门层有限真实检查已完成；当前正式监督状态以本页顶部和新RUN为准。不要凭沙箱内缺少PID判断其他任务退出，须按任务执行边界核实。

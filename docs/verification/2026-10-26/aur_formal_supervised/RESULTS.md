@@ -1,4 +1,6 @@
-# LR5正式监督接续：run_v3正在执行Stage II
+# LR5正式监督接续：run_v3已停止，待处理query容量限制
+
+**最新终态：FAILED。** Stage II已完成1725步，第1726步前的3D观察含65个实例，超过64query容量；CPU按原seed/draw精确复现，III未启动。最近可恢复checkpoint为1536，哈希核对通过。完整原因、范围与下一步见[STOPPED.md](STOPPED.md)。以下启动快照是历史记录，不能作为当前运行状态。
 
 2026-10-26用户要求继续后，从`work/aur-formal-supervised`接续正式计划。当前run_v3于09:39:55 UTC（北京时间17:39:55）启动，宿主机控制器PID538100，独立session后台运行，使用空闲A100物理3。09:50:40 UTC宿主机快照：Stage II已运行108/4096步，2D/3D各54次曝光，108条已记录loss全部有限，PID身份核对通过；III尚未开始。这证明正式监督已开始，不代表阶段完成或最终A/U/R验收。
 

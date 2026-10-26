@@ -104,6 +104,38 @@
     {
       "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/II/gpu_initialization_admission.json",
       "sha256": "070f7fff447abd6970e9380b53b59fee490656038cd3f7f2e07a9756ea950c89"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/terminal.json",
+      "sha256": "101d07ad4a708d5a0329d1b7b30f9ca9f677363753523f9bcfc854ab4de74a6c"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/result.json",
+      "sha256": "101d07ad4a708d5a0329d1b7b30f9ca9f677363753523f9bcfc854ab4de74a6c"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/closing_commitments.json",
+      "sha256": "82c4c7a5fe980700883a6d2b8cfbee0d03e6063f78660cc1da52933e24453f16"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/II/status.json",
+      "sha256": "f7adc6783daf5dd66f926ed36091982706bb1d242ef18937c19943185f3a6ade"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/II/last.json",
+      "sha256": "168a9fef199378e93ae8d226a783cc6570cc18fa1756b780052b476bf99fcaf7"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/II/best.json",
+      "sha256": "fdb5551b5e2a300a6d2a5385dd9eb692d08296d14350de3cf6ef81a49b6e4b10"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/run_v3/II/failure_1.txt",
+      "sha256": "8b984d134fb0e8d12ebda2f0faa6fbb5efd0a58282e9987a588c164010b7bf91"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/capacity_failure_audit_v1/summary_anonymous.json",
+      "sha256": "76a273beeba5aa61915ab22d9e71ea2e55f84c4904b688936fdd90d7ed5ed967"
     }
   ],
   "attempts": [
@@ -121,6 +153,26 @@
       "version": 2
     }
   ],
+  "capacity_failure_audit": {
+    "closing_live_verification": true,
+    "completed_steps": 1725,
+    "crop_instance_count": 65,
+    "draw_index": 862,
+    "evidence": "NOT_EVIDENCE",
+    "failed_next_step": 1726,
+    "failure_reproduced": true,
+    "last_checkpoint_hash_verified": true,
+    "last_checkpoint_step": 1536,
+    "mode": "3d",
+    "model_forwards": 0,
+    "observed_utc": "2026-10-26T12:13:47.528897+00:00",
+    "query_capacity": 64,
+    "runtime_digest_verified": true,
+    "scope": "one failing TRAIN observation only; not a full dataset capacity census",
+    "training_role_digest_verified": true,
+    "training_updates": 0,
+    "verified_selected_source_files": 3
+  },
   "code_commit": "8868a8d3174b863d5edb627a005190ada5975a00",
   "compatibility": {
     "capability": [
@@ -134,12 +186,15 @@
     "torch": "2.5.1+cu121",
     "visible_devices": 1
   },
+  "completed_steps": 1725,
   "controllers": {
     "aur_formal_supervised.py": "30efe6dfc74e6ae5dfd9d4bc7ccf980757b5f9ce41882857cd6d4797c7e4da7a",
     "aur_supervised_capability.py": "12f53ce43f8cb84503ee9b74a7d98bdaf9d0b684b04c90e430934604ea92df54"
   },
   "evidence": "NOT_EVIDENCE",
   "external_wall_cap_seconds": 28800,
+  "failed_next_step": 1726,
+  "failed_stage": "II",
   "full_cpu": {
     "exit_code": 0,
     "log_sha256": "b0eeb66c4a3f2031f42441be09d3e2a6ce238fb5e774f995047784248a3bd167",
@@ -155,10 +210,11 @@
     "physical_uuid": "GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb",
     "utilization_percent": 0.0
   },
+  "host_controller_exited": true,
   "independent_incremental_code_review_actionable_findings": 0,
   "independent_registration_review_actionable_findings": 0,
   "limitations": [
-    "Stage II is running; neither formal II/III completion nor final A/U/R acceptance is claimed",
+    "Stage II stopped after1725 updates on the next crop capacity check; no formal II/III completion or final A/U/R acceptance",
     "Five dedicated-environment tests skipped, not counted as passed",
     "Historical test and final full4469 inference remain unexecuted",
     "Periodic 2D validation R is disabled; mean loss is not final quality",
@@ -170,6 +226,7 @@
     "all_observed_losses_finite": true,
     "controller_pid": 538100,
     "evidence": "NOT_EVIDENCE",
+    "historical_snapshot_only": true,
     "host_process_identity_verified": true,
     "initialization_gpu_admission": {
       "active_compute_workloads": 0,
@@ -196,6 +253,7 @@
   "registration_sha256": "8c1c359ea2319403652b60927c711c12b4614c9df18bc97997fea702f6346bc2",
   "runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a",
   "runtime_source_count": 145,
+  "stage_III_started": false,
   "stage_configs": {
     "II": {
       "accumulation_steps": 1,
@@ -372,8 +430,8 @@
     }
   },
   "started_utc": "2026-10-26T09:39:55.344544+00:00",
-  "status": "RUNNING",
-  "updated_utc": "2026-10-26T09:50:40.382376+00:00",
+  "status": "FAILED",
+  "updated_utc": "2026-10-26T12:16:54.340127+00:00",
   "validation_batches": 8,
   "version": 1,
   "work_branch": "work/aur-formal-supervised"

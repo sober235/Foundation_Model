@@ -1,4 +1,9 @@
-# STATUS：2026-10-26（正式监督run_v3已启动，Stage II训练中）
+# STATUS：2026-10-26（正式监督run_v3在1725步后因query容量停止）
+
+## 最新：容量失败已复现
+
+run_v3终态FAILED：II已完成1725步，第1726步前3D裁块含65个病灶实例，超过64query。全部已保存loss有限；CPU按原seed/draw862复现容量拒绝，源码/角色/选中3源文件哈希通过。宿主机控制器退出，III未启动，closing完整校验通过。最近持久化及best checkpoint均为1536，文件哈希通过。详见[STOPPED.md](docs/verification/2026-10-26/aur_formal_supervised/STOPPED.md)。尚未审计完整容量分布或确定新策略，不自动重启；下面“运行中”为历史快照。
+
 
 ## 2026-10-26正式监督接续
 
