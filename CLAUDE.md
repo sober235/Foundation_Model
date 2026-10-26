@@ -1,5 +1,7 @@
 # Foundation_Model / AnatoBind-MRI:新会话入口
 
+**最新容量审计已完成：** 先读PROJECT_CONTEXT/STATUS顶部及[容量报告](docs/verification/2026-10-26/aur_query_capacity/RESULTS.md)。TRAIN3499源行max102；登记II2D/3D max14/85、3D三次超64；已有1725步计数全部一致。CPU157.914秒、独立复核通过，无新训练。[128-query新版本设计](docs/superpowers/specs/2026-10-26-aur-query-capacity-128-design.md)已准备，建议从原LR5 Stage I重新开始II/III，具体决定待用户确认。不要重跑审计，不改旧runtime/证书，不原样恢复失败run_v3。
+
 **2026-10-26最新终态：run_v3 FAILED。** II完成1725步，下一3D观察65实例超过64query；CPU原样复现，控制器退出、III未启动。可恢复checkpoint1536，哈希已核对。先读PROJECT_CONTEXT/STATUS及[停止诊断](docs/verification/2026-10-26/aur_formal_supervised/STOPPED.md)；不原样恢复，不修改旧runtime或丢弃病灶。以下“训练中”是历史启动记录。
 
 

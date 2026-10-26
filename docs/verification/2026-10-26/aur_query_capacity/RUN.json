@@ -1,0 +1,81 @@
+{
+  "aggregate_sha256": "1d318b77b83d52fafd5b4d33bdfb08ba741bba95fcee26340afcb2f02c4080cb",
+  "artifacts": [
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/audit.py",
+      "sha256": "951d8a058383821562ab29e390086c15449d9644839019f330b357de47d93678"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/registration.json",
+      "sha256": "8aa79b54dd95f0e9925481220c30c6c03552a05131ff0a68dabde454e4817ec2"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/synthetic_validation.json",
+      "sha256": "b353e5b803b9d98c7e0f9bafbaa7a362a96558dd15958c7489b63fa545ee435a"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/header_validation.json",
+      "sha256": "93c1691762556be62643dd4ff15316657d65610c17f3c005ed568d47160cd0bf"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/independent_review.json",
+      "sha256": "a9ec30f68fa8145cb590a61e85bf962c895cf5fc46c7cdde6511205938c1bf66"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/probe_v1/completion_anonymous.json",
+      "sha256": "8cf605fb03ae3ec5e8619908861e415f5b7ee7eb686a8c0ca60b5f05a5538877"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/full_v1/commitments.json",
+      "sha256": "5559a94620e8d3551c28cd2cf73d1332c43947e2be7ddbfbf087b10a0e00b9c6"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/full_v1/groups_private.json",
+      "sha256": "dce6578f32c570a1584784b9cbeea16673ee61fcf6b5aabe776af8fe73cd1160"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/full_v1/results_index_private.json",
+      "sha256": "ca631e634c22893bba47c2c8273018518701be742587508fc25a2d6e907cf318"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/full_v1/summary_anonymous.json",
+      "sha256": "f4b10482b007eeadd0ae7a89ef5a03802e3b74c988eb6f64a2c815d88517dff5"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/full_v1/completion_anonymous.json",
+      "sha256": "8fd7a27c2f040b9deef4a5477a25f5505b08b57c4c0dd3c87aae76c5f7e6a3cb"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_capacity_audit_20261026/design_review.json",
+      "sha256": "9a87c5e1798037073e38c09b4f64a7f49e6ee4bfae6b925b1dd5ee5b763219b5"
+    }
+  ],
+  "audit_source_sha256": "951d8a058383821562ab29e390086c15449d9644839019f330b357de47d93678",
+  "base_code_commit": "425dd11",
+  "command": "timeout 1800s env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=<frozen-runtime> OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 <nvgen-python> <private-audit.py> --workers 4",
+  "cuda_hidden": true,
+  "design_sha256": "ec5f2be2953a59f634a3164ac9164726388589ff0769fe83e12b59a317d849ec",
+  "evidence": "NOT_EVIDENCE",
+  "independent_review_remaining_findings": 0,
+  "limits": [
+    "Exact bounded planned sampling schedule, not all possible future crops",
+    "3D whole-source count bounds other3D crops; no such bound is claimed for2D splitting",
+    "Lesion bytes and role/source digests verified; image headers checked, image/anatomy full bytes not rehashed",
+    "Does not certify labels, relation targets, model quality or held-out test"
+  ],
+  "model_forwards": 0,
+  "next": "User confirmation of128query/freshII design; no production implementation or new training performed",
+  "nice": 19,
+  "numerical_threads": 2,
+  "orientation_checks": 48,
+  "registration_sha256": "8aa79b54dd95f0e9925481220c30c6c03552a05131ff0a68dabde454e4817ec2",
+  "results_index_members": 2086,
+  "runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a",
+  "status": "AUDIT_COMPLETE_DESIGN_PROPOSED",
+  "synthetic_count_checks": 63,
+  "training_updates": 0,
+  "version": 1,
+  "wall_cap_seconds": 1800,
+  "wall_seconds": 157.91395116318017,
+  "workers": 4
+}
