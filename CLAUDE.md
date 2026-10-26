@@ -4,6 +4,8 @@
 
 **分支与进展入口（2026-10-22）：** 用户已明确要求把本轮实现、证据与进展合并到`main`，后续直接查询`main`。以`STATUS.md`顶部和当前候选`RESULTS.md`/`RUN.json`为准；下文历史的feature-only发布约定已被取代。进展记录是截至注明时点的快照；核对私有完成文件和哈希即可复核已完成实验，不要为恢复上下文重复训练、拟合或影像前向。
 
+**验收口径（2026-10-22）：** 三个子目标的"做成"定义与 A/U/R 的门以 `docs/superpowers/specs/2026-10-22-aur-three-subgoal-acceptance-design.md` 为准（用户拍板 Q31 到 Q34），它替代 10-08 N14、10-14 §3.3、10-21 §6 的门条款；下文各处引用的旧门只作历史记录。
+
 ## 项目一句话
 
 面向 **2D MRI 图像与 3D MRI 体数据** 的解剖实体 A、病灶实体 U 与显式病灶–解剖绑定 R 的结构化感知(`X → (A, U) → R`)。不称 foundation model。权威执行计划是 `docs/plans/2026-09-22-aur-v2.6-experiment-design-route.md`(v2.6,冲突以它为准;v2.5/v2.4 文件只作审计记录);Gate 链 = Gate 0(fastMRI+ 框坐标、患者 ID 折)→ Gate 0.5(全集 1297 病灶几何盘点,冻结困难组阈值 t)→ A/U(膝侧)→ Level R 人标(Gate R0,两层一致率门)→ 公平关系基线(Gate R1)→ 鲁棒性/E。关系主战场是 fastMRI+ 脑 FLAIR 小病灶,SKM-TEA 只作几何容易的对照。主投 MedIA。
