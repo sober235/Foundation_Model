@@ -108,3 +108,35 @@ def test_report_rejects_source_change_during_pixel_audit(batch,monkeypatch,tmp_p
     monkeypatch.setattr(mod,'_sources',lambda:calls.append(1) or {'code':'first' if len(calls)==1 else 'changed'})
     csv=tmp_path/'empty.csv';csv.write_text('file,slice,study_level,x,y,width,height,label\n')
     with pytest.raises(ValueError,match='report'):mod.write_report(out,csv,root,tmp_path/'report')
+
+
+def test_zero_area_annotation_rows_are_excluded_and_counted_without_changing_valid_boxes(tmp_path,monkeypatch):
+    mod=api();path=tmp_path/'mixed.csv'
+    path.write_text('file,slice,study_level,x,y,width,height,label\n'
+        'synthetic_private,1,No,3,2,6,4,Edema\n'
+        'synthetic_private,2,No,1,1,2,0,Edema\n'
+        'synthetic_private,3,No,1,1,0,0,Edema\n')
+    before=path.read_bytes()
+    rows=mod.boxes_by_file(path)
+    assert rows=={'synthetic_private':{1:[{'x':3,'y':2,'width':6,'height':4,'label':'Edema'}]}}
+    record={'series_stem':'synthetic_private','sequence':'AXFLAIR','modes':['2d'],
+        'native_shape':[4,20,20],'geometry':'assumed','patient_coordinates':'not_produced',
+        'lesions':[{'mode':'2d','slice':1,'box':[1,14,3,2,18,9]},
+                   {'mode':'2d','slice':2,'box':[2,0,0,3,2,2]}]}
+    monkeypatch.setattr(mod,'_batch_records',lambda p:[record])
+    summary=mod.report_batch(tmp_path/'batch',path)
+    assert summary['n_boxes']==1 and summary['n_hit']==1 and summary['n_fp']==0
+    assert summary['n_images']==1 and summary['unannotated_detections_not_scored']==1
+    assert summary['rejected_annotation_boxes']==2
+    assert summary['rejected_annotation_reasons']=={'zero_width':1,'zero_height':2}
+    assert path.read_bytes()==before and 'synthetic_private' not in json.dumps(summary)
+
+
+@pytest.mark.parametrize('content',[
+    'file,slice,x,y,width,height,label\nsynthetic_private,1,1,1,2,2,Edema\n',
+    'file,slice,study_level,x,y,width,height,label\nsynthetic_private,1,No,1,1,-2,2,Edema\n',
+    'file,slice,study_level,x,y,width,height,label\nsynthetic_private,1,No,-1,1,2,2,Edema\n'])
+def test_other_malformed_annotation_inputs_still_fail_privately(tmp_path,content):
+    path=tmp_path/'malformed.csv';path.write_text(content)
+    with pytest.raises(ValueError,match='annotation') as err:api().boxes_by_file(path)
+    assert 'synthetic_private' not in str(err.value)

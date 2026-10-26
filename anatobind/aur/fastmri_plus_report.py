@@ -3,7 +3,7 @@
 Intensity contrast is reported for both conventions but cannot choose policy.
 Unannotated slices are not asserted to be negative medical ground truth.
 """
-from collections import defaultdict
+from collections import Counter,defaultdict
 import json
 from pathlib import Path
 import numpy as np
@@ -20,16 +20,26 @@ CONVENTION='bottom'
 def series_stem(series_dir):return Path(series_dir).name
 
 
-def boxes_by_file(csv_path):
+def _boxes_with_rejections(csv_path):
     try:
-        result={}
+        result={};rejected=0;reasons=Counter()
         for row in read_fastmri_plus_rows(csv_path):
-            if row['width']<=0 or row['height']<=0 or min(row['x'],row['y'])<0:raise ValueError
+            if row['width']<0 or row['height']<0 or min(row['x'],row['y'])<0:raise ValueError
+            if row['width']==0 or row['height']==0:
+                rejected+=1
+                if row['width']==0:reasons['zero_width']+=1
+                if row['height']==0:reasons['zero_height']+=1
+                continue
             name=row['file'][:-3] if row['file'].endswith('.h5') else row['file']
             result.setdefault(name,{}).setdefault(row['slice'],[]).append(
                 {key:row[key] for key in ('x','y','width','height','label')})
-        return result
+        return result,{'rejected_annotation_boxes':rejected,'rejected_annotation_reasons':dict(reasons)}
     except Exception:raise ValueError('invalid annotation table') from None
+
+
+def boxes_by_file(csv_path):
+    """Return usable boxes; degenerate rows have no target or negative meaning."""
+    return _boxes_with_rejections(csv_path)[0]
 
 
 def box_rows(box,n_rows,convention):
@@ -132,7 +142,7 @@ def report_batch(batch_dir,csv_path,*,series_depths=None):
 
 
 def _report_batch(batch_dir,csv_path,*,series_depths):
-    annotations=boxes_by_file(csv_path);records=_batch_records(batch_dir)
+    annotations,rejected=_boxes_with_rejections(csv_path);records=_batch_records(batch_dir)
     depths=dict(series_depths or {})
     for row in records:
         name=row['series_stem'];depth=row['native_shape'][0]
@@ -161,7 +171,7 @@ def _report_batch(batch_dir,csv_path,*,series_depths):
             _add(by_sequence.setdefault(sequence,{}).setdefault(mode,{}),counts)
     aggregate=dict(n_boxes=0,n_hit=0,n_fp=0,n_images=0)
     for counts in by_mode.values():_add(aggregate,counts)
-    return {**aggregate,'by_mode':by_mode,'by_sequence':by_sequence,'unique_annotation_boxes':unique_boxes,
+    return {**aggregate,**rejected,'by_mode':by_mode,'by_sequence':by_sequence,'unique_annotation_boxes':unique_boxes,
         'aggregation_unit':'mode_slice','coverage':'annotation_bearing_slices_only',
         'unmatched_files':unmatched_files,'unmatched_slices':unmatched_slices,
         'unscored_annotation_files':len(set(annotations)&set(depths)-scored_files),
@@ -180,7 +190,7 @@ def write_report(batch_dir,csv_path,dicom_root,out_dir,*,audit_limit=20):
         batch=Path(batch_dir).expanduser().resolve();csv=Path(csv_path).expanduser().resolve()
         snapshot=_sources()
         before={'csv_sha256':file_sha256(csv),'batch_complete_sha256':file_sha256(batch/'complete.json')}
-        annotations=boxes_by_file(csv);refs=[];rejected=0
+        annotations,rejected_boxes=_boxes_with_rejections(csv);refs=[];rejected=0
         def images():
             nonlocal rejected
             for folder in series_dirs(dicom_root):
@@ -191,7 +201,8 @@ def write_report(batch_dir,csv_path,dicom_root,out_dir,*,audit_limit=20):
                 refs.extend(source.source_refs)
                 for index in sorted(annotations[name]):
                     if 0<=index<len(source.image_dhw):yield name,index,source.image_dhw[index]
-        audit=convention_audit(images(),annotations,limit=audit_limit);audit['rejected_series']=rejected
+        audit=convention_audit(images(),annotations,limit=audit_limit)
+        audit.update(rejected_series=rejected,**rejected_boxes)
         summary=report_batch(batch,csv)
         from anatobind.aur.dicom import verify_sources
         verify_sources(refs)
