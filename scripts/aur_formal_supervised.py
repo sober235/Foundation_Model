@@ -131,6 +131,16 @@ def _admit(reg):
     return snapshot,frozen,identity
 
 
+def _record_gpu_admission(device, destination):
+    try:
+        record = _gpu_admission(device)
+    except ValueError as exc:
+        if hasattr(exc, 'diagnostics'):
+            _json(destination, exc.diagnostics)
+        raise
+    _json(destination, record)
+
+
 def _stage_work(stage,recipe,data_contract,out,device,initializer,g1_report):
     import torch
     from anatobind.aur import unified_launcher as launcher
@@ -139,7 +149,7 @@ def _stage_work(stage,recipe,data_contract,out,device,initializer,g1_report):
     def admitted_initialize(*args,**kwargs):
         # run_stage has finished startup hashing and created its validated private
         # directory. Recheck the physical UUID at the actual model boundary.
-        _json(Path(out)/'gpu_initialization_admission.json',_gpu_admission(device))
+        _record_gpu_admission(device, Path(out)/'gpu_initialization_admission.json')
         return original(*args,**kwargs)
     launcher._initialize=admitted_initialize
     try:
@@ -240,7 +250,7 @@ def _execute_stages(reg,identity,out,device,send):
         if torch.cuda.is_initialized():
             torch.cuda.empty_cache()
             raise ValueError('orchestrator must not own a CUDA context')
-        _json(out/f'gpu_admission_{stage}.json',_gpu_admission(device))
+        _record_gpu_admission(device, out/f'gpu_admission_{stage}.json')
         recipe = {'schema_version':1,'stage_config':reg['stage_configs'][stage],
                   'validation_batches':reg['validation_batches']}
         result = _run_stage_job(stage,recipe,reg['inputs']['data_contract']['path'],out/stage,device,

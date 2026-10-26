@@ -6,11 +6,13 @@ No checkpoint here is a formal supervised completion artifact.
 """
 import argparse
 from copy import deepcopy
+from datetime import datetime, timezone
 import ctypes
 import gc
 import hashlib
 import importlib.util
 import json
+import math
 import multiprocessing
 import os
 from pathlib import Path
@@ -352,26 +354,53 @@ def _gpu_admission(device):
     visible = os.environ.get('CUDA_VISIBLE_DEVICES', '')
     if not visible.startswith('GPU-') or ',' in visible or device not in ('cuda', 'cuda:0'):
         raise ValueError('GPU visibility must be one resolved physical UUID')
+    diagnostics = {'device':device, 'observed_utc':datetime.now(timezone.utc).isoformat()}
+    reason = 'query_failed'
+    phase = 'gpu_query'
     try:
         query = subprocess.run(['nvidia-smi', '--query-gpu=uuid,utilization.gpu,memory.used,memory.total',
                                 '--format=csv,noheader,nounits'], capture_output=True, text=True,
                                check=True, timeout=10)
         rows = [line.split(',') for line in query.stdout.strip().splitlines()]
         selected = [row for row in rows if row[0].strip() == visible]
+        reason = 'selected_gpu_not_found'
+        if len(selected) != 1:
+            raise ValueError
+        reason = 'invalid_metrics'
+        uuid, utilization, used, total = [cell.strip() for cell in selected[0]]
+        diagnostics['physical_uuid'] = uuid
+        utilization, used, total = float(utilization), int(used), int(total)
+        if not math.isfinite(utilization):
+            raise ValueError
+        diagnostics.update(utilization_percent=utilization, memory_used_mib=used, memory_total_mib=total)
+        phase, reason = 'workload_query', 'query_failed'
         workloads = subprocess.run(['nvidia-smi', '--query-compute-apps=gpu_uuid,pid',
                                     '--format=csv,noheader,nounits'], capture_output=True, text=True,
                                    check=True, timeout=10)
-        if len(selected) != 1:
-            raise ValueError
-        uuid, utilization, used, total = [cell.strip() for cell in selected[0]]
         active = sum(line.split(',')[0].strip() == uuid for line in workloads.stdout.strip().splitlines())
-        if active or float(utilization) != 0 or int(total) - int(used) < 8192:
+        diagnostics['active_compute_workloads'] = active
+        phase, reason = 'decision', 'gpu_busy'
+        if active or utilization != 0:
+            raise ValueError
+        reason = 'insufficient_memory'
+        if total - used < 8192:
             raise ValueError
         return {'device': 'cuda:0', 'physical_uuid': uuid, 'active_compute_workloads': active,
-                'utilization_percent': float(utilization), 'memory_used_mib': int(used),
-                'memory_total_mib': int(total)}
-    except Exception:
-        raise ValueError('GPU is unavailable or no longer idle') from None
+                'utilization_percent': utilization, 'memory_used_mib': used,
+                'memory_total_mib': total}
+    except Exception as exc:
+        if isinstance(exc, subprocess.TimeoutExpired):
+            reason = 'query_timeout'
+            diagnostics['error_type'] = 'TimeoutExpired'
+        elif isinstance(exc, subprocess.CalledProcessError):
+            diagnostics.update(error_type='CalledProcessError', return_code=exc.returncode)
+        elif isinstance(exc, OSError):
+            reason = 'query_os_error'
+            diagnostics['error_type'] = 'OSError'
+        diagnostics.update(status='REJECTED', reason=reason, phase=phase)
+        error = ValueError('GPU is unavailable or no longer idle')
+        error.diagnostics = diagnostics
+        raise error from None
 
 
 def _execute(registration, out, device, send):

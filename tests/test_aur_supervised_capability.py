@@ -156,6 +156,77 @@ def test_gpu_admission_fails_when_visible_uuid_is_unresolved(monkeypatch):
         module()._gpu_admission('cuda:0')
 
 
+@pytest.mark.parametrize('utilization,used,workloads,reason', [
+    ('1', '2', '', 'gpu_busy'),
+    ('0', '2', 'GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb, 123\n', 'gpu_busy'),
+    ('0', '80000', '', 'insufficient_memory'),
+    ('N/A', '2', '', 'invalid_metrics'),
+])
+def test_gpu_rejection_preserves_actual_anonymous_decision_snapshot(
+        monkeypatch, utilization, used, workloads, reason):
+    from types import SimpleNamespace
+    mod = module()
+    uuid = 'GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb'
+    monkeypatch.setenv('CUDA_VISIBLE_DEVICES', uuid)
+    replies = iter([f'{uuid}, {utilization}, {used}, 81920\n', workloads])
+    monkeypatch.setattr(mod.subprocess, 'run', lambda *a, **k: SimpleNamespace(stdout=next(replies)))
+    with pytest.raises(ValueError) as caught:
+        mod._gpu_admission('cuda:0')
+    details = caught.value.diagnostics
+    assert details['reason'] == reason and details['status'] == 'REJECTED'
+    assert details['physical_uuid'] == uuid and details['observed_utc']
+    assert 'pid' not in details and 'workload_pids' not in details
+    if reason != 'invalid_metrics':
+        assert details['memory_used_mib'] == int(used)
+        assert details['utilization_percent'] == float(utilization)
+        assert details['active_compute_workloads'] == int(bool(workloads))
+
+
+def test_gpu_query_failure_retains_only_allowlisted_error_details(monkeypatch):
+    import subprocess
+    mod = module()
+    monkeypatch.setenv('CUDA_VISIBLE_DEVICES', 'GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb')
+    def failed(*args, **kwargs):
+        raise subprocess.CalledProcessError(7, 'private-patient-command',
+            output='private-patient-stdout', stderr='private-patient-stderr')
+    monkeypatch.setattr(mod.subprocess, 'run', failed)
+    with pytest.raises(ValueError) as caught:
+        mod._gpu_admission('cuda:0')
+    details = caught.value.diagnostics
+    assert details['reason'] == 'query_failed' and details['return_code'] == 7
+    assert details['error_type'] == 'CalledProcessError'
+    assert 'private-patient' not in json.dumps(details) + str(caught.value)
+
+
+@pytest.mark.parametrize('failure,reason', [('timeout','query_timeout'), ('missing','selected_gpu_not_found')])
+def test_gpu_rejection_distinguishes_missing_device_and_timeout(monkeypatch, failure, reason):
+    from types import SimpleNamespace
+    import subprocess
+    mod = module()
+    monkeypatch.setenv('CUDA_VISIBLE_DEVICES', 'GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb')
+    def query(*args, **kwargs):
+        if failure == 'timeout':
+            raise subprocess.TimeoutExpired('private-command', 10, output='private-output')
+        return SimpleNamespace(stdout='')
+    monkeypatch.setattr(mod.subprocess, 'run', query)
+    with pytest.raises(ValueError) as caught:
+        mod._gpu_admission('cuda:0')
+    assert caught.value.diagnostics['reason'] == reason
+    assert 'private-' not in json.dumps(caught.value.diagnostics)
+
+
+def test_gpu_admission_keeps_idle_and_free_memory_requirements(monkeypatch):
+    from types import SimpleNamespace
+    mod = module()
+    uuid = 'GPU-a9b716ea-de2e-5d23-217d-db82a1d48efb'
+    monkeypatch.setenv('CUDA_VISIBLE_DEVICES', uuid)
+    replies = iter([f'{uuid}, 0, 73728, 81920\n', ''])
+    monkeypatch.setattr(mod.subprocess, 'run', lambda *a, **k: SimpleNamespace(stdout=next(replies)))
+    assert mod._gpu_admission('cuda:0') == {'device':'cuda:0', 'physical_uuid':uuid,
+        'active_compute_workloads':0, 'utilization_percent':0.0,
+        'memory_used_mib':73728, 'memory_total_mib':81920}
+
+
 def test_parent_completion_file_binds_embedded_certificate_and_selected_export():
     mod = module()
     parent = {'completion_certificate':{'version':1,'stage':'I','selected_step':1792}}

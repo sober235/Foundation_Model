@@ -179,6 +179,27 @@ def test_stage_worker_uses_default_fullpool_factories(tmp_path,monkeypatch):
     assert not {'train_factory','validation_factory','resume'} & set(seen[0][1])
 
 
+def test_initialization_rejection_is_saved_without_constructing_model(tmp_path, monkeypatch):
+    import anatobind.aur.unified_launcher as launcher
+    mod = module()
+    details = {'status':'REJECTED', 'reason':'gpu_busy', 'active_compute_workloads':1}
+    def guard(device):
+        error = ValueError('GPU is unavailable or no longer idle')
+        error.diagnostics = details
+        raise error
+    def run(*args, **kwargs):
+        return launcher._initialize()
+    def forbidden(*args, **kwargs):
+        pytest.fail('Rejected GPU must not construct a model')
+    monkeypatch.setattr(mod, '_gpu_admission', guard)
+    monkeypatch.setattr(launcher, 'run_stage', run)
+    monkeypatch.setattr(launcher, '_initialize', forbidden)
+    with pytest.raises(ValueError):
+        mod._stage_work('II', {}, 'contract', tmp_path, 'cuda:0', 'parent', 'gate')
+    assert json.loads((tmp_path/'gpu_initialization_admission.json').read_text()) == details
+    assert launcher._initialize is forbidden
+
+
 def test_tiny_cpu_actual_stage_chain_uses_real_run_stage_without_formal_claim(tmp_path,monkeypatch):
     import os
     import tempfile
