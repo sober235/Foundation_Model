@@ -1,0 +1,13 @@
+{
+  "scope": "added lines and new files since095d878; current handoff only",
+  "identity_tokens_checked": 2106,
+  "private_array_paths_checked": 8324,
+  "identity_hits": 0,
+  "private_array_path_hits": 0,
+  "json_files_parsed": 2,
+  "local_links_checked": 78,
+  "broken_links": [],
+  "medical_binary_files_added": 0,
+  "hashed_evidence_files_verified": 27,
+  "passed": true
+}

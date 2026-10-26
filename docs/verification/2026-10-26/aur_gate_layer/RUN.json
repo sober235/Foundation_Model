@@ -1,0 +1,263 @@
+{
+  "aggregate_sha256": "bd18cd79c1a360e67020a25aaa38dd5b5eac67012281efc7dae65d4e5cb47284",
+  "artifacts": [
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/smoke_selection_private.json",
+      "sha256": "f75d31f683d9fd15170c476eee9ee58f5049a1420bba358b661bcabc4554d68f"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/source_revision_verification.json",
+      "sha256": "8584b8019f89986f0d71ac0272a8311ba42c778ce2c6dc03381ed0c9f4216f63"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/smoke_verified_anonymous.json",
+      "sha256": "e0e394467c47b70b83b7389c1ea76afa7b5a74263c56e1918aca5b2b7094ca22"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/reference_verified_anonymous.json",
+      "sha256": "deb5ec69ae471192998b570183332da6983c4c10cd838d2d28ac26b3f247f9ed"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/annotations_verified_anonymous.json",
+      "sha256": "a78e9dffcaf15b9bea8d73068136637ff4a39d0be2a3ac14baf4aa668e4f1379"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/reference_exit.json",
+      "sha256": "b0198b5e06d5b2eb098de33a7f98df4257d5b11ac6908c5dffe3eb6ae364c44d"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/batch_exit.json",
+      "sha256": "557573ee8a6788c874021ee44028fba52335425da7c21e4262c31bf249db1148"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/annotations_exit.json",
+      "sha256": "ba8a62b18cc6ba56666a2854bcb5b385970e5f5e7055386464ee85c0ba9dea4c"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/annotations_retry_exit.json",
+      "sha256": "5f39b4561c56f6dcbe39c59eadefb6181bb64144dc202fa4359992c9ef560685"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/reference_val_v1/complete.json",
+      "sha256": "7b7aa0f1c1256300d8011fa7163c57f261a389a37e09652fecab857ca9ad619a"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/reference_val_v1/contract.json",
+      "sha256": "cf27660e0fd27af9b64f2646b5532486cb18ae7bda914ef5dbd78daccd8f1d11"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/fastmri_smoke_v1/complete.json",
+      "sha256": "05b7a70b4cd2f664e60c9de4484e59d9df591c2c56c768c7adcc6bd203f1cbac"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/fastmri_plus_audit_v2/complete.json",
+      "sha256": "2c8afd36e821b30db0ca8ed01fad94cc1c5a867324c716fa58bc88f38138ed32"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/implementation/full_cpu.log",
+      "sha256": "340ffabacb4c25cc52a5b382a52409f3c4842700be0710819ff98b43777105bb"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/implementation/full_cpu_result.json",
+      "sha256": "daaaf68b294a01b0bbf7931c1a37963d868e733bc4487ae965a912a50d909b98"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/implementation/root_validation.json",
+      "sha256": "7ce9f664cd8ae0015b6457424adb626a8dbc8e45a4235ecb24c32b40449a6282"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/registration_v1.json",
+      "sha256": "5c7dea26ab807acc5500a6ed1b8ded5bad83f092b0a4cc050262a09e4cfd0886"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/registration_summary_v1.json",
+      "sha256": "40a21c31ca7dd1d7df48a5d50a14b3c967b115ff66c2660b38855629ae3056e4"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/parent_intake_anonymous.json",
+      "sha256": "f81a162850a1724d2a1edd0aab01e9b9226e6a91d639f6f2f9f4ee9bb3540769"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/single_buffer_admission_validation_v4.json",
+      "sha256": "06c1d2db229630636e81e1bd40041af2fd035c9baddddd95138e848427dbf04f"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/review_round1.md",
+      "sha256": "5ce7f84803948b2110e4ed9de597278665d022945742071b3b57b71c41a12bef"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/review_round2.md",
+      "sha256": "b3146e765cf9ea18afc2a163a2c316ca4c03b2b14c7b55172fc84b87539553ff"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/fresh_exec_review_round1.md",
+      "sha256": "4697cab921395d9da14e24624f0bffe64dfaeb0cfa1493c2ed0a67a5a34975b3"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/fresh_exec_review_round2.md",
+      "sha256": "98ba507e9ba8518670ec6a98b5bb826834e8f626316841ea96282e4a91e20c3a"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/fresh_exec_review_round3.md",
+      "sha256": "d4c67b6d561124ce814129729d790b61a12ca64100bcf4b525a1b42563759c99"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_lr5_formal_supervised_20261026/implementation/registration_review.md",
+      "sha256": "365db19731555425608ceee021fe0564875d1532f15ecedb0236eddf1d4dbdb5"
+    },
+    {
+      "private_artifact": "/home/congcongliu/outputs/aur_gate_layer_20261026/implementation/fastmri_zero_area_incremental_review.md",
+      "sha256": "4133d43a1c2e14df580e36d537500e4875825f6982a57bf64e4e2529c14b3a70"
+    }
+  ],
+  "base_commit": "095d8784685064fe94b4fee316959550540a1246",
+  "commands": {
+    "annotation_retry": [
+      "scripts/aur_fastmri_plus_report.py",
+      "--batch",
+      "/home/congcongliu/outputs/aur_gate_layer_20261026/fastmri_smoke_v1",
+      "--annotations",
+      "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/Annotations/brain.csv",
+      "--dicom-root",
+      "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/brain/multicoil_train",
+      "--out",
+      "/home/congcongliu/outputs/aur_gate_layer_20261026/fastmri_plus_audit_v2",
+      "--audit-limit",
+      "20"
+    ],
+    "batch": [
+      "scripts/aur_fastmri_batch.py",
+      "--root",
+      "/data2/congcong/data/FM_data/fastMRI_lh_brain_knee/brain/multicoil_train",
+      "--export",
+      "/home/congcongliu/outputs/aur_unified_input_20261019/pilot_fixed24_v1/stage_III_export.pt",
+      "--out",
+      "/home/congcongliu/outputs/aur_gate_layer_20261026/fastmri_smoke_v1",
+      "--limit",
+      "3",
+      "--device",
+      "cpu"
+    ],
+    "cpu_suite": "env CUDA_VISIBLE_DEVICES= PYTHONNOUSERSITE=1 PYTHONPATH=. OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 nice -n 19 /home/congcongliu/anaconda3/envs/nvgen/bin/python -m pytest tests/ -q -rs -p no:cacheprovider",
+    "reference": [
+      "scripts/aur_reference_1mm.py",
+      "--contract",
+      "/home/congcongliu/outputs/aur_qualified_training_20261019/data_contract/final_v3/contract.json",
+      "--qualified-source",
+      "/home/congcongliu/outputs/aur_qualified_sources_20261021/65eb7df",
+      "--out",
+      "/home/congcongliu/outputs/aur_gate_layer_20261026/reference_val_v1"
+    ]
+  },
+  "environment": {
+    "cuda_hidden": true,
+    "nice": 19,
+    "numerical_threads": 2,
+    "outside_sandbox": true,
+    "python": "/home/congcongliu/anaconda3/envs/nvgen/bin/python"
+  },
+  "evidence": "NOT_EVIDENCE",
+  "implementation_commits": [
+    "f031e52",
+    "33d4279",
+    "0dec1e3",
+    "61eb45c",
+    "a63b486",
+    "61d3c9b"
+  ],
+  "job_exits": {
+    "annotations": {
+      "exit_code": 1,
+      "finished_utc": "2026-10-26T07:36:37.052140+00:00",
+      "job": "annotations",
+      "stdout_sha256": "97bdf87f88e3d1c0a47a1dca8fea4551b51f3ae61e413cfe091e311b367ee274",
+      "timed_out": false,
+      "wall_seconds": 5.7841068329289556,
+      "worker_exited": true
+    },
+    "annotations_retry": {
+      "exit_code": 0,
+      "finished_utc": "2026-10-26T07:56:24.314923+00:00",
+      "job": "annotations_retry",
+      "stdout_sha256": "6535928258bca0937a9c01a88c1cc2b751cf19a9ca2e2e401a4d07e706f4f18a",
+      "timed_out": false,
+      "wall_seconds": 6.2826756071299314,
+      "worker_exited": true
+    },
+    "batch": {
+      "exit_code": 0,
+      "finished_utc": "2026-10-26T07:36:31.267159+00:00",
+      "job": "batch",
+      "stdout_sha256": "afde8388de27e2372d8868f640b10f75394eeabb33605f9e7da4022b900ac731",
+      "timed_out": false,
+      "wall_seconds": 42.10654927045107,
+      "worker_exited": true
+    },
+    "reference": {
+      "exit_code": 0,
+      "finished_utc": "2026-10-26T07:46:21.445520+00:00",
+      "job": "reference",
+      "stdout_sha256": "456766fecb30231841e09c33980b934a6f20e9be2976de1ff5325dcdbb009558",
+      "timed_out": false,
+      "wall_seconds": 632.285187613219,
+      "worker_exited": true
+    }
+  },
+  "limitations": [
+    "Real historical-test role and final grading not executed",
+    "Tiny three-series CPU smoke is not trained-model quality",
+    "Full 4469-series inference not executed",
+    "Assumed display geometry does not establish patient coordinates",
+    "Five dedicated-environment CPU skips not rerun as GPU checks"
+  ],
+  "main_branch": "main",
+  "progress_entry": "PROJECT_CONTEXT.md",
+  "real_execution_source": {
+    "batch": {
+      "all_source_bytes_match_git": true,
+      "code_revision": "61eb45ca846e44e5008cc68a2a4b127b68a7cd94",
+      "source_files_verified": 154
+    },
+    "reference": {
+      "all_source_bytes_match_git": true,
+      "code_revision": "61eb45ca846e44e5008cc68a2a4b127b68a7cd94",
+      "source_files_verified": 151
+    }
+  },
+  "remote_spec_merge": "29d7917",
+  "repository": "https://github.com/sober235/Foundation_Model",
+  "single_work_branch": "work/aur-formal-supervised",
+  "state": {
+    "final_controller_sha256": "cbc8d40b3a7e0e4eb0801b50d2493f7c57892df52b4be5865d4b5f3a211731fc",
+    "next_registration": "v2_required",
+    "old_registration_status": "v1_unexecuted_stale_controller_hash",
+    "registered_budget_proposed": {
+      "II": 4096,
+      "III": 2048
+    },
+    "status": "PREPARED_NOT_STARTED"
+  },
+  "updated_utc": "2026-10-26T08:16:32.170884+00:00",
+  "validation": {
+    "all_production_followups_tested": true,
+    "final_controller_targeted": {
+      "modules": [
+        "tests/test_aur_formal_supervised.py",
+        "tests/test_aur_supervised_capability.py"
+      ],
+      "passed": 73,
+      "seconds": 30.49
+    },
+    "full_cpu": {
+      "exit_code": 0,
+      "failed": 0,
+      "log_sha256": "340ffabacb4c25cc52a5b382a52409f3c4842700be0710819ff98b43777105bb",
+      "note": "full integration before final formal-controller request-buffer-only fix; affected checks rerun separately afterward",
+      "passed": 2069,
+      "seconds": 346.23,
+      "skipped": 5
+    },
+    "independent_reviews_outstanding": 0
+  },
+  "version": 1
+}

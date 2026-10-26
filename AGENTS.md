@@ -1,6 +1,13 @@
 # Project instructions
 
-Read `CLAUDE.md` and `STATUS.md` for the current project contract and state.
+Read `PROJECT_CONTEXT.md`, then the current sections of `STATUS.md` and `CLAUDE.md` for the project contract and state.
+
+## Progress recall scope
+
+- The user requires progress recall from `main` plus exactly one registered work branch: `work/aur-formal-supervised`. `PROJECT_CONTEXT.md` is the authoritative handoff index.
+- Read the main handoff and linked current evidence, then only that work branch's delta from main. Do not enumerate/read every branch or reconstruct progress by searching all branch histories.
+- Older branches are archives. Access a specific old commit only when the handoff explicitly references it, evidence is missing, or the user requests it. Do not delete archived branches as part of this policy.
+- Keep the handoff and the single work-branch pointer current after each milestone; distinguish prepared, running and completed work. Do not repeat completed training/inference merely to restore context.
 
 ## Private diagnostic evidence
 

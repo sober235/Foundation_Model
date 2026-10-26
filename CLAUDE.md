@@ -1,5 +1,7 @@
 # Foundation_Model / AnatoBind-MRI:新会话入口
 
+**2026-10-26用户指定的回顾范围：仅`main`＋`work/aur-formal-supervised`。** 先读[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)和STATUS顶部；不要完整读取所有分支。该工作分支从本次归档main建立，作为唯一后续工作入口；旧分支保留档案。最新[判门/像素网格报告](docs/verification/2026-10-26/aur_gate_layer/RESULTS.md)及RUN记录：S7开发参考重评分、3序列双mode tiny CPU试跑、修复后标注报告均完成，真实test未读；CPU2069/5及最终控制器73项定向检查通过，正式II/III未启动。旧v1登记未运行且控制器hash过时，下一次先生成/审阅v2。启动必须cwd=冻结runtime且PYTHONPATH同指向，不能让子进程`python -c`从checkout加载anatobind。全部具体定位、失败保留与下一步见PROJECT_CONTEXT。
+
 先读这个文件,再读 `STATUS.md`,然后才动手。上一个会话的结论只当线索,不当事实;关键数字能重跑的先重跑,重跑与记录不符时以重跑为准并写明。
 
 **分支与进展入口（2026-10-22）：** 用户已明确要求把本轮实现、证据与进展合并到`main`，后续直接查询`main`。以`STATUS.md`顶部和当前候选`RESULTS.md`/`RUN.json`为准；下文历史的feature-only发布约定已被取代。进展记录是截至注明时点的快照；核对私有完成文件和哈希即可复核已完成实验，不要为恢复上下文重复训练、拟合或影像前向。

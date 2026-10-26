@@ -2,7 +2,9 @@
 
 面向 2D/3D MRI 的解剖实体、病灶实例与病灶–解剖关系学习项目。
 
-项目进展统一发布在`main`：先读[STATUS.md](STATUS.md)顶部，再查[当前监督能力检查](docs/verification/2026-10-22/aur_lr5_supervised_capability/RESULTS.md)与同目录`RUN.json`；LR5/G1父证据见[此前候选实验报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)。状态以记录的快照时点为准。
+**回顾项目只需`main`＋`work/aur-formal-supervised`。** 从[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)开始，再查[STATUS顶部](STATUS.md)和[最新验证报告](docs/verification/2026-10-26/aur_gate_layer/RESULTS.md)；不要遍历所有历史分支。
+
+2026-10-26：判门层与fastMRI像素网格接口已完成，S7开发参考重评分、3序列双mode CPU试跑及标注报告通过执行/完整性验证。全套CPU2069 passed/5 skipped，最终控制器相关73项检查通过。正式II/III尚未启动，真实historical test未打开，全4469序列正式推理与最终质量裁决待后续执行。工作分支从归档main建立，作为唯一接续分支。
 
 最新用户澄清：本轮按“能跑通”验收，现已工程通过；小集质量与保持性指标作为观察项，不单独阻止后续完整数据训练。原诊断FAIL保留，最终性能仍待完整训练和独立评价。此次澄清未启动新训练。
 

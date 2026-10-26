@@ -1,0 +1,164 @@
+{
+  "all_4469_formal_series_executed": false,
+  "annotations": {
+    "audit": {
+      "chosen": "bottom",
+      "contrast_selects_policy": false,
+      "n_images": 20,
+      "rejected_annotation_boxes": 2,
+      "rejected_annotation_reasons": {
+        "zero_height": 2,
+        "zero_width": 1
+      },
+      "selection_basis": "official_fastmri_plus_csv_to_rss"
+    },
+    "complete_sha256": "2c8afd36e821b30db0ca8ed01fad94cc1c5a867324c716fa58bc88f38138ed32",
+    "coverage": {
+      "by_mode": {
+        "2d": {
+          "n_boxes": 31,
+          "n_fp": 17,
+          "n_hit": 0,
+          "n_images": 17
+        },
+        "3d": {
+          "n_boxes": 31,
+          "n_fp": 17,
+          "n_hit": 0,
+          "n_images": 17
+        }
+      },
+      "by_sequence": {
+        "AXFLAIR": {
+          "2d": {
+            "n_boxes": 31,
+            "n_fp": 17,
+            "n_hit": 0,
+            "n_images": 17
+          },
+          "3d": {
+            "n_boxes": 31,
+            "n_fp": 17,
+            "n_hit": 0,
+            "n_images": 17
+          }
+        }
+      },
+      "coverage": "annotation_bearing_slices_only",
+      "n_boxes": 62,
+      "n_fp": 34,
+      "n_hit": 0,
+      "n_images": 34,
+      "rejected_annotation_boxes": 2,
+      "rejected_annotation_reasons": {
+        "zero_height": 2,
+        "zero_width": 1
+      },
+      "unannotated_detections_not_scored": 58,
+      "unique_annotation_boxes": 31,
+      "unmatched_files": 473,
+      "unmatched_slices": 0
+    },
+    "output_hashes_verified": true
+  },
+  "evidence": "NOT_EVIDENCE",
+  "fastmri_smoke": {
+    "all_output_hashes_verified": true,
+    "complete_sha256": "05b7a70b4cd2f664e60c9de4484e59d9df591c2c56c768c7adcc6bd203f1cbac",
+    "geometry": "assumed",
+    "historical_test_arrays_read": false,
+    "medical_quality_claim": false,
+    "modes": [
+      "2d",
+      "3d"
+    ],
+    "n_ok": 3,
+    "n_series": 3,
+    "observations_2d": 46,
+    "observations_3d": 3,
+    "patient_coordinates": "not_produced",
+    "pilot_only": true,
+    "skipped": {},
+    "verified_at_utc": "2026-10-26T07:42:08.394151+00:00"
+  },
+  "final_controller_targeted": {
+    "modules": [
+      "tests/test_aur_formal_supervised.py",
+      "tests/test_aur_supervised_capability.py"
+    ],
+    "passed": 73,
+    "seconds": 30.49
+  },
+  "final_quality_gates_passed": false,
+  "formal_supervision": {
+    "final_controller_sha256": "cbc8d40b3a7e0e4eb0801b50d2493f7c57892df52b4be5865d4b5f3a211731fc",
+    "next_registration": "v2_required",
+    "old_registration_status": "v1_unexecuted_stale_controller_hash",
+    "registered_budget_proposed": {
+      "II": 4096,
+      "III": 2048
+    },
+    "status": "PREPARED_NOT_STARTED"
+  },
+  "full_cpu": {
+    "exit_code": 0,
+    "failed": 0,
+    "log_sha256": "340ffabacb4c25cc52a5b382a52409f3c4842700be0710819ff98b43777105bb",
+    "note": "full integration before final formal-controller request-buffer-only fix; affected checks rerun separately afterward",
+    "passed": 2069,
+    "seconds": 346.23,
+    "skipped": 5
+  },
+  "historical_test_arrays_read": false,
+  "recall": {
+    "entry": "PROJECT_CONTEXT.md",
+    "main": "main",
+    "scan_all_branches": false,
+    "work_branch": "work/aur-formal-supervised"
+  },
+  "reference_validation": {
+    "complete_sha256": "7b7aa0f1c1256300d8011fa7163c57f261a389a37e09652fecab857ca9ad619a",
+    "contract_sha256": "a839cfc9c9213b5b376eac4bc4a8219506175fdbe3620bc36cb2056f602b6060",
+    "historical_test_arrays_read": false,
+    "model_forwards": 0,
+    "n_source_files": 513,
+    "output_hashes_verified": true,
+    "sources": {
+      "bmsr": {
+        "classification": "native_component_mean_threshold_then_nearest_binary",
+        "excluded_cases": 0,
+        "fp_per_scan": 0.8780487804878049,
+        "grid": "aur_1mm_canonical",
+        "n_fp": 36,
+        "n_gt": 470,
+        "n_hit": 318,
+        "n_scans": 41,
+        "sensitivity": 0.676595744680851
+      },
+      "isles": {
+        "classification": "native_component_mean_threshold_then_nearest_binary",
+        "excluded_cases": 0,
+        "fp_per_scan": 1.65,
+        "grid": "aur_1mm_canonical",
+        "n_fp": 33,
+        "n_gt": 173,
+        "n_hit": 104,
+        "n_scans": 20,
+        "sensitivity": 0.6011560693641619
+      },
+      "pdgm": {
+        "classification": "native_component_mean_threshold_then_nearest_binary",
+        "excluded_cases": 0,
+        "fp_per_scan": 0.36585365853658536,
+        "grid": "aur_1mm_canonical",
+        "n_fp": 15,
+        "n_gt": 53,
+        "n_hit": 48,
+        "n_scans": 41,
+        "sensitivity": 0.9056603773584906
+      }
+    },
+    "version": "aur_reference_1mm_v1"
+  },
+  "updated_utc": "2026-10-26T08:16:32.170884+00:00"
+}

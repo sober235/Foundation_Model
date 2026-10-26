@@ -1,4 +1,16 @@
-# STATUS：2026-10-22（工程训练链路已跑通，最终性能待验证）
+# STATUS：2026-10-26（判门层与有限真实CPU验证完成；正式II/III未启动）
+
+## 当前回顾入口：main＋一个工作分支
+
+用户要求以后只回顾`main`和`work/aur-formal-supervised`，不完整读取所有分支。先读[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)，再读本节、[最新报告](docs/verification/2026-10-26/aur_gate_layer/RESULTS.md)和[RUN](docs/verification/2026-10-26/aur_gate_layer/RUN.json)；工作分支从本次归档main建立，作为唯一后续执行入口。旧分支是档案，不扫描、不删除。
+
+- Q31–Q34判门层已实现：A32逐类出现与宿主Dice，U同网格S7工作点及匹配mask Dice，端到端R；development与historical角色严格区分，阈值和部署head/lookup预先绑定。真实historical test接口仅合成验收，未打开真实test数组。
+- S7开发validation参考重评分已完成：BMSR/ISLES/PDGM分别41/20/41序列，缺折外预测剔除0；wall632.285秒、退出0、哈希复核通过。不是新模型成绩。
+- fastMRI选定3个序列双mode执行成功，46个2D观察＋3个3D观察，wall42.107秒。使用原tiny pilot，仅验证假定像素网格与原网格输出，未执行4469全量。标注报告在修复2条零面积框后完成，6.283秒，无模型重跑；未标注层不当健康负例。
+- 全套CPU2069 passed/5 skipped（346.23秒）；随后正式控制器单buffer校验修复的受影响模块73 passed（30.49秒），独立增量审阅0项剩余。代码、真实结果与原失败均已保留，详见新报告。
+- 正式II/III控制器已准备，尚未开训；私有v1登记绑定旧控制器，保持未运行。下一次在唯一工作分支生成最终源码的v2登记并复核，启动cwd与PYTHONPATH都使用原LR5冻结runtime，检查GPU后才开始II4096→III2048。周期loss不是最终A/U/R成绩。
+
+本次按用户要求归档并推送上下文，不启动新的训练。下面是历史记录；其中“最新/下一步”的措辞以本节和PROJECT_CONTEXT为准。
 
 从2026-10-22本次合并起，`main`是代码、已发布实验结果和项目进展的查询入口。新会话先读本页顶部，再读[当前监督能力检查报告](docs/verification/2026-10-22/aur_lr5_supervised_capability/RESULTS.md)及同目录`RUN.json`；LR5/G1父证据见[此前候选报告](docs/verification/2026-10-21/aur_2d_candidates/RESULTS.md)。以下历史章节中的“main不直接推送”是当时的分支约定，已由本次用户要求合并到`main`取代。Git中的运行状态是注明时点的快照；后续实验状态须核对报告记录的私有完成证据后再更新。
 

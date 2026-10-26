@@ -10,6 +10,19 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-22-aur-three-subgoal-acceptance-design.md`（§3 用户决定 Q31–Q34，§6 门，§9 裁定清单）。本计划只覆盖规格 §10 的第 1 块；第 2 块（从 LR5 Stage I 起跑正式 II/III）另写计划。
 
+## 2026-10-26 实施时核对与修订
+
+以下是按实际接口和已确认数据约束细化的执行规则；下方原步骤示例保留，不把预期测试数当执行结果。
+
+- Task1纯度量模块实际命名为`gate_metrics.py`。判门必须绑定看结果前登记的数值、validation选择摘要、三个来源阈值与部署的head/lookup；空分母不通过。Task2实际runner还要求可核验的role合同，不能仅凭任意rows和一个parent hash加载真实数据。A-only来源无需疾病阈值；其无U评分推理使用单列的固定0.5，不生成额外疾病工作点。
+- 历史test仅可使用完整认证的StageIII，证书在质心层标签选择之前验证；同一个合格role目录内，按模型状态SHA独占登记一次最终评价，失败尝试也保留登记，不能另换输出目录重跑。真实test合同构建和评价仍留第2块；本块仅合成验收。
+- S7原实现的登记阈值作用于**native预测组件的平均前景概率**，不是每个体素的阈值。Task3按原组件规则及体积floor选中native组件，再将其二值图最近邻映到AUR网格，重新应用目标网格组件floor并匹配；不改为逐体素阈值、argmax重建或映射后的第二次阈值选择。参照与本模型必须按同一`included_row_sha256`交集计分，缺折外预测明确剔除。全部源文件先哈希、后读数组、最后复核。
+- 新test角色需全体A/U离散数组检查及native病灶资格；source-empty未知U/R关闭。ISLES写独立修复版本，其他来源发现conversion loss则拒绝并要求独立修复。不能把只验header称完整标签QC，不能把投影后丢光的原生阳性当健康负例。
+- fastMRI续跑绑定完整序列文件集合、实际解码字节、权重、配置、源码及每项输出承诺，不能仅凭record存在跳过。正式批处理绑定已登记的head/lookup与三个疾病阈值的中位数；pilot单独标记，无质量主张。
+- fastMRI+上下坐标转换固定沿用已确认的官方bottom→RSS规则。top/bottom亮度对照仅作诊断，不能据亮度自行改变标注坐标约定。无框层不认作健康阴性；报告区分有框层的未匹配检测与未标注层检测，保留假定RSS像素方向的限制。
+
+新`2026-10-26-lr5-formal-supervised.md`及外部正式控制器属于待释放的第2块准备；本块完成验收之前不启动。
+
 ## Global Constraints
 
 - 数据只读 `/data2/congcong/data/FM_data`；所有医学数组、逐例记录只写 `/home/congcongliu/outputs/<run>/`，经 `anatobind.aur.data_contract.validate_private_output` 校验（家目录内、不在 Git 里）。Git 只收代码、测试、匿名计数与哈希。
