@@ -1,6 +1,6 @@
 # 128-query release and formal continuation — 2026-10-28
 
-Status: LAUNCHED_PENDING_ADMISSION. Engineering only; no paper work. All metrics NOT_EVIDENCE.
+Status: RUNNING (snapshot below). Engineering only; no paper work. All metrics NOT_EVIDENCE.
 
 ## Completed evidence
 
@@ -29,3 +29,7 @@ Private locator: `~/outputs/aur_lr5_formal_supervised_20261026/`; registration_v
 ## Launch snapshot
 
 2026-10-28 09:53:02 UTC: run_v5 launched, host PID1743973, idle A800 physical2 selected by UUID. Runtime import origin verified. This is pending admission, not observed training progress; no completion claim. Private launch_record_v5.json preserves launch identity.
+
+## First trained checkpoint verified
+
+2026-10-28 10:09:26 UTC: Stage II267/4096, exposures2D134/3D133, all267 recorded losses finite. Durable checkpoint256 SHA256 verified; deserialized purpose=formal, stage=II, exact registered128 model/config/runtime identity and all floating model weights finite. This is saved-state validation, not a CUDA resume experiment or final quality score. StageIII not yet started. Private progress_snapshot_v5_first_checkpoint.json records the hash. StageII must complete and verify before automaticIII starts; final A/U/R gates and fullfastMRI remain outstanding.

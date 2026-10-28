@@ -1,5 +1,5 @@
 {
-  "status": "LAUNCHED_PENDING_ADMISSION",
+  "status": "RUNNING",
   "evidence": "NOT_EVIDENCE",
   "code_baseline": "506dbdc",
   "registration_sha256": "737edbff179277de8d5ae93228d2ea62546fe47ee322bcb884dff2c488f0b55a",
@@ -38,5 +38,23 @@
     "registration_sha256": "737edbff179277de8d5ae93228d2ea62546fe47ee322bcb884dff2c488f0b55a",
     "controller_sha256": "1b6803c576dc8ca899d920f2059b30cf08757865b9f1ee3f2bab28c4726b76a4",
     "code_commit": "0686d15"
+  },
+  "progress_snapshot": {
+    "all_recorded_loss_finite": true,
+    "checkpoint_identity_verified": true,
+    "checkpoint_sha256": "abd0af202123d1a65c0826974ae18b6df33409727da757553f8a5372a502aa69",
+    "checkpoint_step": 256,
+    "checkpoint_weights_finite": true,
+    "evidence": "NOT_EVIDENCE",
+    "final_aur_verified": false,
+    "formal_complete": false,
+    "latest_step": 267,
+    "mode_exposures": {
+      "2d": 134,
+      "3d": 133
+    },
+    "observed_utc": "2026-10-28T10:09:26Z",
+    "stage": "II",
+    "status": "RUNNING"
   }
 }
