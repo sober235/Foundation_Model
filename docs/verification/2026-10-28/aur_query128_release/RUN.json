@@ -1,5 +1,5 @@
 {
-  "status": "PREPARED_NOT_STARTED",
+  "status": "LAUNCHED_PENDING_ADMISSION",
   "evidence": "NOT_EVIDENCE",
   "code_baseline": "506dbdc",
   "registration_sha256": "737edbff179277de8d5ae93228d2ea62546fe47ee322bcb884dff2c488f0b55a",
@@ -28,5 +28,15 @@
   },
   "review_actionable_findings": 0,
   "current_128_cuda_resume_verified": false,
-  "separate_validation_save_timing_available": false
+  "separate_validation_save_timing_available": false,
+  "launch": {
+    "pid": 1743973,
+    "launched_utc": "2026-10-28T09:53:02Z",
+    "gpu_uuid": "GPU-d7cbc50e-d509-5e17-ff73-ba92660219a1",
+    "gpu_physical_index": 2,
+    "gpu_name": "NVIDIA A800 80GB PCIe",
+    "registration_sha256": "737edbff179277de8d5ae93228d2ea62546fe47ee322bcb884dff2c488f0b55a",
+    "controller_sha256": "1b6803c576dc8ca899d920f2059b30cf08757865b9f1ee3f2bab28c4726b76a4",
+    "code_commit": "0686d15"
+  }
 }

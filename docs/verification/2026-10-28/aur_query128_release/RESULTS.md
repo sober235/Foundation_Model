@@ -1,6 +1,6 @@
 # 128-query release and formal continuation — 2026-10-28
 
-Status: PREPARED_NOT_STARTED. Engineering only; no paper work. All metrics NOT_EVIDENCE.
+Status: LAUNCHED_PENDING_ADMISSION. Engineering only; no paper work. All metrics NOT_EVIDENCE.
 
 ## Completed evidence
 
@@ -25,3 +25,7 @@ Keep caps as a bounded attempt, not a claim of completion feasibility. Stop on f
 Launch and confirm both-mode updates/checkpoint. Then formal completion/certificates, development workpoint and head/lookup freeze, qualified historical-test final A/U/R gates and4469 fastMRI execution. No heldout arrays are read during release. Protocol is not an explicit input; spatial DICOM geometry processing remains. A/U/R and2D/3D goals unchanged.
 
 Private locator: `~/outputs/aur_lr5_formal_supervised_20261026/`; registration_v5.json, probe_v5/result.json, probe_v5_replay_verification_20261028.json. Anonymous release state/hashes in RUN.json.
+
+## Launch snapshot
+
+2026-10-28 09:53:02 UTC: run_v5 launched, host PID1743973, idle A800 physical2 selected by UUID. Runtime import origin verified. This is pending admission, not observed training progress; no completion claim. Private launch_record_v5.json preserves launch identity.

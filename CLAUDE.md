@@ -1,6 +1,6 @@
-# 2026-10-28 当前接续：128-query probe完成，正式训练待启动
+# 2026-10-28 当前接续：128-query probe完成，正式run_v5已启动，等待准入
 
-以[PROJECT_CONTEXT](PROJECT_CONTEXT.md)和[本次报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)为准。128-query实现506dbdc完成，probe_v5 II/III各8步、双mode执行及只读产物回放通过；原StageI/G1不重跑。正式II4096→III2048使用v5登记，尚未启动。保留4h/2h阶段上限和8h控制器上限，probe不保证完整预算时长，当前128 CUDA恢复尚未单独验证。只做工程代码/训练；protocol暂不输入，论文推迟。下文均为历史记录，其中“待确认/未实现/运行中”不能当作当前状态。
+以[PROJECT_CONTEXT](PROJECT_CONTEXT.md)和[本次报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)为准。128-query实现506dbdc完成，probe_v5 II/III各8步、双mode执行及只读产物回放通过；原StageI/G1不重跑。正式II4096→III2048使用v5登记，于09:53:02 UTC启动run_v5，PID1743973，空闲A800物理2；目前等待准入，尚无训练完成声明。保留4h/2h阶段上限和8h控制器上限，probe不保证完整预算时长，当前128 CUDA恢复尚未单独验证。只做工程代码/训练；protocol暂不输入，论文推迟。下文均为历史记录，其中“待确认/未实现/运行中”不能当作当前状态。
 
 # Foundation_Model / AnatoBind-MRI:新会话入口
 

@@ -31,7 +31,7 @@
 
 ## 当前执行点与下一步
 
-**128-query实现与真实资源probe已完成，正式运行待启动。** 用户已确认从原LR5 Stage I骨干重新开始；实现506dbdc已完成，probe输出目录修复及回归待本次提交。probe_v5的II/III各8步、每mode各4次曝光、loss全部有限，完整U匹配和双mode R资格通过；2026-10-28只读回放核验checkpoint/export/完成记录和首尾承诺通过，没有重跑训练。最新[接续报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)与[RUN](docs/verification/2026-10-28/aur_query128_release/RUN.json)优先于旧状态。
+**128-query实现与真实资源probe已完成，正式run_v5已启动，等待准入。** 用户已确认从原LR5 Stage I骨干重新开始；实现506dbdc已完成，probe输出目录修复及回归已在0686d15提交。probe_v5的II/III各8步、每mode各4次曝光、loss全部有限，完整U匹配和双mode R资格通过；2026-10-28只读回放核验checkpoint/export/完成记录和首尾承诺通过，没有重跑训练。最新[接续报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)与[RUN](docs/verification/2026-10-28/aur_query128_release/RUN.json)优先于旧状态。
 
 完整容量审计保持：TRAIN源max102，登记II的2D/3D max14/85。128覆盖当前三维源上界及登记观察，不宣称覆盖任意未来二维分裂。正式预算II4096→III2048、时间上限4h/2h和控制器8h不变。8个特选probe观察不能可靠外推全预算耗时；独立验证/保存时间和当前128-query CUDA恢复尚无单独证明，历史证据不冒充当前验证。运行达到上限必须停止，不自动加预算。
 
