@@ -1,0 +1,32 @@
+{
+  "status": "PREPARED_NOT_STARTED",
+  "evidence": "NOT_EVIDENCE",
+  "code_baseline": "506dbdc",
+  "registration_sha256": "737edbff179277de8d5ae93228d2ea62546fe47ee322bcb884dff2c488f0b55a",
+  "runtime_sha256": "2918c30a17014ec18bdecb6dcbfd3e53d838ace3f8e528b4882eaeb2250f891f",
+  "probe_replay": {
+    "checkpoint_export_completion_verified": true,
+    "new_model_forwards": 0,
+    "new_training_steps": 0,
+    "plan_capacity_r_binding_verified": true,
+    "result_sha256": "27de5f991ad74a091fdf4a32cf50f6e18850a4b64c829a8c201abda42a16622a",
+    "status": "PASS",
+    "two_modes_verified": true
+  },
+  "probe_steps": {
+    "II": 8,
+    "III": 8
+  },
+  "formal_steps": {
+    "II": 4096,
+    "III": 2048
+  },
+  "time_caps_seconds": {
+    "II": 14400,
+    "III": 7200,
+    "controller": 28800
+  },
+  "review_actionable_findings": 0,
+  "current_128_cuda_resume_verified": false,
+  "separate_validation_save_timing_available": false
+}

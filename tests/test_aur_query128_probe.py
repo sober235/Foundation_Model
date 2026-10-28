@@ -59,3 +59,13 @@ def test_probe_verifier_rejects_incomplete_or_nonfinite_steps(tmp_path):
     records[3]['loss']=float('nan')
     with pytest.raises(ValueError,match='capacity or loss'):
         probe.verify_probe_stage(out,'II',cfg,CONTRACT,plan,records)
+
+
+def test_probe_entry_creates_private_owned_output_and_redacts_failures(tmp_path,monkeypatch):
+    from types import SimpleNamespace
+    probe=api();controller=SimpleNamespace(_private_path=lambda value:Path(value).resolve(),
+        _supervise=lambda *a,**k:{'status':'FAILED','evidence':'NOT_EVIDENCE'})
+    monkeypatch.setattr(probe,'_controller',lambda:controller)
+    out=tmp_path/'private-probe';result=probe.run(tmp_path/'reg',tmp_path/'plan',out,'cpu')
+    assert result=={'status':'FAILED','evidence':'NOT_EVIDENCE'} and out.is_dir()
+    assert probe.run(tmp_path/'reg',tmp_path/'plan',out,'cpu')['status']=='FAILED'

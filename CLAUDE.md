@@ -1,3 +1,7 @@
+# 2026-10-28 当前接续：128-query probe完成，正式训练待启动
+
+以[PROJECT_CONTEXT](PROJECT_CONTEXT.md)和[本次报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)为准。128-query实现506dbdc完成，probe_v5 II/III各8步、双mode执行及只读产物回放通过；原StageI/G1不重跑。正式II4096→III2048使用v5登记，尚未启动。保留4h/2h阶段上限和8h控制器上限，probe不保证完整预算时长，当前128 CUDA恢复尚未单独验证。只做工程代码/训练；protocol暂不输入，论文推迟。下文均为历史记录，其中“待确认/未实现/运行中”不能当作当前状态。
+
 # Foundation_Model / AnatoBind-MRI:新会话入口
 
 **最新容量审计已完成：** 先读PROJECT_CONTEXT/STATUS顶部及[容量报告](docs/verification/2026-10-26/aur_query_capacity/RESULTS.md)。TRAIN3499源行max102；登记II2D/3D max14/85、3D三次超64；已有1725步计数全部一致。CPU157.914秒、独立复核通过，无新训练。[128-query新版本设计](docs/superpowers/specs/2026-10-26-aur-query-capacity-128-design.md)已准备，建议从原LR5 Stage I重新开始II/III，具体决定待用户确认。不要重跑审计，不改旧runtime/证书，不原样恢复失败run_v3。

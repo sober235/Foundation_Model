@@ -263,7 +263,6 @@ def _execute(registration, plan_path, out, device, send):
 
 
 def run(registration,plan,out,device='cuda:0'):
-    out=None
     try:
         ctl=_controller();out=ctl._private_path(out)
         if out.exists():return {'status':'FAILED','evidence':'NOT_EVIDENCE'}

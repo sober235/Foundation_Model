@@ -1,6 +1,6 @@
 # Foundation_Model：项目进展与接续入口
 
-更新时间：2026-10-26。用户要求：以后回顾项目只查看`main`和这里登记的一个工作分支，不完整读取所有分支。
+更新时间：2026-10-28。用户要求：以后回顾项目只查看`main`和这里登记的一个工作分支，不完整读取所有分支。
 
 ## 只读这两个入口
 
@@ -11,7 +11,7 @@
 
 工作分支最初从归档后的main建立；2026-10-26用户要求继续后，已从该分支接续正式监督启动。完成的里程碑合回main，并更新本文件和STATUS。旧分支保留作历史档案，不删除、不扫描；仅当本入口明确引用某个旧提交、证据缺失或用户明确要求时，定点读取所需内容。
 
-回顾顺序：本文件→[STATUS顶部](STATUS.md)→[最新容量审计](docs/verification/2026-10-26/aur_query_capacity/RESULTS.md)及[待确认128-query设计](docs/superpowers/specs/2026-10-26-aur-query-capacity-128-design.md)→[正式监督接续](docs/verification/2026-10-26/aur_formal_supervised/RESULTS.md)→上述工作分支相对main的增量。不要从历史分支重新推断当前状态，不重跑已完成训练、G1、诊断或模型推理来恢复上下文。
+回顾顺序：本文件→[STATUS顶部](STATUS.md)→[最新容量审计](docs/verification/2026-10-26/aur_query_capacity/RESULTS.md)及[已批准128-query设计](docs/superpowers/specs/2026-10-26-aur-query-capacity-128-design.md)→[正式监督接续](docs/verification/2026-10-26/aur_formal_supervised/RESULTS.md)→上述工作分支相对main的增量。不要从历史分支重新推断当前状态，不重跑已完成训练、G1、诊断或模型推理来恢复上下文。
 
 ## 当前目标和已确认决定
 
@@ -31,9 +31,11 @@
 
 ## 当前执行点与下一步
 
-**完整登记容量审计已完成，128-query方案待确认。** TRAIN3499源行最多102实例；II的2048个2D观察最多14，2048个3D观察最多85，其中3个超过64。III同调度子集的3D有2个超64；固定周期validation每mode8观察最多3/22。与已完成1725步的监督匹配计数全部一致。CPU4worker、157.914秒，无模型前向/训练；独立代码与记录复核0项剩余。128覆盖当前TRAIN三维源上界及已登记二维观察，不宣称覆盖所有未来二维分裂。
+**128-query实现与真实资源probe已完成，正式运行待启动。** 用户已确认从原LR5 Stage I骨干重新开始；实现506dbdc已完成，probe输出目录修复及回归待本次提交。probe_v5的II/III各8步、每mode各4次曝光、loss全部有限，完整U匹配和双mode R资格通过；2026-10-28只读回放核验checkpoint/export/完成记录和首尾承诺通过，没有重跑训练。最新[接续报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)与[RUN](docs/verification/2026-10-28/aur_query128_release/RUN.json)优先于旧状态。
 
-建议从原LR5正式Stage I骨干重新训练128-query模型的II4096→III2048，保持数据/crop/loss和抽样序列；显式绑定父子runtime/config来源，不能改旧证书或称1536精确恢复。[设计](docs/superpowers/specs/2026-10-26-aur-query-capacity-128-design.md)已写成，尚未得到用户对这个具体架构/重新开始决定的确认，未实施128生产代码或启动新训练。原64默认和全部旧权重保留。
+完整容量审计保持：TRAIN源max102，登记II的2D/3D max14/85。128覆盖当前三维源上界及登记观察，不宣称覆盖任意未来二维分裂。正式预算II4096→III2048、时间上限4h/2h和控制器8h不变。8个特选probe观察不能可靠外推全预算耗时；独立验证/保存时间和当前128-query CUDA恢复尚无单独证明，历史证据不冒充当前验证。运行达到上限必须停止，不自动加预算。
+
+本轮继续代码和训练，不推进论文；扫描protocol暂不作为显式模型输入，保留DICOM几何处理。最终仍须2D/3D分别验收A/U/R及全量fastMRI，probe成功不是质量达标。
 
 **当前run_v3已停止，Stage II终态FAILED。** 完成1725步（2D863、3D862次曝光），第1726步前的3D裁块有65个实例，超过登记的64query；同一冻结源码/seed/draw862已在CPU复现。宿主机控制器退出，III未启动，closing完整校验通过。最近持久化checkpoint是1536，文件哈希核对通过；不能从1725精确恢复。详见[停止诊断](docs/verification/2026-10-26/aur_formal_supervised/STOPPED.md)。原样恢复会重复该观察；须先制定独立容量处理方案，不直接重启，不修改旧冻结runtime或截断病灶。
 
@@ -43,8 +45,8 @@
 
 在`work/aur-formal-supervised`按[正式监督计划](docs/superpowers/plans/2026-10-26-lr5-formal-supervised.md)接续：
 
-1. 容量审计已完成，先确认128-query与从原Stage I重新开始的具体设计，再编写/执行实施计划。扩大query必须新版本，旧run_v3不原样重启。v1/v2/v3及失败记录保留。
-2. 宿主机约束、兼容性、空卡和导入位置已检查，后续新运行仍须在每阶段模型初始化前复查。**启动cwd和PYTHONPATH均为原LR5冻结runtime**；初始化来自通过G1的正式StageI，不使用小集resource-probe权重。
+1. 容量审计、128-query实现和有限probe已完成；按registration_v5核验后启动新正式运行。旧run_v3不原样重启，所有旧登记和失败记录保留。
+2. 宿主机约束、兼容性、空卡和导入位置已检查，后续新运行仍须在每阶段模型初始化前复查。**启动cwd和PYTHONPATH均为registration_v5指定的新128-query冻结runtime**；初始化来自通过G1的正式StageI，不使用小集resource-probe权重。
 3. 首次有界正式预算II4096、III2048步，完整TRAIN池抽样；先II完整证书，再III。详细LR、warmup、验证/保存周期与8小时总上限在计划中。全池抽样不保证所有行都访问，也不代表充分收敛。
 4. 周期best仍按两mode等权loss，二维validation的弱R保持关闭；它不是最终R验收。正式III完成后在development validation选定工作点及head/lookup，冻结登记，再构建真实历史test角色并只做一次最终判门。历史test已暴露，不能称新独立队列。
 5. 按已登记实现和阈值执行全量fastMRI。G1通过、小集跑通、CPU测试通过都不能替代最终六项A/U/R门或全量执行。
