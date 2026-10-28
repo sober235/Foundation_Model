@@ -132,12 +132,14 @@ def _qualify_geometry(source_instances, source_host_map, transformed_plane,
 def qualify_planar_weak_relations(source_instances, source_host_map, transformed_plane,
                                  valid, a_ignore, source_instance_ids, pixel_area_mm2, *,
                                  voxel_volume_mm3, split="train", a_supervised=True,
-                                 u_supervised=True, r_supervised=True, min_area_mm2=1.0):
+                                 u_supervised=True, r_supervised=True, min_area_mm2=1.0,
+                                 max_instances=64):
     """TRAIN-only weak supervision; held-out rows remain unavailable."""
     return _qualify_geometry(source_instances,source_host_map,transformed_plane,valid,a_ignore,
         source_instance_ids,pixel_area_mm2,voxel_volume_mm3=voxel_volume_mm3,
         gate="not_train" if split != "train" else "",a_supervised=a_supervised,
-        u_supervised=u_supervised,r_supervised=r_supervised,min_area_mm2=min_area_mm2)
+        u_supervised=u_supervised,r_supervised=r_supervised,min_area_mm2=min_area_mm2,
+        max_instances=max_instances)
 
 
 def planar_evaluation_reference(source_instances, source_host_map, transformed_plane,

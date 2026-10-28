@@ -274,7 +274,7 @@ def test_explicit_source_false_remains_a_gate_under_weak_policy():
 
 def test_query_capacity_cannot_exceed_model_capacity():
     with pytest.raises(ValueError, match="query capacity"):
-        plane(n_events=65)
+        plane(n_events=129)
 
 
 def test_weak_policy_requires_source_host_map_and_recognised_policy():

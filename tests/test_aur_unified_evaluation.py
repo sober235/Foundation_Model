@@ -226,10 +226,12 @@ def test_certified_export_real_both_mode_run_freezes_configuration_and_private_o
     assert out.stat().st_mode & 0o777 == 0o700
     plan = json.loads((out/'plan_private.json').read_text())
     assert plan['configuration']['score_threshold'] == .5
+    assert plan['configuration']['query_capacity'] == 3
     assert plan['artifact_identity'] == identity
     assert 'evaluator_source_sha256' in plan
     assert plan['artifact_identity']['runtime_sha256'] != plan['evaluator_source_sha256']
     assert summary['artifact']['phase_completed'] and not summary['quality_certified']
+    assert summary['query_capacity'] == 3
     # Cross-contract artifact must fail before any forward.
     changed = dict(exported, data_contract={**identity, 'contract_sha256': '0'*64})
     torch.save(changed, home/'wrong.pt')

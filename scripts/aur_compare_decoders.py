@@ -191,6 +191,7 @@ def run(a):
     records=a.out/'row_records';records.mkdir(exist_ok=True)
     expected={identity(r):r for r in old}
     model,_=I.model_from_export(a.checkpoint,torch.device('cuda',a.gpu))
+    query_capacity=E.model_query_capacity(model)
     t0=a.started;deadline=t0+min(a.max_seconds,7200 if a.mode=='six' else 86400)
     results=[];row_times=[];peak=0.
     for i,row in enumerate(rows):
@@ -220,15 +221,15 @@ def run(a):
     info=dict(shard=[k,n],checkpoint=str(a.checkpoint),checkpoint_sha256=CKPT_SHA,code_sha=contract['code_sha'],split='val',
               samples=str(a.samples),samples_sha256=SAMPLES_SHA,crop=[128,160,160],n_rows=len(results),sources=None,limit=None,
               instance_threshold=.3,stage='III',e2e=True,decoder_profile='query_cc_v1',decoder_rules=contract['decoder_rules'],
-              binding_score_floors=SCORES,seconds=round(sum(row_times),2),seconds_basis='sum of frozen per-row timings')
+              binding_score_floors=SCORES,query_capacity=query_capacity,seconds=round(sum(row_times),2),seconds_basis='sum of frozen per-row timings')
     info.update(reference_json=str(a.out/'reference_frozen.json'),reference_sha256=reference_sha)
     write(a.out/'shard.json',info)
     if n==1:
-        aggregate=E.aggregate(results,reference,fixed_thresholds=SCORES)
+        aggregate=E.aggregate(results,reference,fixed_thresholds=SCORES,query_capacity=query_capacity)
         aggregate['run']={**info,'mode':a.mode,'fixed_thresholds':SCORES}
         finalize_report(a.out/'query',aggregate,results,reference)
         legacy=[fixed_legacy_e2e(expected[identity(r)]) for r in rows]
-        old_agg=E.aggregate(legacy,reference,fixed_thresholds=SCORES)
+        old_agg=E.aggregate(legacy,reference,fixed_thresholds=SCORES,query_capacity=query_capacity)
         old_agg['run']={**info,'decoder_profile':'legacy_max','decoder_rules':decoder_rules('legacy_max'),
                         'note':'A/U/R predictions reused; e2e GT matching normalized at fixed scores'}
         finalize_report(a.out/'legacy_fixed',old_agg,legacy,reference)

@@ -179,6 +179,38 @@ def test_stage_worker_uses_default_fullpool_factories(tmp_path,monkeypatch):
     assert not {'train_factory','validation_factory','resume'} & set(seen[0][1])
 
 
+def test_expanded_controller_threads_transfer_only_into_stage_ii(tmp_path,monkeypatch):
+    mod=module();calls=[]
+    def run(stage,recipe,data,out,device,initializer,g1_report,**kwargs):
+        calls.append((stage,kwargs))
+        return {'status':'COMPLETE'}
+    monkeypatch.setattr(mod,'_run_stage_job',run)
+    monkeypatch.setattr(mod,'_validate_completed_stage',lambda stage,out,cfg,identity:{
+        'selected_export':str(out/'selected_export.pt'),'selected_export_sha256':'a'*64,
+        'completion_sha256':'b'*64,'steps':cfg['steps'],'selected_step':512})
+    monkeypatch.setattr(mod,'_gpu_admission',lambda device:{'device':device})
+    reg=registration(tmp_path);reg['initialization_transfer']={'path':str(tmp_path/'transfer.json'),'sha256':'a'*64}
+    assert mod._execute_stages(reg,{},tmp_path,'cpu',lambda _:None)['status']=='COMPLETE'
+    assert calls==[('II',{'initialization_transfer':reg['initialization_transfer']}),('III',{})]
+
+
+def test_expanded_registration_binds_immutable_transfer(tmp_path):
+    mod=module();reg=registration(tmp_path);transfer=tmp_path/'transfer.json';transfer.write_text('{}')
+    reg['initialization_transfer']={'path':str(transfer.resolve()),'sha256':mod._sha(transfer)}
+    for cfg in reg['stage_configs'].values():cfg['model']['n_events']=128
+    mod._validate_registration(reg)
+    transfer.write_text('{"changed":true}')
+    with pytest.raises(ValueError,match='transfer'):
+        mod._validate_registration(reg)
+
+
+def test_expanded_registration_does_not_allow_implicit_capacity_change(tmp_path):
+    mod=module();reg=registration(tmp_path)
+    for cfg in reg['stage_configs'].values():cfg['model']['n_events']=128
+    with pytest.raises(ValueError,match='transfer|registration'):
+        mod._validate_registration(reg)
+
+
 def test_initialization_rejection_is_saved_without_constructing_model(tmp_path, monkeypatch):
     import anatobind.aur.unified_launcher as launcher
     mod = module()
@@ -255,7 +287,8 @@ def admission_fixture(tmp_path,monkeypatch):
     mod=module();reg=registration(tmp_path)
     identity={'contract_sha256':contract()['contract_sha256'],'runtime_sha256':reg['runtime_sha256']}
     final=tmp_path/'final.pt';torch.save({'cfg':parent_config()},final)
-    certificate={'selected_step':2,'selected_checkpoint_sha256':'c'*64,'final_checkpoint_path':str(final)}
+    certificate={'selected_step':2,'selected_checkpoint_sha256':'c'*64,'final_checkpoint_path':str(final),
+                 'final_checkpoint_sha256':mod._sha(final)}
     parent={'stage':'I','data_contract':identity,'completion_certificate':certificate,
             'model_config':parent_config()['model'],'backbone_state_dict':{'weight':torch.ones(2)}}
     torch.save(parent,reg['inputs']['parent_export']['path'])

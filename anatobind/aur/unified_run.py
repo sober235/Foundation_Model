@@ -51,6 +51,8 @@ def validate_run_config(cfg):
             raise ValueError
         defaults = {k:v for k,v in MODEL_DEFAULTS.items() if k != 'planar_merge'}
         out['model'] = _builtin({**defaults, **out['model']})
+        if type(out['model']['n_events']) is not int or not 1 <= out['model']['n_events'] <= 128:
+            raise ValueError
         if out['model']['dual_input'] is not True or out['mode_cycle'] != ['2d','3d']:
             raise ValueError
         for key in ('steps','points','batch_size','accumulation_steps','validation_every','checkpoint_every'):
@@ -133,8 +135,15 @@ def atomic_torch_save(payload, path):
 
 class UnifiedRun(UnifiedPilot):
     """Reuse the verified losses; own the formal schedule and complete state."""
-    def __init__(self, stage, cfg, data_contract, device='cpu', initializer=None, g1_report=None, warm_start=None):
+    def __init__(self, stage, cfg, data_contract, device='cpu', initializer=None, g1_report=None, warm_start=None,
+                 initialization_transfer=None):
         self._setup(stage,cfg,data_contract,device)
+        transfer_lineage = None
+        if initialization_transfer is not None:
+            if stage != 'II' or self.cfg['purpose'] not in ('formal','resource_probe'):
+                raise ValueError('invalid registered query capacity transfer')
+            from anatobind.aur.query_transfer import validate_transfer
+            transfer_lineage = validate_transfer(initializer,self.cfg,self.data_contract,g1_report,initialization_transfer)
         if self.cfg['purpose'] == 'formal' and stage == 'I' and warm_start is None:
             raise ValueError('formal Stage I requires a registered warm-start')
         if stage != 'I':
@@ -142,7 +151,7 @@ class UnifiedRun(UnifiedPilot):
             if (not isinstance(initializer,dict) or initializer.get('format_version') != FORMAT_VERSION
                     or initializer.get('stage') != previous):
                 raise ValueError('invalid previous-stage initializer')
-            if self.cfg['purpose'] == 'formal':
+            if self.cfg['purpose'] == 'formal' and transfer_lineage is None:
                 if initializer.get('purpose') != 'formal':
                     raise ValueError('formal transition requires a formal source stage')
                 from anatobind.aur.unified_artifacts import verify_completion_certificate
@@ -153,7 +162,7 @@ class UnifiedRun(UnifiedPilot):
                     if not validate_gate(g1_report,data_contract_sha256=self.data_contract['contract_sha256'],
                             backbone_state_sha256=_state_hash(initializer['backbone_state_dict']),require_formal=True):
                         raise ValueError('both qualified G1 modes must pass before formal Stage II')
-            if initializer['model_config'] != self.cfg['model'] or initializer['data_contract'] != self.data_contract:
+            if transfer_lineage is None and (initializer['model_config'] != self.cfg['model'] or initializer['data_contract'] != self.data_contract):
                 raise ValueError('initializer configuration or data contract mismatch')
         self._warm_start = warm_start if stage == 'I' else None
         self._build()
@@ -165,8 +174,10 @@ class UnifiedRun(UnifiedPilot):
         else:
             state = initializer['backbone_state_dict'] if stage == 'II' else initializer['model_state_dict']
             (self.model.backbone if stage == 'II' else self.model).load_state_dict(state,strict=True)
-            self.lineage = {'kind':f'stage_{previous}_export','source':deepcopy(initializer['lineage']),
+            self.lineage = transfer_lineage or {'kind':f'stage_{previous}_export','source':deepcopy(initializer['lineage']),
                             'source_state_sha256':_state_hash(state),'g1':_builtin(g1_report) if stage == 'II' else None}
+            if transfer_lineage is not None and _state_hash(self.model.backbone.state_dict()) != transfer_lineage['backbone_state_sha256']:
+                raise ValueError('invalid registered query capacity transfer')
 
     def _setup(self, stage, cfg, data_contract, device):
         if stage not in ('I','II','III') or int(os.environ.get('WORLD_SIZE','1')) != 1 or (dist.is_initialized() and dist.get_world_size()!=1):

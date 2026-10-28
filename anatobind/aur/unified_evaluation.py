@@ -345,13 +345,14 @@ def run_evaluation(contract_path, export_path, out_dir, *, device='cpu', modes=(
         exported_sha = file_sha256(export_path)
         payload = torch.load(export_path,map_location='cpu',weights_only=True)
         identity = payload['data_contract']
+        query_capacity=payload['model_config']['n_events']
         if not isinstance(identity,dict) or identity.get('contract_sha256') != frozen['contract_sha256']: raise ValueError()
         del payload
         # The certificate-bound training runtime identity is preserved. Current
         # evaluation source is committed separately, never substituted for it.
         plan.update(configuration=dict(crops=crops,score_threshold=float(score_threshold),device=str(device),
                     lesion_threshold=.3,entity_threshold=.5,presence_threshold=.5,overlap=.5,
-                    planar_min_area_mm2=1.,volume_min_mm3=10.,matching_bbox_iou=.1),
+                    planar_min_area_mm2=1.,volume_min_mm3=10.,matching_bbox_iou=.1,query_capacity=query_capacity),
                     artifact_identity=identity,export_sha256=exported_sha,evaluator_source=snapshot,
                     evaluator_source_sha256=json_digest(snapshot),environment=decoder_environment(),
                     qualified_source_root=str(Path(qualified_source_root).expanduser().resolve()) if qualified_source_root else None,
@@ -369,6 +370,7 @@ def run_evaluation(contract_path, export_path, out_dir, *, device='cpu', modes=(
         summary['artifact'] = {key:metadata[key] for key in ('format_version','stage','pilot_only','phase_completed','quality_certified')}
         summary['contract_sha256'] = frozen['contract_sha256']
         summary['export_sha256'] = exported_sha
+        summary['query_capacity'] = query_capacity
         summary['evaluator_source_sha256'] = json_digest(snapshot)
         write_private_json(out/'records_private.json',records)
         write_private_json(out/'anonymous_summary.json',summary)
@@ -506,6 +508,7 @@ def run_gate_evaluation(rows,parent_contract_sha256,export_path,out_dir,*,device
         # labels. Literal stage/purpose fields alone cannot release test data.
         model,metadata=model_from_unified_export(export_path,device='cpu',data_contract=identity)
         if metadata['pilot_only'] or not metadata['phase_completed']:raise ValueError()
+        query_capacity=int(model.cfg['n_events'])
         if rows[0]['role']=='historical_test':
             from anatobind.aur.unified_train import _state_hash
             role_root=validate_private_output(role_contract)
@@ -520,7 +523,7 @@ def run_gate_evaluation(rows,parent_contract_sha256,export_path,out_dir,*,device
         plan.update(parent_contract_sha256=parent_contract_sha256,role_contract_sha256=role_sha,
             input_files=inputs,artifact_identity=identity,export_sha256=export_sha,
             evaluator_source=snapshot,environment=decoder_environment(),registration=reg,
-            registration_sha256=expected_registration_sha256,
+            registration_sha256=expected_registration_sha256,query_capacity=query_capacity,
             configuration=dict(crops=crops,score_thresholds=thresholds,stride_mm=stride_mm,device=str(device),
                 registration_sha256=expected_registration_sha256,relation_implementation=reg['relation_implementation'],
                 anatomy_only_detection_score_threshold=.5,
@@ -540,7 +543,7 @@ def run_gate_evaluation(rows,parent_contract_sha256,export_path,out_dir,*,device
         summary=aggregate_observations(records)
         summary.update(gate_version=GATE_VERSION,role=rows[0]['role'],parent_contract_sha256=parent_contract_sha256,
             role_contract_sha256=role_sha,registration_sha256=expected_registration_sha256,
-            export_sha256=export_sha,evaluator_source_sha256=json_digest(snapshot))
+            export_sha256=export_sha,evaluator_source_sha256=json_digest(snapshot),query_capacity=query_capacity)
         write_private_json(out/'records_private.json',records)
         write_private_json(out/'anonymous_summary.json',summary)
         outputs={n:file_sha256(out/n) for n in ('plan_private.json','records_private.json','anonymous_summary.json')}
