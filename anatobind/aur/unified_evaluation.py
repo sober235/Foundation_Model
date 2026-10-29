@@ -465,7 +465,7 @@ def _verify_gate_role(rows,parent_sha,role_contract,qualified_source_root):
 def run_gate_evaluation(rows,parent_contract_sha256,export_path,out_dir,*,device='cpu',
                         modes=('2d','3d'),crops=None,score_thresholds,stride_mm=8.,
                         role_contract=None,qualified_source_root=None,gate_registration=None,
-                        expected_registration_sha256=None):
+                        expected_registration_sha256=None,on_record=None):
     """Evaluate exactly the qualified role under a previously frozen gate registration.
 
     Supplying rows and an arbitrary parent digest alone is insufficient. A role
@@ -531,12 +531,13 @@ def run_gate_evaluation(rows,parent_contract_sha256,export_path,out_dir,*,device
         write_private_json(out/'plan_private.json',plan)
         model=model.to(device).eval()
         records=[]
-        for obs in plan['observations']:
+        for index,obs in enumerate(plan['observations'],1):
             row=rows[obs['row_index']]
             record=evaluate_observation(model,row,obs,crop=crops[obs['input_mode']],device=device,
                                         score_threshold=thresholds[row['source']] if row.get('u_supervised',False) else .5)
             record['registration_sha256']=expected_registration_sha256
             records.append(record)
+            if on_record is not None:on_record(record,index,len(plan['observations']))
         if (_verify_gate_role(rows,parent_contract_sha256,role_contract,qualified_source_root)!=role_sha
                 or any(file_sha256(p)!=h for p,h in inputs.items()) or file_sha256(export_path)!=export_sha
                 or _evaluator_source()!=snapshot):raise ValueError()
