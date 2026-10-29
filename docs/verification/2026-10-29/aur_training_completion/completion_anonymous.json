@@ -1,0 +1,19 @@
+{
+  "evidence": "NOT_EVIDENCE",
+  "status": "COMPLETE",
+  "final_quality_evaluated": false,
+  "stages": {
+    "II": {
+      "steps": 4096,
+      "selected_step": 3584,
+      "selected_export_sha256": "8029215eca6f1a4e984a9008dc027d1dfb3c7a86195fbf47eaf2f173eb192c3b",
+      "completion_sha256": "f70affb35901e25f253e510d57b5143bf24a3a4298bff3e0505b6c5bb4fbabb7"
+    },
+    "III": {
+      "steps": 2048,
+      "selected_step": 2048,
+      "selected_export_sha256": "9629846acc28bc9a29f794ddcf1973fa9e309dbc146da1f0e3f769505007b17f",
+      "completion_sha256": "8675e1cfdf0d73394780e1c08a7e97d366368fe8888b47e4e39fa32ca8e14d20"
+    }
+  }
+}

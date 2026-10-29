@@ -1,3 +1,7 @@
+# 2026-10-29 最新：正式II/III完成，待最终A/U/R评价
+
+run_v5的II4096/III2048步全部完成，选定3584/2048；终态COMPLETE，首尾完整性核验通过。详见[最新报告与loss PNG](docs/verification/2026-10-29/aur_training_completion/RESULTS.md)。下文“训练中”均为历史快照。用户要求本次归档推送新分支`xxxx_20261029`；不启动新训练或评价，不处理论文。最终A/U/R质量与4469全量推理仍未执行。
+
 # 2026-10-28 当前接续：128-query probe完成，正式run_v5训练中，step256已保存核验
 
 以[PROJECT_CONTEXT](PROJECT_CONTEXT.md)和[本次报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)为准。128-query实现506dbdc完成，probe_v5 II/III各8步、双mode执行及只读产物回放通过；原StageI/G1不重跑。正式II4096→III2048使用v5登记，于09:53:02 UTC启动run_v5，PID1743973，空闲A800物理2；10:09:26 UTC快照II267/4096、2D134/3D133，loss全有限；checkpoint256哈希/配置/权重有限性已核验，III未启动。保留4h/2h阶段上限和8h控制器上限，probe不保证完整预算时长，当前128 CUDA恢复尚未单独验证。只做工程代码/训练；protocol暂不输入，论文推迟。下文均为历史记录，其中“待确认/未实现/运行中”不能当作当前状态。

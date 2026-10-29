@@ -1,0 +1,78 @@
+{
+  "window_per_mode": 32,
+  "smoothing": "trailing arithmetic mean, early points use available preceding observations",
+  "x_axis": "global optimizer step within each stage",
+  "evidence": "NOT_EVIDENCE",
+  "stages": {
+    "I": {
+      "training_records": 2048,
+      "validation_records": 8,
+      "selected_step": 1792,
+      "loss_formula_max_abs_error": 0.0,
+      "log_sha256": {
+        "steps.jsonl": "8577b3344a23bccfc8fff20ba4281cb873063ab15c7efa1f89d0e6fd889490a9",
+        "validation.jsonl": "683f932975712aa5ba3da55807bf409be8471bee89477f3e73b7f7de4b400c9a"
+      },
+      "per_mode": {
+        "2d": {
+          "count": 1024,
+          "first_validation": 0.05199636798352003,
+          "last_validation": 0.041800891514867544
+        },
+        "3d": {
+          "count": 1024,
+          "first_validation": 0.022517129429616034,
+          "last_validation": 0.021421573823317885
+        }
+      }
+    },
+    "II": {
+      "training_records": 4096,
+      "validation_records": 8,
+      "selected_step": 3584,
+      "loss_formula_max_abs_error": 1.4150864444673061e-06,
+      "log_sha256": {
+        "steps.jsonl": "cfc3b6ec6441982f5ae085566dedbfb88f797dd5ba71de2daa321e119249f863",
+        "validation.jsonl": "f10cc6c949a0ff83a97d9e25579c3311bef6e36efa6761cb7ace56ac9d9567f6"
+      },
+      "per_mode": {
+        "2d": {
+          "count": 2048,
+          "first_validation": 3.5013847798109055,
+          "last_validation": 2.013105139136144
+        },
+        "3d": {
+          "count": 2048,
+          "first_validation": 1.6775366216897964,
+          "last_validation": 1.1458994299173355
+        }
+      }
+    },
+    "III": {
+      "training_records": 2048,
+      "validation_records": 4,
+      "selected_step": 2048,
+      "loss_formula_max_abs_error": 8.78504971879579e-07,
+      "log_sha256": {
+        "steps.jsonl": "c98ee062c108f9f0c46acdcd8f03e1f265367988e8511e946686586e549c8a6e",
+        "validation.jsonl": "9a3915be0b580ae9f9fd98cbdce5488b1cbe1033ceb8efe6b4a0d8ed20b407b6"
+      },
+      "per_mode": {
+        "2d": {
+          "count": 1024,
+          "first_validation": 2.430940166112748,
+          "last_validation": 2.1320489346569502
+        },
+        "3d": {
+          "count": 1024,
+          "first_validation": 2.3285235315561295,
+          "last_validation": 1.8558301776647568
+        }
+      },
+      "R_supervised_steps": {
+        "2d": 205,
+        "3d": 298
+      }
+    }
+  }
+}
