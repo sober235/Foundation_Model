@@ -2,6 +2,8 @@
 
 更新时间：2026-10-29。用户要求：以后回顾项目只查看`main`和这里登记的一个工作分支，不完整读取所有分支。
 
+本次用户要求将[剩余任务审阅](docs/verification/2026-10-29/aur_development_selection/REMAINING_TASKS.md)推送新归档分支`review/aur-remaining-tasks-20261029`，不替代登记执行分支。审阅快照19:03北京时间：102条3D工作点选择完成，完整开发评价5809/9809；三来源开发灵敏度偏低，须先审查质量结果。确认1项P2：当前评价未保留预测数组/叠加图，视觉核查需要独立有界任务。真实test及其专用S7参照、一次双模式最终判门、4469全量与当前128 CUDA恢复仍待完成。以下admission段为较早启动快照。
+
 本地工作分支最新接续：正式run_v5不重训；开发评价控制器已于2026-10-29 07:46:38 UTC提交，宿主机PID3975686，当前核实为admission，尚不能声称已模型前向、选定阈值或完成评价。冻结源码及登记已独立审阅，完整CPU2142 passed/5 skipped。详见[开发评价接续报告](docs/verification/2026-10-29/aur_development_selection/RESULTS.md)。唯一输出为`~/outputs/aur_development_selection_20261029/run_v1/`，总上限12h；先从宿主机核对PID/start ticks与匿名progress/terminal，不重复提交。最终test和4469全量均未启动。本段仅在登记工作分支接续，尚未合回或推送main。
 
 ## 只读这两个入口

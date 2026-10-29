@@ -1,3 +1,7 @@
+# 2026-10-29 剩余任务审阅归档
+
+用户要求新建`review/aur-remaining-tasks-20261029`推送[本次审阅](docs/verification/2026-10-29/aur_development_selection/REMAINING_TASKS.md)；它不替代`work/aur-formal-supervised`。19:03北京时间只读快照：阈值选择102条完成，完整开发评价5809/9809，尚无最终冻结/完成证书。工作点阶段BMSR/ISLES/PDGM灵敏度0.21%/1.73%/15.09%，明显低于参照，先审查完整开发质量。确认1项P2：未保存可供视觉核查的预测数组/叠加图。补齐任务依次包括开发结果与部署冻结审查、有界视觉核查、真实test资格及其专用S7同网格参照、一次双模式最终判门、4469全量与标注报告；当前128 CUDA恢复另列缺口。此次仅审阅归档，没有新训练、推理或评价。下文admission为启动时快照。
+
 # 2026-10-29 本地工作分支接续：开发评价已提交，核实admission
 
 正式训练不重跑。开发评价于07:46:38 UTC提交，宿主机PID3975686/start ticks449332314，当前仅核实admission及控制器存活，未观察模型前向/阈值选择或质量结果。冻结登记及158份源码、7项输入独立复核通过；最终完整CPU2142 passed/5 skipped（370.93s）。先核验数据，再做S7同集合3D阈值选择和完整双模式开发评价，最后选择head/lookup并冻结；总上限12h，失败/超时保留记录、不自动重试。当前私有输出`~/outputs/aur_development_selection_20261029/run_v1/`；[接续报告](docs/verification/2026-10-29/aur_development_selection/RESULTS.md)。真实test、4469全量、叠加图检查及当前128 CUDA恢复尚未完成。下文“评价未执行”是本次提交前快照；主线main未合并/推送此次本地接续。
