@@ -244,8 +244,34 @@ def test_tiny_cpu_actual_stage_chain_uses_real_run_stage_without_formal_claim(tm
     # must exec a fresh interpreter and use real default QualifiedViews.
     torch.set_num_threads(2)
     large=torch.rand(256,256);large.copy_(large+1)
-    root=Path.home()/'outputs/aur_lr5_formal_supervised_20261026/implementation'
-    root.mkdir(parents=True,exist_ok=True,mode=0o700)
+    # Give both interpreters the same synthetic home without changing HOME.
+    root=tmp_path/'private_home'
+    root.mkdir(mode=0o700)
+    monkeypatch.setattr(Path,'home',lambda:root)
+    popen=mod.subprocess.Popen
+    def launch(args, **kwargs):
+        args=list(args)
+        assert args[1]=='-c'
+        # The launcher has a deployment-specific default root. Bind its real
+        # validator explicitly in the fresh worker; never replace it with a no-op.
+        setup=f"""from pathlib import Path
+from functools import partial
+from anatobind.aur import unified_launcher as launcher
+from anatobind.aur.data_contract import private_output
+synthetic_home=Path({str(root)!r})
+Path.home=classmethod(lambda cls:synthetic_home)
+launcher.validate_private_output=partial(private_output, private_root=synthetic_home)
+for rejected in (synthetic_home, synthetic_home.parent/'outside'):
+    try:
+        launcher.validate_private_output(rejected)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('synthetic private-root guard did not reject escape')
+"""
+        args[2]=setup+args[2]
+        return popen(args, **kwargs)
+    monkeypatch.setattr(mod.subprocess,'Popen',launch)
     with tempfile.TemporaryDirectory(prefix='synthetic-stage-',dir=root) as directory:
         private=Path(directory);frozen=contract()
         image=private/'image.nii.gz';anatomy=private/'anatomy.nii.gz';lesion=private/'lesion.nii.gz'
