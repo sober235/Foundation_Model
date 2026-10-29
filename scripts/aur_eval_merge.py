@@ -42,6 +42,16 @@ def validate_decoder_metadata(infos):
     return contracts[0]
 
 
+def shard_query_capacity(infos):
+    values = [item.get('query_capacity') for item in infos]
+    if not values or any(value != values[0] for value in values):
+        raise ValueError('shard query capacity differs')
+    value = values[0]
+    if value is not None and (type(value) is not int or not 1 <= value <= 128):
+        raise ValueError('invalid shard query capacity')
+    return value
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--shards", type=Path, nargs="+", required=True)
@@ -56,6 +66,7 @@ def main(argv=None):
     if a.out.exists():
         raise FileExistsError(f"{a.out} exists")
     infos = [json.loads((d / "shard.json").read_text()) for d in a.shards]
+    query_capacity = shard_query_capacity(infos)
     profile, rules = validate_decoder_metadata(infos)
     if infos[0]["split"] != a.split:
         raise ValueError("requested split differs from shard contract")
@@ -84,12 +95,13 @@ def main(argv=None):
             if cases:
                 reference[source] = E.reference_summary(source, E.reference_scans(source, cases))
                 print(f"reference {source}: {reference[source]}", flush=True)
-    agg = E.aggregate(results, reference, fixed_thresholds=fixed)
+    agg = E.aggregate(results, reference, fixed_thresholds=fixed, query_capacity=query_capacity)
     agg["run"] = {**{k: infos[0][k] for k in ("checkpoint", "checkpoint_sha256", "split", "samples", "samples_sha256", "crop", "sources", "limit",
                                                "instance_threshold", "stage", "e2e")},
                   "n_rows": len(results), "n_shards": len(infos), "shards": [str(d) for d in a.shards], "fixed_thresholds": fixed,
                   "code_sha_shards": sorted({i["code_sha"] for i in infos}), "code_sha_merge": code_sha(), "seconds_shards": [i["seconds"] for i in infos]}
     agg["run"].update(decoder_profile=profile, decoder_rules=rules)
+    agg['run']['query_capacity'] = query_capacity
     agg["run"]["binding_score_floors"] = infos[0].get("binding_score_floors", {})
     if snapshot is not None and not a.no_reference:
         agg["run"].update(reference_json=str(snapshot),reference_sha256=file_sha256(snapshot))

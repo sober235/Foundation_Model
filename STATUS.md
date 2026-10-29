@@ -1,4 +1,31 @@
-# STATUS：2026-10-26（判门层与有限真实CPU验证完成；正式II/III未启动）
+# 2026-10-29 最新：正式II/III完成，待最终A/U/R评价
+
+run_v5的II4096/III2048步全部完成，选定3584/2048；终态COMPLETE，首尾完整性核验通过。详见[最新报告与loss PNG](docs/verification/2026-10-29/aur_training_completion/RESULTS.md)。下文“训练中”均为历史快照。用户要求本次归档推送新分支`xxxx_20261029`；不启动新训练或评价，不处理论文。最终A/U/R质量与4469全量推理仍未执行。
+
+# 2026-10-28 当前接续：128-query probe完成，正式run_v5训练中，step256已保存核验
+
+以[PROJECT_CONTEXT](PROJECT_CONTEXT.md)和[本次报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)为准。128-query实现506dbdc完成，probe_v5 II/III各8步、双mode执行及只读产物回放通过；原StageI/G1不重跑。正式II4096→III2048使用v5登记，于09:53:02 UTC启动run_v5，PID1743973，空闲A800物理2；10:09:26 UTC快照II267/4096、2D134/3D133，loss全有限；checkpoint256哈希/配置/权重有限性已核验，III未启动。保留4h/2h阶段上限和8h控制器上限，probe不保证完整预算时长，当前128 CUDA恢复尚未单独验证。只做工程代码/训练；protocol暂不输入，论文推迟。下文均为历史记录，其中“待确认/未实现/运行中”不能当作当前状态。
+
+# STATUS：2026-10-26（容量审计完成，128-query重新训练设计待确认）
+
+## 最新：完整容量审计完成
+
+[容量报告](docs/verification/2026-10-26/aur_query_capacity/RESULTS.md)：3499 TRAIN源行最多102实例；登记II的2D/3D各2048观察最多14/85，3D有3次超过64；III子集3D有2次超过64。固定周期validation每mode8观察最多3/22，已有1725步匹配计数全部一致。CPU4worker、157.914秒、无模型前向或训练；63项合成计数对照、48项方向几何检查及独立复核通过。
+
+[128-query设计](docs/superpowers/specs/2026-10-26-aur-query-capacity-128-design.md)建议新版本从原LR5正式Stage I骨干重新开始II4096→III2048，不迁移1536的监督optimizer，不丢弃GT或改变裁块。原数据和损失保持，父子runtime身份必须显式转换；128覆盖本轮观察及当前三维源上界，不等于任意未来二维上界。具体架构/重新开始决定待用户确认；没有新生产实现或训练。下文“尚未审计”仅属此前停止诊断。
+
+## 最新：容量失败已复现
+
+run_v3终态FAILED：II已完成1725步，第1726步前3D裁块含65个病灶实例，超过64query。全部已保存loss有限；CPU按原seed/draw862复现容量拒绝，源码/角色/选中3源文件哈希通过。宿主机控制器退出，III未启动，closing完整校验通过。最近持久化及best checkpoint均为1536，文件哈希通过。详见[STOPPED.md](docs/verification/2026-10-26/aur_formal_supervised/STOPPED.md)。尚未审计完整容量分布或确定新策略，不自动重启；下面“运行中”为历史快照。
+
+
+## 2026-10-26正式监督接续
+
+当前run_v3于09:39:55 UTC启动，PID538100，空闲A100物理3；cwd/PYTHONPATH均为原LR5冻结runtime。v3登记及代码独立审阅0项，执行代码8868a8d，修复后完整CPU2080 passed/5 skipped（348.95秒）。预算仍为II4096→III2048，总上限8小时。09:50:40 UTC宿主机快照：Stage II已运行108/4096步，2D/3D各54次曝光，108条已记录loss全部有限，PID身份核对通过；III尚未开始。当前尚无正式监督完成证书或最终质量成绩。
+
+原run_v2在Stage II初始化前GPU准入拒绝，step0、零checkpoint、III未启动，宿主机确认进程退出，closing完整输入校验通过。原通用错误不能定位拒绝原因；外部控制器现保存实际判定时匿名测量和固定原因码，GPU阈值和冻结训练配方不变。v1/v2及失败结果均保留；run_v3是新的有界启动，不是追加训练预算。
+
+最新证据见[正式监督接续报告](docs/verification/2026-10-26/aur_formal_supervised/RESULTS.md)和[RUN](docs/verification/2026-10-26/aur_formal_supervised/RUN.json)。私有`~/outputs/aur_lr5_formal_supervised_20261026/run_v3/`是唯一当前运行，不要重复启动。先核对宿主机进程与匿名状态，再报告实际步骤和终态；下文“未启动/v2待生成”均为此前交接快照。
 
 ## 当前回顾入口：main＋一个工作分支
 

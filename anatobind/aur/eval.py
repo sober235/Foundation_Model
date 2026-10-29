@@ -324,9 +324,12 @@ def _r_block(instances, r_key="r", b0_key="b0", truth_key="truth"):
             "n_zero_overlap": int(sum(bool(i.get("zero_overlap")) for i in instances))}
 
 
-def _u_entry(scans, ref, fixed_thr, u_margin):
+def _u_entry(scans, ref, fixed_thr, u_margin, query_capacity=64):
+    if query_capacity is not None and (type(query_capacity) is not int or not 1 <= query_capacity <= 128):
+        raise ValueError('invalid query capacity')
     entry = {"n_scans": len(scans), "n_gt": sum(1 for x in scans for g in x["gt"] if not g.get("ignore")),
-             "n_ignored": sum(1 for x in scans for g in x["gt"] if g.get("ignore")), "saturated_cases": [x["case"] for x in scans if len(x["gt"]) > 64]}
+             "n_ignored": sum(1 for x in scans for g in x["gt"] if g.get("ignore")), "query_capacity": query_capacity,
+             "saturated_cases": None if query_capacity is None else [x["case"] for x in scans if len(x["gt"]) > query_capacity]}
     if ref is None:
         entry.update({"sweep": sweep(scans), "pass": None, "threshold_selection": None})
         return entry
@@ -344,7 +347,14 @@ def _u_entry(scans, ref, fixed_thr, u_margin):
     return entry
 
 
-def aggregate(results, reference, a_gate=A_GATE, u_margin=U_MARGIN, fixed_thresholds=None):
+def model_query_capacity(model):
+    value = getattr(model, 'cfg', {}).get('n_events')
+    if type(value) is not int or not 1 <= value <= 128:
+        raise ValueError('invalid model query capacity')
+    return value
+
+
+def aggregate(results, reference, a_gate=A_GATE, u_margin=U_MARGIN, fixed_thresholds=None, query_capacity=64):
     """Per-source and overall tables of the tracks and the gates G2 (A, U) and G3 (R). `reference` maps a source to
     the reference detector's {"sensitivity", "fp_per_scan", "thr", "n_scans", "n_gt", ...} on the same patients;
     `fixed_thresholds` maps a source to a score threshold chosen on the validation split (else the threshold is
@@ -375,7 +385,7 @@ def aggregate(results, reference, a_gate=A_GATE, u_margin=U_MARGIN, fixed_thresh
         for q in seqs:
             scans = [scan(r["case"], r["u"]["gt"], r["u"]["dets"]) for r in results if r["source"] == s and r["sequence"] == q and r.get("u")]
             judged = ref is not None and q == REFERENCE.get(s, {}).get("sequence")
-            entry = _u_entry(scans, ref if judged else None, fixed_thresholds.get(s), u_margin)
+            entry = _u_entry(scans, ref if judged else None, fixed_thresholds.get(s), u_margin, query_capacity=query_capacity)
             entry.update({"sequence": q, "reference": ref if judged else None, "gated": judged,
                           "grid": REFERENCE.get(s, {}).get("grid") if judged else None})
             u["per_source_sequence"][f"{s}/{q}"] = entry

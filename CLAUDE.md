@@ -1,4 +1,19 @@
+# 2026-10-29 最新：正式II/III完成，待最终A/U/R评价
+
+run_v5的II4096/III2048步全部完成，选定3584/2048；终态COMPLETE，首尾完整性核验通过。详见[最新报告与loss PNG](docs/verification/2026-10-29/aur_training_completion/RESULTS.md)。下文“训练中”均为历史快照。用户要求本次归档推送新分支`xxxx_20261029`；不启动新训练或评价，不处理论文。最终A/U/R质量与4469全量推理仍未执行。
+
+# 2026-10-28 当前接续：128-query probe完成，正式run_v5训练中，step256已保存核验
+
+以[PROJECT_CONTEXT](PROJECT_CONTEXT.md)和[本次报告](docs/verification/2026-10-28/aur_query128_release/RESULTS.md)为准。128-query实现506dbdc完成，probe_v5 II/III各8步、双mode执行及只读产物回放通过；原StageI/G1不重跑。正式II4096→III2048使用v5登记，于09:53:02 UTC启动run_v5，PID1743973，空闲A800物理2；10:09:26 UTC快照II267/4096、2D134/3D133，loss全有限；checkpoint256哈希/配置/权重有限性已核验，III未启动。保留4h/2h阶段上限和8h控制器上限，probe不保证完整预算时长，当前128 CUDA恢复尚未单独验证。只做工程代码/训练；protocol暂不输入，论文推迟。下文均为历史记录，其中“待确认/未实现/运行中”不能当作当前状态。
+
 # Foundation_Model / AnatoBind-MRI:新会话入口
+
+**最新容量审计已完成：** 先读PROJECT_CONTEXT/STATUS顶部及[容量报告](docs/verification/2026-10-26/aur_query_capacity/RESULTS.md)。TRAIN3499源行max102；登记II2D/3D max14/85、3D三次超64；已有1725步计数全部一致。CPU157.914秒、独立复核通过，无新训练。[128-query新版本设计](docs/superpowers/specs/2026-10-26-aur-query-capacity-128-design.md)已准备，建议从原LR5 Stage I重新开始II/III，具体决定待用户确认。不要重跑审计，不改旧runtime/证书，不原样恢复失败run_v3。
+
+**2026-10-26最新终态：run_v3 FAILED。** II完成1725步，下一3D观察65实例超过64query；CPU原样复现，控制器退出、III未启动。可恢复checkpoint1536，哈希已核对。先读PROJECT_CONTEXT/STATUS及[停止诊断](docs/verification/2026-10-26/aur_formal_supervised/STOPPED.md)；不原样恢复，不修改旧runtime或丢弃病灶。以下“训练中”是历史启动记录。
+
+
+**2026-10-26正式监督已接续：** 先读PROJECT_CONTEXT、STATUS顶部及[新报告](docs/verification/2026-10-26/aur_formal_supervised/RESULTS.md)。当前run_v3于09:39:55 UTC启动，PID538100，空闲A100，Stage II训练中；代码8868a8d只补GPU拒绝匿名诊断。09:50:40 UTC宿主机快照：Stage II已运行108/4096步，2D/3D各54次曝光，108条已记录loss全部有限，PID身份核对通过；III尚未开始。v3登记/代码独立复核0项，完整CPU2080/5。原run_v2在Stage II初始化前GPU准入拒绝，step0，进程已退出；原原因未知，失败证据保留。不要重复启动。以下“未启动/先生成v2”是历史快照；预算II4096→III2048及8小时上限不变。
 
 **2026-10-26用户指定的回顾范围：仅`main`＋`work/aur-formal-supervised`。** 先读[PROJECT_CONTEXT.md](PROJECT_CONTEXT.md)和STATUS顶部；不要完整读取所有分支。该工作分支从本次归档main建立，作为唯一后续工作入口；旧分支保留档案。最新[判门/像素网格报告](docs/verification/2026-10-26/aur_gate_layer/RESULTS.md)及RUN记录：S7开发参考重评分、3序列双mode tiny CPU试跑、修复后标注报告均完成，真实test未读；CPU2069/5及最终控制器73项定向检查通过，正式II/III未启动。旧v1登记未运行且控制器hash过时，下一次先生成/审阅v2。启动必须cwd=冻结runtime且PYTHONPATH同指向，不能让子进程`python -c`从checkout加载anatobind。全部具体定位、失败保留与下一步见PROJECT_CONTEXT。
 

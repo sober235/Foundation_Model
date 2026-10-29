@@ -3,6 +3,8 @@ import argparse
 from collections.abc import Mapping
 from copy import deepcopy
 import json
+import hashlib
+import io
 import os
 from pathlib import Path
 import tempfile
@@ -214,17 +216,26 @@ def _validate_roles(contract):
         raise ValueError('training and validation partition overlap')
 
 
-def _inputs(warm_start, initializer, g1_report):
+def _inputs(warm_start, initializer, g1_report, initialization_transfer=None):
     records = {}
-    for name,value in [('warm_start',warm_start),('initializer',initializer),('g1_report',g1_report)]:
+    for name,value in [('warm_start',warm_start),('initializer',initializer),('g1_report',g1_report),
+                       ('initialization_transfer',initialization_transfer)]:
         if value is None:
             continue
+        expected_sha = None
+        if name == 'initialization_transfer' and isinstance(value,Mapping):
+            if set(value) != {'path','sha256'}:
+                raise ValueError('invalid initialization transfer')
+            expected_sha = value['sha256']
+            value = value['path']
         policy = None
         if name == 'warm_start':
             policy = value.get('policy','full_stage_one') if isinstance(value,Mapping) else 'full_stage_one'
             value = value['checkpoint'] if isinstance(value,Mapping) else value
         path = Path(value).expanduser().resolve()
         records[name] = {'path':str(path),'sha256':file_sha256(path)}
+        if expected_sha is not None and records[name]['sha256'] != expected_sha:
+            raise ValueError('initialization transfer changed')
         if policy is not None:
             records[name]['policy'] = policy
     return records
@@ -236,10 +247,28 @@ def _check_inputs(records):
 
 
 def _initialize(stage, cfg, identity, inputs, device):
-    initializer = torch.load(inputs['initializer']['path'],map_location='cpu',weights_only=True) if 'initializer' in inputs else None
-    g1_report = _read_json(Path(inputs['g1_report']['path'])) if 'g1_report' in inputs else None
+    def verified(name):
+        entry=inputs[name];contents=Path(entry['path']).read_bytes()
+        if hashlib.sha256(contents).hexdigest()!=entry['sha256']:
+            raise ValueError('initialization input changed')
+        return contents
+    initializer = torch.load(io.BytesIO(verified('initializer')),map_location='cpu',weights_only=True) if 'initializer' in inputs else None
+    g1_report = json.loads(verified('g1_report')) if 'g1_report' in inputs else None
     warm_start = ({'checkpoint':inputs['warm_start']['path'],'policy':inputs['warm_start']['policy']} if 'warm_start' in inputs else None)
-    return UnifiedRun(stage,cfg,identity,device=device,initializer=initializer,g1_report=g1_report,warm_start=warm_start)
+    transfer = None
+    if 'initialization_transfer' in inputs:
+        entry=inputs['initialization_transfer']
+        contents=Path(entry['path']).read_bytes()
+        if hashlib.sha256(contents).hexdigest()!=entry['sha256']:
+            raise ValueError('initialization transfer changed')
+        transfer=json.loads(contents)
+        if (transfer.get('parent_export')!=inputs.get('initializer') or
+                transfer.get('g1_report')!=inputs.get('g1_report')):
+            raise ValueError('initialization transfer source differs')
+    if transfer is None:
+        return UnifiedRun(stage,cfg,identity,device=device,initializer=initializer,g1_report=g1_report,warm_start=warm_start)
+    return UnifiedRun(stage,cfg,identity,device=device,initializer=initializer,g1_report=g1_report,
+                      warm_start=warm_start,initialization_transfer=transfer)
 
 
 def _finish_export(runner, out, best, last, inputs):
@@ -276,7 +305,8 @@ def _finish_export(runner, out, best, last, inputs):
 
 
 def run_stage(recipe, data_contract, stage, out, device='cpu', warm_start=None, initializer=None,
-              g1_report=None, resume=None, *, train_factory=None, validation_factory=None):
+              g1_report=None, resume=None, *, train_factory=None, validation_factory=None, initialization_transfer=None,
+              execution_cap=None):
     """Run one explicit stage; mapping contracts are for synthetic library tests.
 
     Source/data verification occurs on entry and close, never per optimizer
@@ -286,6 +316,9 @@ def run_stage(recipe, data_contract, stage, out, device='cpu', warm_start=None, 
     """
     recipe = validate_recipe(recipe)
     cfg = recipe['stage_config']
+    if execution_cap is not None and (cfg['purpose']!='resource_probe' or type(execution_cap) is not int
+                                      or not 1<=execution_cap<cfg['steps']):
+        raise ValueError('invalid execution cap')
     if stage not in ('I','II','III'):
         raise ValueError('invalid stage')
     out = validate_private_output(out)
@@ -300,7 +333,7 @@ def run_stage(recipe, data_contract, stage, out, device='cpu', warm_start=None, 
     snapshot = source_snapshot()
     identity = {'contract_sha256':frozen['contract_sha256'],'runtime_sha256':json_digest(snapshot),
                 'geometry_version':GEOMETRY_VERSION}
-    supplied = _inputs(warm_start,initializer,g1_report)
+    supplied = _inputs(warm_start,initializer,g1_report,initialization_transfer)
     previous = None
     if resume is None:
         if out.exists():
@@ -314,6 +347,7 @@ def run_stage(recipe, data_contract, stage, out, device='cpu', warm_start=None, 
     _check_inputs(inputs)
     record = {'schema_version':1,'recipe':recipe,'stage':stage,'data_contract':identity,
               'device':str(torch.device(device)),'initialization_inputs':inputs,'source_snapshot_sha256':json_digest(snapshot)}
+    if execution_cap is not None:record['execution_cap']=execution_cap
     record['execution_id']=json_digest({'output':str(out),'run':record})
     if previous is not None and (previous != record or _read_json(out/'source_snapshot.json') != snapshot):
         raise ValueError('resume source or configuration closure mismatch')
@@ -367,7 +401,8 @@ def run_stage(recipe, data_contract, stage, out, device='cpu', warm_start=None, 
         due=runner.step_index>0 and (runner.step_index%cfg['validation_every']==0 or runner.step_index==cfg['steps'])
         if due and not any(r['step']==runner.step_index for r in read_jsonl(out/'validation.jsonl')):
             last,best=_validate_boundary(runner,out,validation_factory,recipe['validation_batches'],best)
-        while runner.step_index < cfg['steps']:
+        stop_step = min(cfg['steps'],execution_cap) if execution_cap is not None else cfg['steps']
+        while runner.step_index < stop_step:
             if monotonic()-started >= cfg['max_seconds']:
                 interrupted = True
                 break
@@ -392,6 +427,9 @@ def run_stage(recipe, data_contract, stage, out, device='cpu', warm_start=None, 
                 last,best=_validate_boundary(runner,out,validation_factory,recipe['validation_batches'],best)
             elif runner.step_index%cfg['checkpoint_every']==0:
                 last = _save_boundary(runner,out)
+        probe_capped=(not interrupted and execution_cap is not None and runner.step_index==execution_cap)
+        if probe_capped and not any(row['step']==runner.step_index for row in read_jsonl(out/'validation.jsonl')):
+            last,best=_validate_boundary(runner,out,validation_factory,recipe['validation_batches'],best)
         last = _save_boundary(runner,out)
         training_seconds = monotonic()-started
         verification_started = monotonic()
@@ -403,7 +441,9 @@ def run_stage(recipe, data_contract, stage, out, device='cpu', warm_start=None, 
         if not interrupted and not all(runner.exposures[mode]>0 for mode in ('2d','3d')):
             raise ValueError('completed phase requires training exposures in both modes')
         selected_export = None if interrupted else _finish_export(runner,out,best,last,inputs)
-        summary = {'status':'INTERRUPTED' if interrupted else 'COMPLETE','stage':stage,'purpose':cfg['purpose'],
+        summary = {'status':'INTERRUPTED' if interrupted else ('PROBE_COMPLETE' if probe_capped else 'COMPLETE'),
+                   'stage':stage,'purpose':cfg['purpose'],'execution_cap':execution_cap,
+                   'scheduler_horizon_steps':cfg['steps'],'budget_steps':cfg['steps'],
                    'steps':runner.step_index,'exposures':dict(runner.exposures),'source_exposures':dict(runner.source_exposures),
                    'source_mode_exposures':deepcopy(runner.source_mode_exposures),
                    'training_seconds':training_seconds,'verification_seconds':verification_seconds,

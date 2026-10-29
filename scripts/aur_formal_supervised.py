@@ -9,6 +9,7 @@ from copy import deepcopy
 import gc
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -66,10 +67,18 @@ def _validate_registration(reg):
     from anatobind.aur.unified_run import validate_run_config
     expected = {'schema_version','runtime_root','runtime_sha256','inputs','controllers',
                 'stage_configs','validation_batches'}
-    if (set(reg)!=expected or reg['schema_version']!=1 or type(reg['validation_batches']) is not int
+    if (set(reg) not in (expected,expected|{'initialization_transfer'}) or reg['schema_version']!=1 or type(reg['validation_batches']) is not int
             or reg['validation_batches']!=8 or set(reg['inputs'])!=set(INPUTS)
             or set(reg['controllers'])!=set(CONTROLLERS) or set(reg['stage_configs'])!={'II','III'}):
         raise ValueError('invalid registration')
+    transfer=reg.get('initialization_transfer')
+    if transfer is not None:
+        if (set(transfer)!={'path','sha256'} or str(Path(transfer['path']).expanduser().resolve())!=transfer['path']
+                or _sha(transfer['path'])!=transfer['sha256']):
+            raise ValueError('invalid transfer registration')
+    if any((cfg['model']['n_events'] != 128 if transfer is not None else cfg['model']['n_events'] > 64)
+           for cfg in reg['stage_configs'].values()):
+        raise ValueError('invalid registration transfer capacity')
     for item in reg['inputs'].values():
         if set(item)!={'path','sha256'} or str(Path(item['path']).expanduser().resolve())!=item['path']:
             raise ValueError('invalid registered input')
@@ -105,33 +114,67 @@ def _admit(reg):
     snapshot = _validate_registration(reg)
     paths = {name:item['path'] for name,item in reg['inputs'].items()}
     frozen = read_contract(paths['data_contract'],verify=True)
-    parent = torch.load(paths['parent_export'],map_location='cpu',weights_only=True)
-    identity = deepcopy(parent['data_contract'])
+    def input_bytes(name):
+        value=Path(paths[name]).read_bytes()
+        if hashlib.sha256(value).hexdigest()!=reg['inputs'][name]['sha256']:
+            raise ValueError('registered input changed')
+        return value
+    parent = torch.load(io.BytesIO(input_bytes('parent_export')),map_location='cpu',weights_only=True)
+    parent_identity = deepcopy(parent['data_contract'])
+    identity = deepcopy(parent_identity)
+    if reg.get('initialization_transfer') is not None:
+        identity['runtime_sha256']=reg['runtime_sha256']
     if (identity.get('contract_sha256')!=frozen['contract_sha256']
             or identity.get('runtime_sha256')!=reg['runtime_sha256'] or parent.get('stage')!='I'):
         raise ValueError('parent data or runtime identity differs')
     certificate = parent.get('completion_certificate',{})
-    if (not _parent_certificate_matches(parent,_read(paths['parent_completion']),reg['inputs']['parent_export']['sha256'])
-            or not verify_completion_certificate(parent,data_contract=identity)):
+    if (not _parent_certificate_matches(parent,json.loads(input_bytes('parent_completion')),reg['inputs']['parent_export']['sha256'])
+            or not verify_completion_certificate(parent,data_contract=parent_identity)):
         raise ValueError('parent completion invalid')
-    parent_cfg = torch.load(certificate['final_checkpoint_path'],map_location='cpu',weights_only=True)['cfg']
+    final_contents=Path(certificate['final_checkpoint_path']).read_bytes()
+    if hashlib.sha256(final_contents).hexdigest()!=certificate['final_checkpoint_sha256']:
+        raise ValueError('parent checkpoint changed')
+    parent_cfg = torch.load(io.BytesIO(final_contents),map_location='cpu',weights_only=True)['cfg']
     _base._validate_parent_protocol(parent_cfg,parent)
+    expected_configs=make_stage_configs(parent_cfg)
+    if reg.get('initialization_transfer') is not None:
+        for cfg in expected_configs.values():cfg['model']['n_events']=128
     if (parent_cfg!=validate_run_config(parent_cfg) or parent_cfg['seed']!=20261019
-            or reg['stage_configs']!=make_stage_configs(parent_cfg)):
+            or reg['stage_configs']!=expected_configs):
         raise ValueError('registered recipes differ from inherited protocol')
-    gate,complete = _read(paths['g1_report']),_read(paths['g1_completion'])
+    gate,complete = json.loads(input_bytes('g1_report')),json.loads(input_bytes('g1_completion'))
     if (not validate_gate(gate,data_contract_sha256=frozen['contract_sha256'],
             backbone_state_sha256=_state_hash(parent['backbone_state_dict']),require_formal=True)
             or complete.get('report_sha256')!=reg['inputs']['g1_report']['sha256']
             or complete.get('pass') is not True or complete.get('frozen_backbones_unchanged') is not True
             or not _g1_parent_matches(gate,certificate,reg['inputs']['parent_export']['sha256'])):
         raise ValueError('parent G1 invalid')
+    if reg.get('initialization_transfer') is not None:
+        from anatobind.aur.query_transfer import validate_transfer
+        ref=reg['initialization_transfer'];contents=Path(ref['path']).read_bytes()
+        if hashlib.sha256(contents).hexdigest()!=ref['sha256']:
+            raise ValueError('transfer registration changed')
+        transfer=json.loads(contents)
+        if (transfer.get('parent_export')!=reg['inputs']['parent_export'] or
+                transfer.get('g1_report')!=reg['inputs']['g1_report']):
+            raise ValueError('transfer sources differ from registration')
+        validate_transfer(parent,reg['stage_configs']['II'],identity,gate,transfer)
     from anatobind.aur.unified_launcher import _validate_roles
     _validate_roles(frozen)
     return snapshot,frozen,identity
 
 
-def _stage_work(stage,recipe,data_contract,out,device,initializer,g1_report):
+def _record_gpu_admission(device, destination):
+    try:
+        record = _gpu_admission(device)
+    except ValueError as exc:
+        if hasattr(exc, 'diagnostics'):
+            _json(destination, exc.diagnostics)
+        raise
+    _json(destination, record)
+
+
+def _stage_work(stage,recipe,data_contract,out,device,initializer,g1_report,initialization_transfer=None):
     import torch
     from anatobind.aur import unified_launcher as launcher
     torch.set_num_threads(2)
@@ -139,17 +182,18 @@ def _stage_work(stage,recipe,data_contract,out,device,initializer,g1_report):
     def admitted_initialize(*args,**kwargs):
         # run_stage has finished startup hashing and created its validated private
         # directory. Recheck the physical UUID at the actual model boundary.
-        _json(Path(out)/'gpu_initialization_admission.json',_gpu_admission(device))
+        _record_gpu_admission(device, Path(out)/'gpu_initialization_admission.json')
         return original(*args,**kwargs)
     launcher._initialize=admitted_initialize
     try:
+        extra={'initialization_transfer':initialization_transfer} if initialization_transfer is not None else {}
         return launcher.run_stage(recipe,data_contract,stage,out,device=device,
-                                  initializer=initializer,g1_report=g1_report)
+                                  initializer=initializer,g1_report=g1_report,**extra)
     finally:
         launcher._initialize=original
 
 
-def _run_stage_job(stage,recipe,data_contract,out,device,initializer,g1_report):
+def _run_stage_job(stage,recipe,data_contract,out,device,initializer,g1_report,initialization_transfer=None):
     """Exec a clean interpreter: never perform Torch work after a nested fork."""
     out=_private_path(out)
     request=out.parent/f'{stage}_worker_request.json'
@@ -157,6 +201,7 @@ def _run_stage_job(stage,recipe,data_contract,out,device,initializer,g1_report):
     if stage not in ('II','III') or out.name!=stage:raise ValueError('invalid stage worker destination')
     _json(request,{'stage':stage,'recipe':recipe,'data_contract':data_contract,'out':str(out),
         'device':device,'initializer':initializer,'g1_report':g1_report,
+        **({'initialization_transfer':initialization_transfer} if initialization_transfer is not None else {}),
         'controllers':{name:hashlib.sha256(value).hexdigest() for name,value in _LOADED_SOURCES.items()}})
     bootstrap=('import importlib.util,sys; '
         's=importlib.util.spec_from_file_location("aur_formal_stage_worker",sys.argv[1]); '
@@ -194,13 +239,14 @@ def _stage_subprocess_main(request_path,request_sha,parent_pid):
         request=json.loads(request_bytes)
         expected={'stage','recipe','data_contract','out','device','initializer','g1_report','controllers'}
         stage=request['stage'];out=_private_path(request['out'])
-        if (set(request)!=expected or stage not in ('II','III') or out.name!=stage
+        if (set(request) not in (expected,expected|{'initialization_transfer'}) or stage not in ('II','III') or out.name!=stage
                 or out.parent!=path.parent or path.name!=f'{stage}_worker_request.json'
                 or request['controllers']!={n:hashlib.sha256(v).hexdigest() for n,v in _LOADED_SOURCES.items()}):
             raise ValueError('stage worker identity differs')
         try:
+            extra={'initialization_transfer':request['initialization_transfer']} if 'initialization_transfer' in request else {}
             result=_stage_work(stage,request['recipe'],request['data_contract'],out,request['device'],
-                               request['initializer'],request['g1_report'])
+                               request['initializer'],request['g1_report'],**extra)
         except BaseException:
             result=dict(FAILED)
         _json(out.parent/f'{stage}_worker_result.json',{'worker_pid':os.getpid(),'result':result})
@@ -240,11 +286,13 @@ def _execute_stages(reg,identity,out,device,send):
         if torch.cuda.is_initialized():
             torch.cuda.empty_cache()
             raise ValueError('orchestrator must not own a CUDA context')
-        _json(out/f'gpu_admission_{stage}.json',_gpu_admission(device))
+        _record_gpu_admission(device, out/f'gpu_admission_{stage}.json')
         recipe = {'schema_version':1,'stage_config':reg['stage_configs'][stage],
                   'validation_batches':reg['validation_batches']}
+        extra=({'initialization_transfer':reg['initialization_transfer']}
+               if stage=='II' and 'initialization_transfer' in reg else {})
         result = _run_stage_job(stage,recipe,reg['inputs']['data_contract']['path'],out/stage,device,
-            initializer,reg['inputs']['g1_report']['path'] if stage=='II' else None)
+            initializer,reg['inputs']['g1_report']['path'] if stage=='II' else None,**extra)
         if result.get('status')!='COMPLETE':
             return {'status':result.get('status','FAILED'),'stage':stage,'evidence':'NOT_EVIDENCE'}
         stages[stage] = _validate_completed_stage(stage,out/stage,recipe['stage_config'],identity)
@@ -262,7 +310,8 @@ def _execute(registration,out,device,send):
     reg,reg_sha=json.loads(registration_bytes),hashlib.sha256(registration_bytes).hexdigest()
     snapshot,frozen,identity = _admit(reg)
     _json(out/'registration.json',reg)
-    commitments = {'registration_sha256':reg_sha,'runtime_sha256':reg['runtime_sha256'],'inputs':reg['inputs']}
+    commitments = {'registration_sha256':reg_sha,'runtime_sha256':reg['runtime_sha256'],'inputs':reg['inputs'],
+                   **({'initialization_transfer':reg['initialization_transfer']} if 'initialization_transfer' in reg else {})}
     _json(out/'input_commitments.json',commitments)
     _json(out/'runtime_sources.json',snapshot)
     archive=out/'controller_sources';archive.mkdir(mode=0o700)

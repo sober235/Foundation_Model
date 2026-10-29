@@ -1,0 +1,168 @@
+{
+  "commitments": {
+    "audit_source_sha256": "951d8a058383821562ab29e390086c15449d9644839019f330b357de47d93678",
+    "contract_sha256": "a839cfc9c9213b5b376eac4bc4a8219506175fdbe3620bc36cb2056f602b6060",
+    "groups_sha256": "bfc674a33f17fe4751ae85e2ad8a9e1bfa448b36532bbe0417583185eee58de2",
+    "registration_sha256": "8c1c359ea2319403652b60927c711c12b4614c9df18bc97997fea702f6346bc2",
+    "role_sha256": {
+      "train_supervised": "5d554b4063a07d3d5809ac47faa53ff423d5870b05fad47c427c798d3fcec487",
+      "validation": "e488ce40980dfc468457793ddc639f9397acf3c2f17caf76f400f37a6089dbd6"
+    },
+    "runtime_sha256": "5120f2040421f0a8f4c6b198cc20281adfdf1aa4b8204848c220d5dffe3f423a"
+  },
+  "evidence": "NOT_EVIDENCE",
+  "known_failure_reproduced": true,
+  "limits": [
+    "Exact bounded planned sampling schedule, not all possible future crops",
+    "3D whole-source count bounds other3D crops; no such bound is claimed for2D splitting",
+    "Lesion bytes and role/source digests verified; image headers checked, image/anatomy full bytes not rehashed",
+    "Does not certify labels, relation targets, model quality or held-out test"
+  ],
+  "model_forwards": 0,
+  "observed_training_count_mismatches": 0,
+  "observed_training_records_compared": 1725,
+  "periodic_validation": {
+    "2d": {
+      "max": 3,
+      "observations": 8,
+      "over_capacity": {
+        "128": 0,
+        "192": 0,
+        "256": 0,
+        "384": 0,
+        "512": 0,
+        "64": 0,
+        "96": 0
+      },
+      "quantiles": {
+        "p50": 0.5,
+        "p90": 2.3,
+        "p95": 2.6499999999999995,
+        "p99": 2.9299999999999997
+      }
+    },
+    "3d": {
+      "max": 22,
+      "observations": 8,
+      "over_capacity": {
+        "128": 0,
+        "192": 0,
+        "256": 0,
+        "384": 0,
+        "512": 0,
+        "64": 0,
+        "96": 0
+      },
+      "quantiles": {
+        "p50": 0.0,
+        "p90": 7.299999999999996,
+        "p95": 14.649999999999988,
+        "p99": 20.529999999999994
+      }
+    }
+  },
+  "source_group_count": 2086,
+  "source_volume_train": {
+    "max": 102,
+    "observations": 3499,
+    "over_capacity": {
+      "128": 0,
+      "192": 0,
+      "256": 0,
+      "384": 0,
+      "512": 0,
+      "64": 3,
+      "96": 1
+    },
+    "quantiles": {
+      "p50": 0.0,
+      "p90": 3.0,
+      "p95": 7.0,
+      "p99": 23.019999999999982
+    }
+  },
+  "stage_II": {
+    "2d": {
+      "max": 14,
+      "observations": 2048,
+      "over_capacity": {
+        "128": 0,
+        "192": 0,
+        "256": 0,
+        "384": 0,
+        "512": 0,
+        "64": 0,
+        "96": 0
+      },
+      "quantiles": {
+        "p50": 0.0,
+        "p90": 2.0,
+        "p95": 3.0,
+        "p99": 6.0
+      }
+    },
+    "3d": {
+      "max": 85,
+      "observations": 2048,
+      "over_capacity": {
+        "128": 0,
+        "192": 0,
+        "256": 0,
+        "384": 0,
+        "512": 0,
+        "64": 3,
+        "96": 0
+      },
+      "quantiles": {
+        "p50": 0.0,
+        "p90": 4.0,
+        "p95": 9.0,
+        "p99": 32.649999999999864
+      }
+    }
+  },
+  "stage_III_same_observations_subset": {
+    "2d": {
+      "max": 14,
+      "observations": 1024,
+      "over_capacity": {
+        "128": 0,
+        "192": 0,
+        "256": 0,
+        "384": 0,
+        "512": 0,
+        "64": 0,
+        "96": 0
+      },
+      "quantiles": {
+        "p50": 0.0,
+        "p90": 2.0,
+        "p95": 3.0,
+        "p99": 6.0
+      }
+    },
+    "3d": {
+      "max": 85,
+      "observations": 1024,
+      "over_capacity": {
+        "128": 0,
+        "192": 0,
+        "256": 0,
+        "384": 0,
+        "512": 0,
+        "64": 2,
+        "96": 0
+      },
+      "quantiles": {
+        "p50": 0.0,
+        "p90": 4.0,
+        "p95": 9.0,
+        "p99": 29.539999999999964
+      }
+    }
+  },
+  "status": "COMPLETE",
+  "train_source_row_count": 3499,
+  "training_updates": 0,
+  "wall_seconds": 157.91395116318017
+}

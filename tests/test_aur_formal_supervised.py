@@ -179,6 +179,59 @@ def test_stage_worker_uses_default_fullpool_factories(tmp_path,monkeypatch):
     assert not {'train_factory','validation_factory','resume'} & set(seen[0][1])
 
 
+def test_expanded_controller_threads_transfer_only_into_stage_ii(tmp_path,monkeypatch):
+    mod=module();calls=[]
+    def run(stage,recipe,data,out,device,initializer,g1_report,**kwargs):
+        calls.append((stage,kwargs))
+        return {'status':'COMPLETE'}
+    monkeypatch.setattr(mod,'_run_stage_job',run)
+    monkeypatch.setattr(mod,'_validate_completed_stage',lambda stage,out,cfg,identity:{
+        'selected_export':str(out/'selected_export.pt'),'selected_export_sha256':'a'*64,
+        'completion_sha256':'b'*64,'steps':cfg['steps'],'selected_step':512})
+    monkeypatch.setattr(mod,'_gpu_admission',lambda device:{'device':device})
+    reg=registration(tmp_path);reg['initialization_transfer']={'path':str(tmp_path/'transfer.json'),'sha256':'a'*64}
+    assert mod._execute_stages(reg,{},tmp_path,'cpu',lambda _:None)['status']=='COMPLETE'
+    assert calls==[('II',{'initialization_transfer':reg['initialization_transfer']}),('III',{})]
+
+
+def test_expanded_registration_binds_immutable_transfer(tmp_path):
+    mod=module();reg=registration(tmp_path);transfer=tmp_path/'transfer.json';transfer.write_text('{}')
+    reg['initialization_transfer']={'path':str(transfer.resolve()),'sha256':mod._sha(transfer)}
+    for cfg in reg['stage_configs'].values():cfg['model']['n_events']=128
+    mod._validate_registration(reg)
+    transfer.write_text('{"changed":true}')
+    with pytest.raises(ValueError,match='transfer'):
+        mod._validate_registration(reg)
+
+
+def test_expanded_registration_does_not_allow_implicit_capacity_change(tmp_path):
+    mod=module();reg=registration(tmp_path)
+    for cfg in reg['stage_configs'].values():cfg['model']['n_events']=128
+    with pytest.raises(ValueError,match='transfer|registration'):
+        mod._validate_registration(reg)
+
+
+def test_initialization_rejection_is_saved_without_constructing_model(tmp_path, monkeypatch):
+    import anatobind.aur.unified_launcher as launcher
+    mod = module()
+    details = {'status':'REJECTED', 'reason':'gpu_busy', 'active_compute_workloads':1}
+    def guard(device):
+        error = ValueError('GPU is unavailable or no longer idle')
+        error.diagnostics = details
+        raise error
+    def run(*args, **kwargs):
+        return launcher._initialize()
+    def forbidden(*args, **kwargs):
+        pytest.fail('Rejected GPU must not construct a model')
+    monkeypatch.setattr(mod, '_gpu_admission', guard)
+    monkeypatch.setattr(launcher, 'run_stage', run)
+    monkeypatch.setattr(launcher, '_initialize', forbidden)
+    with pytest.raises(ValueError):
+        mod._stage_work('II', {}, 'contract', tmp_path, 'cuda:0', 'parent', 'gate')
+    assert json.loads((tmp_path/'gpu_initialization_admission.json').read_text()) == details
+    assert launcher._initialize is forbidden
+
+
 def test_tiny_cpu_actual_stage_chain_uses_real_run_stage_without_formal_claim(tmp_path,monkeypatch):
     import os
     import tempfile
@@ -191,8 +244,34 @@ def test_tiny_cpu_actual_stage_chain_uses_real_run_stage_without_formal_claim(tm
     # must exec a fresh interpreter and use real default QualifiedViews.
     torch.set_num_threads(2)
     large=torch.rand(256,256);large.copy_(large+1)
-    root=Path.home()/'outputs/aur_lr5_formal_supervised_20261026/implementation'
-    root.mkdir(parents=True,exist_ok=True,mode=0o700)
+    # Give both interpreters the same synthetic home without changing HOME.
+    root=tmp_path/'private_home'
+    root.mkdir(mode=0o700)
+    monkeypatch.setattr(Path,'home',lambda:root)
+    popen=mod.subprocess.Popen
+    def launch(args, **kwargs):
+        args=list(args)
+        assert args[1]=='-c'
+        # The launcher has a deployment-specific default root. Bind its real
+        # validator explicitly in the fresh worker; never replace it with a no-op.
+        setup=f"""from pathlib import Path
+from functools import partial
+from anatobind.aur import unified_launcher as launcher
+from anatobind.aur.data_contract import private_output
+synthetic_home=Path({str(root)!r})
+Path.home=classmethod(lambda cls:synthetic_home)
+launcher.validate_private_output=partial(private_output, private_root=synthetic_home)
+for rejected in (synthetic_home, synthetic_home.parent/'outside'):
+    try:
+        launcher.validate_private_output(rejected)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('synthetic private-root guard did not reject escape')
+"""
+        args[2]=setup+args[2]
+        return popen(args, **kwargs)
+    monkeypatch.setattr(mod.subprocess,'Popen',launch)
     with tempfile.TemporaryDirectory(prefix='synthetic-stage-',dir=root) as directory:
         private=Path(directory);frozen=contract()
         image=private/'image.nii.gz';anatomy=private/'anatomy.nii.gz';lesion=private/'lesion.nii.gz'
@@ -234,7 +313,8 @@ def admission_fixture(tmp_path,monkeypatch):
     mod=module();reg=registration(tmp_path)
     identity={'contract_sha256':contract()['contract_sha256'],'runtime_sha256':reg['runtime_sha256']}
     final=tmp_path/'final.pt';torch.save({'cfg':parent_config()},final)
-    certificate={'selected_step':2,'selected_checkpoint_sha256':'c'*64,'final_checkpoint_path':str(final)}
+    certificate={'selected_step':2,'selected_checkpoint_sha256':'c'*64,'final_checkpoint_path':str(final),
+                 'final_checkpoint_sha256':mod._sha(final)}
     parent={'stage':'I','data_contract':identity,'completion_certificate':certificate,
             'model_config':parent_config()['model'],'backbone_state_dict':{'weight':torch.ones(2)}}
     torch.save(parent,reg['inputs']['parent_export']['path'])
@@ -327,6 +407,7 @@ def test_fresh_stage_timeout_waits_for_owned_child_exit(monkeypatch):
     import tempfile
     mod=module();monkeypatch.setattr(mod,'PHASE_LIMITS',{'II':.05,'III':.05})
     root=Path.home()/'outputs/aur_lr5_formal_supervised_20261026/implementation'
+    root.mkdir(parents=True,exist_ok=True,mode=0o700)
     original=mod.subprocess.Popen;children=[]
     def launch(*args,**kwargs):
         process=original(*args,**kwargs);children.append(process);return process
@@ -346,6 +427,7 @@ def test_fresh_stage_worker_dies_with_its_orchestrator():
     import tempfile
     import time
     mod=module();root=Path.home()/'outputs/aur_lr5_formal_supervised_20261026/implementation'
+    root.mkdir(parents=True,exist_ok=True,mode=0o700)
     with tempfile.TemporaryDirectory(prefix='synthetic-parent-death-',dir=root) as directory:
         private=Path(directory);request=private/'II_worker_request.json';marker=private/'worker.pid'
         value=dict(stage='II',recipe={},data_contract={},out=str(private/'II'),device='cpu',initializer=None,g1_report=None,

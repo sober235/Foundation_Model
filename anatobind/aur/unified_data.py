@@ -142,8 +142,8 @@ def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centre
     crop = tuple(crop)
     if len(crop) != 3 or any(not isinstance(v, (int, np.integer)) or v <= 0 for v in crop):
         raise ValueError("crop must contain three positive integer dimensions")
-    if not isinstance(n_events, (int, np.integer)) or not 1 <= n_events <= 64:
-        raise ValueError("query capacity must be a positive integer at most 64")
+    if isinstance(n_events, (bool, np.bool_)) or not isinstance(n_events, (int, np.integer)) or not 1 <= n_events <= 128:
+        raise ValueError("query capacity must be a positive integer at most 128")
     if planar_relation_policy not in (None, POLICY):
         raise ValueError("unrecognised planar relation policy")
     if input_mode == "3d":
@@ -232,7 +232,7 @@ def make_unified_crop(vol, rng, input_mode, crop, do_augment=True, lesion_centre
             valid, a_ignore, ids, pixel_area, voxel_volume_mm3=vol["voxel_mm3"],
             split=vol.get("split"), a_supervised=bool(vol.get("a_supervised", True)),
             u_supervised=bool(vol["u_supervised"]), r_supervised=bool(vol.get("r_supervised", True)),
-            min_area_mm2=min_area_mm2)
+            min_area_mm2=min_area_mm2, max_instances=n_events)
         eligible = torch.from_numpy(qualified["r_eligible"]) & _eligibility(vol, ids, default=True)
         for key, target_key in (("host", "host"), ("probs", "host_probs"), ("negatives", "negatives")):
             targets[target_key][eligible] = torch.from_numpy(qualified[key])[eligible]

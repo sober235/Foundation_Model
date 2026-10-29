@@ -127,15 +127,26 @@ def test_scale_five_resume_restores_actual_steps_all_state_and_group_order(tmp_p
             UnifiedRun.resume(path, changed, CONTRACT)
 
 
-def test_historical_checkpoint_and_completion_certificate_stay_valid_without_profile():
-    from anatobind.aur.data_contract import PRIVATE_ROOT, file_sha256
+def test_historical_checkpoint_and_completion_certificate_stay_valid_without_profile(tmp_path, monkeypatch):
+    from functools import partial
+    from anatobind.aur.data_contract import file_sha256, private_output
+    import anatobind.aur.unified_artifacts as artifacts
     from anatobind.aur.unified_artifacts import verify_completion_certificate
     from anatobind.aur.unified_train import _state_hash
+
+    # Keep the real containment/Git checks, with a portable synthetic root.
+    private_root = tmp_path / "private_home"
+    private_root.mkdir(mode=0o700)
+    validate = partial(private_output, private_root=private_root)
+    monkeypatch.setattr(artifacts, "validate_private_output", validate)
+    for rejected in (private_root, tmp_path / "outside"):
+        with pytest.raises(ValueError, match="private home"):
+            validate(rejected)
 
     # Synthetic boundaries use the actual private-path validator and writer.
     # Relabelling this fixture exercises the certificate schema, not formal qualification.
     run = UnifiedRun("I", config(), CONTRACT)
-    with tempfile.TemporaryDirectory(prefix="aur-lr-certificate-test-", dir=PRIVATE_ROOT) as directory:
+    with tempfile.TemporaryDirectory(prefix="aur-lr-certificate-test-", dir=private_root) as directory:
         directory = Path(directory)
         run.step(factory)
         old_path = run.save(directory / "old.pt")

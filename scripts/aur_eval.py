@@ -106,6 +106,7 @@ def main(argv=None):
             reference[source] = E.reference_summary(source, scans)
             print(f"reference {source}: {reference[source]}", flush=True)
     model, meta = I.model_from_export(a.checkpoint, device)
+    query_capacity = E.model_query_capacity(model)
     crop = tuple(a.crop) if a.crop else tuple(meta.get("config", {}).get("crop", CROP))
     results, t0 = [], time.time()
     for i, r in enumerate(rows):
@@ -123,17 +124,18 @@ def main(argv=None):
                                                       "instance_threshold": a.instance_threshold, "stage": meta.get("stage"), "e2e": not a.no_e2e,
                                                       "decoder_profile": a.decoder_profile, "decoder_rules": rules, "decoder_workers": a.decoder_workers,
                                                       "binding_score_floors": fixed if a.decoder_profile != "legacy_max" and not a.no_e2e else {},
+                                                      "query_capacity": query_capacity,
                                                       "seconds": round(time.time() - t0, 1)}, indent=1))
         print(f"shard {shard[0]}/{shard[1]}: {len(results)} rows", flush=True)
         return 0
-    agg = E.aggregate(results, reference, fixed_thresholds=fixed)
+    agg = E.aggregate(results, reference, fixed_thresholds=fixed, query_capacity=query_capacity)
     agg["run"] = {"checkpoint": str(a.checkpoint), "checkpoint_sha256": file_sha256(a.checkpoint), "code_sha": code_sha(), "split": a.split,
                   "samples": str(a.samples), "samples_sha256": file_sha256(a.samples), "crop": list(crop), "n_rows": len(rows),
                   "sources": a.sources, "limit": a.limit, "instance_threshold": a.instance_threshold, "fixed_thresholds": fixed,
                   "stage": meta.get("stage"), "e2e": not a.no_e2e,
                   "decoder_profile": a.decoder_profile, "decoder_rules": rules, "decoder_workers": a.decoder_workers,
                   "binding_score_floors": fixed if a.decoder_profile != "legacy_max" and not a.no_e2e else {},
-                  "seconds": round(time.time() - t0, 1)}
+                  "query_capacity": query_capacity, "seconds": round(time.time() - t0, 1)}
     E.write_report(a.out, agg, results)
     (a.out / "reference.json").write_text(json.dumps(reference, indent=1, default=str))
     print(E.markdown(agg))

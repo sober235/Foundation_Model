@@ -1,5 +1,7 @@
 """Verify selected formal weights against real, immutable completion boundaries."""
 from pathlib import Path
+import hashlib
+import io
 
 import torch
 from collections import Counter
@@ -15,9 +17,10 @@ def _checkpoint(certificate, kind):
     path = validate_private_output(value)
     if not isinstance(value, str) or str(path) != value or not path.is_file():
         raise ValueError('invalid completion artifact')
-    if file_sha256(path) != certificate[f'{kind}_checkpoint_sha256']:
+    contents=path.read_bytes()
+    if hashlib.sha256(contents).hexdigest() != certificate[f'{kind}_checkpoint_sha256']:
         raise ValueError('invalid completion artifact')
-    return torch.load(path, map_location='cpu', weights_only=True)
+    return torch.load(io.BytesIO(contents), map_location='cpu', weights_only=True)
 
 
 def verify_completion_certificate(initializer, *, data_contract):
