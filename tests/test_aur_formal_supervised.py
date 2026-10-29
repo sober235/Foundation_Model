@@ -407,6 +407,7 @@ def test_fresh_stage_timeout_waits_for_owned_child_exit(monkeypatch):
     import tempfile
     mod=module();monkeypatch.setattr(mod,'PHASE_LIMITS',{'II':.05,'III':.05})
     root=Path.home()/'outputs/aur_lr5_formal_supervised_20261026/implementation'
+    root.mkdir(parents=True,exist_ok=True,mode=0o700)
     original=mod.subprocess.Popen;children=[]
     def launch(*args,**kwargs):
         process=original(*args,**kwargs);children.append(process);return process
@@ -426,6 +427,7 @@ def test_fresh_stage_worker_dies_with_its_orchestrator():
     import tempfile
     import time
     mod=module();root=Path.home()/'outputs/aur_lr5_formal_supervised_20261026/implementation'
+    root.mkdir(parents=True,exist_ok=True,mode=0o700)
     with tempfile.TemporaryDirectory(prefix='synthetic-parent-death-',dir=root) as directory:
         private=Path(directory);request=private/'II_worker_request.json';marker=private/'worker.pid'
         value=dict(stage='II',recipe={},data_contract={},out=str(private/'II'),device='cpu',initializer=None,g1_report=None,
