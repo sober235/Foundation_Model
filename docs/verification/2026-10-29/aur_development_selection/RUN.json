@@ -1,0 +1,44 @@
+{
+  "code_commit": "d2ac4b0",
+  "cpu_validation": {
+    "exit_code": 0,
+    "log_sha256": "2a17c2cf89f7628e1fbd2e80447a4cfafe212d2a3da7d4a2c34d57d29e5328ab",
+    "passed": 2142,
+    "skipped": 5,
+    "wall_seconds": 370.93
+  },
+  "evidence": "NOT_EVIDENCE",
+  "fastmri_full_executed": false,
+  "final_test_evaluated": false,
+  "focused_validation": {
+    "log_sha256": "8d797b7a3f95ac8d904e5a76dd591b36bfa8fc6aa63200265102e0e474deec29",
+    "passed": 12,
+    "wall_seconds": 12.98
+  },
+  "implementation_review_remaining_findings": 0,
+  "input_commitments": 7,
+  "launch": {
+    "gpu_uuid": "GPU-b9b9b8ed-8711-d341-fb0b-a69a647f4fb2",
+    "launched_utc": "2026-10-29T07:46:38.559504+00:00",
+    "pid": 3975686,
+    "start_ticks": 449332314
+  },
+  "launch_record_sha256": "ab50e9a313d2e50acbd7f227cd5ee49dae06c3ec06613d56eba139bc69a43973",
+  "limits": {
+    "automatic_retry": false,
+    "total_seconds": 43200
+  },
+  "observed_model_forwards": 0,
+  "parent_stage_III": {
+    "completion": "8675e1cfdf0d73394780e1c08a7e97d366368fe8888b47e4e39fa32ca8e14d20",
+    "export": "9629846acc28bc9a29f794ddcf1973fa9e309dbc146da1f0e3f769505007b17f"
+  },
+  "phase": "admission",
+  "prelaunch_refusal_sha256": "363f86a01de98b966ad3ce37e701afb0d84ca7c58113318af74e78b9ede1c8b8",
+  "registration_review_remaining_findings": 0,
+  "registration_sha256": "f46f77dff7f17c0c33bab6191b1f3df7648789f40abf16cde9c2da8c629d2cbd",
+  "snapshot_utc": "2026-10-29T07:49:11.733295+00:00",
+  "source_commitments": 158,
+  "status": "RUNNING",
+  "training_updates": 0
+}

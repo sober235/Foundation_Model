@@ -1,3 +1,7 @@
+# 2026-10-29 本地工作分支接续：开发评价已提交，核实admission
+
+正式训练不重跑。开发评价于07:46:38 UTC提交，宿主机PID3975686/start ticks449332314，当前仅核实admission及控制器存活，未观察模型前向/阈值选择或质量结果。冻结登记及158份源码、7项输入独立复核通过；最终完整CPU2142 passed/5 skipped（370.93s）。先核验数据，再做S7同集合3D阈值选择和完整双模式开发评价，最后选择head/lookup并冻结；总上限12h，失败/超时保留记录、不自动重试。当前私有输出`~/outputs/aur_development_selection_20261029/run_v1/`；[接续报告](docs/verification/2026-10-29/aur_development_selection/RESULTS.md)。真实test、4469全量、叠加图检查及当前128 CUDA恢复尚未完成。下文“评价未执行”是本次提交前快照；主线main未合并/推送此次本地接续。
+
 # 2026-10-29 最新：正式II/III完成，待最终A/U/R评价
 
 run_v5的II4096/III2048步全部完成，选定3584/2048；终态COMPLETE，首尾完整性核验通过。详见[最新报告与loss PNG](docs/verification/2026-10-29/aur_training_completion/RESULTS.md)。下文“训练中”均为历史快照。用户要求本次归档推送新分支`xxxx_20261029`；不启动新训练或评价，不处理论文。最终A/U/R质量与4469全量推理仍未执行。
